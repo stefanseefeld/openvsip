@@ -1,3 +1,5 @@
 // (c) 2013 CodeSourcery
 
-// This code is licensed under GPL V2 (see LICENSE for details)
+// This entire code is licensed under GPL V2.
+
+// Parts of this code are licensed under BSD.
