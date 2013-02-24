@@ -1,0 +1,370 @@
+/* src/vsip/core/acconfig.hpp.in.  Generated from configure.ac by autoheader.  */
+
+/* Define to 1 if you have the `acosh' function. */
+#undef HAVE_ACOSH
+
+/* Define to 1 if you have the <cublas.h> header file. */
+#undef HAVE_CUBLAS_H
+
+/* Define to 1 if you have the <cufft.h> header file. */
+#undef HAVE_CUFFT_H
+
+/* Define to 1 if you have the declaration of `exp10', and to 0 if you don't.
+   */
+#undef HAVE_DECL_EXP10
+
+/* Define to 1 if you have the declaration of `exp10f', and to 0 if you don't.
+   */
+#undef HAVE_DECL_EXP10F
+
+/* Define to 1 if you have the declaration of `exp10l', and to 0 if you don't.
+   */
+#undef HAVE_DECL_EXP10L
+
+/* Define to 1 if you have the declaration of `hypot', and to 0 if you don't.
+   */
+#undef HAVE_DECL_HYPOT
+
+/* Define to 1 if you have the declaration of `hypotf', and to 0 if you don't.
+   */
+#undef HAVE_DECL_HYPOTF
+
+/* Define to 1 if you have the declaration of `memalign', and to 0 if you
+   don't. */
+#undef HAVE_DECL_MEMALIGN
+
+/* Define to 1 if you have the declaration of `posix_memalign', and to 0 if
+   you don't. */
+#undef HAVE_DECL_POSIX_MEMALIGN
+
+/* Define to 1 if you have the <fftw3.h> header file. */
+#undef HAVE_FFTW3_H
+
+/* Define to 1 if you have the `hypot' function. */
+#undef HAVE_HYPOT
+
+/* Define to 1 if you have the `hypotf' function. */
+#undef HAVE_HYPOTF
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the <malloc.h> header file. */
+#undef HAVE_MALLOC_H
+
+/* Define to 1 if you have the `memalign' function. */
+#undef HAVE_MEMALIGN
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the <numa.h> header file. */
+#undef HAVE_NUMA_H
+
+/* Define to 1 if you have the <png.h> header file. */
+#undef HAVE_PNG_H
+
+/* Define to 1 if you have the `posix_memalign' function. */
+#undef HAVE_POSIX_MEMALIGN
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the '$fcn' function. */
+#undef HAVE_STD_ISFINITE
+
+/* Define to 1 if you have the '$fcn' function. */
+#undef HAVE_STD_ISNAN
+
+/* Define to 1 if you have the '$fcn' function. */
+#undef HAVE_STD_ISNORMAL
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#undef HAVE_SYS_MMAN_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `vsip_conv1d_create_d' function. */
+#undef HAVE_VSIP_CONV1D_CREATE_D
+
+/* Define to 1 if you have the `vsip_conv1d_create_f' function. */
+#undef HAVE_VSIP_CONV1D_CREATE_F
+
+/* Define to 1 if you have the `vsip_conv2d_create_d' function. */
+#undef HAVE_VSIP_CONV2D_CREATE_D
+
+/* Define to 1 if you have the `vsip_conv2d_create_f' function. */
+#undef HAVE_VSIP_CONV2D_CREATE_F
+
+/* Define to 1 if you have the `vsip_corr1d_create_d' function. */
+#undef HAVE_VSIP_CORR1D_CREATE_D
+
+/* Define to 1 if you have the `vsip_corr1d_create_f' function. */
+#undef HAVE_VSIP_CORR1D_CREATE_F
+
+/* Define to 1 if you have the `vsip_corr2d_create_d' function. */
+#undef HAVE_VSIP_CORR2D_CREATE_D
+
+/* Define to 1 if you have the `vsip_corr2d_create_f' function. */
+#undef HAVE_VSIP_CORR2D_CREATE_F
+
+/* Define to 1 if the system has the type `vsip_fir_attr'. */
+#undef HAVE_VSIP_FIR_ATTR
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* The size of `double', as computed by sizeof. */
+#undef SIZEOF_DOUBLE
+
+/* The size of `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
+/* The size of `int *', as computed by sizeof. */
+#undef SIZEOF_INT_P
+
+/* The size of `long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
+/* The size of `long double', as computed by sizeof. */
+#undef SIZEOF_LONG_DOUBLE
+
+/* The size of `long long', as computed by sizeof. */
+#undef SIZEOF_LONG_LONG
+
+/* The size of `short', as computed by sizeof. */
+#undef SIZEOF_SHORT
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Cell SDK version. */
+#undef VSIP_CBE_SDK_VERSION
+
+/* Define to 1 to use C++ exceptions. */
+#undef VSIP_HAS_EXCEPTIONS
+
+/* Alignment for allocated memory (in bytes) */
+#undef VSIP_IMPL_ALLOC_ALIGNMENT
+
+/* Set to 1 to avoid using posix_memalign (LAM defines its own malloc,
+   including memalign but not posix_memalign). */
+#undef VSIP_IMPL_AVOID_POSIX_MEMALIGN
+
+/* Define default number of SPEs. */
+#undef VSIP_IMPL_CBE_NUM_SPES
+
+/* Set to 1 to support Cell Broadband Engine (requires CML). */
+#undef VSIP_IMPL_CBE_SDK
+
+/* Define to enable Cell/B.E. SDK FFT backend. */
+#undef VSIP_IMPL_CBE_SDK_FFT
+
+/* Define to set whether or not to use NVIDIA's CUDA FFT library. */
+#undef VSIP_IMPL_CUDA_FFT
+
+/* Define to use the C-VSIPL library to perform FFTs. */
+#undef VSIP_IMPL_CVSIP_FFT
+
+/* Define if C-VSIPL supports bool views. */
+#undef VSIP_IMPL_CVSIP_HAVE_BOOL
+
+/* Define if C-VSIPL supports double operations. */
+#undef VSIP_IMPL_CVSIP_HAVE_DOUBLE
+
+/* Define if C-VSIPL supports float operations. */
+#undef VSIP_IMPL_CVSIP_HAVE_FLOAT
+
+/* Define if C-VSIPL supports int views. */
+#undef VSIP_IMPL_CVSIP_HAVE_INT
+
+/* Define to enable DFT FFT backend. */
+#undef VSIP_IMPL_DFT_FFT
+
+/* Set 1 to enable eval_dense_expr evaluator, set 0 to disable. */
+#undef VSIP_IMPL_ENABLE_EVAL_DENSE_EXPR
+
+/* Define to enable huge page pool support. */
+#undef VSIP_IMPL_ENABLE_HUGE_PAGE_POOL
+
+/* Set to 1 to enable multi-threading. */
+#undef VSIP_IMPL_ENABLE_THREADING
+
+/* Define to build using FFTW3 headers. */
+#undef VSIP_IMPL_FFTW3
+
+/* Define to 1 if -lfftw3d was found. */
+#undef VSIP_IMPL_FFTW3_HAVE_DOUBLE
+
+/* Define to 1 if -lfftw3f was found. */
+#undef VSIP_IMPL_FFTW3_HAVE_FLOAT
+
+/* Define to 1 if -lfftw3l was found. */
+#undef VSIP_IMPL_FFTW3_HAVE_LONG_DOUBLE
+
+/* Define to build code with support for FFT on double types. */
+#undef VSIP_IMPL_FFT_USE_DOUBLE
+
+/* Define to build code with support for FFT on float types. */
+#undef VSIP_IMPL_FFT_USE_FLOAT
+
+/* Define to build code for long-double-precision FFT. */
+#undef VSIP_IMPL_FFT_USE_LONG_DOUBLE
+
+/* Define to use both ::abs and std::abs for vsip::mag. */
+#undef VSIP_IMPL_FIX_MISSING_ABS
+
+/* Define to set whether or not BLAS is present. */
+#undef VSIP_IMPL_HAVE_BLAS
+
+/* Set to 1 if CML is available (requires SDK). */
+#undef VSIP_IMPL_HAVE_CML
+
+/* Define if standard library supports complex<long double>. */
+#undef VSIP_IMPL_HAVE_COMPLEX_LONG_DOUBLE
+
+/* Define to set whether or not to use NVIDIA's CUDA libraries. */
+#undef VSIP_IMPL_HAVE_CUDA
+
+/* Define to use C-VSIPL library. */
+#undef VSIP_IMPL_HAVE_CVSIP
+
+/* Define to set whether or not to use Intel's IPP library. */
+#undef VSIP_IMPL_HAVE_IPP
+
+/* Define to set whether or not LAPACK is present. */
+#undef VSIP_IMPL_HAVE_LAPACK
+
+/* Define to 1 if MKL vector math library is available. */
+#undef VSIP_IMPL_HAVE_MKL_VML
+
+/* Define to set whether or not to use Mercury's SAL library. */
+#undef VSIP_IMPL_HAVE_SAL
+
+/* Define if Mercury's SAL library provides double support. */
+#undef VSIP_IMPL_HAVE_SAL_DOUBLE
+
+/* Define if Mercury's SAL library provides float support. */
+#undef VSIP_IMPL_HAVE_SAL_FLOAT
+
+/* Define if Mercury's SAL library has vsdivix. */
+#undef VSIP_IMPL_HAVE_SAL_VSDIVIX
+
+/* Define if Mercury's SAL library provides vthrx. */
+#undef VSIP_IMPL_HAVE_SAL_VTHRX
+
+/* Define whether to use 3DNow!-ext ISA routines in expr dispatch. */
+#undef VSIP_IMPL_HAVE_SIMD_3DNOWEXT
+
+/* Define whether to use Generic SIMD routines in expr dispatch. */
+#undef VSIP_IMPL_HAVE_SIMD_GENERIC
+
+/* Define whether to use SIMD loop-fusion in expr dispatch. */
+#undef VSIP_IMPL_HAVE_SIMD_LOOP_FUSION
+
+/* Define whether to use SSE2 ISA routines in expr dispatch. */
+#undef VSIP_IMPL_HAVE_SIMD_SSE2
+
+/* Define whether to use SIMD unaligned loop-fusion in expr dispatch. */
+#undef VSIP_IMPL_HAVE_SIMD_UNALIGNED_LOOP_FUSION
+
+/* Define to use Intel's IPP library to perform FFTs. */
+#undef VSIP_IMPL_IPP_FFT
+
+/* Major version string. */
+#undef VSIP_IMPL_MAJOR_VERSION_STRING
+
+/* Define to enable dummy FFT backend. */
+#undef VSIP_IMPL_NO_FFT
+
+/* Set to 1 to support libnuma. */
+#undef VSIP_IMPL_NUMA
+
+/* Define to parallel service provided (0 == no service, 1 = MPI, 2 = PAS). */
+#undef VSIP_IMPL_PAR_SERVICE
+
+/* Define the heap size used inside the PAS backend. */
+#undef VSIP_IMPL_PAS_HEAP_SIZE
+
+/* Define to 1 to share a dynamic_xfer object, 0 otherwise. */
+#undef VSIP_IMPL_PAS_SHARE_DYNAMIC_XFER
+
+/* Description */
+#undef VSIP_IMPL_PREFER_SPLIT_COMPLEX
+
+/* Hardcoded CPU Speed (in MHz). */
+#undef VSIP_IMPL_PROFILE_HARDCODE_CPU_SPEED
+
+/* Define to nest events in profile accum mode. */
+#undef VSIP_IMPL_PROFILE_NESTING
+
+/* Profile timer (0: None, 1: Posix, 2: ia32 TSC, 3: x86_64 TSC, 4: MCOE TMR,
+   5: Power TB). */
+#undef VSIP_IMPL_PROFILE_TIMER
+
+/* Defined if Sourcery VSIPL++ supports for FFT on double types. */
+#undef VSIP_IMPL_PROVIDE_FFT_DOUBLE
+
+/* Defined if Sourcery VSIPL++ supports for FFT on float types. */
+#undef VSIP_IMPL_PROVIDE_FFT_FLOAT
+
+/* Defined if Sourcery VSIPL++ supports for FFT on long double. */
+#undef VSIP_IMPL_PROVIDE_FFT_LONG_DOUBLE
+
+/* Set to 1 to compile the reference implementation. */
+#undef VSIP_IMPL_REF_IMPL
+
+/* Define to use Mercury's SAL library to perform FFTs. */
+#undef VSIP_IMPL_SAL_FFT
+
+/* Define if Mercury's SAL uses signed char *. */
+#undef VSIP_IMPL_SAL_USES_SIGNED
+
+/* Define to the taglist used for SIMD loop fusion dispatching. */
+#undef VSIP_IMPL_SIMD_TAG_LIST
+
+/* Define to indicate this is CodeSourcery's VSIPL++. */
+#undef VSIP_IMPL_SOURCERY_VPP
+
+/* Define to set test suite effort level (0, 1, or 2). */
+#undef VSIP_IMPL_TEST_LEVEL
+
+/* CBLAS style (0 == no CBLAS, 1 = ATLAS CBLAS, 2 = MKL CBLAS). */
+#undef VSIP_IMPL_USE_CBLAS
+
+/* Define to 1 if f2c ABI is to be used to interface with Fortran code. */
+#undef VSIP_IMPL_USE_F2C_ABI
+
+/* Use LAPACK ILAENV (0 == do not use, 1 = use). */
+#undef VSIP_IMPL_USE_LAPACK_ILAENV
+
+/* Version string. */
+#undef VSIP_IMPL_VERSION_STRING

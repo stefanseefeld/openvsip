@@ -1,0 +1,32 @@
+This file describes the tagged versions of Sourcery VSIPL++.
+
+Tag	Description
+V_0_9	Technology preview release "version 0.9" for HPEC workshop.
+	Released on Sep 21, 2005.
+
+V_0_95  Parallel API release "version 0.95" for HPEC-SI.
+
+V_1_0	1.0 rc1. (Jan 20, 2005)
+
+V_1_0a	1.0 rc2. (Jan 22, 2005)
+
+V_1_0b	1.0 rc3. (Jan 22, 2005) This was released to the public as
+	version 1.0.
+
+V_060306
+	Preview release made on 6 Mar 2006 with initial Mercury support.
+
+V_060307
+	Preview release made on 7 Mar 2006 with initial Mercury support.
+
+V_20060327
+V_20060403
+	Preview release made on 3 Apr 2006.  Used for HPEC Kernel benchmark
+	results.
+
+V_20060426
+	Preview release made on 26 Apr 2006.  Initial Solaris support.
+
+V_1_1	1.1 release (May 15, 2006)
+
+V_1_2	1.2 release (Sep, 2006) (SVN reversion 149394)

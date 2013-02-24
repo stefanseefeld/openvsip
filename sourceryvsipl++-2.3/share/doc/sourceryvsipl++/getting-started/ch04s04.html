@@ -1,0 +1,31 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.4. Running Parallel Applications</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-building-applications.html" title="Chapter 4. Building Applications"><link rel="prev" href="ch04s03.html" title="4.3. Running Serial Applications"><link rel="next" href="ch04s05.html" title="4.5. Building Applications with the VSIPL API"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.4. Running Parallel Applications</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s03.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Building Applications</th><td width="20%" align="right"> <a accesskey="n" href="ch04s05.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id279845"></a>4.4. Running Parallel Applications</h2></div></div></div><p>
+    How parallel VSIPL++ applications are run depends on the particular
+    communication library used.
+   </p><p>
+    For most MPI libraries, parallel applications are run with the
+    <code class="command">mpirun</code> command.  For example, to run a
+    VSIPL++ application on two processors:
+    </p><pre class="screen">&gt; mpirun -np 2 ./example1</pre><p>
+    This may require that your MPI library has been first initialized
+    on the system by starting a daemon process.  Please consult your
+    MPI library documentation for more details.
+   </p><p>
+    For example, to run a parallel VSIPL++ application with
+    MCOE PAS with four CEs, 2, 3, 4 and 5:
+     </p><pre class="screen">&gt; sysmc -ce 2 -bcs=0 init 3-5
+&gt; runmc -ce 3 ./example1.ppc -pas_size 4 -pas_rank 1 &amp;
+&gt; runmc -ce 4 ./example1.ppc -pas_size 4 -pas_rank 2 &amp;
+&gt; runmc -ce 5 ./example1.ppc -pas_size 4 -pas_rank 3 &amp;
+&gt; runmc -ce 2 ./example1.ppc -pas_size 4 -pas_rank 0
+&gt; sysmc -ce 2 reset</pre><p>
+   </p><p>
+    For example, to run a parallel VSIPL++ application with
+    PAS for Linux Clusters on compute nodes c1, c2, c3, c4:
+    </p><pre class="screen">&gt; rsh -n c1 example1 -pas_size 4 -pas_rank 0 &amp;
+&gt; rsh -n c2 example1 -pas_size 4 -pas_rank 1 &amp;
+&gt; rsh -n c3 example1 -pas_size 4 -pas_rank 2 &amp;
+&gt; rsh -n c4 example1 -pas_size 4 -pas_rank 3 &amp;
+&gt; wait</pre><p>
+    Please consult your PAS library documentation
+    for more details on starting PAS and running PAS programs.
+   </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-building-applications.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.3. Running Serial Applications </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 4.5. Building Applications with the VSIPL API</td></tr></table></div></body></html>

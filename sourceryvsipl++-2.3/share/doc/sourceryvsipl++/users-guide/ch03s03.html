@@ -1,0 +1,60 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>3.3. Runtime dispatch</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="dispatcher.html" title="Chapter 3. Using the Dispatch Framework"><link rel="prev" href="ch03s02.html" title="3.2. Compile-time dispatch"><link rel="next" href="custom_expr_evaluation.html" title="Chapter 4. Custom Expression Evaluation"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">3.3. Runtime dispatch</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s02.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using the Dispatch Framework</th><td width="20%" align="right"> <a accesskey="n" href="custom_expr_evaluation.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id279650"></a>3.3. Runtime dispatch</h2></div></div></div><p>Now let us make modifications to the above by stipulating that the
+    function operates on an array of type <code class="type">T</code> and size
+    <code class="varname">size</code>, and backends have restrictions both on the type
+    as well as the size of the array: Backend <code class="type">A</code> only accepts
+    <code class="type">int</code>s, backend <code class="type">B</code> accepts any type, but only
+    buffers whose size is a power of 2, while backend C accepts any
+    input:</p><pre class="programlisting">namespace vsip_csl
+{
+  namespace dispatcher
+  {
+    template &lt;&gt;
+    struct Evaluator&lt;Operation, A, void(int*, size_t)&gt;
+    {
+      static bool const ct_valid = true;
+      static bool rt_valid(int*, size_t)
+      { return true;}
+      static void exec(int *input, size_t size)
+      { A_impl::process(input, size);}
+    };
+  template &lt;typename T&gt;
+  struct Evaluator&lt;Operation, B, void(T*, size_t)&gt;
+  { static bool const ct_valid =
+      has_feature&lt;T&gt;::value;
+    static bool rt_valid(T*, size_t size)
+    { return size^(size-1); }
+    static void exec(T *input, size_t size)
+    {
+      B_impl&lt;T&gt;::process(input, size);
+    }
+  };
+  template &lt;typename T&gt;
+    struct Evaluator&lt;Operation, C, void(T*, size_t)&gt;
+    {
+      static bool const ct_valid = true;
+      static bool rt_valid(T*, size_t)
+      { return true;}
+      static void exec(T *input, size_t size)
+      { C_impl&lt;T&gt;::process(input, size);}
+    };
+    template &lt;&gt; struct List&lt;Operation&gt;
+    {
+      typedef
+        Make_type_list&lt;A, B, C&gt;::type type;
+    };
+  }
+}</pre><p>The operation wrapper for this now simply becomes:</p><pre class="programlisting">template &lt;typename T&gt;
+void process(T *input, size_t size)
+{
+  vsip_csl::dispatch&lt;Operation, void(T*, size_t)&gt;(input,
+    size);
+}</pre><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id279707"></a>3.3.1. Implementation details</h3></div></div></div><p>The runtime-dispatch works conceptually similar to the
+      compile-time dispatch. However, in this case the dispatch is actually a
+      two-phase process. The first phase is the same as in the compile-time
+      dispatch. It reduces the type-list of Evaluators to those elements that
+      match the given input type(s).</p><p>The second phase, then, is carried out at runtime, when this
+      reduced type-list is traversed to evaluate all rt_valid() member
+      functions until a match is found, based on runtime characteristics. In
+      the case presented here this is a size parameter, though it could be
+      anything else, as the signature of the operation to be carried out is a
+      template parameter, too.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch03s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="dispatcher.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="custom_expr_evaluation.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">3.2. Compile-time dispatch </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 4. Custom Expression Evaluation</td></tr></table></div></body></html>

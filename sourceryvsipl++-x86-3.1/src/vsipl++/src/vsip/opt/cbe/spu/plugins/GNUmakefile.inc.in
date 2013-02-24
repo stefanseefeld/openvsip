@@ -1,0 +1,79 @@
+######################################################### -*-Makefile-*-
+#
+# Contents: Makefile fragment for SPU plugins.
+#
+########################################################################
+
+########################################################################
+# Variables
+########################################################################
+
+plugin_ld_script := $(srcdir)/src/vsip/opt/cbe/spu/plugins/ld.script
+
+
+CREATE_PLUGIN := $(srcdir)/bin/create_plugin
+LIBS_SPU := -lcml_spu -lalf -lm
+LIBS_LW_SPU := -lcml_spu -lalflts -lm
+
+src_vsip_opt_cbe_spu_plugins_src :=					\
+        $(wildcard $(srcdir)/src/vsip/opt/cbe/spu/plugins/*.c)
+src_vsip_opt_cbe_spu_plugins_obj :=					\
+        $(patsubst $(srcdir)/%.c, %.o,                                  \
+                   $(src_vsip_opt_cbe_spu_plugins_src))
+src_vsip_opt_cbe_spu_plugins_exe :=					\
+        $(patsubst $(srcdir)/%.c, %,    	                        \
+                   $(src_vsip_opt_cbe_spu_plugins_src))
+src_vsip_opt_cbe_spu_plugins_plg :=					\
+        $(patsubst %.c, lib/plugins/%.plg,				\
+                   $(notdir $(src_vsip_opt_cbe_spu_plugins_src)))
+
+plugins_exe := $(src_vsip_opt_cbe_spu_plugins_exe)
+plugins_plg := $(src_vsip_opt_cbe_spu_plugins_plg)
+
+########################################################################
+# Build instructions
+########################################################################
+
+# We don't want to default-initialize static data.
+# Tell the compiler, so it doesn't optimize away
+# explicit initialization in the code, such as
+# "static int counter = 0;"
+define compile_spu_plugin
+@echo compiling $@
+$(CC_SPU) -c -fpic -fno-zero-initialized-in-bss \
+  $(CPP_FLAGS_SPU) $(CFLAGS_SPU) -o $@ $<
+endef
+
+# Plugins are loaded into running programs, and thus
+# don't require any startup code.
+define link_spu_plugin
+@echo linking $@
+$(CC_SPU) -nostartfiles -Wl,-T,$(plugin_ld_script) $< \
+  $(LD_FLAGS_SPU) -lsvpp -lcml_spu -lsimdmath -lm -o $@
+endef
+
+########################################################################
+# Rules
+########################################################################
+
+install-core:: $(src_vsip_opt_cbe_spu_plugins_plg)
+	$(INSTALL) -d $(DESTDIR)$(libdir)/plugins
+	for file in $(src_vsip_opt_cbe_spu_plugins_plg); do \
+          $(INSTALL_DATA) $$file $(DESTDIR)$(libdir)/plugins; \
+	done
+
+libs:: $(src_vsip_opt_cbe_spu_plugins_plg)
+
+$(src_vsip_opt_cbe_spu_plugins_obj): %.o: %.c
+	$(compile_spu_plugin)
+
+$(src_vsip_opt_cbe_spu_plugins_exe): %: %.o | $(spu_lib)
+	$(link_spu_plugin)
+
+$(src_vsip_opt_cbe_spu_plugins_plg): lib/plugins/%.plg: src/vsip/opt/cbe/spu/plugins/%
+	$(CREATE_PLUGIN) -o $@ $<
+
+mostlyclean::
+	rm -f $(src_vsip_opt_cbe_spu_plugin_obj)
+	rm -f $(src_vsip_opt_cbe_spu_plugin_exe)
+	rm -f $(src_vsip_opt_cbe_spu_plugin_plg)

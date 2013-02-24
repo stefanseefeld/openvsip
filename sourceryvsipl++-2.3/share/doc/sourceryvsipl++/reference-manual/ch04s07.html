@@ -1,0 +1,103 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.7. Signal Processing Functions</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="functions.html" title="Chapter 4. Function Reference"><link rel="prev" href="ch04s06.html" title="4.6. Selection, generation, and manipulation functions"><link rel="next" href="ch04s08.html" title="4.8. Signal Processing Objects"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.7. Signal Processing Functions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s06.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Function Reference</th><td width="20%" align="right"> <a accesskey="n" href="ch04s08.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id327329"></a>4.7. Signal Processing Functions</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_blackman"></a>4.7.1. <code class="function">blackman</code></h3></div></div></div><a class="indexterm" name="id327346"></a><p><b>Description: </b>
+   Construct a vector containing
+   Blackman window weights.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Vector&lt;float&gt; <b class="fsfunc">blackman</b>
+    (</code></td><td>
+     <var class="pdparam">
+      length_type LEN
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b>
+   The parameter <em class="parameter"><code>LEN</code></em> must be greater than one.
+  </p><p><b>Result: </b>
+   Each element <code class="varname">n</code>, from 0 through <code class="code">LEN-1</code>,
+   of the result vector is 
+ </p><pre class="programlisting">0.42 -
+0.50 * cos(temp1 * n) +
+0.08 * cos(temp2 * n)</pre><p>
+   where the <code class="type">float</code> values <code class="varname">temp1</code> is
+   <code class="code">2 * VSIP_IMPL_PI / (len - 1)</code> and
+   <code class="varname">temp2</code> is <code class="code">2 * temp1</code>.
+  </p><p><b>Example: </b>
+</p><pre class="programlisting">Vector&lt;float&gt; Z;
+Z = blackman(200);</pre><p>
+  </p><p><b>See Also: </b>  
+   </p><div class="variablelist"><dl><dt><span class="term"><code class="function">cheby</code></span></dt><dd><a class="xref" href="ch04s07.html#functionref_cheby" title="4.7.2. cheby">(section 4.7.2)</a></dd><dt><span class="term"><code class="function">hanning</code></span></dt><dd><a class="xref" href="ch04s07.html#functionref_hanning" title="4.7.4. hanning">(section 4.7.4)</a></dd><dt><span class="term"><code class="function">kaiser</code></span></dt><dd><a class="xref" href="ch04s07.html#functionref_kaiser" title="4.7.5. kaiser">(section 4.7.5)</a></dd></dl></div><p>
+  </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_cheby"></a>4.7.2. <code class="function">cheby</code></h3></div></div></div><a class="indexterm" name="id327560"></a><p><b>Description: </b>
+   Construct a vector containing
+   Chebyshev window weights.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Vector&lt;float&gt; <b class="fsfunc">cheby</b>
+    (</code></td><td>
+     <var class="pdparam">
+      length_type LEN
+     </var>
+     <var class="pdparam">
+      scalar_f ripple
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b>
+   The parameter <em class="parameter"><code>LEN</code></em> must be greater than one.
+  </p><p><b>Result: </b>
+   The function returns a vector of length <em class="parameter"><code>LEN</code></em> initialized
+   with Dolph-Chebyshev window weights using the specified <em class="parameter"><code>ripple</code></em>.
+  </p><p><b>Example: </b>
+</p><pre class="programlisting">Vector&lt;float&gt; Z;
+Z = cheby(200,0.5);</pre><p>
+  </p><p><b>See Also: </b>  
+   </p><div class="variablelist"><dl><dt><span class="term"><code class="function">blackman</code></span></dt><dd><a class="xref" href="ch04s07.html#functionref_blackman" title="4.7.1. blackman">(section 4.7.1)</a></dd><dt><span class="term"><code class="function">hanning</code></span></dt><dd><a class="xref" href="ch04s07.html#functionref_hanning" title="4.7.4. hanning">(section 4.7.4)</a></dd><dt><span class="term"><code class="function">kaiser</code></span></dt><dd><a class="xref" href="ch04s07.html#functionref_kaiser" title="4.7.5. kaiser">(section 4.7.5)</a></dd></dl></div><p>
+  </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_freqswap"></a>4.7.3. <code class="function">freqswap</code></h3></div></div></div><a class="indexterm" name="id327769"></a><p><b>Syntax: </b></p><pre class="synopsis">    Vector&lt;T&gt; freqswap( Vector&lt;T&gt; A );
+    Matrix&lt;T&gt; freqswap( Matrix&lt;T&gt; A );</pre><p><b>Description: </b>Swaps halves of a vector, or quadrants of a matrix, to remap zero
+  frequencies from the origin to the middle.</p><p><b>Result: </b><code class="function">freqswap</code> returns a new vector (matrix) with
+  <em class="parameter"><code>A</code></em>'s halves (quadrants) swapped.</p><p><b>Example: </b></p><pre class="programlisting">Vector&lt;int&gt; vec(4); 
+
+vec(0) = 10; 
+vec(1) = 11; 
+vec(2) = 12; 
+vec(3) = 13;
+
+std::cout &lt;&lt; freqswap(vec) &lt;&lt; std::endl; // prints: 12 13 10 11</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_hanning"></a>4.7.4. <code class="function">hanning</code></h3></div></div></div><a class="indexterm" name="id327851"></a><p><b>Description: </b>
+   Construct a vector containing
+   Hanning window weights.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Vector&lt;float&gt; <b class="fsfunc">hanning</b>
+    (</code></td><td>
+     <var class="pdparam">
+      length_type LEN
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b>
+   The parameter <em class="parameter"><code>LEN</code></em> must be greater than one.
+  </p><p><b>Result: </b>
+   Each element <code class="varname">n</code>, from 0 through <code class="code">LEN-1</code>,
+   of the result vector is 
+ </p><pre class="programlisting">0.5 * (1 - (cos(temp * (n + 1))))</pre><p>
+   where the <code class="type">float</code> value <code class="varname">temp</code> is
+   <code class="code"> 2 * VSIP_IMPL_PI / (len + 1)</code>.
+  </p><p><b>Example: </b>
+</p><pre class="programlisting">Vector&lt;float&gt; Z;
+Z = hanning(200);</pre><p>
+  </p><p><b>See Also: </b>  
+   </p><div class="variablelist"><dl><dt><span class="term"><code class="function">blackman</code></span></dt><dd><a class="xref" href="ch04s07.html#functionref_blackman" title="4.7.1. blackman">(section 4.7.1)</a></dd><dt><span class="term"><code class="function">cheby</code></span></dt><dd><a class="xref" href="ch04s07.html#functionref_cheby" title="4.7.2. cheby">(section 4.7.2)</a></dd><dt><span class="term"><code class="function">kaiser</code></span></dt><dd><a class="xref" href="ch04s07.html#functionref_kaiser" title="4.7.5. kaiser">(section 4.7.5)</a></dd></dl></div><p>
+  </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_kaiser"></a>4.7.5. <code class="function">kaiser</code></h3></div></div></div><a class="indexterm" name="id328057"></a><p><b>Description: </b>
+   Construct a vector containing
+   Kaiser window weights.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Vector&lt;float&gt; <b class="fsfunc">kaiser</b>
+    (</code></td><td>
+     <var class="pdparam">
+      length_type LEN
+     </var>
+     <var class="pdparam">
+      scalar_f beta
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b>
+   The parameter <em class="parameter"><code>LEN</code></em> must be greater than one.
+  </p><p><b>Result: </b>
+   The function returns a vector initialized with Kaiser window weights 
+   with transition width parameter <em class="parameter"><code>beta</code></em> and having
+   length <em class="parameter"><code>LEN</code></em>.
+  </p><p><b>Example: </b>
+</p><pre class="programlisting">Vector&lt;float&gt; Z;
+Z = kaiser(200,0.5);</pre><p>
+  </p><p><b>See Also: </b>  
+   </p><div class="variablelist"><dl><dt><span class="term"><code class="function">blackman</code></span></dt><dd><a class="xref" href="ch04s07.html#functionref_blackman" title="4.7.1. blackman">(section 4.7.1)</a></dd><dt><span class="term"><code class="function">cheby</code></span></dt><dd><a class="xref" href="ch04s07.html#functionref_cheby" title="4.7.2. cheby">(section 4.7.2)</a></dd><dt><span class="term"><code class="function">hanning</code></span></dt><dd><a class="xref" href="ch04s07.html#functionref_hanning" title="4.7.4. hanning">(section 4.7.4)</a></dd></dl></div><p>
+  </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s06.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="functions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s08.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.6. Selection, generation, and manipulation functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 4.8. Signal Processing Objects</td></tr></table></div></body></html>

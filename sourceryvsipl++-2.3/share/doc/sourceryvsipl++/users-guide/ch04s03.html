@@ -1,0 +1,35 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.3. Expression templates in Sourcery VSIPL++</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="custom_expr_evaluation.html" title="Chapter 4. Custom Expression Evaluation"><link rel="prev" href="ch04s02.html" title="4.2. Expression templates"><link rel="next" href="ch04s04.html" title="4.4. Creating custom expressions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.3. Expression templates in Sourcery VSIPL++</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s02.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Custom Expression Evaluation</th><td width="20%" align="right"> <a accesskey="n" href="ch04s04.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id279932"></a>4.3. Expression templates in Sourcery VSIPL++</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id279941"></a>4.3.1. Generating expression templates</h3></div></div></div><p>Most functions and operators provided by Sourcery VSIPL++ are written to
+      support such lazy evaluation. Thus, instead of calculating the result
+      value directly, they return objects of such expression types. Moreover,
+      they are written in such a way that their input may be expression type
+      objects, too, such that expressions can be nested without being
+      evaluated.</p><pre class="programlisting">template &lt;typename T,
+          typename LeftBlock,
+          typename RightBlock&gt;
+Vector&lt;T,
+       Binary_expr_block&lt;1, Plus, LeftBlock, T, RightBlock, T&gt; &gt;
+operator+(Vector&lt;LeftBlock&gt;  left,
+          Vector&lt;RightBlock&gt; right);</pre><p>This version of <code class="function">operator+</code> expects Vectors of
+      arbitrary block types as input, and generates a Vector whose block type
+      encodes the binary operation. (If the input arguments are themselves
+      expressions, this will result in a composite expression tree.</p><p>Sourcery VSIPL++ provides a range of types to represent such
+      <span class="emphasis"><em>non-terminal</em></span> expression nodes, as well as the means
+      to traverse them, to make it possible to generate expression (parse)
+      trees for a wide range of expressions.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id279984"></a>4.3.2. Evaluating expression templates</h3></div></div></div><p>Expressions are ideally evaluated only once all the relevant
+      information has been gathered. That point is typically reached once the
+      whole assignment-expression has been seen. That is the case during
+      assignment-operator evaluation.</p><p>Here is a conventional implementation of a vector-assignment,
+      doing element-wise assignment:</p><pre class="programlisting">template &lt;typename T,
+          typename LeftBlock,
+          typename RightBlock&gt;
+void assign(Vector&lt;T, LeftBlock&gt;  left,
+            Vector&lt;T, RightBlock&gt; right)
+{
+ for (length_type i = Vector&lt;T, LeftBlock&gt;::size(); i; --i)
+  left.put(i - 1, right.get(i - 1));
+}</pre><p>If <code class="type">RightBlock</code> is an expression-block with an
+      elementwise operation, its implementation of <code class="function">get</code>
+      will perform the (elementwise) evaluation. Thus, in this case, at least
+      one temporary has already been eliminated, and multiple loops have been
+      fused into one.</p><p>For non-elementwise operations, this is not quite as
+      simple.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="custom_expr_evaluation.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.2. Expression templates </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 4.4. Creating custom expressions</td></tr></table></div></body></html>

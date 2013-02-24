@@ -1,0 +1,23 @@
+mkl_prefix=/opt/intel/mkl721
+ipp_prefix=/opt/intel/ipp
+prefix=/opt/codesourcery/sourceryvsipl++-2.3
+exec_prefix=${prefix}
+libdir=${prefix}/lib/ia32/ser-intel-debug
+builtin_libdir=${prefix}/lib/ia32/debug
+includedir=${prefix}/include
+cc=i686-pc-linux-gnu-gcc
+cxx=i686-pc-linux-gnu-g++
+cppflags=-I${includedir} -I${prefix}/include/fftw3  -I${prefix}/include -DVSIP_IMPL_FFTW3=1 -DVSIP_IMPL_FFTW3_HAVE_FLOAT -DVSIP_IMPL_FFTW3_HAVE_DOUBLE -DVSIP_IMPL_FFTW3_HAVE_LONG_DOUBLE -I${ipp_prefix}/ia32_itanium/include -DVSIP_IMPL_HAVE_IPP=1 -DVSIP_IMPL_IPP_FFT=1 -DVSIP_IMPL_FFT_USE_FLOAT=1 -DVSIP_IMPL_FFT_USE_DOUBLE=1 -DVSIP_IMPL_FFT_USE_LONG_DOUBLE=1 -DVSIP_IMPL_PROVIDE_FFT_FLOAT=1 -DVSIP_IMPL_PROVIDE_FFT_DOUBLE=1 -DVSIP_IMPL_PROVIDE_FFT_LONG_DOUBLE=1 -I${mkl_prefix}/include -pthread -DVSIP_IMPL_USE_CBLAS=2
+cflags=-m32 -march=pentium4 -mmmx -msse -msse2
+cxxflags=-g -W -Wall -m32 -march=pentium4 -mmmx -msse -msse2
+ldflags=-m32 -march=pentium4 -mmmx -msse -msse2 -L${prefix}/lib/ia32/debug -L${ipp_prefix}/ia32_itanium/sharedlib -L${ipp_prefix}/ia32_itanium/sharedlib  -L${mkl_prefix}/lib/32/ -L${builtin_libdir}
+par_service=none
+par_boot=
+par_halt=
+qmtest_target=local_host.LocalHost
+
+Name: Sourcery VSIPL++
+Description: CodeSourcery VSIPL++ library
+Version: 
+Libs: ${ldflags} -L${libdir}  -lvsip_csl -lsvpp  -lfftw3f -lfftw3 -lfftw3l  -lippm -lippi -lipps -lippcore -lpthread  -lmkl_lapack -lmkl -lguide -lpthread
+Cflags: ${cppflags}

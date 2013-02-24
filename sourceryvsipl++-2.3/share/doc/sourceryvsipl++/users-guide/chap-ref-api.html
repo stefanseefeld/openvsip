@@ -1,0 +1,351 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 1. API overview</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="pt01.html" title="Part I. Working with Sourcery VSIPL++"><link rel="prev" href="pt01.html" title="Part I. Working with Sourcery VSIPL++"><link rel="next" href="blocks.html" title="1.2. Blocks"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 1. API overview</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="pt01.html">Prev</a> </td><th width="60%" align="center">Part I. Working with Sourcery VSIPL++</th><td width="20%" align="right"> <a accesskey="n" href="blocks.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chap-ref-api"></a>Chapter 1. API overview</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="chap-ref-api.html#views">1.1. Views</a></span></dt><dt><span class="section"><a href="blocks.html">1.2. Blocks</a></span></dt><dt><span class="section"><a href="matlabio.html">1.3. Matlab IO</a></span></dt></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="views"></a>1.1. Views</h2></div></div></div><p>Sourcery VSIPL++ defines a number of mathematical types for linear
+    algebra: vectors, matrices, and (3D) tensors. They provide a high-level
+    interface suitable for solving linear algebra equations. All these types
+    give an intuitive access to their elements. They are collectively referred
+    to as views, as they provide different ways to <span class="emphasis"><em>look
+    at</em></span> data.</p><p>Here are a few simple ways to use views.</p><pre class="programlisting">// create an uninitialized vector of 10 elements
+Vector&lt;float&gt; vector1(10);
+
+// create a zero-initialized vector of 10 elements
+Vector&lt;float&gt; vector2(10, 0.f);
+
+// assign vector2 to vector1
+vector1 = vector2;
+
+// set the first element to 1.f
+vector1(0) = 1.f;
+
+// access the last element
+float value = vector1(9);
+</pre><p>Every view has an associated <code class="type">Block</code>, which is
+    responsible for storing or computing the data in the view. More than one
+    view may be associated with the same block.</p><p>Depending on how a view is constructed it may allocate the block, or
+    refer to a block from another view. All views created via
+    copy-construction will share the blocks with the views they were
+    constructed with.</p><p>When a view is passed by-value to a function, the copy-constructor
+    performs what is known as a <span class="emphasis"><em>shallow</em></span> copy. The
+    function receives a new view that refers to the block of the
+    original.</p><p>Assignment, for example, performs a <span class="emphasis"><em>deep</em></span> copy -
+    the contents of the block of the right-hand-side view is copied into the
+    block of the left-hand-side.</p><pre class="programlisting">// copy-construct a new vector from an existing one
+Vector&lt;float&gt; vector3(vector1);
+
+// modify the original vector
+vector1.put(1, 1.f);
+
+// the new vector reflects the new value
+assert(vector3(1) == 1.f);
+</pre><p>Here is the declaration of one of the view templates:</p><pre class="programlisting">template &lt;typename T     = VSIP_DEFAULT_VALUE_TYPE,
+          typename Block = Dense&lt;1, T&gt; &gt;
+class Vector;</pre><p><code class="type">T</code> and <code class="type">Block</code> are template parameters. The
+    templates for <code class="type">Matrix</code> and <code class="type">Tensor</code> are similar. The
+    template name specifies its dimension: 1, 2 or 3. The parameter
+    <code class="type">T</code> specifies the type of each element in the view. Indexing is
+    0-based, similar to C.</p><p>You cannot use a class template as a type:</p><pre class="programlisting">Vector vec;                         // ERROR: will not compile</pre><p>You need to provide template arguments:</p><pre class="programlisting">Vector&lt;float, Dense&lt;1, float&gt;&gt; vec; // GOOD</pre><p>Conveniently there are defaults. They are noted above.</p><pre class="programlisting">Vector&lt;&gt; vec;                       // GOOD: T == float (impl dependent)</pre><p>All views provide several operations to the user. </p><div class="itemizedlist"><ul type="bullet"><li style="list-style-type: disc"><p>Accessors of view <code class="varname">v</code> </p><div class="itemizedlist"><ul type="opencircle"><li style="list-style-type: circle"><div class="variablelist"><p class="title"><b>Properties</b></p><dl><dt><span class="term"><code class="code">v.size()</code></span></dt><dd><p>Number of elements.</p></dd><dt><span class="term"><code class="code">v.block()</code></span></dt><dd><p>Reference to the underlying block of
+                        data.</p></dd></dl></div></li><li style="list-style-type: circle"><div class="variablelist"><p class="title"><b>Read Values</b></p><dl><dt><span class="term"><code class="code">v.get(i)</code></span></dt><dd><p>Read element <code class="varname">i</code>.</p></dd><dt><span class="term"><code class="code">v(i)</code></span></dt><dd><p>Same using a more <span class="emphasis"><em>natural</em></span>
+                        syntax.</p></dd><dt><span class="term"><code class="code">v.get(d)</code>, </span><span class="term"><code class="code">v(d)</code></span></dt><dd><p>Here <code class="varname">d</code> is a domain - see
+                        <a class="xref" href="chap-ref-api.html#domain" title="1.1.1. Domains">Section 1.1.1, &#8220;Domains&#8221;</a>. The result of this kind of
+                        expression is a subview of <code class="varname">v</code>
+                        accessing the elements selected by the domain.</p></dd></dl></div></li><li style="list-style-type: circle"><div class="variablelist"><p class="title"><b>Write Values</b></p><dl><dt><span class="term"><code class="code">v.put(i,t);</code></span></dt><dd><p>Read or write element
+                        <code class="varname">i</code>.</p></dd><dt><span class="term"><code class="code">v(i) = t;</code></span></dt><dd><p>Same using a more <span class="emphasis"><em>natural</em></span>
+                        syntax.</p></dd><dt><span class="term"><code class="code">v.put(d,sv);</code>, </span><span class="term"><code class="code">v(d) = sv;</code></span></dt><dd><p><code class="varname">d</code> is a domain and
+                        <code class="varname">sv</code> is a subview.</p></dd></dl></div><p>If you need more efficient access, Sourcery VSIPL++ provides
+                methods to manipulate directly the storage block of a view.
+                See <a class="xref" href="blocks.html#user-storage" title="1.2.1.2. User Storage">Section 1.2.1.2, &#8220;User Storage&#8221;</a>.</p></li></ul></div></li><li style="list-style-type: disc"><p>Element-Wise Operations - see <a class="xref" href="chap-ref-api.html#elementwise" title="1.1.2.1. Elementwise Operations">Section 1.1.2.1, &#8220;Elementwise Operations&#8221;</a>
+          </p><div class="itemizedlist"><ul type="opencircle"><li style="list-style-type: circle"><p>Element-wise operations on one or more views</p></li><li style="list-style-type: circle"><p>Element-wise operations on views and scalars</p></li></ul></div></li><li style="list-style-type: disc"><p>Overloaded Operators: &#8220;+&#8221;, &#8220;*&#8221;, ...</p><p>Sourcery VSIPL++ overloads the C++ built-in operators. For example,
+          <code class="code">v1+v2</code> produces a view of the same size and shape as
+          <code class="varname">v1</code> and <code class="varname">v2</code> filled with the
+          element-wise addition of the two views. It is equivalent to
+          <code class="code">Add(v1,v2)</code>.</p></li><li style="list-style-type: disc"><p>Reduction Operations</p><p>A reduction operates on the values in a view and produces a
+          scalar result. For example, <code class="code">sumval(v)</code> adds together all
+          the elements of <code class="varname">v</code> and returns the sum. Some
+          reductions also return, via a reference parameter, the index of the
+          scalar result.</p><pre class="programlisting">Index&lt;1&gt; max_idx;
+max = maxval(v, max_idx);</pre><p>The variable <code class="varname">max_idx</code> contains the index in
+          <code class="varname">v</code> of the maximum value.</p></li></ul></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="domain"></a>1.1.1. Domains</h3></div></div></div><p>A domain represents a logical set of indices. Constructing a
+      one-dimensional domain requires a start index, a stride, and a length.
+      For convenience an additional constructor is provided that only takes a
+      length argument, setting the starting index to 0 and the stride to
+      1.</p><pre class="programlisting">// [0...9]
+vsip::Domain&lt;1&gt; all(10);
+
+// [0, 2, 4, 6, 8]
+vsip::Domain&lt;1&gt; pair(0, 2, 5);
+
+// [1, 3, 5, 7, 9]
+vsip::Domain&lt;1&gt; impair(1, 2, 5);
+</pre><p>Two- and three-dimensional domains are composed out of
+      one-dimensional ones.</p><pre class="programlisting">// [(0,0), (0,2), (0,4),...,(1,0),...]
+vsip::Domain&lt;2&gt; dom(Domain&lt;1&gt;(10), Domain&lt;1&gt;(0, 2, 5));
+</pre><p>Views provide convenient access to subviews in terms of
+      subdomains. For example, to assign new values to every second element of
+      a vector, simply write:</p><pre class="programlisting">// assign 1.f to all elements in [0, 2, 4, 6, 8]
+vector1(pair) = 1.f;
+</pre><p>All complex views provide real and imaginary subviews:</p><pre class="programlisting">// a function manipulating a float vector in-place
+void filter(Vector&lt;float&gt;);
+
+// create a complex vector
+Vector&lt;complex&gt; vector(10);
+
+// filter the real part of the vector
+filter(vector.real());
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id275535"></a>1.1.2. View Operations</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="elementwise"></a>1.1.2.1. Elementwise Operations</h4></div></div></div><p>Sourcery VSIPL++ provides elementwise functions and operations that
+        are defined in terms of their scalar counterpart.</p><pre class="programlisting">Vector&lt;float&gt; vector1(10, 1.f);
+
+Vector&lt;complex&lt;float&gt; &gt; vector2(10, complex&lt;float&gt;(2.f, 1.f));
+
+// apply operator+ elementwise
+Vector&lt;complex&lt;float&gt; &gt; sum = vector1 + vector2;
+
+// apply conj(complex&lt;float&gt;) elementwise
+Vector&lt;complex&lt;float&gt; &gt; result = conj(sum);
+</pre><p>For binary and ternary functions Sourcery VSIPL++ provides overloaded
+        versions with mixed view / scalar parameter types:</p><pre class="programlisting">// delegates to operator*=(complex&lt;float&gt;, complex&lt;float&gt;)
+result *= complex&lt;float&gt;(2.f, 0.f);
+
+// error: no operator*=(complex&lt;float&gt;, complex&lt;double&gt;)
+result *= complex&lt;double&gt;(5., 0.);</pre><p>Element-wise expressions allow us to express collective
+        assignment:</p><pre class="programlisting">LHS = RHS;</pre><p>is equivalent
+        to</p><pre class="programlisting">(forall i) LHS(i) = RHS(i);</pre><p>But what
+        happens when LHS and RHS overlap?</p><pre class="programlisting">A = A + B;</pre><p>Ideally,
+        VSIPL++ would evaluate RHS into temporary, then update LHS - but this
+        would impose a performance overhead! If overlap is order-independent
+        (i.e. LHS(i) only affects RHS(i)), then the answer is defined (that
+        is, correct). If overlap is order-dependent, then the answer is
+        undefined. If you have order-dependent overlap, you should introduce a
+        temporary</p><pre class="programlisting">T = A(Domain&lt;1&gt;(0, 1, 10)) + B; A(Domain&lt;1&gt;(1, 1, 10)) = T;</pre><p>These element-wise functions are available:</p><div class="variablelist"><dl><dt><span class="term">arithmetic</span></dt><dd><p><a href="../reference-manual/./ch04s02.html#functionref_neg" class="olink"><code class="function">neg</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_add" class="olink"><code class="function">add</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_sub" class="olink"><code class="function">sub</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_mul" class="olink"><code class="function">mul</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_div" class="olink"><code class="function">div</code></a>,
+              ...</p></dd><dt><span class="term">trigonometry</span></dt><dd><p><a href="../reference-manual/./ch04s02.html#functionref_cos" class="olink"><code class="function">cos</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_sin" class="olink"><code class="function">sin</code></a>,
+              ...</p></dd><dt><span class="term">basic math</span></dt><dd><p><a href="../reference-manual/./ch04s02.html#functionref_exp" class="olink"><code class="function">exp</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_log" class="olink"><code class="function">log</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_pow" class="olink"><code class="function">pow</code></a>,
+              ...</p></dd><dt><span class="term">comparison</span></dt><dd><p><a href="../reference-manual/./ch04s02.html#functionref_gt" class="olink"><code class="function">gt</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_eq" class="olink"><code class="function">eq</code></a>,
+              ...</p></dd><dt><span class="term">logical</span></dt><dd><p><a href="../reference-manual/./ch04s02.html#functionref_lor" class="olink"><code class="function">lor</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_land" class="olink"><code class="function">land</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_lnot" class="olink"><code class="function">lnot</code></a>,
+              ...</p></dd><dt><span class="term">rounding</span></dt><dd><p><a href="../reference-manual/./ch04s02.html#functionref_floor" class="olink"><code class="function">floor</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_ceil" class="olink"><code class="function">ceil</code></a>,
+              ...</p></dd><dt><span class="term">complex</span></dt><dd><p><a href="../reference-manual/./ch04s02.html#functionref_real" class="olink"><code class="function">real</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_imag" class="olink"><code class="function">imag</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_mag" class="olink"><code class="function">mag</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_magsq" class="olink"><code class="function">magsq</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_conj" class="olink"><code class="function">conj</code></a>,
+              ...</p></dd></dl></div><p>These scalar-view element-wise functions are available:</p><div class="variablelist"><dl><dt><span class="term">arithmetic</span></dt><dd><p><a href="../reference-manual/./ch04s02.html#functionref_add" class="olink"><code class="function">add</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_sub" class="olink"><code class="function">sub</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_mul" class="olink"><code class="function">mul</code></a>,
+              <a href="../reference-manual/./ch04s02.html#functionref_div" class="olink"><code class="function">div</code></a>,
+              ...</p></dd><dt><span class="term">fused</span></dt><dd><p>multiply-add (<a href="../reference-manual/./ch04s02.html#functionref_am" class="olink"><code class="function">am</code></a>),
+              add-multiply (<a href="../reference-manual/./ch04s02.html#functionref_ma" class="olink"><code class="function">ma</code></a>),
+              multiply-subtract (<a href="../reference-manual/./ch04s02.html#functionref_msb" class="olink"><code class="function">msb</code></a>),
+              subtract-multiply (<a href="../reference-manual/./ch04s02.html#functionref_sbm" class="olink"><code class="function">sbm</code></a>).</p></dd><dt><span class="term">exponential average</span></dt><dd><p><a href="../reference-manual/./ch04s02.html#functionref_expoavg" class="olink"><code class="function">expoavg</code></a></p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276083"></a>1.1.2.2. Function Overloading</h4></div></div></div><p>Many Sourcery VSIPL++ functions are overloaded. For example,
+        <code class="function">add()</code> is overloaded to work for for different
+        view types, of different value types. Overloading can be powerful. If
+        you change your algorithm data type from <code class="type">float</code> to
+        <code class="type">double</code>,&#8232; few (if any) function names will change. If you
+        add a vector of <code class="type">float</code>s to a vector of
+        <code class="type">complex</code>, the <span class="emphasis"><em>right thing</em></span>
+        happens.</p><p>There are some limits on function overloading. You can't add a
+        vector and a matrix together,&#8232; even if they're the same size.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276127"></a>1.1.2.3. Promotion Rules</h4></div></div></div><p>When combining values of different types,</p><div class="itemizedlist"><ul type="disc"><li><p><code class="type">float</code> * <code class="type">int</code> = ???</p></li><li><p><code class="type">float</code> + <code class="type">double</code> = ???</p></li><li><p><code class="type">float</code> &#8211; <code class="type">complex&lt;float&gt;</code> =
+            ???</p></li></ul></div><p>what type should the result be? Sourcery VSIPL++ determines the result
+        type through promotion rules:</p><pre class="programlisting">Promotion&lt;float, int&gt;::type == float;
+Promotion&lt;float, double&gt;::type == double;
+Promotion&lt;float, complex&lt;float&gt;&gt;::type == complex&lt;float&gt;;
+Promotion&lt;double, complex&lt;float&gt;&gt;::type == complex&lt;double&gt;;</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276189"></a>1.1.2.4. Operator Overloading</h4></div></div></div><p>Sourcery VSIPL++ overloads arithmetic operators. Using arithmetic
+        operators</p><pre class="programlisting">A = alpha*X + Y;</pre><p>is more convenient than</p><pre class="programlisting">A = add(mul(alpha, X), Y);</pre><p>Operators are element-wise functions. <code class="code">A*B</code>
+        corresponds to element-wise multiplication, not vector dot-product or
+        matrix product. Terminology:</p><div class="variablelist"><dl><dt><span class="term">Multiply</span></dt><dd><p>treat views as collection of elements</p></dd><dt><span class="term">Product</span></dt><dd><p>treat views as linear algebraic objects</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276250"></a>1.1.2.5. Reduction Functions</h4></div></div></div><p>Sourcery VSIPL++ has two flavors of reductions:</p><div class="variablelist"><dl><dt><span class="term">Reductions that return a result only</span></dt><dd><div class="variablelist"><dl><dt><span class="term">Logic</span></dt><dd><p>alltrue, anytrue</p></dd><dt><span class="term">Mean</span></dt><dd><p>meanval, meansqval</p></dd><dt><span class="term">Summation</span></dt><dd><p>sumval, sumsqval</p></dd></dl></div></dd><dt><span class="term">Reductions that return a result and an element index</span></dt><dd><div class="variablelist"><dl><dt><span class="term">Maximum</span></dt><dd><p>maxval, maxmgsqval, maxmgval</p></dd><dt><span class="term">Minimum</span></dt><dd><p>minval, minmgsqval, minmgval</p></dd></dl></div></dd></dl></div><p></p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id276360"></a>1.1.3. View Semantics</h3></div></div></div><p>What are the semantics behind views? When do views copy data,
+      versus reference the same data? When views are copied via assignment,
+      they have value semantics:</p><pre class="programlisting">A = B;</pre><p>On
+      assignment, values are copied from <code class="varname">B</code> into
+      <code class="varname">A</code>. After assignment, <code class="varname">A</code> and
+      <code class="varname">B</code> are fully distinct. When views are constructed from
+      a view of the same type, &#8232;the constructor has reference
+      semantics:</p><pre class="programlisting">Vector&lt;T&gt; B(10);
+Vector&lt;T&gt; A(B); // A and B are aliased to same underlying data</pre><p>On
+      construction, <code class="varname">A</code> refers to the same data as
+      <code class="varname">B</code>. After construction, changes to
+      <code class="varname">A</code> will affect <code class="varname">B</code> (and visa-versa).
+      When views of are constructed from a view of different type, &#8232;the
+      constructor has value semantics: </p><pre class="programlisting">Vector&lt;T1&gt; B(10);
+Vector&lt;T2&gt; A(B); // A and B are distinct</pre><p>The following statements are equivalent:</p><pre class="programlisting">Vector&lt;float&gt; A(B); Vector&lt;float&gt; A = B;</pre><p>Both
+      result in calling Vector's copy-constructor to construct
+      <code class="varname">A</code>. The following are not equivalent:</p><pre class="programlisting">Vector&lt;float&gt; B(size); // Create Vector B
+Vector&lt;float&gt; A = B;   // A refer's to B's values.</pre><p>And</p><pre class="programlisting">Vector&lt;float&gt; B(size); // Create Vector B
+Vector&lt;float&gt; A(size); // construct A,
+A = B;                 // copy B's values into A</pre><p>Be careful when using '=' in a view declaration.</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276457"></a>1.1.3.1. View Initialization Semantics</h4></div></div></div><p>View construction from the same type has reference
+        semantics.</p><pre class="programlisting">Vector&lt;float&gt; B = ramp(0.f, 1.f, N_elem);</pre><p>View construction from the same type has reference
+        semantics.</p><pre class="programlisting">Vector&lt;float&gt; A(B);  // A refer's to B's block.</pre><p>After construction, changes to A are reflected in B (and visa
+        versa).</p><pre class="programlisting">A.put(2, 3.14f);
+B.get(2) =&gt; returns 3.14f</pre><p>View construction from a different view type has value
+        semantics.</p><pre class="programlisting">Vector&lt;float, BlockType1&gt; B = ramp(0.f, 1.f, N_elem);
+Vector&lt;float, BlockType2&gt; A(B);</pre><p>Why would you want reference semantics?</p><div class="itemizedlist"><ul type="disc"><li><p>For creating subviews of existing data, row/column vector
+            views of a matrix</p></li><li><p>For passing data to functions, without copying data
+            unnecessarily.</p></li></ul></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276522"></a>1.1.3.2. Subviews</h4></div></div></div><p>Subviews allow you to create different views of data. For
+        example</p><div class="itemizedlist"><ul type="disc"><li><p>Creating row and column vector subviews of a matrix.</p></li><li><p>Creating a matrix subview of an existing matrix.</p></li><li><p>Pulling a vector or matrix out of a tensor.</p></li></ul></div><p>Subviews are <span class="emphasis"><em>first-class</em></span> views. A
+        row-vector from a matrix is a <code class="type">Vector</code>. &#8232;It can be used
+        like any other vector.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276568"></a>1.1.3.3. Matrix Subviews</h4></div></div></div><p>Several types of subviews are possible. Here are some vector
+        subviews of a matrix:</p><div class="variablelist"><dl><dt><span class="term">Row-vector</span></dt><dd><p><code class="code">matrix.row(index_type col);</code></p></dd><dt><span class="term">Column-vector</span></dt><dd><p><code class="code">matrix.col(index_type col);</code></p></dd><dt><span class="term">Diagonal-vector</span></dt><dd><p><code class="code">matrix.diag(index_difference_t);</code></p></dd></dl></div><p>And some matrix subviews of a matrix:</p><div class="variablelist"><dl><dt><span class="term">Sub-matrix</span></dt><dd><p><code class="code">matrix(Domain&lt;2&gt;(...));</code></p></dd><dt><span class="term">Read-only</span></dt><dd><p><code class="code">matrix.get(Domain&lt;2&gt;(...));</code></p></dd><dt><span class="term">Transpose</span></dt><dd><p><code class="code">matrix.transpose();</code></p></dd></dl></div><p>There are also real-part and imaginary-part subviews if data is
+        complex.</p><p>Here is another way to create a row subview:</p><pre class="programlisting">Matrix&lt;float&gt; M(4, 5);
+Matrix&lt;float&gt;::row_type subview(M.row(1));</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276690"></a>1.1.3.4. Subview Variables</h4></div></div></div><p><code class="code">M.row(1)</code> accesses a row-vector of matrix
+        <code class="varname">M</code>. You use it directly as a
+        <code class="type">Vector</code>:</p><pre class="programlisting">sum = sumval(M.row(1));</pre><p>However, it can be useful to hold a subview in a
+        variable:</p><pre class="programlisting">Vector&lt;float&gt; row = M.row(1);  // (line 1)
+sum = sumval(row);</pre><p>As written, this works, but it is probably not what you want.
+        Recall that view construction has value semantics if value types are
+        the same and block types are the same. In (line 1) above, the value
+        types are the same, but the Vector's default block is a dense, whereas
+        the subview's block is implementation-defined. How do you know what
+        block type to give the row?</p><p>To help you define a vector with the proper block type,
+        <code class="type">Matrix</code> defines a subview <code class="literal">typedef</code> for
+        <code class="function">row()</code> called <code class="type">row_type</code>. You can use
+        it like so:</p><pre class="programlisting">Matrix&lt;float&gt;::row_type row = M.row(1);</pre><p>This guarantees that vector <code class="varname">row</code> will have the
+        proper value type and block type so that references semantics are
+        used. As you will see, <code class="type">Matrix</code> defines other subview types
+        as well: <code class="type">col_type</code>, <code class="type">subview_type</code>,
+        <code class="type">diag_type</code>, and so on.</p><pre class="programlisting">Matrix&lt;float&gt;::col_type  col = M.col(1);  // Column vector
+Matrix&lt;float&gt;::diag_type dia = M.diag(0); // Diagonal vector</pre><p>You may also take a matrix subview of a matrix:</p><pre class="programlisting">Matrix&lt;float&gt; M(4, 5);
+Domain&lt;2&gt; dom(Domain&lt;1&gt;(1, 1, 2), Domain&lt;1&gt;(0, 2, 3));
+Matrix&lt;float&gt;::subview_type subview(M(dom));  // 2 rows x 3 cols</pre><p>It is possible to create a matrix transpose subview of a
+        matrix:</p><pre class="programlisting">Matrix&lt;float&gt; M(rows, cols);
+Matrix&lt;float&gt;::transpose_type Mtrans = M.transpose();</pre><p>Now, for all r and c: (where 0 &lt; r &lt; rows and 0 &lt; c
+        &lt; cols)</p><pre class="programlisting">M.get(r, c) == Mtrans.get(c, r);</pre><p><code class="varname">Mtrans</code> is a subview, no data is moved.
+        Moreover, changes to <code class="varname">Mtrans</code> affect
+        <code class="varname">M</code>, and visa-versa. Assignment causes data to be
+        moved:</p><pre class="programlisting">Matrix&lt;float&gt; Mtrans_copy = M.transpose();</pre><p><code class="varname">Mtrans_copy</code> is a transpose of
+        <code class="varname">M</code>, but it is also a separate copy. The
+        <code class="function">trans()</code> function is synonymous:</p><pre class="programlisting">Matrix&lt;float&gt; Mtrans_copy = trans(M);</pre><p>For Tensors, subviews are created by fixing 1 or more
+        dimensions. Vector subviews:</p><pre class="programlisting">tensor(index_type, index_type, Domain&lt;1&gt;);
+tensor(index_type, Domain&lt;1&gt;, index_type);
+tensor(Domain&lt;1&gt;, index_type, index_type);</pre><p>Matrix subviews:</p><pre class="programlisting">tensor(index_type, Domain&lt;1&gt;, Domain&lt;1&gt;);
+tensor(Domain&lt;1&gt;, index_type, Domain&lt;1&gt;);
+tensor(Domain&lt;1&gt;, Domain&lt;1&gt;, index_type);</pre><p>Tensor subviews:</p><pre class="programlisting">tensor(Domain&lt;3&gt;);</pre><p>You can also take a subview of a Vector:
+        <code class="code">vector(Domain&lt;1&gt;)</code>. For example, given a
+        vector</p><pre class="programlisting">Vector&lt;float&gt; vec(N_elem);</pre><p>you can create a subview of the first 10
+        elements:</p><pre class="programlisting">vec(Domain&lt;1&gt;(0, 1, 10));</pre><p>and you can create a subview of every other
+        element:</p><pre class="programlisting">vec(Domain&lt;1&gt;(0, 2, N_elem/2));</pre><p>For views of complex data, you take real and imaginary subviews.
+        To extract the real subview, use <code class="code">view.real()</code>; to extract
+        an imaginary subview, use <code class="code">view.imag()</code>. Both have the same
+        dimensions as the original view. Examples:</p><pre class="programlisting">Vector&lt;complex&lt;float&gt; &gt; view(...);
+Vector&lt;complex&lt;float&gt; &gt;::realview_type	real_view = view.real();
+Vector&lt;complex&lt;float&gt; &gt;::imagview_type	imag_view = view.imag();</pre></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id276938"></a>1.1.4. Views and Functions</h3></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276944"></a>1.1.4.1. Passing view parameters</h4></div></div></div><p>Passing views as parameters should be done by reference. You
+        don't want to be copying data! It should be possible to declare a
+        parameter constant. Consider this example function:</p><pre class="programlisting">float mysum1(Vector&lt;float&gt; vec)
+{
+  float sum = 0.f
+  for (index_type i=0; i&lt;vec.size(); ++i)
+    sum += vec(i);
+  return sum;
+}</pre><p>Function arguments have initialization semantics. Recall from
+        the discussion of view semantics <a class="xref" href="chap-ref-api.html#view-semantics">Section 1.1.3, &#8220;View Semantics&#8221;</a>
+        that initialization has reference semantics if both views have the
+        same value type <span class="bold"><strong>and</strong></span> the same block
+        type. There are many situations in which a view's block type is not
+        what you might expect. Suppose you call <code class="function">mysum</code>
+        with a row vector subview?</p><pre class="programlisting">mysum(mat.row(0));</pre><p>The argument is a vector but its block is unspecified, and it's
+        safe to assume it is not <code class="type">Dense</code>. The initialization of
+        <code class="varname">vec</code> is equivalent to</p><pre class="programlisting">Vector&lt;float, Dense&lt;1, T&gt;&gt; arg(mat.row(0));</pre><p>This will copy data. Is there a way you can make sure that your
+        parameter always has the same block type as the argument? Yes. Make
+        the block a template parameter.</p><pre class="programlisting">template &lt;typename Block&gt;
+float mysum1(Vector&lt;float, Block&gt; vec)
+{
+  float sum = 0.f
+  for (index_type i=0; i&lt;vec.size(); ++i)
+    sum += vec(i);
+  return sum;
+}</pre><p>Template parameter deduction determines what <code class="type">Block</code>
+        is. This results in the initialization</p><pre class="programlisting">Vector&lt;float, <em class="replaceable"><code>[correct block]</code></em>&gt; vec(mat.row(0));</pre><p>where <em class="replaceable"><code>[correct block]</code></em> is the correct
+        block. Thus, here the data is always passed by reference.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id277041"></a>1.1.4.2. Returning view results</h4></div></div></div><p>How do you return a view from a function? Simply declare it to
+        return a view value:</p><pre class="programlisting">template &lt;typename Block&gt;
+Vector&lt;float&gt; my_sv_add(float arg1, Vector&lt;float, Block&gt; arg2)
+{
+  Vector&lt;float&gt; res(arg2.size());
+  for (index_type i=0; i&lt;arg2.size(); ++i)
+    res.put(i, arg1 + arg2.get(i));
+  return res;
+}</pre><p>You can also return a view result by side-effect. Modify the
+        values in a view passed as a parameter. However, see the next
+        section.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id277065"></a>1.1.4.3. <code class="literal">const</code> view parameters</h4></div></div></div><p>You can modify values in a view parameter. Since values are by
+        reference, this has a side-effect - the caller sees changes too. You
+        can use this to return values from a function. This is how
+        <code class="literal">by_reference</code> functions work. But sometimes, you do
+        not intend to modify the parameter. It would be nice to declare the
+        parameter to be <code class="literal">const</code>. It finds bugs in your
+        function at compile-time, and provides a guarantee to the caller. How
+        do you declare that a <code class="type">View</code> parameter is
+        <code class="literal">const</code>? I.e. that the function will not change its
+        values? Normally you would use the <code class="literal">const</code>
+        keyword:</p><pre class="programlisting">mysum(Vector&lt;float, Block&gt; const vec)</pre><p>This works partially. You can't modify the view itself, but you
+        <span class="bold"><strong>can</strong></span> modify the data it references.
+        This makes it is fairly easy to remove the <code class="literal">const</code>,
+        by initializing a non-<code class="literal">const</code> view from
+        it:</p><pre class="programlisting">Vector&lt;float&gt; nonconstvec(vec);</pre><p>This is what happens when you call another function. To address
+        this, Sourcery VSIPL++ has
+        <code class="type">const_<em class="replaceable"><code>Views</code></em></code>. They are similar
+        to regular views, but they cannot change their values and cannot be
+        used to initialize a non-const view.</p><pre class="programlisting">template &lt;typename Block&gt;
+float mysum(<span class="bold"><strong>const_Vector</strong></span>&lt;float, Block&gt; vec)</pre><p>Now it is more difficult for <code class="function">mysum</code> to
+        mistakenly modify <em class="parameter"><code>vec</code></em>.</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id277183"></a>1.1.5. Views as <code class="literal">class</code> members</h3></div></div></div><p>When using views as class members, it is necessary to use the
+      constructor member initialization list:</p><pre class="programlisting">class My_class {
+   // member data
+   Vector&lt;float&gt; data;  // No arguments given
+   &#8230;
+   My_class(length_type N) : data(N) { &#8230; }
+};</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id277207"></a>1.1.6. Vectors</h3></div></div></div><p>Here is the declaration of the <code class="type">Vector</code>
+      template:</p><pre class="programlisting">template &lt;typename T            = VSIP_DEFAULT_VALUE_TYPE,
+          typename Block        = Dense&lt;1, T&gt; &gt;
+class Vector;</pre><p>The first template parameter specifies the value type of the
+      view.</p><pre class="programlisting">Vector&lt;float&gt;                   // vector of floats
+Vector&lt;complex&lt;float&gt; &gt;         // vector of complex</pre><p>The simplest way to define a vector is to specify its
+      length:</p><pre class="programlisting">Vector&lt;T&gt;(length_type len);</pre><p>For example:</p><pre class="programlisting">Vector&lt;float&gt; vec(10);
+// vector has 10 elements (uninitialized)</pre><p>You can also specify a length and an initial value:</p><pre class="programlisting">Vector&lt;T&gt;(length_type len, T val);</pre><p>This initializes each element to &#8220;val&#8221;, for example:</p><pre class="programlisting">Vector&lt;float&gt; vec(10, 2.5f);
+// vector has 10 elements (initialized to 2.5f)</pre><p>What else can you do with a <code class="type">Vector</code>? </p><div class="itemizedlist"><ul type="bullet"><li style="list-style-type: disc"><p>Check its size:</p><pre class="programlisting">size = v.size();  // returns a length_type</pre></li><li style="list-style-type: disc"><p>Get the value stored at an index:</p><pre class="programlisting">cur_value = v.get(idx);  // returns a T</pre></li><li style="list-style-type: disc"><p>Change the value stored at an index:</p><pre class="programlisting">v.put(idx, new_value);</pre></li><li style="list-style-type: disc"><p>Access a value by <span class="emphasis"><em>view(index)</em></span>
+            syntax:</p><pre class="programlisting">cur_value = v(idx); v(idx) = new_value;</pre></li></ul></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id277346"></a>1.1.7. Matrices</h3></div></div></div><p>Matrices provide a number of additional subviews.</p><pre class="programlisting">Matrix&lt;float&gt; matrix(10, 10);
+//...
+
+// return the first column vector
+Matrix&lt;float&gt;::col_type column = matrix.col(0);
+
+// return the first row vector
+Matrix&lt;float&gt;::row_type row = matrix.row(0);
+
+// return the diagonal vector
+Matrix&lt;float&gt;::diag_type diag = matrix.diag();
+
+// return the transpose of the matrix
+Matrix&lt;float&gt;::transpose_type trans = matrix.trans();
+</pre><p>The template declaration is similar to <code class="type">Vector</code>:</p><pre class="programlisting">template &lt;typename T, typename Block&gt;
+  class Matrix;
+// Declare some matrices.
+Matrix&lt;float&gt; m(10, 15);      // 10 row x 15 column matrix
+Matrix&lt;float&gt; m(10, 15, -1f); // initialize data to -1f</pre><p>Matrices have similar operations.</p><pre class="programlisting">Matrix&lt;float&gt; m(n_rows, n_cols);
+n_rows = m.size(0); // number of rows (or column length)
+n_cols = m.size(1); // number of columns (or row length)
+size = m.size();    // total size (n_rows x n_cols)</pre><p>Element accessors take an additional index:</p><div class="itemizedlist"><ul type="disc"><li><p>Get the value stored at an index/element</p><pre class="programlisting">cur_value = m.get(row_idx, col_idx);</pre></li><li><p>Change the value stored at an index/element</p><pre class="programlisting">m.put(row_idx, col_idx, new_value);</pre></li><li><p><span class="emphasis"><em>view(index)</em></span> syntax</p><pre class="programlisting">m(row, col) = m(row-1, col) + delta;</pre></li></ul></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id277439"></a>1.1.8. Tensors</h3></div></div></div><p>Tensors are three-dimensional views. In addition to the types,
+      methods, and operations defined for all view types, they provide
+      additional methods to access specific subviews:</p><pre class="programlisting">// a 5x6x3 cube initialized to 0.f
+Tensor&lt;float&gt; tensor(5, 6, 3, 0.f);
+
+// a subvector
+Vector&lt;float&gt; vector1 = tensor(0, 0, whole_domain);
+</pre><p>The template declaration is similar to <code class="type">Vector</code>:</p><pre class="programlisting">template &lt;typename T, typename Block&gt;
+  class Tensor;
+// Declare some tensors.
+Tensor&lt;float&gt; m(64, 8, 256);    // 64 x 8 x 256 tensor (or cube) 
+Tensor&lt;float&gt; m(2, 2, 2, 3.1f); // initialize data to 3.1f</pre><p>Tensors have similar operations.</p><pre class="programlisting">Tensor&lt;float&gt; m(d1, d2, d3);
+n_d1 = m.size(0); // length of dimension 0
+n_d2 = m.size(1); // length of dimension 1
+n_d3 = m.size(2); // length of dimension 2
+size = m.size();  // total size (n_d1 x n_d2 x n_d3)</pre><p>Element accessors take a third index:</p><div class="itemizedlist"><ul type="disc"><li><p>Get the value stored at an index/element</p><pre class="programlisting">cur_value = m.get(d1_idx, d2_idx, d3_idx);</pre></li><li><p>Change the value stored at an index/element</p><pre class="programlisting">m.put(d1_idx, d2_idx, d3_idx, new_value);</pre></li><li><p><span class="emphasis"><em>view(index)</em></span> syntax</p><pre class="programlisting">m(d1_idx, d2_idx, d3_idx) = m(d1_idx-1, d2_idx, d3_idx) + delta;</pre></li></ul></div><p>The symbolic constant <code class="constant">whole_domain</code> is used to
+      indicate that the whole domain the target view holds in a particular
+      dimension should be used. In the example above that not only provides a
+      more compact syntax compared to explicitly writing Domain&lt;1&gt;(6)
+      but it also enables better optimization opportunities.</p><pre class="programlisting">// a submatrix
+Matrix&lt;float&gt; plane = tensor(whole_domain, 0, whole_domain);
+
+Tensor&lt;float&gt; upper_half = tensor(whole_domain, Domain&lt;1&gt;(3), whole_domain);
+</pre></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pt01.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="pt01.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="blocks.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Part I. Working with Sourcery VSIPL++ </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 1.2. Blocks</td></tr></table></div></body></html>

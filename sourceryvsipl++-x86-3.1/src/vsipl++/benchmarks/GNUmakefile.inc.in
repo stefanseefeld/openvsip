@@ -1,0 +1,162 @@
+######################################################### -*-Makefile-*-
+#
+# File:   GNUmakefile.inc
+# Author: Mark Mitchell 
+# Date:   2005-01-20
+#
+# Contents: Makefile fragment for benchmarks.
+#
+########################################################################
+
+########################################################################
+# Variables
+########################################################################
+
+ifdef INTEL_WIN
+benchmarks_qmtest_context := context.win
+else
+benchmarks_qmtest_context := context
+endif
+
+benchmarks_qmtest_harness := benchmarks/QMTest/benchmark.py \
+                               benchmarks/QMTest/database.py \
+                               benchmarks/QMTest/classes.qmc \
+                               benchmarks/$(benchmarks_qmtest_context)
+
+# Specify the benchmark(s) to run
+benchmarks_ids :=
+# Provide an id to annotate the test run (for later report generation)
+benchmarks_run_id :=
+benchmarks_output :=results$(suffix).qmr
+
+# Annotate the test run, if benchmarks_run_id is given.
+ifdef benchmarks_run_id
+benchmarks_run_ident :=-a run_id=$(benchmarks_run_id)
+endif
+
+benchmarks_CXXINCLUDES := -I$(srcdir)/src -I$(srcdir)/tests	\
+			  -I$(srcdir)/benchmarks
+benchmarks_CXXFLAGS := $(benchmarks_CXXINCLUDES)
+benchmarks_lapack_CXXFLAGS := $(benchmarks_CXXINCLUDES)
+benchmarks_ipp_CXXFLAGS := $(benchmarks_CXXINCLUDES)
+benchmarks_sal_CXXFLAGS := $(benchmarks_CXXINCLUDES)
+benchmarks_fftw3_CXXFLAGS := $(benchmarks_CXXINCLUDES)
+benchmarks_mpi_CXXFLAGS := $(benchmarks_CXXINCLUDES)
+benchmarks_cell_CXXFLAGS := $(benchmarks_CXXINCLUDES)
+benchmarks_cuda_CXXFLAGS := $(benchmarks_CXXINCLUDES)
+
+benchmarks_cxx_sources := $(wildcard $(srcdir)/benchmarks/*.cpp)
+benchmarks_cxx_headers := $(wildcard $(srcdir)/benchmarks/*.hpp)
+benchmarks_cxx_sources += $(wildcard $(srcdir)/benchmarks/expr/*.cpp)
+benchmarks_cxx_headers += $(wildcard $(srcdir)/benchmarks/expr/*.hpp)
+ifdef VSIP_IMPL_HAVE_LAPACK
+benchmarks_cxx_sources += $(wildcard $(srcdir)/benchmarks/lapack/*.cpp)
+benchmarks_cxx_headers += $(wildcard $(srcdir)/benchmarks/lapack/*.hpp)
+endif
+ifdef VSIP_IMPL_HAVE_IPP
+benchmarks_cxx_sources += $(wildcard $(srcdir)/benchmarks/ipp/*.cpp) 
+benchmarks_cxx_headers += $(wildcard $(srcdir)/benchmarks/ipp/*.hpp) 
+endif
+ifdef VSIP_IMPL_HAVE_SAL
+benchmarks_cxx_sources += $(wildcard $(srcdir)/benchmarks/sal/*.cpp) 
+benchmarks_cxx_headers += $(wildcard $(srcdir)/benchmarks/sal/*.hpp) 
+endif
+ifdef VSIP_IMPL_FFTW3
+benchmarks_cxx_sources += $(wildcard $(srcdir)/benchmarks/fftw3/*.cpp) 
+benchmarks_cxx_headers += $(wildcard $(srcdir)/benchmarks/fftw3/*.hpp) 
+endif
+ifdef VSIP_IMPL_HAVE_MPI
+benchmarks_cxx_sources += $(wildcard $(srcdir)/benchmarks/mpi/*.cpp) 
+benchmarks_cxx_headers += $(wildcard $(srcdir)/benchmarks/mpi/*.hpp) 
+endif
+ifdef VSIP_IMPL_HAVE_CBE_SDK
+benchmarks_cxx_sources += $(wildcard $(srcdir)/benchmarks/cell/*.cpp) 
+benchmarks_cxx_headers += $(wildcard $(srcdir)/benchmarks/cell/*.hpp) 
+endif
+ifdef VSIP_IMPL_HAVE_CUDA
+benchmarks_cxx_sources += $(wildcard $(srcdir)/benchmarks/cuda/*.cpp) 
+benchmarks_cxx_headers += $(wildcard $(srcdir)/benchmarks/cuda/*.hpp) 
+endif
+
+benchmarks_obj := $(patsubst $(srcdir)/%.cpp, %.$(OBJEXT), $(benchmarks_cxx_sources))
+benchmarks_exe := $(patsubst $(srcdir)/%.cpp, %$(EXEEXT), $(benchmarks_cxx_sources))
+benchmarks_targets := $(filter-out benchmarks/main$(EXEEXT), $(benchmarks_exe)) 
+
+cxx_sources += $(benchmarks_cxx_sources)
+
+benchmarks_install_sources := $(benchmarks_cxx_sources) $(benchmarks_cxx_headers)
+
+benchmarks_install_targets := $(patsubst $(srcdir)/%, %, $(benchmarks_install_sources))
+
+benchmarks_static_targets := $(patsubst %$(EXEEXT), \
+                               %.static$(EXEEXT), \
+                               $(benchmarks_targets))
+
+benchmarks_prof_obj := $(patsubst $(srcdir)/%.cpp, %.prof.$(OBJEXT), $(benchmarks_cxx_sources))
+
+benchmarks_prof_targets := $(patsubst %$(EXEEXT), \
+                               %.prof$(EXEEXT), \
+                               $(benchmarks_targets))
+
+
+########################################################################
+# Rules
+########################################################################
+
+benchmarks:: $(benchmarks_targets)
+
+run-benchmarks:: $(benchmarks_qmtest_harness) $(benchmarks_targets)
+	cd benchmarks; $(QMTEST) run -o $(benchmarks_output) \
+          -C $(benchmarks_qmtest_context) \
+          $(benchmarks_run_ident) $(benchmarks_ids); \
+          result=$$?; test $$tmp=0 || $$tmp=2
+
+# Object files will be deleted by the parent clean rule.
+clean::
+	rm -f $(benchmarks_targets) $(benchmarks_static_targets)
+
+# Install benchmark source code and executables
+install-benchmarks:: benchmarks
+	$(INSTALL) -d $(DESTDIR)$(pkgdatadir)/benchmarks
+	$(INSTALL) -d $(DESTDIR)$(pkgdatadir)/benchmarks/expr
+	$(INSTALL) -d $(DESTDIR)$(pkgdatadir)/benchmarks/lapack
+	$(INSTALL) -d $(DESTDIR)$(pkgdatadir)/benchmarks/ipp
+	$(INSTALL) -d $(DESTDIR)$(pkgdatadir)/benchmarks/sal
+	$(INSTALL) -d $(DESTDIR)$(pkgdatadir)/benchmarks/fftw3
+	$(INSTALL) -d $(DESTDIR)$(pkgdatadir)/benchmarks/mpi
+	$(INSTALL) -d $(DESTDIR)$(pkgdatadir)/benchmarks/cell
+	$(INSTALL) -d $(DESTDIR)$(pkgdatadir)/benchmarks/cuda
+	$(INSTALL_DATA) benchmarks/makefile.standalone \
+	  $(DESTDIR)$(pkgdatadir)/benchmarks/Makefile
+	for sourcefile in $(benchmarks_install_targets); do \
+          $(INSTALL_DATA) $(srcdir)/$$sourcefile $(DESTDIR)$(pkgdatadir)/`dirname $$sourcefile`/; \
+	done
+	$(INSTALL) -d $(DESTDIR)$(variant_bindir)/benchmarks
+	$(INSTALL) -d $(DESTDIR)$(variant_bindir)/benchmarks/expr
+	$(INSTALL) -d $(DESTDIR)$(variant_bindir)/benchmarks/lapack
+	$(INSTALL) -d $(DESTDIR)$(variant_bindir)/benchmarks/ipp
+	$(INSTALL) -d $(DESTDIR)$(variant_bindir)/benchmarks/sal
+	$(INSTALL) -d $(DESTDIR)$(variant_bindir)/benchmarks/fftw3
+	$(INSTALL) -d $(DESTDIR)$(variant_bindir)/benchmarks/mpi
+	$(INSTALL) -d $(DESTDIR)$(variant_bindir)/benchmarks/cell
+	$(INSTALL) -d $(DESTDIR)$(variant_bindir)/benchmarks/cuda
+	for binfile in $(benchmarks_targets); do \
+	  $(INSTALL) $$binfile $(DESTDIR)$(variant_bindir)/`dirname $$binfile`/; \
+	done
+
+$(benchmarks_targets): %$(EXEEXT) : %.$(OBJEXT) benchmarks/main.$(OBJEXT) $(lib_svpp)
+	$(link_benchmark)
+
+$(benchmarks_static_targets): %.static$(EXEEXT) : %.$(OBJEXT) benchmarks/main.$(OBJEXT) $(libs)
+	$(CXX) -static $(LDFLAGS) -o $@ $^ -Llib -lsvpp $(LIBS) || rm -f $@
+
+$(benchmarks_prof_obj): %.prof.$(OBJEXT): %.cpp
+	$(CXX) -c $(CXXFLAGS) $(call dir_var,$(dir $<),CXXFLAGS) -DVSIP_PROFILE_MASK=0x10700 -o $@ $<
+
+$(benchmarks_prof_targets): %.prof$(EXEEXT) : %.prof.$(OBJEXT) benchmarks/main.$(OBJEXT) $(libs)
+	$(link_app)
+
+ifneq '$(srcdir)' '.'
+benchmarks/QMTest/%: $(srcdir)/benchmarks/QMTest/%
+	cp $< $@
+endif

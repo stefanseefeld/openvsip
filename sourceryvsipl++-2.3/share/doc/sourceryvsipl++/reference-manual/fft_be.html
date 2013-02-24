@@ -1,0 +1,186 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.7. FFT backend API</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="extensions.html" title="Chapter 6. Extension Reference"><link rel="prev" href="expr.html" title="6.6. Expression block types"><link rel="next" href="diagnostics.html" title="6.8. Diagnostics functions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">6.7. FFT backend API</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="expr.html">Prev</a> </td><th width="60%" align="center">Chapter 6. Extension Reference</th><td width="20%" align="right"> <a accesskey="n" href="diagnostics.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="fft_be"></a>6.7. FFT backend API</h2></div></div></div><p>Unless otherwise noted, all types described in this section live in
+ the <code class="code">vsip_csl::fft</code> namespace.</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="fft_backend"></a>6.7.1. Fft_backend class template</h3></div></div></div><a class="indexterm" name="id337993"></a><p><b>Description. </b></p><pre class="synopsis">template &lt;dimension_type D, typename I, typename O, int S&gt; 
+class Fft_backend;</pre><p><b>Template parameters. </b></p><div class="variablelist"><dl><dt><span class="term">D</span></dt><dd><p>Dimensionality of the operation.</p></dd><dt><span class="term">I</span></dt><dd><p>Input value type.</p></dd><dt><span class="term">O</span></dt><dd><p>Output value type.</p></dd><dt><span class="term">S</span></dt><dd><p>Special dimension.</p></dd></dl></div><p>Since the individual class interfaces differ slightly, the following
+specializations are broken out for clarity:</p><p>1-D complex FFT:</p><pre class="synopsis">template &lt;typename T, int S&gt; 
+class Fft_backend&lt;1, complex&lt;T&gt;, complex&lt;T&gt;, S&gt;
+{
+public:
+  virtual bool supports_scale();
+  virtual void query_layout(Rt_layout&lt;1&gt; &amp;inout);
+  virtual void query_layout(Rt_layout&lt;1&gt; &amp;in, Rt_layout&lt;1&gt; &amp;out);
+  virtual bool requires_copy(Rt_layout&lt;1&gt; &amp;);
+  virtual void in_place(std::complex&lt;T&gt; *, stride_type, length_type);
+  virtual void in_place(std::pair&lt;T *, T *&gt;, stride_type, length_type);
+  virtual void out_of_place(std::complex&lt;T&gt; *, stride_type,
+			    std::complex&lt;T&gt; *, stride_type,
+			    length_type);
+  virtual void out_of_place(std::pair&lt;T *, T *&gt;, stride_type,
+			    std::pair&lt;T *, T *&gt;, stride_type,
+			    length_type);
+};</pre><p>1-D real forward FFT:</p><pre class="synopsis">template &lt;typename T&gt; 
+class Fft_backend&lt;1, T, complex&lt;T&gt;, 0&gt;
+{
+public:
+  virtual bool supports_scale();
+  virtual void query_layout(Rt_layout&lt;1&gt; &amp;in, Rt_layout&lt;1&gt; &amp;out);
+  virtual bool requires_copy(Rt_layout&lt;1&gt; &amp;);
+  virtual void out_of_place(T *, stride_type,
+			    std::complex&lt;T&gt; *, stride_type,
+			    length_type);
+  virtual void out_of_place(T *, stride_type,
+			    std::pair&lt;T *, T *&gt;, stride_type,
+			    length_type);
+};</pre><p>1-D real inverse FFT:</p><pre class="synopsis">template &lt;typename T&gt; 
+class Fft_backend&lt;1, complex&lt;T&gt;, T, 0&gt;
+{
+public:
+  virtual bool supports_scale();
+  virtual void query_layout(Rt_layout&lt;1&gt; &amp;in, Rt_layout&lt;1&gt; &amp;out);
+  virtual bool requires_copy(Rt_layout&lt;1&gt; &amp;);
+  virtual void out_of_place(std::complex&lt;T&gt; *, stride_type,
+			    T *, stride_type,
+			    length_type);
+  virtual void out_of_place(std::pair&lt;T *, T *&gt;, stride_type,
+			    T *, stride_type,
+			    length_type);
+};</pre><p>2-D complex FFT:</p><pre class="synopsis">template &lt;typename T, int S&gt; 
+class Fft_backend&lt;2, complex&lt;T&gt;, complex&lt;T&gt;, S&gt;
+{
+public:
+  virtual bool supports_scale();
+  virtual void query_layout(Rt_layout&lt;2&gt; &amp;inout);
+  virtual void query_layout(Rt_layout&lt;2&gt; &amp;in, Rt_layout&lt;2&gt; &amp;out);
+  virtual bool requires_copy(Rt_layout&lt;2&gt; &amp;);
+  virtual void in_place(std::complex&lt;T&gt; *,
+                        stride_type, stride_type,
+                        length_type, length_type);
+  virtual void in_place(std::pair&lt;T *, T *&gt;,
+                        stride_type,
+                        stride_type,
+                        length_type,
+                        length_type);
+  virtual void out_of_place(std::complex&lt;T&gt; *, stride_type, stride_type,
+			    std::complex&lt;T&gt; *, stride_type, stride_type,
+			    length_type, length_type);
+  virtual void out_of_place(std::pair&lt;T *, T *&gt;, stride_type, stride_type,
+			    std::pair&lt;T *, T *&gt;, stride_type, stride_type,
+			    length_type, length_type);
+};</pre><p>2-D real forward FFT:</p><pre class="synopsis">template &lt;typename T, int S&gt; 
+class Fft_backend&lt;2, T, complex&lt;T&gt;, S&gt;
+{
+public:
+  virtual bool supports_scale();
+  virtual void query_layout(Rt_layout&lt;2&gt; &amp;in, Rt_layout&lt;2&gt; &amp;out);
+  virtual bool requires_copy(Rt_layout&lt;2&gt; &amp;);
+  virtual void out_of_place(T *, stride_type, stride_type,
+			    std::complex&lt;T&gt; *, stride_type, stride_type,
+			    length_type, length_type);
+  virtual void out_of_place(T *, stride_type, stride_type,
+			    std::pair&lt;T *, T *&gt;, stride_type, stride_type,
+			    length_type, length_type);
+};</pre><p>2-D real inverse FFT:</p><pre class="synopsis">template &lt;typename T, int S&gt; 
+class Fft_backend&lt;2, complex&lt;T&gt;, T, S&gt;
+{
+public:
+  virtual bool supports_scale();
+  virtual void query_layout(Rt_layout&lt;2&gt; &amp;in, Rt_layout&lt;2&gt; &amp;out);
+  virtual bool requires_copy(Rt_layout&lt;2&gt; &amp;);
+  virtual void out_of_place(std::complex&lt;T&gt; *, stride_type, stride_type,
+			    T *, stride_type, stride_type,
+			    length_type, length_type);
+  virtual void out_of_place(std::pair&lt;T *, T *&gt;, stride_type, stride_type,
+			    T *, stride_type, stride_type,
+			    length_type, length_type);
+};</pre><p>3-D complex FFT:</p><pre class="synopsis">template &lt;typename T, int S&gt; 
+class Fft_backend&lt;3, complex&lt;T&gt;, complex&lt;T&gt;, S&gt;
+{
+public:
+  virtual bool supports_scale();
+  virtual void query_layout(Rt_layout&lt;3&gt; &amp;inout);
+  virtual void query_layout(Rt_layout&lt;3&gt; &amp;in, Rt_layout&lt;3&gt; &amp;out);
+  virtual bool requires_copy(Rt_layout&lt;3&gt; &amp;);
+  virtual void in_place(std::complex&lt;T&gt; *,
+                        stride_type, stride_type, stride_type,
+                        length_type, length_type, length_type);
+  virtual void in_place(std::pair&lt;T *, T *&gt;,
+                        stride_type, stride_type, stride_type,
+                        length_type, length_type, length_type);
+  virtual void out_of_place(std::complex&lt;T&gt; *, stride_type, stride_type, stride_type,
+			    std::complex&lt;T&gt; *, stride_type, stride_type, stride_type,
+			    length_type, length_type, length_type);
+  virtual void out_of_place(std::pair&lt;T *, T *&gt;, stride_type, stride_type, stride_type,
+			    std::pair&lt;T *, T *&gt;, stride_type, stride_type, stride_type,
+			    length_type, length_type, length_type);
+};</pre><p>3-D real forward FFT:</p><pre class="synopsis">template &lt;typename T, int S&gt; 
+class Fft_backend&lt;3, T, complex&lt;T&gt;, S&gt;
+{
+public:
+  virtual bool supports_scale();
+  virtual void query_layout(Rt_layout&lt;3&gt; &amp;in, Rt_layout&lt;3&gt; &amp;out);
+  virtual bool requires_copy(Rt_layout&lt;3&gt; &amp;);
+  virtual void out_of_place(T *, stride_type, stride_type, stride_type,
+			    std::complex&lt;T&gt; *, stride_type, stride_type, stride_type,
+			    length_type, length_type, length_type);
+  virtual void out_of_place(T *, stride_type, stride_type, stride_type,
+			    std::pair&lt;T *, T *&gt;, stride_type, stride_type, stride_type,
+			    length_type, length_type, length_type);
+};</pre><p>3-D real inverse FFT:</p><pre class="synopsis">template &lt;typename T, int S&gt; 
+class Fft_backend&lt;3, complex&lt;T&gt;, T, S&gt;
+{
+public:
+  virtual bool supports_scale();
+  virtual void query_layout(Rt_layout&lt;3&gt; &amp;in, Rt_layout&lt;3&gt; &amp;out);
+  virtual bool requires_copy(Rt_layout&lt;3&gt; &amp;);
+  virtual void out_of_place(std::complex&lt;T&gt; *, stride_type, stride_type, stride_type,
+			    T *, stride_type, stride_type, stride_type,
+			    length_type, length_type, length_type);
+  virtual void out_of_place(std::pair&lt;T *, T *&gt;, stride_type, stride_type, stride_type,
+			    T *, stride_type, stride_type, stride_type,
+			    length_type, length_type, length_type);
+};</pre><p>There are two groups of methods: feature queries, and operation calls. The
+  feature queries report the capabilities of the backend to handle particular data 
+  layouts, while the actual operation calls then provide them.</p><p>Only those operations need to be implemented which the query methods report 
+   as supported. For example, if the <code class="function">query_layout()</code> method 
+   requests input and output data to be provided as interleaved-complex, the split-complex 
+   variant of the operation is never going to be called. Further, if the pack parameter
+   is set to <code class="constant">dda::stride_unit_dense</code>, data will use unit-stride in the major dimension.
+   </p><p><b>Methods. </b></p><div class="variablelist"><dl><dt><span class="term">query_layout(Rt_layout&lt;D&gt; &amp;inout), </span><span class="term">query_layout(Rt_layout&lt;D&gt; &amp;in, Rt_layout&lt;D&gt; &amp;out)</span></dt><dd><p>Report the data layout this FFT backend supports. Two variants
+           are provided, one for in-place, and one for out-of-place calls.</p></dd><dt><span class="term">supports_scale()</span></dt><dd><p>If this FFT backend supports scaling, return true.</p></dd><dt><span class="term">requires_copy()</span></dt><dd><p>Some backends will clobber the input data. If this is the case,
+             return true.</p></dd><dt><span class="term">in_place(...)</span></dt><dd><p>Perform the FFT operation, in place.</p></dd><dt><span class="term">out_of_place(...)</span></dt><dd><p>Perform the FFT operation, out of place.</p></dd></dl></div><p><b>Example. </b></p><pre class="programlisting">class Fft_1024
+  : public fft::Fft_backend&lt;1, complex&lt;float&gt;, complex&lt;float&gt;, fft_fwd&gt;
+{
+public:
+  Fft_1024(Domain&lt;1&gt; const &amp;dom, float scale)
+  {
+    // The constructor for the Fft_backend object sets up the internal
+    // data elements, based on the size of the FFT to be computed and a
+    // scalar scaling factor for the output.
+  }
+
+  void query_layout(dda::Rt_layout&lt;1&gt; &amp;inout)
+  {
+    // data will use unit-stride...
+    inout.pack = dda::stride_unit_dense;
+    // ...and use interleaved-complex layout.
+    inout.complex = dda::cmplx_inter_fmt;
+  }
+
+  void query_layout(dda::Rt_layout&lt;1&gt; &amp;in, dda::Rt_layout&lt;1&gt; &amp;out)
+  {
+    in.pack = out.pack = dda::stride_unit_dense;
+    in.complex = out.complex = dda::cmplx_inter_fmt;
+  }
+
+  void in_place(complex&lt;float&gt; *data, stride_type stride,
+		length_type length)
+  {
+    // Perform in-place complex FFT on 'data'.
+  }
+
+  void out_of_place(complex&lt;float&gt; *data_in, stride_type stride_in,
+		    complex&lt;float&gt; *data_out, stride_type stride_out,
+		    length_type length)
+  {
+    // Perform out-of-place complex FFT.
+  }
+};</pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="expr.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="diagnostics.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">6.6. Expression block types </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 6.8. Diagnostics functions</td></tr></table></div></body></html>

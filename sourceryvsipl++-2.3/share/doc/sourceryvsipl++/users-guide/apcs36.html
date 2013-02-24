@@ -1,0 +1,11 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>C.36. task_switch</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="apc.html" title="Appendix C. Benchmark Usage"><link rel="prev" href="apcs35.html" title="C.35. svmul"><link rel="next" href="apcs37.html" title="C.37. vdiv"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">C.36. task_switch</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="apcs35.html">Prev</a> </td><th width="60%" align="center">Appendix C. Benchmark Usage</th><td width="20%" align="right"> <a accesskey="n" href="apcs37.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id287214"></a>C.36. task_switch</h2></div></div></div><p>
+      </p><pre class="screen">task_switch -- Task switch overhead benchmark Recommended:
+      task_switch -11 -p:size 2048 -steady 10 -lat -show_loop -ms 200 Sweeping
+      pulse size: -1 -- Alternate Fftm/vmmul kernels -2 -- Alternate */+
+      kernels Parameters (for sweeping convolution size, cases 1 through 10)
+      -p:rows ROWS -- set number of pulses (default 64) Sweeping number of
+      pulses: -11 -- Alternate Fftm/vmmul kernels -12 -- Alternate */+ kernels
+      Parameters (for sweeping number of convolutions, cases 11 through 20)
+      -p:size SIZE -- size of pulse (default 2048) Common Parameters -p:check
+      {0,n}|{1,y} -- check results (default 'y') </pre><p>
+    </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs35.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apcs37.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">C.35. svmul </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> C.37. vdiv</td></tr></table></div></body></html>

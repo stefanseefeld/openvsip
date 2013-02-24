@@ -1,0 +1,339 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.8. Signal Processing Objects</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="functions.html" title="Chapter 4. Function Reference"><link rel="prev" href="ch04s07.html" title="4.7. Signal Processing Functions"><link rel="next" href="advanced-types.html" title="Chapter 5. Advanced VSIPL++ Data Types"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.8. Signal Processing Objects</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s07.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Function Reference</th><td width="20%" align="right"> <a accesskey="n" href="advanced-types.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id328255"></a>4.8. Signal Processing Objects</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_conv_all"></a>4.8.1. Convolution</h3></div></div></div><a class="indexterm" name="id328268"></a><p>This section describes the <code class="type">Convolution</code> class provided by
+ VSIPL++.</p><p>Applying a convolution object on a view performs a convolution on the
+ view. <code class="type">Convolution</code> supports different computations, depending on
+ the element type and dimensionalities of the kernel, input and output
+ views.</p><pre class="synopsis">template &lt;template &lt;typename, typename&gt; class ConstViewT,
+          symmetry_type                       Symm,
+          support_region_type                 Supp,
+          typename                            T,
+          unsigned                            N_times = 0,
+          alg_hint_type                       A_hint = alg_time&gt;
+class Convolution;</pre><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><code class="varname">ConstViewT</code></span></dt><dd><p>The convolution dimensionality: <code class="type">const_Vector</code> for 1D
+    convolutions; <code class="type">const_Matrix</code> for 2D convolutions.</p></dd><dt><span class="term"><code class="varname">Symm</code></span></dt><dd><p>The symmetry of the kernel. See <code class="type">symmetry_type</code> <a class="xref" href="ch02s07.html#classref_symmetry_type" title="2.7.10. symmetry_type">(section 2.7.10)</a>.</p></dd><dt><span class="term"><code class="varname">Supp</code></span></dt><dd><p>The support region of the convolution algorithm. See
+    <code class="type">support_region_type</code> <a class="xref" href="ch02s07.html#classref_support_region_type" title="2.7.9. support_region_type">(section 2.7.9)</a>.</p></dd><dt><span class="term"><code class="varname">T</code></span></dt><dd><p>The type of the elements in the views.</p></dd><dt><span class="term"><code class="varname">N_times</code></span></dt><dd><p>The expected number of times this object will be used. This is a
+    hint how much effort to spend on upfront optimization. A value of
+    <code class="code">0</code> stands for infinity, and thus results in the most
+    effort.</p></dd><dt><span class="term"><code class="varname">A_hint</code></span></dt><dd><p>One of <code class="constant">alg_time</code>,
+    <code class="constant">alg_space</code>, or <code class="constant">alg_none</code>. This
+    indicates how the implementation should optimize its computation or
+    resource use. See alg_hint_type <a class="xref" href="ch02s07.html#classref_alg_hint_type" title="2.7.1. alg_hint_type">(section 2.7.1)</a>.</p></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id328450"></a>4.8.1.1. Constructor</h4></div></div></div><a class="indexterm" name="id328455"></a><p>Construct a 1D object</p><pre class="synopsis">template &lt;<span class="emphasis"><em>unspecified</em></span>&gt;
+Convolution(const_Vector&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt; filter_coeffs,
+            Domain&lt;1&gt; const&amp;             input_size,
+            length_type                  decimation = 1);</pre><p>Construct a 2D object</p><pre class="synopsis">template &lt;<span class="emphasis"><em>unspecified</em></span>&gt;
+Convolution(const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt; filter_coeffs,
+            Domain&lt;2&gt; const&amp;             input_size,
+            length_type                  decimation = 1);</pre><p><b>Description: </b>Create a <code class="type">Convolution</code> object of the given kernel view,
+   input size, and decimation. The first version is available when the class's
+   <code class="type">ConstViewT</code> template parameter is <code class="literal">const_Vector&lt;T,
+   unspecified&gt;</code>; the second when it is
+   <code class="literal">const_Matrix&lt;T,unspecified&gt;</code>.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id328538"></a>4.8.1.2. Call operators</h4></div></div></div><a class="indexterm" name="id328544"></a><pre class="synopsis">template &lt;<span class="emphasis"><em>unspecified</em></span>&gt;
+Vector&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+operator()(
+   const_Vector&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt; in, 
+   Vector&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;       out);</pre><p><b>Description: </b>Calls the Convolution on the given input vector. This version is
+   available only when the class's <code class="type">ConstViewT</code> template parameter
+   is <code class="literal">const_Vector&lt;T, unspecified&gt;.</code></p><p><b>Result: </b>The result view is stored into the <code class="varname">out</code> argument,
+   and is returned as return-value for convenience, too.</p><a class="indexterm" name="id328612"></a><pre class="synopsis">template &lt;<span class="emphasis"><em>unspecified</em></span>&gt;
+Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+operator()(
+   const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt; in, 
+   Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;       out);</pre><p><b>Description: </b>Calls the Convolution on the given input matrix. This version is
+   available only when the class's <code class="type">ConstViewT</code> template parameter
+   is <code class="literal">const_Matrix&lt;T, unspecified&gt;.</code></p><p><b>Result: </b>The result view is stored into the <code class="varname">out</code> argument,
+   and is returned as return-value for convenience, too.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id328681"></a>4.8.1.3. Example</h4></div></div></div><pre class="programlisting">// Declare a vector of kernel coefficients.
+Vector&lt;float&gt; coeff(5);
+...  // Initialize the coefficients.
+
+// Declare a convolution object.
+Convolution&lt;const_Vector, nonsym, support_min, float&gt;
+   conv(coeff, Domain&lt;1&gt;(100), 1);
+
+// Declare the input vector.
+Vector&lt;float&gt; in(100);
+...  // Initialize the input vector.
+
+// Declare the output vector.
+Vector&lt;float&gt; out(96);
+
+// Perform the convolution of the input into the output.
+conv(in, out);</pre><p><b><a class="indexterm" name="id328705"></a><a class="indexterm" name="id328716"></a>See Also: </b></p><div class="variablelist"><dl><dt><span class="term">support_region_type</span></dt><dd><a class="xref" href="ch02s07.html#classref_support_region_type" title="2.7.9. support_region_type">(section 2.7.9)</a></dd><dt><span class="term">symmetry_type</span></dt><dd><p><a class="xref" href="ch02s07.html#classref_symmetry_type" title="2.7.10. symmetry_type">(section 2.7.10)</a></p></dd></dl></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_corr_all"></a>4.8.2. Correlation</h3></div></div></div><a class="indexterm" name="id328779"></a><p>This section describes the <code class="type">Correlation</code> class provided by
+ VSIPL++.</p><p>Applying a correlation object on a view performs a correlation on the
+ view. <code class="type">Correlation</code> supports different computations, depending on
+ the element type and dimensionalities of the kernel, input and output
+ views.</p><pre class="synopsis">template &lt;template &lt;typename, typename&gt; class ConstViewT,
+          support_region_type                 Supp,
+          typename                            T,
+          unsigned                            N_times = 0,
+          alg_hint_type                       A_hint = alg_time&gt;
+class Correlation;</pre><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><code class="varname">ConstViewT</code></span></dt><dd><p>The correlation dimensionality: <code class="type">const_Vector</code> for 1D
+    correlations; <code class="type">const_Matrix</code> for 2D correlations.</p></dd><dt><span class="term"><code class="varname">Supp</code></span></dt><dd><p>The support region of the correlation algorithm. See
+    <code class="type">support_region_type</code> <a class="xref" href="ch02s07.html#classref_support_region_type" title="2.7.9. support_region_type">(section 2.7.9)</a>.</p></dd><dt><span class="term"><code class="varname">T</code></span></dt><dd><p>The type of the elements in the views.</p></dd><dt><span class="term"><code class="varname">N_times</code></span></dt><dd><p>The expected number of times this object will be used. This is a
+    hint how much effort to spend on upfront optimization. A value of
+    <code class="code">0</code> stands for infinity, and thus results in the most
+    effort.</p></dd><dt><span class="term"><code class="varname">A_hint</code></span></dt><dd><p>One of <code class="constant">alg_time</code>,
+    <code class="constant">alg_space</code>, or <code class="constant">alg_none</code>. This
+    indicates how the implementation should optimize its computation or
+    resource use. See alg_hint_type xx <a class="xref" href="ch02s07.html#classref_alg_hint_type" title="2.7.1. alg_hint_type">(section 2.7.1)</a>.</p></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id328935"></a>4.8.2.1. Constructor</h4></div></div></div><a class="indexterm" name="id328940"></a><p>Construct a 1D object</p><pre class="synopsis">Correlation(Domain&lt;1&gt; const&amp;   ref_size,
+            Domain&lt;1&gt; const&amp;   input_size);</pre><a class="indexterm" name="id328963"></a><p>Construct a 2D object</p><pre class="synopsis">Correlation(Domain&lt;2&gt; const&amp;   ref_size,
+            Domain&lt;2&gt; const&amp;   input_size);</pre><p><b>Description: </b>Creates a <code class="type">Correlation</code> object with the given kernel size
+   and input size. The first version is available when the class's
+   <code class="type">ConstViewT</code> template parameter is <code class="literal">const_Vector&lt;T,
+   unspecified&gt;</code>; the second when it is
+   <code class="literal">const_Matrix&lt;T,unspecified&gt;</code>.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id329019"></a>4.8.2.2. Call operators</h4></div></div></div><a class="indexterm" name="id329024"></a><pre class="synopsis">template &lt;<span class="emphasis"><em>unspecified</em></span>&gt;
+Vector&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+operator()(
+    bias_type                    bias,
+    const_Vector&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt; ref,
+    const_Vector&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt; in, 
+    Vector&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;       out);</pre><p><b>Description: </b>Calls the Correlation on the given kernel, input and output vectors.
+   This version is available only when the class's <code class="type">ConstViewT</code>
+   template parameter is <code class="literal">const_Vector&lt;T,
+   unspecified&gt;.</code> The parameter <em class="parameter"><code>bias</code></em> must
+   be a member of the enumeration <code class="type">bias_type</code>. See <a class="xref" href="ch02s07.html#classref_bias_type" title="2.7.2. bias_type">(section 2.7.2)</a>.</p><p><b>Result: </b>The result view is stored into the <code class="varname">out</code> argument,
+   and is returned as return-value for convenience, too.</p><a class="indexterm" name="id329116"></a><pre class="synopsis">template &lt;<span class="emphasis"><em>unspecified</em></span>&gt;
+Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+operator()(
+    bias_type                    bias,
+    const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt; ref,
+    const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt; in,
+    Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;       out);</pre><p><b>Description: </b>Calls the Correlation on the given kernel, input and output matrices.
+   This version is available only when the class's <code class="type">ConstViewT</code>
+   template parameter is <code class="literal">const_Matrix&lt;T,
+   unspecified&gt;.</code> The parameter <em class="parameter"><code>bias</code></em> must
+   be a member of the enumeration <code class="type">bias_type</code>. See <a class="xref" href="ch02s07.html#classref_bias_type" title="2.7.2. bias_type">(section 2.7.2)</a>.</p><p><b>Result: </b>The result view is stored into the <code class="varname">out</code> argument,
+   and is returned as return-value for convenience, too.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id329208"></a>4.8.2.3. Example</h4></div></div></div><pre class="programlisting">// Declare a correlation object.
+Correlation&lt;const_Vector, support_min, float&gt;
+    corr(Domain&lt;1&gt;(5), Domain&lt;1&gt;(100));
+
+// Declare a vector of kernel items.
+Vector&lt;float&gt; kernel(5);
+...  // Initialize the kernel.
+
+// Declare the input vector.
+Vector&lt;float&gt; in(100);
+...  // Initialize the input vector.
+
+// Declare the output vector.
+Vector&lt;float&gt; out(96);
+
+// Perform the correlation of the input into the output.
+corr(biased, kernel, in, out);</pre><p><b><a class="indexterm" name="id329229"></a><a class="indexterm" name="id329240"></a>See Also: </b></p><div class="variablelist"><dl><dt><span class="term">support_region_type</span></dt><dd><a class="xref" href="ch02s07.html#classref_support_region_type" title="2.7.9. support_region_type">(section 2.7.9)</a></dd><dt><span class="term">bias_type</span></dt><dd><p><a class="xref" href="ch02s07.html#classref_bias_type" title="2.7.2. bias_type">(section 2.7.2)</a></p></dd></dl></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_fir_all"></a>4.8.3. <code class="literal">FIR Filter</code></h3></div></div></div><a class="indexterm" name="id329307"></a><p>This section describes the <code class="type">Fir</code> class provided by
+ VSIPL++.</p><p>Applying a <code class="type">Fir</code> object to a view performs a FIR filter on
+ the view.</p><pre class="synopsis">template &lt;typename  T,
+          symmetry_type S = nonsym, 
+          obj_state C = state_save,
+          unsigned  N = 0,  
+          alg_hint_type H = alg_time&gt;
+class Fir;</pre><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term">T</span></dt><dd><p>The type of the elements in the views.</p></dd><dt><span class="term">S</span></dt><dd><p>The symmetry of the kernel. See <code class="type">symmetry_type</code> <a class="xref" href="ch02s07.html#classref_symmetry_type" title="2.7.10. symmetry_type">(section 2.7.10)</a>.</p></dd><dt><span class="term">C</span></dt><dd><p><code class="literal">state_no_save</code> or <code class="literal">state_save</code>.
+    An <code class="type">Fir</code> object can maintain state between invocations of its
+    call operator. See obj_state <a class="xref" href="ch02s07.html#classref_obj_state" title="2.7.4. obj_state">(section 2.7.4)</a>.</p></dd><dt><span class="term">N</span></dt><dd><p>The expected number of times this object will be used. This is a
+    hint how much effort to spend on upfront optimization. A value of 0 stands
+    for infinity, and thus results in the most effort.</p></dd><dt><span class="term">H</span></dt><dd><p>One of <code class="constant">alg_time</code>,
+    <code class="constant">alg_space</code>, or <code class="constant">alg_none</code>. This
+    indicates how the implementation should optimize its computation or
+    resource use. See alg_hint_type <a class="xref" href="ch02s07.html#classref_alg_hint_type" title="2.7.1. alg_hint_type">(section 2.7.1)</a>.</p></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id329461"></a>4.8.3.1. Constructor</h4></div></div></div><a class="indexterm" name="id329467"></a><pre class="synopsis">template &lt;<span class="emphasis"><em>unspecified</em></span>&gt;
+    Fir(
+        const_Vector&lt;T,<span class="emphasis"><em>unspecified</em></span>&gt; kernel,
+        length_type input_size,
+        length_type decimation = 1)</pre><p><b>Description: </b>Construct an <code class="type">Fir</code> object with a vector of kernel
+   coefficients and the indicated size of input vector and decimation.</p><a class="indexterm" name="id329509"></a><pre class="synopsis">Fir(Fir const &amp;fir)</pre><p><b>Description: </b>Construct a new <code class="type">Fir</code> object from an existing one..</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id329542"></a>4.8.3.2. Accessor Functions</h4></div></div></div><a class="indexterm" name="id329547"></a><a class="indexterm" name="id329560"></a><a class="indexterm" name="id329572"></a><a class="indexterm" name="id329584"></a><a class="indexterm" name="id329596"></a><a class="indexterm" name="id329608"></a><a class="indexterm" name="id329620"></a><pre class="synopsis">length_type kernel_size()
+length_type filter_order()
+length_type input_size()
+length_type output_size()
+length_type decimation()
+obj_state continuous_filtering()</pre><p><b>Description: </b>Report the various attributes of this <code class="type">Fir</code> object.</p><p>The length of the kernel is depends on the symmetry type specified 
+   in the constructor.  If the kernel order is <code class="literal">M</code>, then 
+   the kernel length is <code class="code">M + 1</code> for non-symmetric cases and 
+   <code class="code">(M + 1) / 2</code> for symmetric cases.</p><p>The <code class="function">filter_order()</code> returns the same value
+   as the <code class="function">kernel_size()</code> function.</p><p>The output length must be at least 
+   <code class="code">ceil(input_size()/decimation()).</code></p><p>The remaining functions simply reflect the corresponding value
+   that was used when the <code class="type">Fir</code> object was created.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id329698"></a>4.8.3.3. Call operator</h4></div></div></div><a class="indexterm" name="id329704"></a><pre class="synopsis">template &lt;<span class="emphasis"><em>unspecified</em></span>&gt;
+length_type operator()(
+    const_Vector&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt; in,
+    Vector&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;       out
+    )</pre><p><b>Description: </b>Apply the <code class="type">Fir</code> object to the vector <code class="varname">in</code>
+   and write results in the vector <code class="varname">out</code>. The length of the
+   output vector is returned.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id329756"></a>4.8.3.4. Assignment operator</h4></div></div></div><a class="indexterm" name="id329762"></a><pre class="synopsis">Fir &amp;operator= (Fir const &amp;fir)</pre><p><b>Description: </b>Copy one <code class="type">Fir</code> object into another.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id329795"></a>4.8.3.5. Example</h4></div></div></div><pre class="programlisting">// Declare the kernel vector.
+Vector&lt;float&gt; kernel(5);
+...  // Initialize the kernel vector.
+
+// Declare an FIR object.
+Fir&lt;float,nonsym,state_save&gt; fir(kernel, 100, 1);
+
+// Declare the input vector.
+Vector&lt;float&gt; in(100);
+...  // Initialize the input vector.
+
+// Declare the output vector.
+Vector&lt;float&gt; out(100);
+
+// Perform the FIR filter on the input into the output.
+fir(in, out);</pre><p><b><a class="indexterm" name="id329817"></a><a class="indexterm" name="id329828"></a>See Also: </b></p><div class="variablelist"><dl><dt><span class="term">obj_state</span></dt><dd><a class="xref" href="ch02s07.html#classref_obj_state" title="2.7.4. obj_state">(section 2.7.4)</a></dd><dt><span class="term">symmetry_type</span></dt><dd><p><a class="xref" href="ch02s07.html#classref_symmetry_type" title="2.7.10. symmetry_type">(section 2.7.10)</a></p></dd></dl></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_fft"></a>4.8.4. Fft - Fast Fourier Transform</h3></div></div></div><a class="indexterm" name="id329891"></a><p>Applying an FFT object on a view performs a single Fast Fourier
+ Transform on the entire view. <code class="type">Fft</code> supports different
+ computations, dependent on the input element type, output element type, a
+ specified direction or a special dimension, and the dimensionalities of the
+ input and output views.</p><pre class="synopsis">template &lt;template &lt;typename, typename&gt; class ViewT,
+          typename InputT,
+          typename OutputT,
+          int SD = 0,
+          return_mechanism_type ReturnMechanism = by_value,
+          unsigned Number = 0,
+          alg_hint_type Hint = alg_time&gt;
+class Fft;</pre><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term">ViewT</span></dt><dd><p>Used to indicate the FFT dimensionality:</p><p><code class="code">const_Vector</code> for 1D FFTs, <code class="code">const_Matrix</code>
+    for 2D FFTs, and <code class="code">const_Tensor</code> for 3D FFTs.</p></dd><dt><span class="term">InputT, </span><span class="term">OutputT</span></dt><dd><p>The input and output value-types of the Fourier transform,
+    respectively. For a complex transform, both types need to be identical.
+    For a real transform, one of them is complex, the other real.</p></dd><dt><span class="term">SD</span></dt><dd><p>The special dimension / direction. In case of a real FFT, its value
+    indicates which dimension has different input and output sizes. In case
+    of a complex FFT, its value indicates whether to perform a forward or
+    inverse transform.</p></dd><dt><span class="term">ReturnMechanism</span></dt><dd><p>The return-mechanism-type indicates whether to return the
+    output-view by-value or by-reference.</p></dd><dt><span class="term">Number</span></dt><dd><p>The expected number of times this object will be used. This is a
+    hint how much effort to spend on upfront optimization. A value of
+    <code class="code">0</code> stands for infinity, and thus results in the most
+    effort.</p></dd><dt><span class="term">Hint</span></dt><dd><p>One of <code class="constant">alg_time</code>,
+    <code class="constant">alg_space</code>, or <code class="constant">alg_none</code>. This
+    indicates how the implementation should optimize its computation or
+    resource use.</p></dd></dl></div><p>FFT parameters should fulfill the following requirements. Input and
+ output sizes are specified during construction, the other parameters are
+ template arguments.</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col><col><col></colgroup><thead><tr><th>View</th><th>input-type / output-type</th><th>SD</th><th>input size</th><th>output size</th></tr></thead><tbody><tr><td rowspan="4">Vector</td><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">fft_fwd</code></td><td><code class="varname">M</code></td><td><code class="varname">M</code></td></tr><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">fft_inv</code></td><td><code class="varname">M</code></td><td><code class="varname">M</code></td></tr><tr><td><code class="varname">T</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">0</code></td><td><code class="varname">M</code></td><td><code class="varname">M/2 + 1</code></td></tr><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">T</code></td><td><code class="varname">0</code></td><td><code class="varname">M/2 + 1</code></td><td><code class="varname">M</code></td></tr><tr><td rowspan="6">Matrix</td><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">fft_fwd</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td></tr><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">fft_inv</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td></tr><tr><td><code class="varname">T</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">0</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td><td><code class="varname">M</code>x<code class="varname">(N/2 + 1)</code></td></tr><tr><td><code class="varname">T</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">1</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td><td><code class="varname">(M/2 + 1)</code>x<code class="varname">N</code></td></tr><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">T</code></td><td><code class="varname">0</code></td><td><code class="varname">M</code>x<code class="varname">(N/2 + 1)</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td></tr><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">T</code></td><td><code class="varname">1</code></td><td><code class="varname">(M/2 + 1)</code>x<code class="varname">N</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td></tr><tr><td rowspan="8">Tensor</td><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">fft_fwd</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">P</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">P</code></td></tr><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">fft_inv</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">P</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">P</code></td></tr><tr><td><code class="varname">T</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">0</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">P</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">(P/2 +
+     1)</code></td></tr><tr><td><code class="varname">T</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">1</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">P</code></td><td><code class="varname">M</code>x<code class="varname">(N/2 +
+     1)</code>x<code class="varname">P</code></td></tr><tr><td><code class="varname">T</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">2</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">P</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">(P/2 +
+     1)</code></td></tr><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">T</code></td><td><code class="varname">0</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">(P/2 +
+     1)</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">P</code></td></tr><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">T</code></td><td><code class="varname">1</code></td><td><code class="varname">M</code>x<code class="varname">(N/2 +
+     1)</code>x<code class="varname">P</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">P</code></td></tr><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">T</code></td><td><code class="varname">2</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">(P/2 +
+     1)</code></td><td><code class="varname">M</code>x<code class="varname">N</code>x<code class="varname">P</code></td></tr></tbody></table></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id330683"></a>4.8.4.1. Constructor</h4></div></div></div><a class="indexterm" name="id330696"></a><pre class="synopsis">Fft(Domain&lt;dim&gt; const&amp; dom, scalar_type scale);</pre><p><b>Description: </b>Creates an Fft object of the given size, with the given scaling
+   factor.</p><p><b>Requirements: </b><code class="literal">dim</code> is the Fft dimensionality.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id330742"></a>4.8.4.2. Accessor functions</h4></div></div></div><a class="indexterm" name="id330747"></a><a class="indexterm" name="id330759"></a><a class="indexterm" name="id330772"></a><a class="indexterm" name="id330784"></a><pre class="synopsis">Domain&lt;dim&gt; const&amp; input_size() const;
+Domain&lt;dim&gt; const&amp; output_size() const;
+scalar_type scale() const;
+bool forward() const;</pre><p><b>Description: </b>Report the various attributes of this Fft object.
+   <code class="code">forward()</code> returns true for a forward transform, false
+   otherwise.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id330818"></a>4.8.4.3. Call operators</h4></div></div></div><a class="indexterm" name="id330824"></a><pre class="synopsis">template &lt;class ViewT&gt;
+<span class="emphasis"><em>&lt;undefined&gt;</em></span> operator()(ViewT in);</pre><p><b>Description: </b>Calls the Fft on the given input, out-of-place.</p><p><b>Requirements: </b>This operator is available for
+   <code class="code">ReturnMechanismType=by_value</code> only. <code class="code">ViewT</code> has to
+   obey they above requirements for type and dimensions.</p><p><b>Result: </b>Returns a new view containing the output.</p><pre class="synopsis">template &lt;class InViewT, class OutViewT&gt;
+OutViewT operator()(InViewT in, OutViewT out);</pre><p><b>Description: </b>Calls the Fft on the given input, out-of-place</p><p><b>Requirements: </b>This operator is available for
+   <code class="code">ReturnMechanismType=by_reference</code> only. <code class="type">InViewT</code>
+   and <code class="type">OutViewT</code> have to obey the above requirements for type and
+   dimensions.</p><p><b>Result: </b>The result view is stored into the <code class="varname">out</code> argument,
+   and is returned as return-value for convenience, too.</p><pre class="synopsis">template &lt;class ViewT&gt;
+ViewT operator()(ViewT inout);</pre><p><b>Description: </b>Calls the Fft on the given input, in-place.</p><p><b>Requirements: </b>This operator is available only for complex FFT objects, with
+   <code class="code">ReturnMechanismType=by_reference</code>. <code class="type">ViewT</code> has to
+   obey the above requirements for type and dimensions.</p><p><b>Result: </b>The result is stored in-place into the <code class="varname">inout</code>
+   view, and is also returned as return-value for convenience</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_fftm"></a>4.8.5. Class template Fftm&lt;&gt;</h3></div></div></div><a class="indexterm" name="id330998"></a><p>Applying an <code class="type">Fftm</code> object on a Matrix performs multiple
+ fast Fourier transforms on the rows or columns of a Matrix. A Multiple FFT
+ treats a matrix as a collection of either rows or columns and applies an FFT
+ to each row or column.</p><pre class="synopsis">template &lt;typename InputT,
+          typename OutputT,
+          int A = row,
+          int D = fft_fwd,
+          return_mechanism_type ReturnMechanism = by_value,
+          unsigned Number = 0,
+          alg_hint_type Hint = alg_time&gt;
+class Fftm;</pre><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term">InputT, </span><span class="term">OutputT</span></dt><dd><p>The input and output value-types of the Fourier transform,
+    respectively. For a complex transform, both types need to be identical.
+    For a real transform, one of them is complex, the other real.</p></dd><dt><span class="term">Axis</span></dt><dd><p>The dimension along which to apply the Ffts.</p></dd><dt><span class="term">Direction</span></dt><dd><p>The direction of the Ffts, either <code class="varname">fft_fwd</code> or
+    <code class="varname">fft_inv</code>.</p></dd><dt><span class="term">ReturnMechanism</span></dt><dd><p>The return-mechanism-type indicates whether to return the
+    output-view by-value or by-reference.</p></dd><dt><span class="term">Number</span></dt><dd><p>The expected number of times this object will be used. This is a
+    hint how much effort to spend on upfront optimization. A value of
+    <code class="code">0</code> stands for infinity, and thus results in the most
+    effort.</p></dd><dt><span class="term">Hint</span></dt><dd><p>A <code class="type">alg_hint_type</code> <a class="xref" href="ch02s07.html#classref_alg_hint_type" title="2.7.1. alg_hint_type">(section 2.7.1)</a>,
+    indicating how the implementation should optimize its computation
+    or resource use.</p></dd></dl></div><p>FFTM parameters should fulfill the following requirements. Input and
+ output sizes are specified during construction, the other parameters are
+ template arguments.</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col><col><col></colgroup><thead><tr><th>input-type / output-type</th><th>axis</th><th>direction</th><th>input size</th><th>output size</th></tr></thead><tbody><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="constant">0</code> or <code class="constant">1</code></td><td><code class="varname">fft_fwd</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td></tr><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="constant">0</code> or <code class="constant">1</code></td><td><code class="varname">fft_inv</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td></tr><tr><td><code class="varname">T</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">0</code></td><td><code class="varname">fft_fwd</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td><td><code class="varname">M</code>x<code class="varname">(N/2 + 1)</code></td></tr><tr><td><code class="varname">T</code> /
+     <code class="varname">complex&lt;T&gt;</code></td><td><code class="varname">1</code></td><td><code class="varname">fft_fwd</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td><td><code class="varname">(M/2 + 1)</code>x<code class="varname">N</code></td></tr><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">T</code></td><td><code class="varname">0</code></td><td><code class="varname">fft_inv</code></td><td><code class="varname">M</code>x<code class="varname">(N/2 + 1)</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td></tr><tr><td><code class="varname">complex&lt;T&gt;</code> /
+     <code class="varname">T</code></td><td><code class="varname">1</code></td><td><code class="varname">fft_inv</code></td><td><code class="varname">(M/2 + 1)</code>x<code class="varname">N</code></td><td><code class="varname">M</code>x<code class="varname">N</code></td></tr></tbody></table></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id331401"></a>4.8.5.1. Constructor</h4></div></div></div><a class="indexterm" name="id331407"></a><pre class="synopsis">Fftm(Domain&lt;2&gt; const&amp; dom, scalar_type scale);</pre><p><b>Description: </b>Creates an <code class="type">Fftm</code> object of the given size, with the given scaling
+   factor.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id331441"></a>4.8.5.2. Accessor functions</h4></div></div></div><a class="indexterm" name="id331447"></a><a class="indexterm" name="id331459"></a><a class="indexterm" name="id331472"></a><a class="indexterm" name="id331484"></a><pre class="synopsis">Domain&lt;2&gt; const&amp; input_size() const;
+Domain&lt;2&gt; const&amp; output_size() const;
+scalar_type scale() const;
+bool forward() const;</pre><p><b>Description: </b>Report the various attributes of this Fftm object.
+   <code class="code">forward()</code> returns true for a forward transform, false
+   otherwise.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id331521"></a>4.8.5.3. Call operators</h4></div></div></div><a class="indexterm" name="id331526"></a><pre class="synopsis">template &lt;class MatrixT&gt;
+<span class="emphasis"><em>&lt;undefined&gt;</em></span> operator()(MatrixT in);</pre><p><b>Description: </b>Calls the Fftm on the given input, out-of-place.</p><p><b>Requirements: </b>This operator is available for
+   <code class="code">ReturnMechanismType=by_value</code> only. <code class="code">MatrixT</code> has
+   to obey the above requirements for type and dimensions.</p><p><b>Result: </b>Returns a new matrix containing the output.</p><pre class="synopsis">template &lt;class InMatrixT, class OutMatrixT&gt;
+OutMatrixT operator()(InMatrixT in, OutMatrixT out);</pre><p><b>Description: </b>Calls the Fftm on the given input, out-of-place.</p><p><b>Requirements: </b>This operator is available for
+   <code class="code">ReturnMechanismType=by_reference</code> only. <code class="type">InMatrixT</code>
+   and <code class="type">OutMatrixT</code> have to obey the above requirements for type
+   and dimensions.</p><p><b>Result: </b>The result matrix is stored into the <code class="varname">out</code>
+   argument, and is returned as return-value for convenience, too.</p><pre class="synopsis">template &lt;class MatrixT&gt;
+MatrixT operator()(MatrixT inout);</pre><p><b>Description: </b>Calls the Fftm on the given input, in-place.</p><p><b>Requirements: </b>This operator is available only for complex FFTM objects, with
+   <code class="code">ReturnMechanismType=by_reference</code>. <code class="type">MatrixT</code> has to
+   obey the above requirements for type and dimensions.</p><p><b>Result: </b>The result is stored in-place into the <code class="varname">inout</code>
+   matrix, and is also returned as return-value for convenience.</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_histogram"></a>4.8.6. Histogram</h3></div></div></div><a class="indexterm" name="id331700"></a><p>This section describes the <code class="type">Histogram</code> class provided by
+ VSIPL++.</p><p>Applying a histogram object to a view computes a histogram of the view.
+ <code class="type">Histogram</code> supports different computations, depending on the
+ indicated element type and dimensionality.</p><pre class="synopsis">        template &lt;template &lt;<span class="emphasis"><em>unspecified</em></span>&gt;
+                  class const_View = const_Vector,
+                  typename T&gt;
+        class Histogram;</pre><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><code class="varname">const_View</code></span></dt><dd><p>The histogram dimensionality: <code class="type">const_Vector</code> for 1D
+    histograms; <code class="type">const_Matrix</code> for 2D histograms.</p></dd><dt><span class="term"><code class="varname">T</code></span></dt><dd><p>The type of the elements in the views.</p></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id331778"></a>4.8.6.1. Constructor</h4></div></div></div><a class="indexterm" name="id331783"></a><pre class="synopsis">        Histogram(T min_value, T max_value, length_type num_bin);</pre><p><b>Description: </b>Create a <code class="type">Histogram</code> object to collect results constrained
+   by these values:</p><div class="variablelist"><dl><dt><span class="term"><em class="parameter"><code>min_value</code></em></span></dt><dd><p>The first element of the result vector accumulates results for all
+     input items that are less than this value.</p></dd><dt><span class="term"><em class="parameter"><code>max_value</code></em></span></dt><dd><p>The last element of the result vector accumulates results for all
+     input items that are greater than or equal to this value.</p></dd><dt><span class="term"><em class="parameter"><code>num_bin</code></em></span></dt><dd><p>The number of elements in the result vector.</p></dd></dl></div><p>For each input element <code class="varname">V</code> such that
+  <em class="parameter"><code>min_value</code></em> &lt;= <code class="varname">V</code> &lt;
+  <em class="parameter"><code>max_value</code></em>, the result element <code class="varname">I</code> is
+  incremented. <code class="varname">I</code> is computed as
+  <code class="literal">((V-min_value)/delta)+1</code>, where <code class="varname">delta</code>
+  is <code class="literal">(max_value-min_value)/(num_bin-2)</code>.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id331917"></a>4.8.6.2. Call operators</h4></div></div></div><a class="indexterm" name="id331923"></a><pre class="synopsis">        template &lt;<span class="emphasis"><em>unspecified</em></span>&gt;
+        const_Vector&lt;scalar_i&gt;
+        operator()(const_Vector&lt;T, Block&gt; data,
+                   bool accumulate = false)</pre><p><b>Description: </b>Calls the Histogram on the given input vector. When the parameter
+   <em class="parameter"><code>accumulate</code></em> is <code class="constant">true</code>, the results
+   for this call are added to previous results.</p><p><b>Requirements: </b>This call operator is available only when the template parameter
+   <em class="parameter"><code>const_View</code></em> is <code class="type">const_Vector</code>.</p><p><b>Result: </b>The result vector view is returned as return-value.</p><a class="indexterm" name="id331998"></a><pre class="synopsis">        template &lt;<span class="emphasis"><em>unspecified</em></span>&gt;
+        const_Vector&lt;scalar_i&gt;
+        operator()(const_Matrix&lt;T, Block&gt; data,
+                   bool accumulate = false)</pre><p><b>Description: </b>Calls the Histogram on the given input matrix. When the parameter
+   <em class="parameter"><code>accumulate</code></em> is <code class="constant">true</code>, the results
+   for this call are added to previous results.</p><p><b>Requirements: </b> This call operator is available only when the template parameter
+   <em class="parameter"><code>const_View</code></em> is <code class="type">const_Matrix</code>.</p><p><b>Result: </b>The result vector view is returned as return-value.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id332073"></a>4.8.6.3. Example</h4></div></div></div><pre class="programlisting">// Declare a histogram object.
+Histogram&lt;const_Vector, float&gt; h(0, 8, 10);
+
+// Declare the input vector.
+Vector&lt;float&gt; in(100);
+...  // Initialize the input vector.
+
+// Declare the output vector.
+Vector&lt;scalar_i&gt; out(10);
+
+// Compute the histogram of the input into the output.
+out = h(in);</pre></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_iir_all"></a>4.8.7. IIR Filter</h3></div></div></div><p>This section describes the Infinite Impulse Response filter provided by
+  VSIPL++.</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="functionref_iir"></a>4.8.7.1. Class template Iir&lt;&gt;</h4></div></div></div><a class="indexterm" name="id332113"></a><p></p><pre class="synopsis">template &lt;typename T = float,
+	  object_state Save = state_save,
+	  unsigned Number = 0,
+	  alg_hint_type Hint = 0&gt;
+class Iir;</pre><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term">T</span></dt><dd><p>The value-type of the <code class="type">Iir</code> filter</p></dd><dt><span class="term">obj_state</span></dt><dd><p>If this object is to be called repeatedly on subsequent chunks of a 
+            long vector, use <code class="varname">state_save</code>, else <code class="varname">state_nosave</code></p></dd><dt><span class="term">Number</span></dt><dd><p>The expected number of times this object will be used. This
+          is a hint to the library how much effort to spend on upfront  optimization.
+          A value of <code class="code">0</code> stands for infinity, and
+          thus results in the most effort.</p></dd><dt><span class="term">Hint</span></dt><dd><p>One of <code class="constant">alg_time</code>, <code class="constant">alg_space</code>, or
+          <code class="constant">alg_none</code>. This indicates how the library should
+            optimize its computation or resource use.</p></dd></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id332214"></a>4.8.7.1.1. Constructor</h5></div></div></div><a class="indexterm" name="id332220"></a><pre class="synopsis">Iir(const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt; b, 
+    const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt; a,
+    length_type i);</pre><p><b>Description: </b>Creates an Iir object...</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id332258"></a>4.8.7.1.2. Accessor functions</h5></div></div></div><a class="indexterm" name="id332264"></a><a class="indexterm" name="id332276"></a><a class="indexterm" name="id332288"></a><a class="indexterm" name="id332300"></a><pre class="synopsis">length_type kernel_size() const;
+length_type filter_order() const;
+length_type input_size() const;
+length_type output_size() const;</pre><p><b>Description: </b>Report the various attributes of this Iir filter.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id332330"></a>4.8.7.1.3. Call operators</h5></div></div></div><a class="indexterm" name="id332336"></a><pre class="synopsis">template &lt;class InViewT, class OutViewT&gt;
+OutViewT operator()(InViewT in, OutViewT out);</pre><p><b>Description: </b>Calls the Iir filter on <code class="varname">in</code>, storing the result in <code class="varname">out</code>.</p><p><b>Result: </b>Returns a new view containing the output.</p></div></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s07.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="functions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="advanced-types.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.7. Signal Processing Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 5. Advanced VSIPL++ Data Types</td></tr></table></div></body></html>

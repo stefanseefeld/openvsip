@@ -1,0 +1,89 @@
+######################################################### -*-Makefile-*-
+#
+# Contents: Makefile fragment for SPU kernel code.
+#
+########################################################################
+
+########################################################################
+# Variables
+########################################################################
+
+ld_script := $(srcdir)/src/vsip/opt/cbe/spu/kernels/ld.script
+
+src_vsip_opt_cbe_spu_kernels_c_src :=					\
+	$(wildcard $(srcdir)/src/vsip/opt/cbe/spu/kernels/alf_*.c)
+
+src_vsip_opt_cbe_spu_kernels_cxx_src :=					\
+	$(wildcard $(srcdir)/src/vsip/opt/cbe/spu/kernels/alf_*.cpp)
+
+src_vsip_opt_cbe_spu_kernels_src := $(src_vsip_opt_cbe_spu_kernels_c_src) \
+                                    $(src_vsip_opt_cbe_spu_kernels_cxx_src)
+
+ifneq ($(VSIP_IMPL_CBE_SDK_FFT),1)
+src_vsip_opt_cbe_spu_kernels_src := $(filter-out %alf_fft_c.c, \
+                                      $(src_vsip_opt_cbe_spu_kernels_src))
+endif
+
+src_vsip_opt_cbe_spu_kernels_c_mod := $(patsubst $(srcdir)/%.c, %.spe,\
+                              $(src_vsip_opt_cbe_spu_kernels_c_src))
+src_vsip_opt_cbe_spu_kernels_cxx_mod := $(patsubst $(srcdir)/%.cpp, %.spe,\
+                                $(src_vsip_opt_cbe_spu_kernels_cxx_src))
+src_vsip_opt_cbe_spu_kernels_obj := $(patsubst %.spe, %.$(OBJEXT),\
+                              $(src_vsip_opt_cbe_spu_kernels_c_mod)\
+                              $(src_vsip_opt_cbe_spu_kernels_cxx_mod))
+
+spe_kernels := lib/svpp_kernels.so
+
+other_libs += $(spe_kernels)
+
+########################################################################
+# Build instructions
+########################################################################
+
+define compile_spu_kernel
+@echo compiling $(@D)/$(@F)
+$(CC_SPU) $(CPP_FLAGS_SPU) $(CFLAGS_SPU) $(LD_FLAGS_SPU) -o $@ $< $(LIBS_SPU)
+endef
+
+define compile_cxx_spu_kernel
+@echo compiling $(@D)/$(@F)
+$(CXX_SPU) $(CPP_FLAGS_SPU) $(CXXFLAGS_SPU) $(LD_FLAGS_SPU) -o $@ $< $(LIBS_SPU)
+endef
+
+# This one is identical to the global 'link_dso', 
+# but without using either LDFLAGS nor LIBS
+define link_spu_kernel_dso
+@echo linking $@
+$(LDSHARED) $(LDFLAGS) -o $@ $^
+$(STRIP) --strip-unneeded $@
+endef
+
+########################################################################
+# Rules
+########################################################################
+
+install-core:: lib/svpp_kernels.so
+	$(INSTALL) -d $(DESTDIR)$(libdir)
+	$(INSTALL_PROGRAM) lib/svpp_kernels.so \
+          $(DESTDIR)$(libdir)/svpp_kernels.so
+
+$(spe_kernels): $(src_vsip_opt_cbe_spu_kernels_obj)
+	$(link_spu_kernel_dso)
+
+src/vsip/opt/cbe/spu/kernels/alf_vmmul_c.spe: override CFLAGS_SPU += -funroll-loops
+
+$(src_vsip_opt_cbe_spu_kernels_obj): %.$(OBJEXT): %.spe
+	@echo embedding $(@D)/$(@F)
+	$(EMBED_SPU) $(*F)_spu $< $@
+
+$(src_vsip_opt_cbe_spu_kernels_c_mod): %.spe: %.c
+	$(compile_spu_kernel)
+
+$(src_vsip_opt_cbe_spu_kernels_cxx_mod): %.spe: %.cpp
+	$(compile_cxx_spu_kernel)
+
+mostlyclean::
+	rm -f $(src_vsip_opt_cbe_spu_kernels_obj)
+	rm -f $(src_vsip_opt_cbe_spu_kernels_c_mod)
+	rm -f $(src_vsip_opt_cbe_spu_kernels_cxx_mod)
+

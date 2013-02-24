@@ -1,0 +1,1 @@
+../em64t/par-intel/pkgconfig/vsipl++.pc

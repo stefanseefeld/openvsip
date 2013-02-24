@@ -1,0 +1,39 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>C.15. HPEC_KERNEL Benchmark Usage</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="apc.html" title="Appendix C. Benchmark Usage"><link rel="prev" href="apcs14.html" title="C.14. fir"><link rel="next" href="apcs16.html" title="C.16. IPP Benchmark Usage"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">C.15. HPEC_KERNEL Benchmark Usage</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="apcs14.html">Prev</a> </td><th width="60%" align="center">Appendix C. Benchmark Usage</th><td width="20%" align="right"> <a accesskey="n" href="apcs16.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id286442"></a>C.15. HPEC_KERNEL Benchmark Usage</h2></div></div></div><p> This appendix presents the displays from the HPEC_KERNEL
+    benchmarks. </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286452"></a>C.15.1. cfar</h3></div></div></div><p>
+        </p><pre class="screen">cfar -- Constant False Alarm Rate Detection type F float D
+        double storage S slice V vector H hybrid CFAR CFAR doppler range guard
+        type storage beams bins gates cells ---- ------- ----- ------- -----
+        ----- -1: F S 16 24 5 4 -2: F S 48 128 10 8 -3: F S 48 64 10 8 -4: F S
+        16 16 20 16 -11: D S 16 24 5 4 -12: D S 48 128 10 8 -13: D S 48 64 10
+        8 -14: D S 16 16 20 16 -21: F V 16 24 5 4 -22: F V 48 128 10 8 -23: F
+        V 48 64 10 8 -24: F V 16 16 20 16 -31: D V 16 24 5 4 -32: D V 48 128
+        10 8 -33: D V 48 64 10 8 -34: D V 16 16 20 16 -41: F H 16 24 5 4 SSE
+        -42: F H 48 128 10 8 SSE -43: F H 48 64 10 8 SSE -44: F H 16 16 20 16
+        SSE </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286479"></a>C.15.2. cfar_c</h3></div></div></div><p>
+        </p><pre class="screen">cfar_c -- Constant False Alarm Rate Detection (C version) CFAR
+        CFAR doppler range guard beams bins gates cells ----- ------- -----
+        ----- -21: 16 24 5 4 -22: 48 128 10 8 -23: 48 64 10 8 -24: 16 16 20 16
+        -41: 16 24 5 4 simd (SSE) -42: 48 128 10 8 simd (SSE) -43: 48 64 10 8
+        simd (SSE) -44: 16 16 20 16 simd (SSE) </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286498"></a>C.15.3. firbank</h3></div></div></div><p>
+        </p><pre class="screen">firbank -- FIR Filter Bank # Set Method Data -1 1 Time
+        generated -2 2 Time generated -11 1 Freq/FFT generated -12 2 Freq/FFT
+        generated -21 1 Freq/FFTM generated -22 2 Freq/FFTM generated --- -51
+        1 Time external -52 2 Time external -61 1 Freq/FFT external -62 2
+        Freq/FFT external -71 1 Freq/FFTM external -72 2 Freq/FFTM external
+        </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286516"></a>C.15.4. svd</h3></div></div></div><p>
+        </p><pre class="screen">svd -- Singular Value Decomposition Fixed number of rows. -1:
+        float rows=500 -2: float rows=180 -3: float rows=150 -11:
+        complex&lt;float&gt; rows=500 -12: complex&lt;float&gt; rows=180 -13:
+        complex&lt;float&gt; rows=150 Fixed number of columns. -21: float
+        cols=100 -22: float cols= 60 -23: float cols=150 -31:
+        complex&lt;float&gt; cols=100 -32: complex&lt;float&gt; cols= 60 -33:
+        complex&lt;float&gt; cols=150 Fixed ratio of rows to columns. -41:
+        complex&lt;float&gt; 1 : 1 storage=default -42: complex&lt;float&gt; 3
+        : 1 storage=default -43: complex&lt;float&gt; 1 : 3 storage=default
+        -51: complex&lt;float&gt; 1 : 1 storage=svd_uvnos -52:
+        complex&lt;float&gt; 3 : 1 storage=svd_uvnos -53: complex&lt;float&gt;
+        1 : 3 storage=svd_uvnos </pre><p>
+      </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs14.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apcs16.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">C.14. fir </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> C.16. IPP Benchmark Usage</td></tr></table></div></body></html>

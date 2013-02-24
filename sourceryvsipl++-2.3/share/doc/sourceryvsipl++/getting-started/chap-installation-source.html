@@ -1,0 +1,194 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 3. Installation from Source</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><meta name="description" content="This chapter explains how to configure and install Sourcery VSIPL++ from source for use on your system. Installing Sourcery VSIPL++ from source requires three steps: Ensure that your system can run Sourcery VSIPL++.Download the Sourcery VSIPL++ source package.Configure, build, and install Sourcery VSIPL++. If an appropriate pre-built binary package is available for your architecture, operating system, and compiler, using that is preferrable to building from source. Instructions for this installing pre-built binary packages can be found in ."><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="index.html" title="Sourcery VSIPL++"><link rel="prev" href="ch02s02.html" title="2.2. Installing a Binary Package"><link rel="next" href="ch03s02.html" title="3.2. Obtaining the Source Code"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 3. Installation from Source</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s02.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch03s02.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chap-installation-source"></a>Chapter 3. Installation from Source</h2></div><div><div class="abstract"><p class="title"><b>Abstract</b></p><p>
+     This chapter explains how to configure and install Sourcery VSIPL++
+     from source for use on your system.  Installing Sourcery VSIPL++ 
+     from source requires three steps:
+     </p><div class="orderedlist"><ol type="1"><li><p>Ensure that your system can run Sourcery VSIPL++.</p></li><li><p>Download the Sourcery VSIPL++ source package.</p></li><li><p>Configure, build, and install Sourcery VSIPL++.</p></li></ol></div><p>
+    </p><p>
+      If an appropriate pre-built binary package is available for your
+      architecture, operating system, and compiler, using that is
+      preferrable to building from source.  Instructions for this
+      installing pre-built binary packages can be found in <a class="xref" href="chap-installation.html" title="Chapter 2. Installation">Chapter 2, &#8220;Installation&#8221;</a>.
+    </p></div></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="chap-installation-source.html#id276270">3.1. System Requirements</a></span></dt><dt><span class="section"><a href="ch03s02.html">3.2. Obtaining the Source Code</a></span></dt><dt><span class="section"><a href="ch03s03.html">3.3. Configuration</a></span></dt><dt><span class="section"><a href="ch03s04.html">3.4. Compilation and Installation</a></span></dt></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id276270"></a>3.1. System Requirements</h2></div></div></div><div class="abstract"><p class="title"><b>Abstract</b></p><p>
+     This section explains what requirements your system must meet in
+     order to run Sourcery VSIPL++.
+    </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id276283"></a>3.1.1. Operating System</h3></div></div></div><p>
+     Sourcery VSIPL++ can be built and installed on any UNIX-like system
+     that has a satisfactory C++ compiler.  CodeSourcery's reference
+     GNU/Linux platform is Red Hat Enterprise Linux 4.0.  CodeSourcery's
+     reference MCOE platform is 6.3.0.
+    </p><p>
+     The following compilers have been tested by CodeSourcery to work
+     with Sourcery VSIPL++ for the noted OS and architecture:
+     OS, architecture, and compiler combinations have
+     been tested by CodeSourcery to work with Sourcery VSIPL++:
+     </p><div class="itemizedlist"><ul type="disc"><li><p>GCC 3.4 (IA32 GNU/Linux)</p></li><li><p>GCC 3.4 (EM64t GNU/Linux)</p></li><li><p>GCC 4.1 (Cell/B.E. GNU/Linux)</p></li><li><p>GCC 4.2 (IA32 GNU/Linux)</p></li><li><p>GCC 4.2 (EM64t GNU/Linux)</p></li><li><p>Intel C++ 9.1 (IA32 GNU/Linux)</p></li><li><p>Intel C++ 9.1 (EM64t GNU/Linux)</p></li><li><p>Intel C++ 9.1 (IA32 Windows)</p></li><li><p>GreenHills C++ 4.0.6 (PowerPC MCOE 6.3.0)</p></li></ul></div><p>
+    </p><p>
+     The following compilers are known not to work at this time with
+     Sourcery VSIPL++:
+     </p><div class="itemizedlist"><ul type="disc"><li><p>GCC 3.3</p></li><li><p>Intel C++ 8.1</p></li><li><p>Intel C++ 9.0</p></li></ul></div><p>
+    </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id276392"></a>3.1.2. Required Software</h3></div></div></div><p>
+     This section describes software that you must have installed in
+     order to build and install VSIPL++.  Although the instructions
+     below refer to obtaining this software in source form, you will
+     be able to find pre-compiled binary distributions for most popular
+     operating systems.  Consult your operating system manuals for
+     information about obtaining and installing pre-compiled versions
+     of these packages.
+    </p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276405"></a>3.1.2.1. GNU Make</h4></div></div></div><p>
+      You must use the GNU version of <code class="command">make</code> to build
+      Sourcery VSIPL++.  You can download GNU Make as source code from
+      <a class="ulink" href="http://ftp.gnu.org/pub/gnu/make" target="_top">http://ftp.gnu.org/pub/gnu/make</a>.
+      Pre-compiled GNU Make binaries are available for all popular
+      operating systems.
+     </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276427"></a>3.1.2.2. GNU Tar</h4></div></div></div><p>
+      The Sourcery VSIPL++ source code is distributed as a compressed Tape
+      Archive (Tar) file.  Due to incompatibilities between various
+      versions of Tar, CodeSourcery strongly recommends that you use
+      GNU Tar to unpack the source code.  You can download GNU Tar as
+      source code from <a class="ulink" href="http://ftp.gnu.org/pub/gnu/tar" target="_top">http://ftp.gnu.org/pub/gnu/tar</a>.
+      Pre-compiled GNU Tar binaries are available for all popular
+      operating systems.
+     </p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id276446"></a>3.1.3. Optional Software</h3></div></div></div><p>
+     You can build and use Sourcery VSIPL++ without installing any
+     other software packages.  However, if you install the additional
+     packages described in this section, Sourcery VSIPL++ will provide
+     additional functionality and better performance.  This section
+     explains what software you might wish to install and how to
+     obtain it.  Although some the instructions below refer to
+     obtaining this optional software in source form, you will be able
+     to find pre-compiled binary distributions for most popular
+     operating systems.  Consult your operating system manuals for
+     information about obtaining and installing pre-compiled versions
+     of these packages.
+    </p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276461"></a>3.1.3.1. Numerical Libraries</h4></div></div></div><p>
+      Sourcery VSIPL++ can take advantage of high-performance
+      numerical libraries to improve performance.  This section
+      describes the supported libraries.  In general, Sourcery VSIPL++
+      will automatically make use of these libraries are they are
+      installed on your system.
+     </p><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id276472"></a>3.1.3.1.1. ATLAS</h5></div></div></div><p>
+       Automatically Tuned Linear Algebra Software can be used to
+       accelerate some linear-algebra functions in Sourcery VSIPL++.
+       Sourcery VSIPL++ source packages come with the ATLAS sources.
+       Alternatively, if ATLAS is already installed on your system,
+       Sourcery VSIPL++ can be configured to use it.
+      </p><p>
+       Visit <a class="ulink" href="http://math-atlas.sourceforge.net" target="_top">http://math-atlas.sourceforge.net</a> for more
+       information about ATLAS.
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id276494"></a>3.1.3.1.2. FFTW3</h5></div></div></div><p>
+       The Fastest Fourier Transform in the West can be used to
+       accelerate Sourcery VSIPL++ FFT performance.   Sourcery
+       VSIPL++ source packages include the FFTW3 sources.
+       Alternatively, if FFTW3 is already installed on your system,
+       Sourcery VSIPL++ can be configured to use it.
+      </p><p>
+       Visit 
+       <a class="ulink" href="http://www.fftw.org" target="_top">http://www.fftw.org</a> for more information about
+       FFTW. 
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id276515"></a>3.1.3.1.3. Intel IPP and MKL</h5></div></div></div><p>
+       The Intel Performance Primitives and Intel Math Kernel Library
+       can be used by Sourcery VSIPL++ to accelerate some functions,
+       including FFTs.  IPP and MKL are proprietary libraries, so you
+       cannot distribute a Sourcery VSIPL++ application using IPP or
+       MKL under the terms of the GPL.
+      </p><p>
+       To find out more about IPP and MKL visit 
+       </p><div class="itemizedlist"><ul type="disc"><li><p>
+	  <a class="ulink" href="http://www.intel.com/cd/software/products/asmo-na/eng/perflib/ipp/index.htm" target="_top">http://www.intel.com/cd/software/products/asmo-na/eng/perflib/ipp/index.htm</a>
+	</p></li><li><p>
+	  <a class="ulink" href="http://www.intel.com/cd/software/products/asmo-na/eng/perflib/mkl/index.htm" target="_top">http://www.intel.com/cd/software/products/asmo-na/eng/perflib/mkl/index.htm</a>
+	</p></li></ul></div><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id276555"></a>3.1.3.1.4. AMD Core Math Library (ACML)</h5></div></div></div><p>
+       The AMD Core Math Library (ACML) can be used by Sourcery VSIPL++
+       to accelerate some linear-algebra functions.
+      </p><p>
+       Visit <a class="ulink" href="http://developer.amd.com/acml.aspx" target="_top">http://developer.amd.com/acml.aspx</a> for more
+       information about ACML.
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id276575"></a>3.1.3.1.5. Mercury SAL</h5></div></div></div><p>
+       The Mercury Scientific Algorithm Library (SAL) can be used by
+       Sourcery VSIPL++ to accelerate many functions, including
+       elementwise view operations, linear algebra, solvers, and signal
+       processing objects (including FFT).  SAL is a proprietary library,
+       so you cannot distribute a Sourcery VSIPL++ application using
+       SAL under the terms of the GPL.
+      </p><p>
+       Visit <a class="ulink" href="http://www.mc.com/products/software.aspx" target="_top">http://www.mc.com/products/software.aspx</a>
+       for more information about SAL.
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id276597"></a>3.1.3.1.6. VSIPL Back End</h5></div></div></div><p>
+       An implementation of the C VSIPL API can be used by Sourcery
+       VSIPL++ to implement many functions, including linear algebra,
+       solvers, and signal processing objects (such as FFT).
+      </p><p>
+       Visit the <a class="ulink" href="http://www.vsipl.org/" target="_top">http://www.vsipl.org/</a>
+       for more information about the VSIPL API and a list of implementations.
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id276617"></a>3.1.3.1.7. CML Back End</h5></div></div></div><p>
+       The Cell Math Library (CML) is used by Sourcery VSIPL++ to
+       accelerate performance on Cell processors by offloading many
+       computations to the SPUs.
+       <span class="emphasis"><em>CML is required to build any version of Sourcery
+       VSIPL++ from source.</em></span>
+       CML is available from CodeSourcery and included in the binary
+       installation packages for the full version of Sourcery VSIPL++.
+      </p><p>
+       Contact <code class="email">&lt;<a class="email" href="mailto:sales@codesourcery.com">sales@codesourcery.com</a>&gt;</code>
+       for more information about CML.
+      </p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id276642"></a>3.1.3.2. Communications Libraries</h4></div></div></div><p>
+      If you install a communication library such as Mercury PAS
+      (Parallel Acceleration System) or MPI (Message Passing Interface),
+      you can run Sourcery VSIPL++ programs on multiple
+      compute nodes simultaneously.  On GNU/Linux platforms, Sourcery
+      VSIPL++ works with both the LAM and MPICH implementations of
+      MPI, and will likely work with other MPI implementations as
+      well.  On MCOE platforms, Sourcery VSIPL++ works with both
+      Mercury PAS and Verari MPI/Pro.
+     </p><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id276656"></a>3.1.3.2.1. Mercury PAS</h5></div></div></div><p>
+       Mercury Parallel Acceleration System (PAS) is a library
+       for high-performance communication on Mercury PowerPC embedded
+       computer and Cell blade systems.  PAS is a propreitary library,
+       so you cannot distribute a Sourcery VSIPL++ application using
+       PAS under the terms of the GPL.
+      </p><p>
+       For more information on PAS, visit 
+       <a class="ulink" href="http://www.mc.com/products/software.aspx" target="_top">http://www.mc.com/products/software.aspx</a>.
+      </p><p>
+       The following releases of Mercury PAS have been tested by CodeSourcery
+       to work with Sourcery VSIPL++:
+       </p><div class="itemizedlist"><ul type="disc"><li><p>MCOE PAS 4.3.0</p></li><li><p>PAS for Linux Clusters</p></li></ul></div><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id274512"></a>3.1.3.2.2. LAM/MPI</h5></div></div></div><p>
+       You can download LAM/MPI as source code from 
+       <a class="ulink" href="http://www.lam-mpi.org/" target="_top">http://www.lam-mpi.org/</a>.
+      </p><p>
+       Recommended configuration options when building LAM/MPI for use
+       with Sourcery VSIPL++:
+       </p><div class="variablelist"><dl><dt><span class="term"><code class="option">--without-mpi2cpp</code></span></dt><dd><p>
+	   Do not build MPI/C++ interface.  Although Sourcery VSIPL++ does
+	   not use this interface, building it may create link-time
+	   warnings when using different compiler versions.
+	  </p></dd></dl></div><p>
+      </p><p>
+       The following releases of LAM/MPI have been tested by
+       CodeSourcery to work with Sourcery VSIPL++:
+       </p><div class="itemizedlist"><ul type="disc"><li><p>LAM/MPI 7.0.6</p></li><li><p>LAM/MPI 7.1.1</p></li></ul></div><p>
+      </p><div class="caution" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">RHEL Users</h3><p>
+	The RHEL LAM 6.5.9-1 package available for RHEL 3 is not
+	suitable for use with Sourcery VSIPL++.  This package does not
+	support compilation with a C++ compiler.
+       </p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id276940"></a>3.1.3.2.3. MPICH</h5></div></div></div><p>
+       You can download MPICH as source code from 
+       <a class="ulink" href="http://www-unix.mcs.anl.gov/mpi/mpich/" target="_top">http://www-unix.mcs.anl.gov/mpi/mpich/</a>,
+       but pre-built binaries for most popular operating systems are
+       available from the system distributors.  If MPICH is not already
+       installed on your system, see the documentation for your
+       operating system for information about obtaining MPICH.
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id276957"></a>3.1.3.2.4. OpenMPI</h5></div></div></div><p>
+       You can download OpenMPI as source code from 
+       <a class="ulink" href="http://www.open-mpi.org/" target="_top">http://www.open-mpi.org/</a>,
+       but pre-built binaries for most popular operating systems are
+       available from the system distributors.  If OpenMPI is not already
+       installed on your system, see the documentation for your
+       operating system for information about obtaining OpenMPI.
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="id276974"></a>3.1.3.2.5. Verari MPI/Pro</h5></div></div></div><p>
+       The following release of Verari MPI/Pro has been tested by CodeSourcery
+       to work with Sourcery VSIPL++:
+       </p><div class="itemizedlist"><ul type="disc"><li><p>Verari MPI/Pro 2.1.0</p></li></ul></div><p>
+      </p></div></div></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s02.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch03s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">2.2. Installing a Binary Package </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 3.2. Obtaining the Source Code</td></tr></table></div></body></html>

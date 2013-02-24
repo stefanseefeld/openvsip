@@ -1,0 +1,26 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.4. View Cast</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="extensions.html" title="Chapter 6. Extension Reference"><link rel="prev" href="extension_reduce.html" title="6.3. Reduction Functions"><link rel="next" href="dispatcher.html" title="6.5. Dispatcher - related types"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">6.4. View Cast</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="extension_reduce.html">Prev</a> </td><th width="60%" align="center">Chapter 6. Extension Reference</th><td width="20%" align="right"> <a accesskey="n" href="dispatcher.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="extension_view_cast"></a>6.4. View Cast</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_view_cast"></a>6.4.1. <code class="function">view_cast</code></h3></div></div></div><a class="indexterm" name="id336294"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename T,
+              typename ViewT&gt;
+    typename View_of_dim&lt;ViewT::dim, T, ...&gt;::type
+    view_cast(ViewT view);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>value type to cast elements of view <em class="parameter"><code>view</code></em>
+      to.  This must be explicit.
+     </p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>view type.  Implied by <em class="parameter"><code>view</code></em>.
+     </p></dd></dl></div><p><b>Description: </b>
+   <code class="function">view_cast</code> casts the value type of
+   <em class="parameter"><code>view</code></em> to new value type <em class="parameter"><code>T</code></em>.
+   Data is not copied and original view is not modified in any way.
+  </p><p><b>Header File / Namespace: </b>
+   <code class="function">view_cast</code> is defined in the header
+   <code class="filename">vsip_csl/view_cast.hpp</code> and is in the
+   <em class="parameter"><code>vsip_csl</code></em> namespace.
+  </p><p><b>Example: </b>
+   The following example casts the values in a view of 16-bit ints to 
+   avoid overflow for summation.
+   </p><pre class="programlisting">Vector&lt;uint16_t&gt; vec(4); 
+vec(0) = 1 &lt;&lt; 15;
+vec(1) = 1 &lt;&lt; 15;
+vec(2) = 1 &lt;&lt; 15;
+vec(3) = 1 &lt;&lt; 15;
+uint32_t sum = sumval(view_cast&lt;uint32_t&gt;(vec));</pre><p>
+  </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="extension_reduce.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="dispatcher.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">6.3. Reduction Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 6.5. Dispatcher - related types</td></tr></table></div></body></html>

@@ -1,0 +1,37 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>C.7. CVSIP Benchmark Usage</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="apc.html" title="Appendix C. Benchmark Usage"><link rel="prev" href="apcs06.html" title="C.6. CUDA Benchmark Usage"><link rel="next" href="apcs08.html" title="C.8. dist_vmul"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">C.7. CVSIP Benchmark Usage</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="apcs06.html">Prev</a> </td><th width="60%" align="center">Appendix C. Benchmark Usage</th><td width="20%" align="right"> <a accesskey="n" href="apcs08.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id286147"></a>C.7. CVSIP Benchmark Usage</h2></div></div></div><p> This appendix presents the displays from the CVSIP benchmarks.
+    </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286156"></a>C.7.1. fft</h3></div></div></div><p>
+        </p><pre class="screen">fft -- Fft (fast fourier transform) Single precision Planning
+        effor: estimate (number of times = 1): -1 -- op: out-of-place CC fwd
+        fft -2 -- ip: in-place CC fwd fft -5 -- op: out-of-place CC inv fft
+        (w/scaling) -6 -- ip: in-place CC inv fft (w/scaling) Planning effor:
+        measure (number of times = 15): 11-16 Planning effor: pateint (number
+        of times = 0): 21-26 // When there is no single precision // support,
+        the following line replaces // the above. Single precision FFT support
+        not provided by library Planning effor: estimate (number of times =
+        1): 101-106 Planning effor: measure (number of times = 15): 111-116
+        Planning effor: pateint (number of times = 0): 121-126 // When there
+        is no double precision // support, the following line replaces // the
+        above. Double precision FFT support not provided by library </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286179"></a>C.7.2. fftm</h3></div></div></div><p>
+        </p><pre class="screen">fftm -- Fftm (multiple fast fourier transform) benchmark
+        Single precision Fixed rows, sweeping FFT size: -1 -- op :
+        out-of-place CC fwd fft -2 -- ip : In-place CC fwd fft Parameters (for
+        sweeping FFT size, cases 1 through 6) -p:rows ROWS -- set number of
+        pulses (default 64) Fixed FFT size, sweeping number of FFTs: -11 -- op
+        : out-of-place CC fwd fft -12 -- ip : In-place CC fwd fft Parameters
+        (for sweeping number of FFTs, cases 11 through 16) -p:size SIZE --
+        size of pulse (default 2048) </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286199"></a>C.7.3. fir</h3></div></div></div><p>
+        </p><pre class="screen">fir -- FIR signal processing object benchmark -1 -- No state
+        save, float -2 -- No state save, complex&lt;float&gt; -11 -- State
+        save, float -12 -- State save, complex&lt;float&gt; Parameters
+        -param:k &lt;size&gt; Kernel size (default 16) -param:d &lt;size&gt;
+        Decimation (default 1); </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286218"></a>C.7.4. vmul</h3></div></div></div><p>
+        </p><pre class="screen">vmul -- vector multiplication single-precision: Vector-Vector:
+        -1 -- Vector&lt; float &gt; * Vector&lt; float &gt; -2 --
+        Vector&lt;complex&lt;float&gt;&gt; *
+        Vector&lt;complex&lt;float&gt;&gt; -5 -- Vector&lt; float &gt; *
+        Vector&lt;complex&lt;float&gt;&gt; double-precision: (101-113)
+        (131-132) </pre><p>
+      </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs06.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apcs08.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">C.6. CUDA Benchmark Usage </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> C.8. dist_vmul</td></tr></table></div></body></html>

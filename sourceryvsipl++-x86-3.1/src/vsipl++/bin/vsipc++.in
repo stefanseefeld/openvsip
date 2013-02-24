@@ -1,0 +1,126 @@
+#!/bin/bash
+set -e
+
+########################################################################
+# Notes
+########################################################################
+
+# SYNOPSIS
+#   vsipc++ [--variant=VARIANT] 
+#           [--show | --echo]
+#           [--cxx=CXX]
+#           [OPTIONS]
+#           [FILENAME]
+#
+#   vsipc++ --help
+#   vsipc++ --version
+#
+# DESCRIPTION
+#   This script is a wrapper which invokes the appropriate C++ compiler
+#   to compile FILENAME with compiler options OPTIONS and all additional
+#   compiler options required to compile applications that use the
+#   Sourcery VSIPL++ library.  The compiler and required options are
+#   determined using the vsipl++.pc file in the lib/pkgconfig/ directory
+#   accompanying the bin/ directory in which this script is located.
+#
+#   If the --variant option is used, the compiler and required options
+#   are determined using the vsipl++-VARIANT.pc file.
+#
+#   If the --show option is given, the resulting command lines are shown
+#   rather than executed.  If the --echo option is given, the command
+#   lines are shown before execution.
+#
+#   If the --cxx option is used, CXX is used for the compiler rather
+#   than the compiler from the vsipl++.pc file.
+#
+#   This script depends on the pkg-config program.
+
+usage() {
+  cat <<EOF
+Usage: vsipc++ [options] file
+Options:
+ --help             Display this information
+ --version          Display version information for vsipc++.
+ --variant=VARIANT  Use the vsipl++-VARIANT.pc configuration file.
+ --cxx=CXX          Use CXX as the compiler command.
+ --show             Show the compiler command line without running it.
+ --echo             Show commands as they are run.
+
+All other options are passed through to the compiler, along with the
+options from the vsipl++.pc or vsipl++-CONFIG.pc file.
+EOF
+}
+
+version() {
+  cat <<EOF
+vsipc++ @PACKAGE_VERSION@ (Sourcery VSIPL++ @PACKAGE_VERSION@)
+Copyright (C) 2009 CodeSourcery, Inc.
+EOF
+}
+
+# Determine pkgconfig directory.
+pkgconfig_dir=`dirname "$0"`/../lib/pkgconfig
+if [ ! -d "$pkgconfig_dir" ] ; then
+  echo 'Error: lib/pkgconfig directory not found.'
+  exit 1
+fi
+
+# Set default values of variables.
+pkgfile=vsipl++
+showcommand=false
+runcommand=true
+vsip_cxx='DEFAULT'
+
+# Process options and determine the pkg_config file name.
+optlist=()
+for option in "$@"; do
+  case "$option" in
+  (--help)
+    usage
+    exit 0
+    ;;
+  (--version)
+    version
+    exit 0
+    ;;
+  (--variant=*)
+    pkgfile="vsipl++-${option#--variant=}"
+    ;;
+  (--cxx=*)
+    vsip_cxx="${option#--cxx=}"
+    ;;
+  (--show)
+    showcommand=true
+    runcommand=false
+    ;;
+  (--echo)
+    showcommand=true
+    ;;
+  (*)
+    optlist=("${optlist[@]}" "$option")
+    ;;
+  esac
+done
+
+# Check for existence of the pkg_config file.
+if [ ! -e "${pkgconfig_dir}/${pkgfile}.pc" ] ; then
+  echo "Error: Pkg_config file ${pkgfile}.pc not found."
+  exit 1
+fi
+
+# Retrieve compiler and options using pkg-config.
+export PKG_CONFIG_PATH=`dirname "$0"`/../lib/pkgconfig
+vsip_cppflags=`pkg-config "$pkgfile" --variable=cppflags`
+vsip_cxxflags=`pkg-config "$pkgfile" --variable=cxxflags`
+vsip_libs=`pkg-config "$pkgfile" --libs`
+if [ 'DEFAULT' == "$vsip_cxx" ] ; then
+  vsip_cxx=`pkg-config "$pkgfile" --variable=cxx`
+fi
+
+# Execute and/or display the resulting command line.
+if $showcommand; then
+  echo "$vsip_cxx" $vsip_cppflags "${optlist[@]}" $vsip_cxxflags $vsip_libs
+fi
+if $runcommand; then
+  "$vsip_cxx" $vsip_cppflags "${optlist[@]}" $vsip_cxxflags $vsip_libs
+fi

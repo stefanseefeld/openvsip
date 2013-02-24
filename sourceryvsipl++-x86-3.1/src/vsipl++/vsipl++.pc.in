@@ -1,0 +1,23 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+builtin_libdir=@builtin_libdir@
+includedir=@includedir@
+extra_cflags=
+cc=@CC@
+cxx=@CXX@
+cppflags=-I${includedir} @CPPFLAGS@
+cflags=${extra_cflags} @CFLAGS@
+cxxflags=${extra_cflags} @CXXFLAGS@
+ldflags=${extra_cflags} @LDFLAGS@ -L${builtin_libdir}
+libs=@LIBS@
+par_service=@PAR_SERVICE@
+par_boot=@PAR_BOOT@
+par_halt=@PAR_HALT@
+qmtest_target=@QMTEST_TARGET@
+
+Name: Sourcery VSIPL++
+Description: CodeSourcery VSIPL++ library
+Version: @version_string@
+Libs: ${ldflags} -L${libdir} @SVSIP_LIB@ @VSIP_CSL_LIB@ -lsvpp ${libs}
+Cflags: ${cppflags}

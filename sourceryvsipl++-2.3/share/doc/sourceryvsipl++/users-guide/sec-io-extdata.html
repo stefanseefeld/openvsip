@@ -1,0 +1,67 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>7.4. Performing I/O with External Data Access</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-serial.html" title="Chapter 7. Fast Convolution"><link rel="prev" href="sec-io-user-spec-storage.html" title="7.3. Performing I/O with User-Specified Storage"><link rel="next" href="chap-parallel.html" title="Chapter 8. Parallel Fast Convolution"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">7.4. Performing I/O with External Data Access</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="sec-io-user-spec-storage.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Fast Convolution</th><td width="20%" align="right"> <a accesskey="n" href="chap-parallel.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="sec-io-extdata"></a>7.4. Performing I/O with External Data Access</h2></div></div></div><p>In this section, you will use <em class="firstterm">External Data
+    Access</em> to get a pointer to a block's data. You can use this
+    method with any block, even if the block does not use user-specified
+    storage. The external data access method is useful in contexts where you
+    cannot control how the block is allocate. For example, in this section,
+    you will create a utility routine for I/O that works with any matrix or
+    vector, even if it was not created with user-defined storage.</p><p>To access a block's data with external data access, you create an
+    <code class="function">Ext_data</code> object.</p><pre class="programlisting"> Ext_data&lt;block_type, layout_type&gt; ext(block,
+    SYNC_INOUT);</pre><p><code class="function">Ext_data</code> is a class template that takes
+    template parameters to indicate the block type
+    <code class="varname">block_type</code> and the requested layout
+    <code class="varname">layout_type</code>. The constructor takes two parameters: the
+    block being accessed, and the type of synchronization necessary.</p><p>The <code class="varname">layout_type</code> parameter is a specialized
+    <code class="classname">Layout</code> class template that determines the layout of
+    data that <code class="function">Ext_data</code> provides. If no type is given, the
+    natural layout of the block is used. However, in some cases you may wish
+    to specify row-major or column-major layout.</p><p>The <code class="classname">Layout</code> class template takes 4 parameters
+    to indicate dimensionality, dimension-ordering, packing format, and
+    complex storage format (if complex). In the example below you will use the
+    layout_type to request the data access to be dense, row-major, with
+    interleaved real and imaginary values. This layout corresponds to a common
+    storage format used for binary files storing complex data.</p><p>The synchronization type is analgous to the update flags for
+    <code class="function">admit()</code> and <code class="function">release()</code>.
+    <code class="varname">SYNC_IN</code> indicates that the block and pointer should be
+    synchronized when the <code class="function">Ext_data</code> object is created
+    (like <code class="function">admit(true)</code>) <code class="varname">SYNC_OUT</code>
+    indicates that the block and pointer should be synchronized when the
+    <code class="function">Ext_data</code> object is destroyed (like
+    <code class="function">release(true)</code>) <code class="varname">SYNC_INOUT</code>
+    indicates that the block and pointer should be syncrhonized at both
+    points.</p><p>Once the object has been created, the pointer can be accessed with
+    the <code class="function">data</code> method.</p><pre class="programlisting"> value_type* ptr = ext.data();</pre><p>The pointer provided is valid only during the life of the
+    <code class="classname">Ext_data</code> object. Moreover, the block referred to by
+    the <code class="classname">Ext_data</code> object must not be used during this
+    period.</p><p>Using these capabilities together, you can create a routine to
+    perform I/O into a block. This routine will take two arguments: a filename
+    to read, and a view in which to store the data. The amount of data read
+    from the file will be determined by the view's size.</p><pre class="programlisting">
+      template &lt;typename ViewT&gt;
+void
+read_file(ViewT view, char const* filename)
+{
+  using vsip::impl::Ext_data;
+  using vsip::impl::Layout;
+  using vsip::impl::Stride_unit_dense;
+  using vsip::impl::Cmplx_inter_fmt;
+  using vsip::impl::Row_major;
+  using vsip::impl::SYNC_OUT;
+
+  dimension_type const dim = ViewT::dim;
+  typedef typename ViewT::block_type block_type;
+  typedef typename ViewT::value_type value_type;
+
+  typedef Layout&lt;dim, typename Row_major&lt;dim&gt;::type,
+                 Stride_unit_dense, Cmplx_inter_fmt&gt;
+		layout_type;
+
+  Ext_data&lt;block_type, layout_type&gt;
+		ext(view.block(), SYNC_OUT);
+
+  std::ifstream ifs(filename);
+
+  ifs.read(reinterpret_cast&lt;char*&gt;(ext.data()),
+	   view.size() * sizeof(value_type));
+}
+
+    </pre></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sec-io-user-spec-storage.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-serial.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="chap-parallel.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">7.3. Performing I/O with User-Specified Storage </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 8. Parallel Fast Convolution</td></tr></table></div></body></html>

@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+
+########################################################################
+#
+# Contents:
+#   Set up a workspace environment for Sourcery VSIPL++ examples.
+#
+########################################################################
+
+########################################################################
+# Notes
+########################################################################
+
+# SYNOPSIS
+#   vsip-create-workspace [--help] [-v] [--variant=VARIANT] DESTINATION
+#
+#   vsip-create-workspace --help
+#   vsip-create-workspace --version
+#                 
+# DESCRIPTION
+#   This script copies the examples of a Sourcery VSIPL++ binary package to
+#   DESTINATION.
+#
+#   If the --variant option is used, the default build variant will be
+#   set to its value.
+#
+#   The -v option turns on verbose output.
+#
+
+# All errors are fatal.
+set -e
+
+usage()
+{
+  cat <<EOF
+Usage: $1 [options] destination
+Options:
+ --help              Display this information.
+ --version           Display version information.
+ --variant=VARIANT   Define the default variant to be VARIANT.
+ --prefix=PREFIX     Override the installation prefix.
+ --define=NAME=VALUE Define a variable NAME to have value VALUE.
+                     This may be useful to override defaults, such
+                     as third-party library installations.
+
+Create Sourcery VSIPL++ workspace.
+EOF
+}
+
+version()
+{
+  cat <<EOF
+vsip-create-workspace 2.3-22 (Sourcery VSIPL++ 2.3-22)
+Copyright (C) 2009 CodeSourcery, Inc.
+EOF
+}
+
+prefix=$(dirname "$0")		# directory where vsip-create-workspace is located.
+				#   in src package: scripts/vsip-create-workspace
+				#   in bin package: bin/vsip-create-workspace
+src=$(dirname $prefix)/share/sourceryvsipl++
+
+verbose="no"
+variant=
+prefix=
+variables=
+args=()
+for option in "$@"; do
+  case "$option" in
+    (-h|--help)
+      usage $0
+      exit 0
+      ;;
+    (--version)
+      version $0
+      exit 0
+      ;;
+    (--variant=*)
+      variant="${option#--variant=}"
+      ;;
+    (--prefix=*)
+      prefix="${option#--prefix=}"
+      ;;
+    (--define=*)
+      variables="${variables} ${option#--define=}"
+      ;;
+    (-v)
+      verbose="yes"
+      ;;
+    (*)
+      args=("${args[@]}" "$option")
+      ;;
+  esac
+done
+
+destination=$args
+
+# Make sure destination directory doesn't exist.
+if test -e "$destination"; then
+  echo "$0: Error: destination '$destination' already exists."
+  exit -1
+fi
+
+if test "$verbose" = "yes"; then
+  echo "Setting up Sourcery VSIPL++ workspace in " $destination
+fi
+
+# Copy tree
+cp -r $src $destination
+
+if test -n "$variant"; then
+  if test "$verbose" = "yes"; then
+    echo "  setting default variant to " $variant
+  fi
+fi
+
+if test -n "$prefix"; then
+  # Set variant and variables, and override prefix
+  cat $src/common.mk | sed \
+    -e "s|^variables :=.*$|variables :=$variables|" \
+    -e "s|^variant :=.*$|variant :=$variant|" \
+    -e "s|^prefix =.*$|prefix :=$prefix|" > $destination/common.mk.tmp
+else
+  # Set variant and variables
+  cat $src/common.mk | sed \
+    -e "s|^variables :=.*$|variables :=$variables|" \
+    -e "s|^variant :=.*$|variant :=$variant|" > $destination/common.mk.tmp
+fi
+mv $destination/common.mk.tmp $destination/common.mk

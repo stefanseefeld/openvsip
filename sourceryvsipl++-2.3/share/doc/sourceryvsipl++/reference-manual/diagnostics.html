@@ -1,0 +1,30 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.8. Diagnostics functions</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="extensions.html" title="Chapter 6. Extension Reference"><link rel="prev" href="fft_be.html" title="6.7. FFT backend API"><link rel="next" href="cvsip_extensions.html" title="Chapter 7. Sourcery VSIPL API extensions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">6.8. Diagnostics functions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="fft_be.html">Prev</a> </td><th width="60%" align="center">Chapter 6. Extension Reference</th><td width="20%" align="right"> <a accesskey="n" href="cvsip_extensions.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="diagnostics"></a>6.8. Diagnostics functions</h2></div></div></div><p>Unless otherwise noted, all types described in this section are declared in
+ the <code class="code">vsip_csl</code> namespace.</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="assign_diagnostics"></a>6.8.1. <code class="function">assign_diagnostics</code></h3></div></div></div><a class="indexterm" name="id338406"></a><p><b>Description. </b></p><pre class="synopsis">template &lt;typename V1, typename V2&gt; 
+void assign_diagnostics(V1 lhs, V2 rhs);</pre><p><b>Description. </b>This function prints information about available backends for the assignment <code class="code">lhs = rhs;</code>.</p><p><b>Function parameters. </b></p><div class="variablelist"><dl><dt><span class="term">lhs</span></dt><dd><p>The lefthand-side view of the assignment.</p></dd><dt><span class="term">rhs</span></dt><dd><p>The righthand-side view of the assignment. This typically is an expression, such as <code class="code">A * B</code> or <code class="code">fft(C)</code>.</p></dd></dl></div><p><b>Example. </b></p><pre class="programlisting">Vector&lt;&gt; a;
+Vector&lt;&gt; b;
+Vector&lt;&gt; c;
+...
+a = b * c;
+assign_diagnostics(a, B * c);</pre><p>This may generate output similar to this:</p><pre class="screen">--------------------------------------------------------
+assign diagnostics:                                            
+  dim          : 1  (8)
+  LHS    : ...
+  RHS    : ...
+  is_illegal   : false
+  is_rhs_expr  : true
+  is_rhs_simple: false
+  is_rhs_reorg : true
+  is_lhs_split : false
+  is_rhs_split : false
+  lhs_cost     : 0
+  rhs_cost     : 2
+  type         : serial_expr
+--------------------------------------------------------
+  lhs expr: ...
+  rhs expr: ...
+  -                 user  ct: false  rt: false
+  -           dense_expr  ct: false  rt: false
+            ...
+            ...
+  -          loop_fusion  ct:  true  rt:  true  (Expr_Loop)
+--------------------------------------------------------</pre><p>Of particular interest here is the second block of the output, which lists all backends, together with information about their availability. <code class="constant">ct: false</code> states that the evaluator was at compile-time determined not to match, while <code class="constant">rt: true</code> indicates the runtime validity check passed. Thus, available backends require both <code class="constant">ct</code> as well as <code class="constant">rt</code> checks to pass, to be selected, and the first match in the list will be dispatched to.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="fft_be.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="cvsip_extensions.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">6.7. FFT backend API </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 7. Sourcery VSIPL API extensions</td></tr></table></div></body></html>

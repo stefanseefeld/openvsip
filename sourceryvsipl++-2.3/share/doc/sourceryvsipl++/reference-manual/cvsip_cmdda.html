@@ -1,0 +1,56 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>7.5. Direct Data Access to complex matrix views</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="cvsip_extensions.html" title="Chapter 7. Sourcery VSIPL API extensions"><link rel="prev" href="cvsip_mdda.html" title="7.4. Direct Data Access to real matrix views"><link rel="next" href="bi01.html" title="References"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">7.5. Direct Data Access to complex matrix views</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="cvsip_mdda.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Sourcery VSIPL API extensions</th><td width="20%" align="right"> <a accesskey="n" href="bi01.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="cvsip_cmdda"></a>7.5. Direct Data Access to complex matrix views</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="vsip_csl_cmattr"></a>7.5.1. vsip_csl_cmattr_&lt;type&gt;</h3></div></div></div><pre class="synopsis">typedef struct 
+{
+  vsip_scalar_<span class="emphasis"><em>&lt;type&gt;</em></span> *data_r;
+  vsip_scalar_<span class="emphasis"><em>&lt;type&gt;</em></span> *data_i;
+  vsip_stride  row_stride;
+  vsip_length  row_length;
+  vsip_stride  col_stride;
+  vsip_length  col_length;
+} vsip_csl_cmattr_<span class="emphasis"><em>&lt;type&gt;</em></span>;</pre><p>where <span class="emphasis"><em>&lt;type&gt;</em></span> can be one of <code class="varname">f</code> or
+     <code class="varname">d</code> to represent float or double, respectively.</p><div class="variablelist"><p class="title"><b>Member description</b></p><dl><dt><span class="term">data_r, </span><span class="term">data_i</span></dt><dd><p>Pointers to the data arrays of the appropriate type (see the VSIPL
+           specification for definitions of <code class="code">vsip_scalar_<span class="emphasis"><em>&lt;type&gt;</em></span></code>).
+         </p><p>If <code class="code"><code class="varname">data_i</code>=NULL</code>, <code class="varname">data_r</code>
+           refers to interleaved complex data. Otherwise <code class="varname">data_r</code> refers to
+           the real part and <code class="varname">data_i</code> to the imaginary part of split complex data.
+         </p></dd><dt><span class="term">row_stride, </span><span class="term">col_stride</span></dt><dd><p>The row-stride and column-stride of the array, i.e. the distance (in units of
+           <code class="code">vsip_scalar_<span class="emphasis"><em>&lt;type&gt;</em></span></code>) between
+           two adjacent elements within a row and within a column, respectively.</p></dd><dt><span class="term">row_length, </span><span class="term">col_length</span></dt><dd><p>Number of elements per row (i.e., number of columns), and
+           number of elements per column (i.e., number of rows) in the array.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="vsip_csl_cmgetattrib"></a>7.5.2. <code class="function">vsip_csl_cmgetattrib_&lt;type&gt;</code></h3></div></div></div><a class="indexterm" name="id339698"></a><a class="indexterm" name="id339710"></a><pre class="synopsis">void 
+vsip_csl_cmgetattrib_f(vsip_cmview_f const *vector, vsip_csl_cmattr_f *attrib);
+void
+vsip_csl_cmgetattrib_d(vsip_cmview_d const *vector, vsip_csl_cmattr_d *attrib);
+</pre><p><b>Description: </b>Query the direct data access attributes for a complex matrix.</p><p><b>Result: </b>
+   The struct pointed to by <code class="varname">attrib</code> is filled with
+   the direct-data-access attributes for <code class="varname">matrix</code>.
+   If <code class="varname">matrix</code> holds interleaved complex data,
+   <code class="varname">data_i</code> will be <code class="constant">NULL</code> and <code class="varname">data_r</code>
+   will refer to interleaved complex data. If <code class="varname">matrix</code> holds
+   split-complex data, <code class="varname">data_r</code> and <code class="varname">data_i</code> will
+   refer to the real and imaginary data arrays respectively.
+  </p><p><b>Note: </b>
+   The pointer is <span class="emphasis"><em>undefined</em></span> if the <code class="type">block</code> is currently <span class="emphasis"><em>released</em></span>. 
+   A valid pointer returned when the <code class="type">block</code> is currently <span class="emphasis"><em>admitted</em></span> becomes undefined 
+   if the <code class="type">block</code> is subsequently <span class="emphasis"><em>released</em></span>.
+  </p><p><b>Example: </b></p><pre class="programlisting">
+vsip_cmview_f *matrix = ...;
+vsip_csl_cmattr_f dda;
+vsip_csl_cmgetattrib_f(src, &amp;dda);
+if (dda.data_r &amp;&amp; dda.data_i) /* split-complex data */
+{
+  for (i = 0; i != dda.col_length; ++i)
+    for (j = 0; j != dda.row_length; ++j)
+    {
+      dda.data_r[i * dda.col_stride + j * dda.row_stride] = i;
+      dda.data_i[i * dda.col_stride + j * dda.row_stride] = i;
+    }
+}
+else if (dda.data_r) /* interleaved-complex data */
+{
+  for (i = 0; i != dda.col_length; ++i)
+    for (j = 0; j != dda.row_length; ++j)
+    {
+      dda.data_r[i * dda.col_stride + j * dda.row_stride] = i; /* real */
+      dda.data_r[i * dda.col_stride + j * dda.row_stride + 1] = i; /* imag */
+    }
+}
+  </pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="cvsip_mdda.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="cvsip_extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bi01.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">7.4. Direct Data Access to real matrix views </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> References</td></tr></table></div></body></html>

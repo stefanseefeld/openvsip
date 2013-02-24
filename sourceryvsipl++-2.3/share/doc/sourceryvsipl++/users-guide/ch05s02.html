@@ -1,0 +1,41 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>5.2. Using the Profiler</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="profiling.html" title="Chapter 5. Profiling"><link rel="prev" href="profiling.html" title="Chapter 5. Profiling"><link rel="next" href="profiler-output.html" title="5.3. Profiler Output"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">5.2. Using the Profiler</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="profiling.html">Prev</a> </td><th width="60%" align="center">Chapter 5. Profiling</th><td width="20%" align="right"> <a accesskey="n" href="profiler-output.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id280838"></a>5.2. Using the Profiler</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id280844"></a>5.2.1. Profiling Objects</h3></div></div></div><p>The <code class="code">Profile</code> object is used to enable profiling during
+      the lifetime of the object. When created, it takes arguments to indicate
+      the output file and the profiling mode (trace or accumulate). When
+      destroyed (i.e. goes out of scope or is explicitly deleted), the profile
+      data is written to the specified output file. For example: </p><pre class="screen">
+      profile::Profile profile("profile.txt", profile::pm_accum);
+      </pre><p>During the lifetime of the Profile object, timing data is stored
+      through a simple interface provided by the <code class="classname">Scope</code>
+      object. These objects are used to profile library operations for the
+      different areas mentioned in <a class="xref" href="profiling.html#mask-values" title="Table 5.1. Profiling Configuration Mask">Table 5.1, &#8220;Profiling Configuration Mask&#8221;</a> above. Any
+      <code class="classname">Scope</code> objects defined in user programs fall into
+      the 'user' category.</p><p>The declaration of an instance of this object starts a timer and
+      when it is destroyed, the timer is stopped. The timing data is
+      subsequently reported when the <code class="code">Profile</code> object is destroyed.
+      For example: </p><pre class="screen"> profile::Scope&lt;profile::user&gt; scope("Scope
+      Name", op_count);</pre><p> The <code class="constant">profile::user</code>
+      template argument indicates that this scope falls into the
+      <span class="emphasis"><em>user</em></span> category (and thus can be enabled with
+      <code class="code">-DVSIP_PROFILE_USER</code>). The first constructor argument is the
+      name that will be used to display the scope's performance data in the
+      log file (<a class="xref" href="profiler-output.html#profile-names" title="5.3.2. Scope names">Section 5.3.2, &#8220;Scope names&#8221;</a> describes the names used
+      internally by the library.) The second parameter, <code class="code">op_count</code>,
+      is an optional unsigned integer specifying an estimate of the total
+      number of operations (floating point or otherwise) performed. This is
+      used by the profiler to compute the rate of computation. Without it, the
+      profiler will still yield useful timing data, but the average rate of
+      computation will be shown as zero in the log.</p><p>Creating a <code class="classname">Scope</code> object on the stack is the
+      easiest way to control the region it will profile. For example, from
+      within the body of a function (or as the entire function), use this to
+      define a region of interest: </p><pre class="programlisting"> {
+      profile::Scope&lt;profile::user&gt; scope("Main computation:"); //
+      perform main computation // ... }</pre><p> The closing brace
+      causes <code class="varname">scope</code> to go out of scope, logging the amount
+      of time spent doing the computation.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id280945"></a>5.2.2. Profiler Modes</h3></div></div></div><p>In <code class="code">trace</code> mode, the start and stop times where scopes
+      begin and end are stored as profile data. The log will present these
+      events in chronological order. This mode is preferred when a highly
+      detailed view of program execution is desired.</p><p>In <code class="code">accum</code> (accumlate) mode, the start and stop times
+      are subtracted to compute the time spent in a scope and the cumulative
+      sum of these durations are stored as profile data. The log will indicate
+      the total amount of time spent in each scope. This mode is desirable
+      when investigating a specific function's average performance.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="profiling.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="profiling.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="profiler-output.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 5. Profiling </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 5.3. Profiler Output</td></tr></table></div></body></html>

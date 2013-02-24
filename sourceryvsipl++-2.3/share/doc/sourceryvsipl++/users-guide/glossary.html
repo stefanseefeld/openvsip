@@ -1,0 +1,37 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Glossary</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="pt01.html" title="Part I. Working with Sourcery VSIPL++"><link rel="prev" href="sec-benchmarking-output.html" title="6.4. Benchmark Output"><link rel="next" href="examples.html" title="Appendix A. Examples"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Glossary</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="sec-benchmarking-output.html">Prev</a> </td><th width="60%" align="center">Part I. Working with Sourcery VSIPL++</th><td width="20%" align="right"> <a accesskey="n" href="examples.html">Next</a></td></tr></table><hr></div><div class="glossary"><div class="titlepage"><div><div><h2 class="title"><a name="glossary"></a>Glossary</h2></div></div></div><dl><dt><a name="block"></a>Block</dt><dd><p> A block is an interface to a logically contiguous array of data.
+      Blocks provide a means to organize the access to the data. They may
+      store the data themselves, or access the data through other blocks. This
+      abstraction provides important latitude for optimizations such as
+      expression templates, or parallelism. </p><p> Block types have to fulfill the requirements outlined in table
+      6.1 of the specification. </p></dd><dt><a name="dense"></a>Dense Block</dt><dd><p> Dense blocks are modifiable, allocatable blocks that explicitely
+      store one value for each index in its domain. The data layout is
+      specified in terms of a template parameter, allowing storage to be
+      optimized for particular operations (see dimension ordering). </p><p> Dense blocks allow users to supply data storage, either at
+      construction time, or later, in which case the block is 'rebound' to an
+      alternate user storage. </p></dd><dt><a name="dimension_ordering"></a>Dimension Ordering</dt><dd><p> Dimension ordering refers to the layout of data in a
+      multi-dimensional block, such as row-major or column-major. Dimension
+      ordering has an impact on performance in operations involving loops over
+      the data, as adjacent reads / writes may require a new cache-line to be
+      fetched first. </p></dd><dt><a name="domain"></a>Domain</dt><dd><p> A domain represents a logical set of indices for which views
+      provide data. It may be a contiguous set of indices for dense matrices,
+      or a non-contiguous set of indices for subviews. </p></dd><dt><a name="expression_block"></a>Expression Block</dt><dd><p> Expression blocks are used to store mathematical expressions,
+      allowing optimized evaluation. Conventionally, in an equation 'View A =
+      B + C * D' the computation of A would require at least two temporaries,
+      representing the results of the two binary operations. Additionally, the
+      evaluation of each of these subexpressions implies a loop, resuling in
+      suboptimal performance. </p><p> With expression blocks, the above expression will generate a
+      block representing 'B + C * D', which is evaluated when assigned to 'A'.
+      Specializations of expression blocks may use highly optimized functions
+      to be called, depending on the specific types and subexpressions
+      involved. </p></dd><dt><a name="map"></a>Map</dt><dd><p> A map specifies how a block can be devided into subblocks for the
+      purpose of parallel execution. It defines how subblocks are to be
+      assigned to processors. </p><p> Map types have to fulfill the requirements outlined in table 3.1
+      of the parallel specification. </p></dd><dt><a name="view"></a>View</dt><dd><p> A view represents the base for mathematical linear algebra
+      operations, such as vectors, matrices, tensors. It has a dimension, a
+      value_type, and a number of accessors to access and manipulate its
+      values. The actual data are stored in blocks, to which views hold
+      references internally. </p><p> Multiple views may share the same data, making copy operations
+      for those views an inexpensive operation. All views are parametrized for
+      two types: the view's value_type, as well as the underlaying block type.
+      </p><p> View types have to fulfill the requirements outlined in table 6.3
+      of the specification. </p></dd></dl></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sec-benchmarking-output.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="pt01.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="examples.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">6.4. Benchmark Output </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Appendix A. Examples</td></tr></table></div></body></html>

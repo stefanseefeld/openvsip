@@ -1,0 +1,156 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.2. Installing a Binary Package</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-installation.html" title="Chapter 2. Installation"><link rel="prev" href="chap-installation.html" title="Chapter 2. Installation"><link rel="next" href="chap-installation-source.html" title="Chapter 3. Installation from Source"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">2.2. Installing a Binary Package</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="chap-installation.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Installation</th><td width="20%" align="right"> <a accesskey="n" href="chap-installation-source.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id275754"></a>2.2. Installing a Binary Package</h2></div></div></div><p>
+     This section explains how to install and run Sourcery VSIPL++ from 
+     a pre-built package.  Pre-built Sourcery VSIPL++ packages are available 
+     from CodeSourcery's customer support portal.
+     Visit your account
+     <a class="ulink" href="http://www.codesourcery.com/VSIPLXX" target="_top">http://www.codesourcery.com/VSIPLXX</a>
+     to download packages.
+   </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id275770"></a>2.2.1. Unpacking the Distribution RPM</h3></div></div></div><p>
+     Sourcery VSIPL++ binary packages are available as RPM packages.
+     The following commands use RPM to unpack the binary distribution
+     into the location
+     <code class="filename">/opt/codesourcery/sourceryvsipl++-2.3</code>:
+
+</p><pre class="screen">&gt; rpm -i <em class="replaceable"><code>sourceryvsipl++-i686-pc-linux-gnu-2.3-22.noarch.rpm</code></em>
+</pre><p>
+     The exact package name will vary depending on the target platform.
+    </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id275801"></a>2.2.2. Unpacking the Distribution Tarball</h3></div></div></div><p>
+       Sourcery VSIPL++ binary packages are distributed as compressed
+       Tape Archive (Tar) files that are intended to be installed in
+       the <code class="filename">/opt/codesourcery</code> directory.  The following
+       commands use GNU Tar to unpack the binary distribution into the
+       location <code class="filename">/opt/codesourcery/sourceryvsipl++-2.3</code>:
+
+</p><pre class="screen">&gt; mkdir -p /opt/codesourcery
+&gt; cd /opt/codesourcery
+&gt; tar -xjf <em class="replaceable"><code>/path/to/sourceryvsipl++-2.3-22-i686-pc-linux-gnu.tar.bz2</code></em>
+</pre><p>
+       Replace <em class="replaceable"><code>/path/to/sourceryvsipl++-2.3-22-i686-pc-linux-gnu.tar.bz2</code></em> with
+       the location and name of the particular Sourcery VSIPL++ package you
+       are installing.
+     </p><p>
+       If you will be using pkg-config to determine compile and link
+       time options, you should include the directory
+       <code class="filename">/opt/codesourcery/sourceryvsipl++-2.3/lib/pkgconfig</code>
+       in your <code class="command">PKG_CONFIG_PATH</code> environment variable:
+
+</p><pre class="screen">&gt; export PKG_CONFIG_PATH=/opt/codesourcery/sourceryvsipl++-2.3/lib/pkgconfig
+</pre><p>
+     </p><p>
+       The directory layout of the installed package is as follows:
+</p><pre class="screen">`- opt
+   `- codesourcery
+      `- sourceryvsipl++-2.3
+         |- bin                 // General executables and scripts
+         |  |- [arch]           // Arch-specific binary files
+         |  |  `- [variant]     // Variant-specific binary files
+         |  |     `- benchmarks // Benchmark executables
+         |- include
+         |  |- vsip             // Sourcery VSIPL++ Headers
+         |  |- vsip_csl         // CodeSourcery extensions
+         |  `- ...              // Other non-SV++ headers as necessary
+         |- lib
+         |  |- [arch]           // Arch-specific library files
+         |  |  `- [variant]     // Variant-specific library files
+         |  |     `- pkgconfig  // Variant-specific pkg-config
+         |  `- pkgconfig        // Pkg-config links for all variants
+         |- sbin                // Installation scripts
+         `- share               // Documentation and user files
+            |- doc
+            |  `- sourceryvsipl++ // PDF and HTML documentation
+            `- sourceryvsipl++    // Example programs
+</pre><p>
+     </p><p>
+      Sourcery VSIPL++ binary packages contain a single set of shared
+      library headers, and contain multiple library archives that are
+      specialized by processor architecture they support and external
+      libraries they use.  These libraries are organized into
+      lib/[arch]/[variant] directories, where [arch] is the processor
+      architecture, and [variant] is the variant.  For example, the
+      GNU/Linux x86 binary package supports the ia32 and em64t
+      architectures.
+     </p><p>
+      The [variant] subdirectory indicates which external libraries
+      the VSIPL++ library is configured to use, and what level of
+      optimization the library has been built with.  Consult 
+      <a class="xref" href="build-variants.html" title="Appendix A. Build Variants">Appendix A, &#8220;Build Variants&#8221;</a> to find out what build variants 
+      your binary package contains.
+     </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id275900"></a>2.2.3. Other Install Locations</h3></div></div></div><p>
+       If you install Sourcery VSIPL++ into a directory other than
+       <code class="filename">opt/sourceryvsipl++-2.3</code>, you must run
+       the <code class="command">set-prefix.sh</code> script to update the
+       installation prefixes stored in the library's pkg-config
+       <code class="filename">.pc</code> files.
+    </p><p>
+       The <code class="command">set-prefix.sh</code> is located in the
+       <code class="filename">sbin</code> subdirectory of the tarball.
+    </p><p>
+       For example, to install a binary package in
+       <code class="filename">$HOME/sourceryvsipl++-2.3</code>:
+    </p><div class="example"><a name="id275954"></a><p class="title"><b>Example 2.1. Installing a binary package in $HOME</b></p><div class="example-contents"><pre class="screen">&gt; cd $HOME
+&gt; tar xfj sourceryvsipl++-2.3-22-i686-pc-linux-gnu.tar.bz2
+&gt; $HOME/sourceryvsipl++-2.3/sbin/set-prefix.sh
+&gt; export PKG_CONFIG_PATH=$HOME/sourceryvsipl++-2.3/lib/pkgconfig</pre></div></div><br class="example-break"></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id275971"></a>2.2.4. Paths for External Libraries</h3></div></div></div><p>
+     Sourcery VSIPL++ binary packages that use the following
+     external libraries have the library installation paths
+     hard-coded in their pkg-config files (install path in
+     parenthesis):
+     </p><div class="itemizedlist"><ul type="disc"><li><p>
+       Intel IPP (<code class="filename">/opt/intel/ipp</code>).
+      </p></li><li><p>
+       Intel MKL (<code class="filename">/opt/intel/mkl</code>).
+      </p></li></ul></div><p>
+    </p><p>
+     If these libraries are not installed in these locations, it
+     is necessary to do one of the following:
+     </p><div class="itemizedlist"><ul type="disc"><li><p>
+       Update the pkg-config file paths using <code class="command">set-prefix.sh</code>.
+      </p></li><li><p>
+       Create a symbolic link from the default install location to
+       the actual install location.
+      </p></li><li><p>
+       Manually specify the paths to the libraries on each invocation
+       of pkg-config.
+      </p></li></ul></div><p>
+     Each of the options is described in more detail below.
+    </p><p>
+     The <code class="command">set-prefix.sh</code> script in the
+     <code class="filename">sourceryvsipl++-2.3/sbin</code> will update
+     the pkg-config files with the correct installation
+     prefixes for external libraries.  <code class="command">set-prefix.sh</code>
+     takes arguments of the form <code class="option">ipp:/prefix/to/ipp</code>,
+     <code class="option">mkl:/prefix/to/mkl</code>, and
+     <code class="option">mpi:/prefix/to/mpi</code>, to specify prefixes for IPP,
+     MKL, and MPICH respectively.
+    </p><p>
+     For example, if the library has been installed into
+     <code class="filename">/opt/codesourcery/sourceryvsipl++-2.3</code> and IPP
+     is installed in <code class="filename">/opt/intel/ipp41</code>:
+    </p><div class="example"><a name="id276092"></a><p class="title"><b>Example 2.2. Using <code class="command">set-prefix.sh</code> to use IPP from
+            different prefix</b></p><div class="example-contents"><pre class="screen">&gt; /opt/codesourcery/sourceryvsipl++-2.3/sbin/set-prefix.sh ipp:/opt/intel/ipp41</pre></div></div><br class="example-break"><p>
+     If multiple prefixes need to be changed,
+     <code class="command">set-prefix.sh</code> can either be called once with
+     multiple prefixes:
+</p><pre class="screen">&gt; /opt/codesourcery/sourceryvsipl++-2.3/sbin/set-prefix.sh \
+        ipp:/opt/intel/ipp41 mkl:/opt/intel/mkl821</pre><p>
+     Or multiple times, once for each prefix:
+</p><pre class="screen">&gt; /opt/codesourcery/sourceryvsipl++-2.3/sbin/set-prefix.sh ipp:/opt/intel/ipp41
+&gt; /opt/codesourcery/sourceryvsipl++-2.3/sbin/set-prefix.sh mkl:/opt/intel/mkl821</pre><p>
+    </p><p>
+     Using symbolic links, it is possible to direct Sourcery VSIPL++'s
+     expected directory to the actual installation libraries.
+    </p><p>
+     For example, if IPP is installed in
+     <code class="filename">/opt/intel/ipp41</code>:
+    </p><div class="example"><a name="id276151"></a><p class="title"><b>Example 2.3. Using a symbolic link to use IPP from different prefix</b></p><div class="example-contents"><pre class="screen">&gt; ln -s /opt/intel/ipp41 /opt/intel/ipp</pre></div></div><br class="example-break"><p>
+     Finally, it is possible to manually pass the prefixes for
+     external libraries to pkg-config program on each invocation.
+    </p><p>
+     For example, if IPP is installed in
+     <code class="filename">/opt/intel/ipp41</code> and that MKL is
+     installed in <code class="filename">/opt/intel/mkl821</code>, to
+     query <code class="option">--libs</code> from <code class="command">pkg-config</code>:
+    </p><div class="example"><a name="id276194"></a><p class="title"><b>Example 2.4. Overriding library prefixes from the command line</b></p><div class="example-contents"><pre class="screen">LIBS = `pkg-config \
+        --define-variable=ipp_prefix=/usr/local/ipp41  \
+        --define-variable=mkl_prefix=/usr/local/mkl821 \
+        --libs vsipl++`</pre></div></div><br class="example-break"></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="chap-installation.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-installation.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="chap-installation-source.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 2. Installation </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 3. Installation from Source</td></tr></table></div></body></html>

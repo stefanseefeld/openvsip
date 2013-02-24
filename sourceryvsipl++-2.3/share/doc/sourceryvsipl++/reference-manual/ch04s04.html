@@ -1,0 +1,526 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.4. Linear Algebra Matrix-Vector Functions</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="functions.html" title="Chapter 4. Function Reference"><link rel="prev" href="ch04s03.html" title="4.3. Reduction Functions"><link rel="next" href="ch04s05.html" title="4.5. Linear System Solvers"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.4. Linear Algebra Matrix-Vector Functions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s03.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Function Reference</th><td width="20%" align="right"> <a accesskey="n" href="ch04s05.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id316014"></a>4.4. Linear Algebra Matrix-Vector Functions</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_cumsum"></a>4.4.1. <code class="function">cumsum</code>
+  <a class="indexterm" name="id316031"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Cumulative sum of matrix rows or columns
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     void <b class="fsfunc">cumsum&lt;d&gt;</b>
+    (</code></td><td>
+     <var class="pdparam">
+      const_Vector&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Vector&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     void <b class="fsfunc">cumsum&lt;d&gt;</b>
+    (</code></td><td>
+     <var class="pdparam">
+      const_Matrix&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Matrix&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b>
+   Arguments <code class="code">A</code> and <code class="code">B</code> must be views of the
+   same dimension.  If matrices are passed, template parameter
+   <code class="code">d</code> must be either <code class="code">row</code> (<code class="code">0</code>)
+   or <code class="code">col</code> (<code class="code">1</code>).
+  </p><p><b>Result: </b>
+   If arguments are vectors, the template parameter <code class="code">d</code> is
+   ignored and each element <code class="literal">i</code> of result is set
+   to the the sum of the <code class="literal">0</code> through
+   <code class="literal">i</code>th elements of the input vector:
+   <code class="literal">B(i) = sum(j = 0 ... i) of A(j)</code>.
+ </p><p>
+   If arguments are matrices, the template parameter <code class="code">d</code>,
+   controls whether summation is done along rows (if <code class="code">d == row ==
+   0</code>) or columns (if <code class="code">d == col == 1</code>).
+  </p><p>
+   If <code class="code">d == row</code>, then each result element <code class="code">B(r,
+   c)</code> is set to the sum of the <code class="code">0</code> through
+   <code class="code">c</code>th elements of row <code class="code">r</code> in matrix
+   <code class="code">A</code>:
+   <code class="literal">B(r, c) = sum(j = 0 ... c) of A(r, c)</code></p><p>
+   If <code class="code">d == col</code>, then each result element <code class="code">B(r,
+   c)</code> is set to the sum of the <code class="code">0</code> through
+   <code class="code">r</code>th elements of column <code class="code">c</code> in matrix
+   <code class="code">A</code>:
+   <code class="literal">B(r, c) = Sum(j = 0 .. r) of A(r, c)</code></p><p><b>Example: </b></p><pre class="screen">length_type m = 32, n = 16;
+Matrix&lt;float&gt; A(m, n), B(m, n);
+cumsum&lt;row&gt;(A, B);</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_cvjdot"></a>4.4.2. <code class="function">cvjdot</code>
+  <a class="indexterm" name="id316333"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Linear algebra conjugate dot-product.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     T <b class="fsfunc">cvjdot</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Vector&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Vector&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b>
+   <code class="code">A</code> and <code class="code">B</code> must be vectors of the same size.
+  </p><p><b>Result: </b>
+   Returns the conjugate dot-product (inner-product) of the argument
+   vectors:
+  </p><p><span class="mathphrase">result = sum(i = 0 .. size-1) : A(i) * conj(B(i))</span></p><p><b>Example: </b>
+</p><pre class="screen">length_type n = 16;
+Vector&lt;complex&lt;float&gt; &gt; A(n), B(n);
+complex&lt;float&gt; result = cvjdot(A, B);</pre><p>
+  </p><p><b>See Also: </b>
+   <code class="function">dot</code> 
+       <a class="xref" href="ch04s04.html#functionref_dot" title="4.4.3. dot">(section 4.4.3)</a>
+   <code class="function">outer</code> 
+       <a class="xref" href="ch04s04.html#functionref_outer" title="4.4.9. outer">(section 4.4.9)</a>
+  </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_dot"></a>4.4.3. <code class="function">dot</code>
+  <a class="indexterm" name="id316510"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Linear algebra dot-product.
+ </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     T <b class="fsfunc">dot</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Vector&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Vector&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b>
+   <code class="code">A</code> and <code class="code">B</code> must be vectors of the same size.
+  </p><p><b>Result: </b>
+  Returns the dot-product (inner-product) of the argument vectors.
+  <span class="mathphrase">result = sum(i = 0 ... size-1) : A(i) * B(i)</span></p><p><b>Example: </b></p><pre class="screen">length_type n = 16;
+Vector&lt;float&gt; A(n), B(n);
+float result = prod(A, B);</pre><p><b>See Also: </b><code class="function">cvjdot</code><a class="xref" href="ch04s04.html#functionref_cvjdot" title="4.4.2. cvjdot">(section 4.4.2)</a><code class="function">outer</code><a class="xref" href="ch04s04.html#functionref_outer" title="4.4.9. outer">(section 4.4.9)</a></p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_gemp"></a>4.4.4. <code class="function">gemp</code>
+  <a class="indexterm" name="id316671"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Linear algebra generalized matrix product.
+  </p><p><b>Syntax: </b></p><pre class="synopsis">template &lt;mat_op_type OpA,
+          mat_op_type OpB,
+          typename T0,
+          typename ConstMatrix1T,
+          typename ConstMatrix2T,
+          typename T3,
+          typename Matrix4T&gt;
+void
+gemp(
+   T0            alpha,
+   ConstMatrix1T A,
+   ConstMatrix2T B,
+   T3            beta,
+   Matrix4T      C)</pre><p><b>Requirements: </b>
+   The number of columns of <code class="code">OpA(A)</code> must equal the number
+   of rows of <code class="code">OpB(B)</code>.
+ </p><p><b>Result: </b>
+   Computes the expression:
+   <span class="mathphrase">C = alpha * OpA(A) * OpB(B) + beta * C</span></p><p>
+   Template parameters
+   <code class="code">OpA</code> and <code class="code">OpB</code> are of type <code class="code">mat_op_type</code>
+   <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(section 2.7.3)</a>
+   and specify operations on matrices <code class="code">A</code> and <code class="code">B</code>:
+   <code class="code">mat_ntrans</code> indicates no transpose,
+   <code class="code">mat_trans</code> indicates transpose,
+   <code class="code">mat_herm</code> indicates hermetian, and
+   <code class="code">mat_conj</code> indicates conjugation.
+  </p><p><b>Example: </b></p><pre class="screen">length_type m = 48, p = 16, n = 32;
+Matrix&lt;float&gt; C(m, p), A(m, n), B(n, p);
+gemp(0.5, A, B, 0.5, C);</pre><p><b>See Also: </b><code class="function">gems</code><a class="xref" href="ch04s04.html#functionref_gems" title="4.4.5. gems">(section 4.4.5)</a><code class="function">prod</code><a class="xref" href="ch04s04.html#functionref_prod" title="4.4.10. prod">(section 4.4.10)</a><code class="function">prodh</code><a class="xref" href="ch04s04.html#functionref_prodh" title="4.4.13. prodh">(section 4.4.13)</a><code class="function">prodj</code><a class="xref" href="ch04s04.html#functionref_prodj" title="4.4.14. prodj">(section 4.4.14)</a><code class="function">prodt</code><a class="xref" href="ch04s04.html#functionref_prodt" title="4.4.15. prodt">(section 4.4.15)</a></p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_gems"></a>4.4.5. <code class="function">gems</code>
+  <a class="indexterm" name="id316872"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Linear algebra generalized matrix sum.
+  </p><p><b>Syntax: </b></p><pre class="synopsis">template &lt;mat_op_type OpA,
+          typename T0,
+          typename ConstMatrix1T,
+          typename T2,
+          typename Matrix3&gt;
+T1
+gems(
+   T0            alpha,
+   ConstMatrix1T A
+   T2            beta,
+   Matrix3T      C)</pre><p><b>Requirements: </b>
+   If <code class="code">OpA</code> equal <code class="code">mat_ntrans</code> or
+   <code class="code">mat_conj</code>, <code class="code">A</code> and <code class="code">B</code> must
+   have the same size.
+ </p><p>
+   If <code class="code">OpA</code> equal <code class="code">mat_trans</code> or
+   <code class="code">mat_herm</code>, the number of rows of <code class="code">A</code> must
+   equal the number of columns of <code class="code">B</code>, and the number of
+   columns of <code class="code">A</code> must equal the number of rows of
+   <code class="code">B</code>.
+ </p><p><b>Result: </b>
+   Computes the expression:
+   <span class="mathphrase">C = alpha * OpA(A) + beta * C</span></p><p>
+   Template parameter
+   <code class="code">OpA</code> is of type <code class="code">mat_op_type</code>
+   <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(section 2.7.3)</a>
+   and specify an operation on matrix <code class="code">A</code>:
+   <code class="code">mat_ntrans</code> indicates no transpose,
+   <code class="code">mat_trans</code> indicates transpose,
+   <code class="code">mat_herm</code> indicates hermetian, and
+   <code class="code">mat_conj</code> indicates conjugation.
+ </p><p><b>Example: </b></p><pre class="screen">length_type m = 48, p = 16, n = 32;
+Matrix&lt;float&gt; C(m, p), A(m, n), B(n, p);
+gemp(0.5, A, B, 0.5, C);</pre><p><b>See Also: </b><code class="function">gemp</code><a class="xref" href="ch04s04.html#functionref_gemp" title="4.4.4. gemp">(section 4.4.4)</a></p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_herm"></a>4.4.6. <code class="function">herm</code>
+  <a class="indexterm" name="id317055"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Matrix hermetian (conjugate-transpose).
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Matrix&lt;T&gt; <b class="fsfunc">herm</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Matrix&lt;T&gt; A
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Result: </b>
+   Returns a matrix hermetian view.  The <code class="code">i, j</code>th element
+   of the result are the conjugated <code class="code">j, i</code>th element of the
+   argument.
+ </p><p>
+   <span class="mathphrase">result(i, j) = conj(A(j, i))</span>
+ </p><p>
+   Note that <code class="code">herm()</code> does itself not rearrange or modify
+   data in memory.  However, if the result is assigned to a
+   destination matrix, during the copy into the destination, a
+   corner-turn and conjugation may be performed.
+ </p><p><b>Example: </b></p><pre class="screen">length_type m = 32, n = 16;
+Matrix&lt;complex&lt;float&gt; &gt; Z(m, n), A(n, m);
+Z = herm(A);</pre><p><b>See Also: </b><code class="function">trans</code><a class="xref" href="ch04s04.html#functionref_trans" title="4.4.16. trans">(section 4.4.16)</a></p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_kron"></a>4.4.7. <code class="function">kron</code>
+  <a class="indexterm" name="id317195"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Linear algebra kronecker product.
+  </p><p><b>Syntax: </b></p><pre class="synopsis">template &lt;typename T0,
+          typename View1,
+          typename View2&gt;
+const_Matrix&lt;PromotedT, <span class="emphasis"><em>unspecified</em></span>&gt;
+kron(
+   T0    alpha,
+   View1 v,
+   View2 w)</pre><p><b>Requirements: </b>
+   Arguments <code class="code">v</code> and <code class="code">w</code> must have the same
+   dimensionality.
+  </p><p><b>Result: </b>
+   Returns the kronecker product of the two view parameters, scaled by
+   <code class="code">alpha</code>.
+ </p><p>
+   The number of output matrix rows equals the product of
+   <code class="code">v</code> and <code class="code">w</code>'s rows.  The number of ouput
+   matrix columns equal the product of <code class="code">v</code> and
+   <code class="code">w</code>'s columns.
+ </p><p>
+   The value type of the result matrix is the promoted value
+   type of <code class="code">alpha</code>, <code class="code">v</code>, and <code class="code">w</code>,
+ </p><p><b>Example: </b></p><pre class="screen">length_type m = 4, p = 16, n = 8, q = 12;
+Matrix&lt;float&gt; C(m*p, n*q), V(m, n), W(p, q);
+C = kron(0.5, V, W);</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_modulate"></a>4.4.8. <code class="function">modulate</code>
+  <a class="indexterm" name="id317323"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Modulate vector with baseband frequency.
+  </p><p><b>Syntax: </b></p><pre class="synopsis">template &lt;typename ConstVectorT0,
+          typename T1,
+          typename T2,
+          typename VectorT3&gt;
+T1
+modulate(
+   ConstVector0T v
+   T1            nu,
+   T2            phi,
+   Vector3T      w)</pre><p><b>Result: </b>
+   Sets <code class="code">w</code> to value of input <code class="code">v</code> modulated
+   with complex frequency <code class="code">phi + i*nu</code>.
+ </p><p>
+   <code class="literal">w(i) = v(i) * exp((i * nu +
+   phi)<span class="emphasis"><em>i</em></span>)</code>
+ </p><p>
+   Where <span class="emphasis"><em>i</em></span> is <span class="mathphrase">sqrt(-1)</span>
+ </p><p>
+   Returns <code class="code">v.size() * nu + phi</code>.
+ </p><p><b>Example: </b></p><pre class="screen">float nu = 3.14/16, phi = 3.14/2;
+length_type size = 16;
+Vector&lt;complex&lt;float&gt; &gt; Z(size), A(size);
+modulate(A, nu, phi, B);</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_outer"></a>4.4.9. <code class="function">outer</code>
+  <a class="indexterm" name="id317431"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Linear algebra outer-product.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Matrix&lt;T&gt; <b class="fsfunc">outer</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Vector&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Vector&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Result: </b>
+   Returns the outer-product of the argument vectors.  Each
+   element <code class="code">result(i, j)</code> is set to the product of
+   the <code class="code">i</code>th element of A and <code class="code">j</code>th element of B.
+ </p><p>
+   <span class="mathphrase">result(i, j) = A(i) * B(j)</span>
+ </p><p>
+   If the argument vectors have a complex value type, the conjugate
+   of B is used in the product:
+ </p><p>
+   <span class="mathphrase">result(i, j) = A(i) * conj(B(j))</span>
+ </p><p><b>Example: </b></p><pre class="screen">length_type m = 32, n = 16;
+Vector&lt;float&gt; A(m), B(n);
+Matrix&lt;float&gt; Z(m, n);
+Z = outer(A, B);</pre><p><b>See Also: </b>
+   <code class="function">cvjdot</code> 
+       <a class="xref" href="ch04s04.html#functionref_cvjdot" title="4.4.2. cvjdot">(section 4.4.2)</a>
+   <code class="function">dot</code> 
+       <a class="xref" href="ch04s04.html#functionref_dot" title="4.4.3. dot">(section 4.4.3)</a>
+  </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_prod"></a>4.4.10. <code class="function">prod</code>
+  <a class="indexterm" name="id317607"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Linear algebra product.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Matrix&lt;T&gt; <b class="fsfunc">prod</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Matrix&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Matrix&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Vector&lt;T&gt; <b class="fsfunc">prod</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Matrix&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Vector&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Vector&lt;T&gt; <b class="fsfunc">prod</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Vector&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Matrix&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b> If both arguments are matrices, the
+  number of columns of <code class="literal">A</code> must equal the number of
+  rows of <code class="literal">B</code>.
+ </p><p>
+   If <code class="literal">A</code> is a matrix and <code class="literal">B</code> is a
+   vector, the number of columns of <code class="literal">A</code> must equal
+   the size of <code class="literal">B</code>.
+ </p><p>
+   If <code class="literal">A</code> is a vector and <code class="literal">B</code> is a
+   matrix, the size of <code class="literal">A</code> must equal the number of
+   rows of <code class="literal">B</code>.
+ </p><p><b>Result: </b>
+   The result is equal to the linear algebraic product of the arguments.
+ </p><p>
+   If <code class="literal">A</code> is a <code class="literal">m</code> by
+   <code class="literal">n</code> matrix and <code class="literal">B</code> is a
+   <code class="literal">n</code> by <code class="literal">p</code> matrix, a
+   <code class="literal">m</code> x <code class="literal">p</code> matrix is returned.
+ </p><p>
+   If <code class="literal">A</code> is a <code class="literal">m</code> by
+   <code class="literal">n</code> matrix, and <code class="literal">B</code> is a
+   <code class="literal">n</code> element vector, a <code class="literal">m</code> element
+   vector is returned.
+ </p><p>
+   If <code class="literal">A</code> is a <code class="literal">n</code> element vector,
+   and <code class="literal">B</code> is a <code class="literal">n</code> x
+   <code class="literal">p</code> matrix, a <code class="literal">p</code> element vector
+   is returned.
+ </p><p><b>Example: </b></p><pre class="screen">Matrix&lt;float&gt; Z, A, B;
+Z = prod(A, B);</pre><p><b>See Also: </b><code class="function">prodh</code><a class="xref" href="ch04s04.html#functionref_prodh" title="4.4.13. prodh">(section 4.4.13)</a><code class="function">prodj</code><a class="xref" href="ch04s04.html#functionref_prodj" title="4.4.14. prodj">(section 4.4.14)</a><code class="function">prodt</code><a class="xref" href="ch04s04.html#functionref_prodt" title="4.4.15. prodt">(section 4.4.15)</a></p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_prod3"></a>4.4.11. <code class="function">prod3</code>
+  <a class="indexterm" name="id318060"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Linear algebra 3x3 product.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Matrix&lt;T&gt; <b class="fsfunc">prod3</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Matrix&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Matrix&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Vector&lt;T&gt; <b class="fsfunc">prod3</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Matrix&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Vector&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b>
+   All matrix arguments must be size 3 by 3.  All vector arguments
+   must be of size 3.
+ </p><p><b>Result: </b>
+   The result is equal to the linear algebraic product of the arguments.
+ </p><p>
+   If A is a <code class="literal">3</code> by <code class="literal">3</code> matrix and B
+   is a <code class="literal">3</code> by <code class="literal">3</code> matrix, a
+   <code class="literal">3</code> x <code class="literal">3</code> matrix is returned.
+ </p><p>
+   If A is a <code class="literal">3</code> by <code class="literal">3</code> matrix, and
+   B is a <code class="literal">3</code> element vector, a <code class="literal">3</code>
+   element vector is returned.
+ </p><p><b>Example: </b></p><pre class="screen">Matrix&lt;float&gt; Z(3, 3), A(3, 3), B(3, 3);
+Z = prod(A, B);</pre><p><b>See Also: </b>
+   <code class="function">prod</code> 
+       <a class="xref" href="ch04s04.html#functionref_prod" title="4.4.10. prod">(section 4.4.10)</a>
+   <code class="function">prod4</code> 
+       <a class="xref" href="ch04s04.html#functionref_prod4" title="4.4.12. prod4">(section 4.4.12)</a>
+  </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_prod4"></a>4.4.12. <code class="function">prod4</code>
+  <a class="indexterm" name="id318330"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Linear algebra 4x4 product.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Matrix&lt;T&gt; <b class="fsfunc">prod4</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Matrix&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Matrix&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Vector&lt;T&gt; <b class="fsfunc">prod4</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Matrix&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Vector&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b>
+   All matrix arguments must be size 4 by 4.  All vector arguments
+   must be of size 4.
+  </p><p><b>Result: </b>
+   The result is equal to the linear algebraic product of the arguments.
+ </p><p>
+   If A is a <code class="literal">4</code> by <code class="literal">4</code> matrix and B
+   is a <code class="literal">4</code> by <code class="literal">4</code> matrix, a
+   <code class="literal">4</code> by <code class="literal">4</code> matrix is returned.
+ </p><p>
+   If A is a <code class="literal">4</code> by <code class="literal">4</code> matrix, and
+   B is a <code class="literal">4</code> element vector, a <code class="literal">4</code>
+   element vector is returned.
+ </p><p><b>Example: </b>
+</p><pre class="screen">Matrix&lt;float&gt; Z(4, 4), A(4, 4), B(4, 4);
+Z = prod(A, B);</pre><p>
+  </p><p><b>See Also: </b>
+   <code class="function">prod</code> 
+       <a class="xref" href="ch04s04.html#functionref_prod" title="4.4.10. prod">(section 4.4.10)</a>
+   <code class="function">prod4</code> 
+       <a class="xref" href="ch04s04.html#functionref_prod4" title="4.4.12. prod4">(section 4.4.12)</a>
+  </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_prodh"></a>4.4.13. <code class="function">prodh</code>
+  <a class="indexterm" name="id318605"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Linear algebra product, with hermetian.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Matrix&lt;T&gt; <b class="fsfunc">prodh</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Matrix&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Matrix&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b>
+   The number of columns of A must equal the number of columns of B.
+  </p><p><b>Result: </b>
+   The result is equal to the linear algebraic product of the first
+   argument with the hermetian (conjugate transpose) of the second
+   argument. <code class="literal">Z = prodh(A, B) = prod(A,
+   conj(trans(B)))</code></p><p>
+   If A is a <code class="literal">m</code> by <code class="literal">n</code> matrix and B
+   is a <code class="literal">p</code> by <code class="literal">n</code> matrix, a
+   <code class="literal">m</code> x <code class="literal">p</code> matrix is returned.
+ </p><p><b>Example: </b>
+</p><pre class="screen">length_type m = 64, n = 32, p = 48;
+Matrix&lt;float&gt; Z(m, p), A(m, n), B(p, n);
+Z = prodh(A, B);</pre><p>
+  </p><p><b>See Also: </b>
+   <code class="function">prod</code> 
+       <a class="xref" href="ch04s04.html#functionref_prod" title="4.4.10. prod">(section 4.4.10)</a>
+   <code class="function">prodj</code> 
+       <a class="xref" href="ch04s04.html#functionref_prodj" title="4.4.14. prodj">(section 4.4.14)</a>
+   <code class="function">prodt</code> 
+       <a class="xref" href="ch04s04.html#functionref_prodt" title="4.4.15. prodt">(section 4.4.15)</a>
+  </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_prodj"></a>4.4.14. <code class="function">prodj</code>
+  <a class="indexterm" name="id318824"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Linear algebra product, with conjuage.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Matrix&lt;T&gt; <b class="fsfunc">prodj</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Matrix&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Matrix&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b>
+   The number of columns of <code class="code">A</code> must equal the number of rows
+   of <code class="code">B</code>.
+ </p><p><b>Result: </b>
+   The result is equal to the linear algebraic product of the first
+   argument with the conjugate of the second argument. <code class="literal">Z =
+   prodj(A, B) = prod(A, conj(B))</code></p><p>
+   If A is a <code class="literal">m</code> by <code class="literal">n</code> matrix and B
+   is a <code class="literal">n</code> by <code class="literal">p</code> matrix, a
+   <code class="literal">m</code> x <code class="literal">p</code> matrix is returned.
+ </p><p><b>Example: </b></p><pre class="screen">length_type m = 64, n = 32, p = 48;
+Matrix&lt;float&gt; Z(m, p), A(m, n), B(n, p);
+Z = prodj(A, B);</pre><p><b>See Also: </b><code class="function">prod</code><a class="xref" href="ch04s04.html#functionref_prod" title="4.4.10. prod">(section 4.4.10)</a><code class="function">prodh</code><a class="xref" href="ch04s04.html#functionref_prodh" title="4.4.13. prodh">(section 4.4.13)</a><code class="function">prodt</code><a class="xref" href="ch04s04.html#functionref_prodt" title="4.4.15. prodt">(section 4.4.15)</a></p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_prodt"></a>4.4.15. <code class="function">prodt</code>
+  <a class="indexterm" name="id319038"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Linear algebra product, with transpose.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Matrix&lt;T&gt; <b class="fsfunc">prodt</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Matrix&lt;T&gt; A
+     </var>
+     <var class="pdparam">
+      Matrix&lt;T&gt; B
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Requirements: </b>
+   The number of columns of <code class="code">A</code> must equal the number of rows
+   of <code class="code">B</code>.
+ </p><p><b>Result: </b>
+   The result is equal to the linear algebraic product of the first
+   argument with the transpose of the second argument.
+ </p><p>
+   If A is a <code class="literal">m</code> by <code class="literal">n</code> matrix and B
+   is a <code class="literal">p</code> by <code class="literal">n</code> matrix, a
+   <code class="literal">m</code> x <code class="literal">p</code> matrix is returned.
+ </p><p><b>Example: </b></p><pre class="screen">length_type m = 64, n = 32, p = 48;
+Matrix&lt;float&gt; Z(m, p), A(m, n), B(p, n);
+Z = prod(A, B);</pre><p><b>See Also: </b><code class="function">prod</code><a class="xref" href="ch04s04.html#functionref_prod" title="4.4.10. prod">(section 4.4.10)</a><code class="function">prodh</code><a class="xref" href="ch04s04.html#functionref_prodh" title="4.4.13. prodh">(section 4.4.13)</a><code class="function">prodj</code><a class="xref" href="ch04s04.html#functionref_prodj" title="4.4.14. prodj">(section 4.4.14)</a></p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_trans"></a>4.4.16. <code class="function">trans</code>
+  <a class="indexterm" name="id319247"></a>
+ </h3></div></div></div><p><b>Description: </b>
+   Matrix transpose.
+  </p><p><b>Syntax: </b></p><div class="funcsynopsis"><table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0" class="funcprototype-table"><tr><td><code class="funcdef">
+     Matrix&lt;T&gt; <b class="fsfunc">trans</b>
+    (</code></td><td>
+     <var class="pdparam">
+      Matrix&lt;T&gt; A
+     </var>
+    <code>)</code>;</td></tr></table><div class="funcprototype-spacer"> </div></div><p><b>Result: </b>
+   Returns a matrix transpose view.  The <code class="code">i, j</code>th element
+   of the result are the <code class="code">j, i</code>th element of the
+   argument.
+   <span class="mathphrase">result(i, j) = A(j, i)</span></p><p>
+   Note that <code class="code">trans()</code> does itself not rearrange data in
+   memory.  However, if the result is assigned to a destination
+   matrix, during the copy into the destination, a corner-turn may be
+   performed.
+ </p><p><b>Example: </b></p><pre class="screen">length_type m = 32, n = 16;
+Matrix&lt;float&gt; Z(m, n), A(n, m);
+Z = trans(A);</pre><p><b>See Also: </b>
+   <code class="function">herm</code> 
+       <a class="xref" href="ch04s04.html#functionref_herm" title="4.4.6. herm">(section 4.4.6)</a>
+  </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="functions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.3. Reduction Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 4.5. Linear System Solvers</td></tr></table></div></body></html>

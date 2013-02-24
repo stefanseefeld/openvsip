@@ -1,0 +1,59 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.4. Benchmark Output</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-benchmarking.html" title="Chapter 6. Benchmarking"><link rel="prev" href="sec-benchmarking-running.html" title="6.3. Running Performance Tests"><link rel="next" href="glossary.html" title="Glossary"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">6.4. Benchmark Output</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="sec-benchmarking-running.html">Prev</a> </td><th width="60%" align="center">Chapter 6. Benchmarking</th><td width="20%" align="right"> <a accesskey="n" href="glossary.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="sec-benchmarking-output"></a>6.4. Benchmark Output</h2></div></div></div><p> The benchmark output depends on the command line options, but
+    typically includes some meta information on the benchmark (name,
+    ops/point, etc) and individual measurements for each problem size. </p><p> The header information, denoted by lines begging with &#8220;<span class="quote">
+        <code class="literal">#</code>
+      </span>&#8221;, contains three important factors that are used to convert
+    timing data into other meaningful units. The number of floating point
+    operations is shown as <code class="literal">ops_per_point</code> and the number of
+    reads or writes to and from memory are shown as
+    <code class="literal">riob_per_point</code> and <code class="literal">wiob_per_point</code>
+    respectively. </p><p> Following the header information are performance results. Each line
+    contains data for a certain problem size (number of points), which is
+    given in the first column. </p><p> The second column contains the measured (or median) values
+    calculated from the timing measurements. The default is in
+    points-per-second as indicated in the header under &#8220;<span class="quote">metric</span>&#8221;.
+    Alternatively, the values are in units as requested with the -pts, -ops,
+    -iob option. </p><p> In other cases, three columns of measurements follow the size given
+    in the first column. The values listed vary depending on the options
+    specified, as outlined below: </p><div class="variablelist"><dl><dt><span class="term">
+            <code class="literal">-all</code>
+          </span></dt><dd><p> Displays points per second, operations per second and the
+            sum of the memory reads and writes per second (MPT/s, MOP/s,
+            MB/s). </p></dd><dt><span class="term">
+            <code class="literal">-pts</code>
+          , </span><span class="term">
+            <code class="literal">-ops</code>
+          , </span><span class="term">
+            <code class="literal">-iob</code>
+          </span></dt><dd><p> Displays one of points per second, operations per second
+            and the sum of the memory reads and writes per second, as
+            requested. </p></dd><dt><span class="term">
+            <code class="literal">-samples <em class="replaceable"><code>S</code></em></code>
+          </span></dt><dd><p> With <code class="literal">-all</code>, three columns will be
+            displayed, each containing the median value of the respective
+            measurement. Without <code class="literal">-all</code>, the second column
+            will contain the median value and columns three and four will
+            contain the minimum and maximum value for the selected
+            measurement. Note: <em class="replaceable"><code>S</code></em> must be greater
+            than two in order to display the minimum and maximum values for
+            <code class="literal">-pts</code>, <code class="literal">-ops</code> or
+            <code class="literal">-iob</code>. </p></dd></dl></div><p> </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id282669"></a>6.4.1. Examples</h3></div></div></div><p> This example shows a very simple benchmark for vector-vector
+      multiplication using complex values, defaulting to units of
+      &#8220;<span class="quote">points-per-second</span>&#8221;: </p><pre class="screen">&gt; vmul.exe -2 # what :
+      t_vmul1 # ops_per_point(1) : 6 # riob_per_point(1): 16 #
+      wiob_per_point(1): 8 # metric : pts_per_sec # start_loop : 2981969 4
+      60.606903 8 123.195221 16 173.855408 32 207.837997 64 232.163071 ...
+      </pre><p> The output is truncated, but continues on up until 2^21 points
+      per vector. </p><p> To measure operations per second instead, use: </p><pre class="screen">&gt;
+      vmul.exe -2 -ops # what : t_vmul1 # ops_per_point(1) : 6 #
+      riob_per_point(1): 16 # wiob_per_point(1): 8 # metric : ops_per_sec #
+      start_loop : 2973904 4 377.566650 8 765.744446 16 1055.679321 32
+      1261.269653 64 1425.231567 ... </pre><p> </p><p> To measure ops/sec, with the median of 3 samples of 0.5 seconds
+      in duration each: </p><pre class="screen">&gt; vmul.exe -2 -ops -samples 3 -ms 50 # what
+      : t_vmul1 # ops_per_point(1) : 6 # riob_per_point(1): 16 #
+      wiob_per_point(1): 8 # metric : ops_per_sec # start_loop : 5934442 4
+      409.272583 398.208191 413.359711 8 854.137939 811.087402 854.964539 16
+      1132.262939 1087.544800 1137.489502 32 1317.902710 1297.148560
+      1342.707886 64 1483.941650 1453.872192 1501.823242 </pre><p> Note that
+      this option is most often used when error bars are desired for plotting
+      the performance data. </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sec-benchmarking-running.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-benchmarking.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="glossary.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">6.3. Running Performance Tests </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Glossary</td></tr></table></div></body></html>

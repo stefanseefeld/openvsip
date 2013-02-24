@@ -1,0 +1,17 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>C.40. vmmul</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="apc.html" title="Appendix C. Benchmark Usage"><link rel="prev" href="apcs39.html" title="C.39. vmagsq"><link rel="next" href="apcs41.html" title="C.41. vmul"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">C.40. vmmul</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="apcs39.html">Prev</a> </td><th width="60%" align="center">Appendix C. Benchmark Usage</th><td width="20%" align="right"> <a accesskey="n" href="apcs41.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id287303"></a>C.40. vmmul</h2></div></div></div><p>
+      </p><pre class="screen">vmmul -- vector-matrix multiply Sweeping column size, row major:
+      -1 -- Out-of-place, complex -2 -- Out-of-place, complex, using vmul -3
+      -- Out-of-place, complex, scaled -4 -- Out-of-place, complex, scaled,
+      using vmul Sweeping row size, row major: -11 -- Out-of-place, complex
+      -12 -- Out-of-place, complex, using vmul -13 -- Out-of-place, complex,
+      scaled -14 -- Out-of-place, complex, scaled, using vmul Sweeping column
+      size, column major: -21 -- Out-of-place, complex -22 -- Out-of-place,
+      complex, using vmul -23 -- Out-of-place, complex, scaled -24 --
+      Out-of-place, complex, scaled, using vmul Sweeping row size, column
+      major: -31 -- Out-of-place, complex -32 -- Out-of-place, complex, using
+      vmul -33 -- Out-of-place, complex, scaled -34 -- Out-of-place, complex,
+      scaled, using vmul Parameters (for sweeping number of columns, cases
+      1-4, 21-24) -p:rows ROWS -- set number of rows (default 64) Parameters
+      (for sweeping number of columns, cases 11-14, 31-34) -p:cols COLS -- set
+      number of columns (default 2048) </pre><p>
+    </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs39.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apcs41.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">C.39. vmagsq </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> C.41. vmul</td></tr></table></div></body></html>

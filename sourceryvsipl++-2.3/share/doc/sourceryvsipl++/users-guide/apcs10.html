@@ -1,0 +1,20 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>C.10. fastconv</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="apc.html" title="Appendix C. Benchmark Usage"><link rel="prev" href="apcs09.html" title="C.9. dot"><link rel="next" href="apcs11.html" title="C.11. fft"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">C.10. fastconv</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="apcs09.html">Prev</a> </td><th width="60%" align="center">Appendix C. Benchmark Usage</th><td width="20%" align="right"> <a accesskey="n" href="apcs11.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id286281"></a>C.10. fastconv</h2></div></div></div><p>
+      </p><pre class="screen">fastconv -- fast convolution benchmark Sweeping pulse size: -1
+      -- Out-of-place, phased -2 -- In-place, phased -3 -- Psuedo in-place
+      Fftm (in-place Fft), phased -4 -- Psuedo in-place Fftm (out-of-place
+      Fft), phased -5 -- Out-of-place, interleaved -6 -- In-place, interleaved
+      -7 -- In-place (w/tmp), interleaved -8 -- Foreach_vector, interleaved
+      (2fv) -9 -- Fused expression, vector of coefficients (4vc) -10 -- Fused
+      expression, matrix of coefficients (4mc) Parameters (for sweeping
+      convolution size, cases 1 through 10) -p:rows ROWS -- set number of
+      pulses (default 64) Sweeping number of pulses: -11 -- Out-of-place,
+      phased -12 -- In-place, phased -13 -- Psuedo in-place Fftm (in-place
+      Fft), phased -14 -- Psuedo in-place Fftm (out-of-place Fft), phased -15
+      -- Out-of-place, interleaved -16 -- In-place, interleaved -17 --
+      In-place (w/tmp), interleaved -18 -- Foreach_vector, interleaved (2fv)
+      -19 -- Fused expression, vector of coefficients (4vc) -20 -- Fused
+      expression, matrix of coefficients (4mc) Parameters (for sweeping number
+      of convolutions, cases 11 through 20) -p:size SIZE -- size of pulse
+      (default 2048) Common Parameters -p:check {0,n}|{1,y} -- check results
+      (default 'y') </pre><p>
+    </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs09.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apcs11.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">C.9. dot </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> C.11. fft</td></tr></table></div></body></html>

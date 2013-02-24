@@ -1,0 +1,140 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Appendix B. Benchmark Options</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="index.html" title="Sourcery VSIPL++"><link rel="prev" href="sec-parallel-io.html" title="8.3. Performing I/O"><link rel="next" href="apc.html" title="Appendix C. Benchmark Usage"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Appendix B. Benchmark Options</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="sec-parallel-io.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="apc.html">Next</a></td></tr></table><hr></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="id284931"></a>Appendix B. Benchmark Options</h2></div></div></div><p> This appendix lists all options used in the benchmark programs, along
+  with a brief description of each one. </p><p>
+    </p><div class="variablelist"><p class="title"><b>Option</b></p><dl><dt><span class="term">
+          <code class="literal">-all</code>
+        </span></dt><dd><p> Reports all three statistics: MPT/s, MOP/s, MB/s </p></dd><dt><span class="term">
+          <code class="literal">-cal <em class="replaceable"><code>M</code></em></code>
+        </span></dt><dd><p> Sets to 2^<em class="replaceable"><code>M</code></em> the problem size for
+          calibration. The default is four, that is a problem size of 16.
+          </p><p> Calibration attempts to determine the number of times to run
+          a benchmark to ensure that the total measured time is within a
+          threshold of the goal time, set by <code class="literal">-ms</code>. </p></dd><dt><span class="term">
+          <code class="literal">-nocal</code>
+        </span></dt><dd><p> Do not calibrate. The default is to calibrate with a problem
+          size of 2^4 or 16. The <code class="literal">-cal</code> option can change
+          this size. </p></dd><dt><span class="term">
+          <code class="literal">-center <em class="replaceable"><code>M</code></em></code>
+        </span></dt><dd><p> Sets the range type to <span class="emphasis"><em>centered</em></span> with the
+          center value <em class="replaceable"><code>M</code></em>. </p></dd><dt><span class="term">
+          <code class="literal">-data</code>
+        </span></dt><dd><p> Must be combined with <code class="literal">-samples
+          <em class="replaceable"><code>M</code></em></code> where
+          <span class="mathphrase"><em class="replaceable"><code>M</code></em> &gt;= 3</span>.
+          Displays many columns of data suitable for a comma-separated-values
+          spreadsheet. The columns are: </p><table class="simplelist" border="0" summary="Simple list"><tr><td>problem size</td></tr><tr><td>median time</td></tr><tr><td>minimum time</td></tr><tr><td>maximum time</td></tr><tr><td>memory per point</td></tr><tr><td>operations per point</td></tr><tr><td>input memory per point</td></tr><tr><td>output memory per point</td></tr><tr><td>number of loops</td></tr><tr><td>time per loop</td></tr></table><p> </p></dd><dt><span class="term">
+          <code class="literal">-diag</code>
+        </span></dt><dd><p> Run the benchmark in diagnostic mode. For many benchmarks,
+          this displays information on what evaluators or backend libraries
+          are used in the benchmark. </p></dd><dt><span class="term">
+          <code class="literal">-fix_loop</code>
+        </span></dt><dd><p> Runs a rough set of executions with no calibration and one
+          loop per problem size. </p></dd><dt><span class="term">
+          <code class="literal">-geom</code>
+        </span></dt><dd><p> Uses a geometric progression of problem sizes. For
+          <span class="mathphrase">start &lt;= I &lt;= stop</span>, the problem size
+          is 2^I. See also <code class="literal">-linear</code>. </p></dd><dt><span class="term">
+          <code class="literal">-iob</code>
+        </span></dt><dd><p> Reports millions of input/output operations per second (MB/s)
+          (by summing read and write iob_per_point). </p></dd><dt><span class="term">
+          <code class="literal">-lat</code>
+        </span></dt><dd><p> Reports seconds per point. </p></dd><dt><span class="term">
+          <code class="literal">-lib_config</code>
+        </span></dt><dd><p> Displays a summary of the configuration of the VSIPL++
+          library. </p></dd><dt><span class="term">
+          <code class="literal">-linear <em class="replaceable"><code>M</code></em></code>
+        </span></dt><dd><p> Uses a linear progression of problem sizes. For
+          <span class="mathphrase">start &lt;= I &lt;= stop</span>, the problem size
+          is <em class="replaceable"><code>M</code></em>*I. </p></dd><dt><span class="term">
+          <code class="literal">-loop_start <em class="replaceable"><code>M</code></em></code>
+        </span></dt><dd><p> Initial number of times to run the problem during
+          calibration. The default is one. Calibration may increase or
+          decrease <em class="replaceable"><code>M</code></em> to ensure that the total
+          measured time is within a threshold of the goal time, set by
+          <code class="literal">-ms</code>. </p></dd><dt><span class="term">
+          <code class="literal">-mem</code>
+        </span></dt><dd><p> In the table of results, the left column usually is the
+          number of points. This option switches that value to the memory
+          footprint of the problem. It can be useful in illustrating how
+          performance is affected by problem size. </p></dd><dt><span class="term">
+          <code class="literal">-mfile <em class="replaceable"><code>F</code></em></code>
+        </span></dt><dd><p> Reads the progression values from file
+          <em class="replaceable"><code>F</code></em>. Implies <code class="literal">-start
+          <em class="replaceable"><code>M</code></em></code> where
+          <em class="replaceable"><code>M</code></em> is the first value read from the file.
+          </p></dd><dt><span class="term">
+          <code class="literal">-ms <em class="replaceable"><code>M</code></em></code>
+        </span></dt><dd><p> Sets the goal time that each measurement should take, in
+          hundredths-of-a-second. Defaults to 25 (250 ms). </p></dd><dt><span class="term">
+          <code class="literal">-ops</code>
+        </span></dt><dd><p> Reports millions of operations per second (MOP/s). </p></dd><dt><span class="term">
+          <code class="literal">-p:<em class="replaceable"><code>KEY</code></em>
+          <em class="replaceable"><code>VALUE</code></em></code>
+        </span></dt><dd><p> Sets the benchmark specific parameter
+          <em class="replaceable"><code>KEY</code></em> to the value
+          <em class="replaceable"><code>VALUE</code></em>. <em class="replaceable"><code>KEY</code></em> and
+          <em class="replaceable"><code>VALUE</code></em> are string values. See the
+          individual benchmarks for valid uses. </p></dd><dt><span class="term">
+          <code class="literal">-param <em class="replaceable"><code>M</code></em></code>
+        </span></dt><dd><p> Sets the user-specified parameter, where value is used in
+          some instances to override a default value of a parameter, such as
+          the number of rows or columns in an input matrix for example. The
+          effect, if any, is dependent on each individual benchmark. </p><p> Using -param to set parameters is being phased out in favor
+          of <code class="literal">-p:<em class="replaceable"><code>KEY</code></em>
+          <em class="replaceable"><code>VALUE</code></em></code>. </p></dd><dt><span class="term">
+          <code class="literal">-pause</code>
+        </span></dt><dd><p> When using multiple processes, stop each one to allow a
+          debugger to be attached. The process continues after the user types
+          a single character. </p></dd><dt><span class="term">
+          <code class="literal">-pool def</code>
+        </span></dt><dd><p> Uses the default memory pool, which allocates aligned memory
+          with the <code class="literal">new</code> operator. </p></dd><dt><span class="term">
+          <code class="literal">-pool huge</code>
+        </span></dt><dd><p> Uses the <span class="emphasis"><em>huge</em></span> page memory pool, which
+          allocates aligned memory in huge pages. Uses the default number of
+          huge pages. </p></dd><dt><span class="term">
+          <code class="literal">-pool huge:<em class="replaceable"><code>N</code></em></code>
+        </span></dt><dd><p> Uses the <span class="emphasis"><em>huge</em></span> page memory pool, which
+          allocates aligned memory in huge pages. Allocates
+          <em class="replaceable"><code>N</code></em> huge memory pages. </p></dd><dt><span class="term">
+          <code class="literal">-prof</code>
+        </span></dt><dd><p> Enables profiling. An accumulate-mode profile output is
+          generated for each problem size. </p></dd><dt><span class="term">
+          <code class="literal">-pts</code>
+        </span></dt><dd><p> Reports millions of points per second (MPT/s). This is the
+          default. </p></dd><dt><span class="term">
+          <code class="literal">-riob</code>
+        </span></dt><dd><p> Reports millions of input operations per second (MB/s).
+          </p></dd><dt><span class="term">
+          <code class="literal">-samples <em class="replaceable"><code>M</code></em></code>
+        </span></dt><dd><p> Sets the number of samples taken to
+          <em class="replaceable"><code>M</code></em>. Defaults to one. When
+          <span class="mathphrase"><em class="replaceable"><code>M</code></em> &gt; 2</span>, the
+          median value is reported. </p></dd><dt><span class="term">
+          <code class="literal">-show_loop</code>
+        </span></dt><dd><p> Displays the number of times the algorithm is run for each
+          problem size. </p></dd><dt><span class="term">
+          <code class="literal">-show_time</code>
+        </span></dt><dd><p> Displays the total time the algorithm runs for each problem
+          size. </p></dd><dt><span class="term">
+          <code class="literal">-single <em class="replaceable"><code>M</code></em></code>
+        </span></dt><dd><p> Runs the benchmark once on the problem size
+          2^<em class="replaceable"><code>M</code></em> only. </p></dd><dt><span class="term">
+          <code class="literal">-start <em class="replaceable"><code>M</code></em></code>
+        </span></dt><dd><p> Sets the starting problem size to
+          2^<em class="replaceable"><code>M</code></em>. Defaults to two (four points). Uses
+          this size for calibration also. </p></dd><dt><span class="term">
+          <code class="literal">-steady <em class="replaceable"><code>M</code></em></code>
+        </span></dt><dd><p> Runs the benchmark in a loop on the problem size
+          2^<em class="replaceable"><code>M</code></em> only. The user must stop the program
+          manually. </p></dd><dt><span class="term">
+          <code class="literal">-stop <em class="replaceable"><code>M</code></em></code>
+        </span></dt><dd><p> Sets the stopping problem size to
+          2^<em class="replaceable"><code>M</code></em>. Defaults to 21 (2097152 points).
+          </p></dd><dt><span class="term">
+          <code class="literal">-verbose</code>
+        </span></dt><dd><p> Sets a flag to enable printing of internal information. Used
+          by authors during benchmark development. </p></dd><dt><span class="term">
+          <code class="literal">-wiob</code>
+        </span></dt><dd><p> Reports millions of output operations per second (MB/s).
+          </p></dd></dl></div><p>
+  </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sec-parallel-io.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="apc.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">8.3. Performing I/O </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Appendix C. Benchmark Usage</td></tr></table></div></body></html>

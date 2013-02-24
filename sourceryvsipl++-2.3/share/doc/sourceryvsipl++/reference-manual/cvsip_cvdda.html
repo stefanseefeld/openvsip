@@ -1,0 +1,51 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>7.3. Direct Data Access to complex vector views</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="cvsip_extensions.html" title="Chapter 7. Sourcery VSIPL API extensions"><link rel="prev" href="cvsip_vdda.html" title="7.2. Direct Data Access to real vector views"><link rel="next" href="cvsip_mdda.html" title="7.4. Direct Data Access to real matrix views"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">7.3. Direct Data Access to complex vector views</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="cvsip_vdda.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Sourcery VSIPL API extensions</th><td width="20%" align="right"> <a accesskey="n" href="cvsip_mdda.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="cvsip_cvdda"></a>7.3. Direct Data Access to complex vector views</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="vsip_csl_cvattr"></a>7.3.1. vsip_csl_cvattr_&lt;type&gt;</h3></div></div></div><pre class="synopsis">typedef struct 
+{
+  vsip_scalar_<span class="emphasis"><em>&lt;type&gt;</em></span> *data_r;
+  vsip_scalar_<span class="emphasis"><em>&lt;type&gt;</em></span> *data_i;
+  vsip_stride  stride;
+  vsip_length  length;
+} vsip_csl_cvattr_<span class="emphasis"><em>&lt;type&gt;</em></span>;</pre><p>where <span class="emphasis"><em>&lt;type&gt;</em></span> can be one of <code class="varname">f</code> or
+     <code class="varname">d</code> to represent float or double, respectively.</p><div class="variablelist"><p class="title"><b>Member description</b></p><dl><dt><span class="term">data_r, </span><span class="term">data_i</span></dt><dd><p>Pointers to the data arrays of the appropriate type (see the VSIPL
+           specification for definitions of <code class="code">vsip_scalar_<span class="emphasis"><em>&lt;type&gt;</em></span></code>).
+         </p><p>If <code class="code"><code class="varname">data_i</code>=NULL</code>, <code class="varname">data_r</code>
+           refers to interleaved complex data. Otherwise <code class="varname">data_r</code> refers to
+           the real part and <code class="varname">data_i</code> to the imaginary part of split complex data.
+         </p></dd><dt><span class="term">stride</span></dt><dd><p>The stride of the array, i.e. the distance (in units of
+           <code class="code">vsip_scalar_<span class="emphasis"><em>&lt;type&gt;</em></span></code>) between
+           two adjacent elements.</p></dd><dt><span class="term">length</span></dt><dd><p>Number of elements in the array.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="vsip_csl_cvgetattrib"></a>7.3.2. <code class="function">vsip_csl_cvgetattrib_&lt;type&gt;</code></h3></div></div></div><a class="indexterm" name="id339050"></a><a class="indexterm" name="id339062"></a><pre class="synopsis">void 
+vsip_csl_cvgetattrib_f(vsip_cvview_f const *vector, vsip_csl_cvattr_f *attrib);
+void
+vsip_csl_cvgetattrib_d(vsip_cvview_d const *vector, vsip_csl_cvattr_d *attrib);
+</pre><p><b>Description: </b>Query the direct data access attributes for a complex vector.</p><p><b>Result: </b>
+   The struct pointed to by <code class="varname">attrib</code> is filled with
+   the direct-data-access attributes for <code class="varname">vector</code>.
+   If <code class="varname">vector</code> holds interleaved complex data,
+   <code class="varname">data_i</code> will be <code class="constant">NULL</code> and <code class="varname">data_r</code>
+   will refer to interleaved complex data. If <code class="varname">vector</code> holds
+   split-complex data, <code class="varname">data_r</code> and <code class="varname">data_i</code> will
+   refer to the real and imaginary data arrays respectively.
+  </p><p><b>Note: </b>
+   The pointer is <span class="emphasis"><em>undefined</em></span> if the <code class="type">block</code> is currently <span class="emphasis"><em>released</em></span>. 
+   A valid pointer returned when the <code class="type">block</code> is currently <span class="emphasis"><em>admitted</em></span> becomes undefined 
+   if the <code class="type">block</code> is subsequently <span class="emphasis"><em>released</em></span>.
+  </p><p><b>Example: </b></p><pre class="programlisting">
+vsip_cvview_f *vector = ...;
+vsip_csl_cvattr_f dda;
+vsip_csl_cvgetattrib_f(src, &amp;dda);
+if (dda.data_r &amp;&amp; dda.data_i) /* split-complex data */
+{
+  for (i = 0; i != dda.length; ++i)
+  {
+    dda.data_r[i * dda.stride] = i;
+    dda.data_i[i * dda.stride] = i;
+  }
+}
+else if (dda.data_r) /* interleaved-complex data */
+{
+  for (i = 0; i != dda.length; ++i)
+  {
+    dda.data_r[i * dda.stride] = i; /* real */
+    dda.data_r[i * dda.stride+1] = i; /* imag */
+  }
+}
+  </pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="cvsip_vdda.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="cvsip_extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="cvsip_mdda.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">7.2. Direct Data Access to real vector views </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 7.4. Direct Data Access to real matrix views</td></tr></table></div></body></html>

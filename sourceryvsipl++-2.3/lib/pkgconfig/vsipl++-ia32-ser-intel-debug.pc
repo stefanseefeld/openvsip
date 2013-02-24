@@ -1,0 +1,1 @@
+../ia32/ser-intel-debug/pkgconfig/vsipl++.pc

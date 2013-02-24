@@ -1,0 +1,46 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.3. Non-dense blocks</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="dda.html" title="Chapter 2. Direct Data Access"><link rel="prev" href="ch02s02.html" title="2.2. Basic usage"><link rel="next" href="ch02s04.html" title="2.4. Requesting a specific data layout"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">2.3. Non-dense blocks</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s02.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Direct Data Access</th><td width="20%" align="right"> <a accesskey="n" href="ch02s04.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id279246"></a>2.3. Non-dense blocks</h2></div></div></div><p>In the following example, we construct a subview of a dense view,
+    aliasing every second value from a dense view, yielding a view with stride
+    <code class="constant">2</code>:</p><pre class="programlisting">void process(float *data, ptrdiff_t stride, size_t size);
+...
+Vector&lt;float&gt; v(8); Vector&lt;float&gt;::subview_type subview =
+    view.get(Domain&lt;1&gt;(0, 2, 4));
+vsip_csl::dda::Ext_data&lt;Vector&lt;float&gt;::block_type&gt;
+    ext(v.block());
+process(ext.data(), ext.stride(), ext.size());</pre><p>However, some functions may require unit-stride input. In that case,
+    it is possible to force unit-stride access. The
+    <code class="type">Ext_data&lt;&gt;</code> object will copy the data into temporary
+    storage, which the user then operates on, and synchronize back with the
+    block it was constructed from. This synchronization may not always be
+    necessary, and so it is possible to express whether to synchronize only
+    from the block to the <code class="type">Ext_data&lt;&gt;</code> object, the inverse,
+    or both.</p><pre class="programlisting">typedef Vector&lt;float&gt;::subview_type::block_type
+    block_type;
+typedef dda::Layout&lt;1, row1_type, dda::Stride_unit&gt;
+    layout_type;
+dda::Ext_data&lt;block_type, layout_type&gt;
+    ext(subview.block(), dda::SYNC_OUT);
+ramp(ext.data(), ext.size());</pre><p>As this access type may involve a performance penalty (temporary
+    data allocation, as well as one or two copy operations), it is desirable
+    to be able to query whether the direct data access comes with an extra
+    cost. A user may decide to prefer unit-stride, as long as no copies are
+    involved, but fall back to non-unit stride access otherwise:</p><pre class="programlisting">typedef Vector&lt;float&gt;::subview_type::block_type
+    block_type;
+typedef dda::Layout&lt;1, row1_type, dda::Stride_unit&gt;
+    layout_type;
+if (dda::Ext_data&lt;block_type, layout_type&gt;::CT_Cost !=
+    0)
+{ // If unit-stride access would require a copy,
+  // choose non-unit stride access
+  dda::Ext_data&lt;block_type&gt; ext(subview.block());
+  ramp(ext.data(), ext.stride(0), ext.size());
+} else {
+  dda::Ext_data&lt;block_type, layout_type&gt; ext(subview.block(),
+    dda::SYNC_OUT);
+  ramp(ext.data(), ext.size());
+}</pre><p>Note that the <code class="code">Ext_data&lt;&gt;::CT_cost</code> value is a
+    compile-time constant, and thus can be used in compile-time expressions.
+    Therefore, the above conditional may be done via compile-time decisions
+    (e.g. template specializations).</p><p>In the above example we have considered unit- versus non-unit stride
+    direct data access. However, there are other cases where data can never be
+    accessed directly without copies, for example if the block represents an
+    expression.</p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="dda.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch02s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">2.2. Basic usage </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 2.4. Requesting a specific data layout</td></tr></table></div></body></html>

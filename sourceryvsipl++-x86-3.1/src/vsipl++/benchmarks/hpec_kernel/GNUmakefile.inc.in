@@ -1,0 +1,71 @@
+######################################################### -*-Makefile-*-
+#
+# File:   GNUmakefile.inc.in
+# Author: Don McCoy
+# Date:   2006-04-11
+#
+# Contents: Makefile fragment for HPEC benchmarks.
+#
+########################################################################
+
+# Files in this directory are not available under the BSD license, so
+# avoid putting them into cxx_sources, building them, installing them,
+# etc. when building the reference implementation.
+ifndef VSIP_IMPL_REF_IMPL
+
+########################################################################
+# Variables
+########################################################################
+
+benchmarks_exec_prefix := $(exec_prefix)
+
+benchmarks_hpec_kernel_CXXINCLUDES := -I$(srcdir)/benchmarks
+benchmarks_hpec_kernel_CXXFLAGS := $(benchmarks_hpec_kernel_CXXINCLUDES)
+
+hpec_cxx_sources := $(wildcard $(srcdir)/benchmarks/hpec_kernel/*.cpp)
+hpec_cxx_headers := $(wildcard $(srcdir)/benchmarks/hpec_kernel/*.hpp)
+
+ifndef VSIP_IMPL_HAVE_LAPACK
+hpec_cxx_sources := $(patsubst \
+	$(srcdir)/benchmarks/hpec_kernel/svd.cpp, , $(hpec_cxx_sources))
+endif
+
+hpec_obj := $(patsubst $(srcdir)/%.cpp, %.$(OBJEXT), $(hpec_cxx_sources))
+hpec_exe := $(patsubst $(srcdir)/%.cpp, %$(EXEEXT), $(hpec_cxx_sources))
+hpec_targets := $(filter-out benchmarks/main$(EXEEXT), $(hpec_exe)) 
+
+cxx_sources += $(hpec_cxx_sources)
+
+hpec_install_sources := $(hpec_cxx_sources) $(hpec_cxx_headers)
+
+hpec_install_targets := $(patsubst $(srcdir)/%, %, $(hpec_install_sources))
+
+
+########################################################################
+# Rules
+########################################################################
+
+hpec_kernel:: $(hpec_targets)
+
+# Object files will be deleted by the parent clean rule.
+clean::
+	rm -f $(hpec_targets)
+
+# Install benchmark source code and executables
+install-benchmarks:: hpec_kernel
+	$(INSTALL) -d $(DESTDIR)$(pkgdatadir)/benchmarks
+	$(INSTALL) -d $(DESTDIR)$(pkgdatadir)/benchmarks/hpec_kernel
+	for sourcefile in $(hpec_install_targets); do \
+          $(INSTALL_DATA) $(srcdir)/$$sourcefile \
+	    $(DESTDIR)$(pkgdatadir)/`dirname $$sourcefile`; \
+	done
+	$(INSTALL) -d $(DESTDIR)$(variant_bindir)/benchmarks
+	$(INSTALL) -d $(DESTDIR)$(variant_bindir)/benchmarks/hpec_kernel
+	for binfile in $(hpec_targets); do \
+	  $(INSTALL) $$binfile $(DESTDIR)$(variant_bindir)/`dirname $$binfile`; \
+	done
+
+$(hpec_targets): %$(EXEEXT) : %.$(OBJEXT) benchmarks/main.$(OBJEXT) $(libs)
+	$(link_benchmark)
+
+endif

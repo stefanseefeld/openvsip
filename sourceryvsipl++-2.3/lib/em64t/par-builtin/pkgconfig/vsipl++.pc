@@ -1,0 +1,21 @@
+prefix=/opt/codesourcery/sourceryvsipl++-2.3
+exec_prefix=${prefix}
+libdir=${prefix}/lib/em64t/par-builtin
+builtin_libdir=${prefix}/lib/em64t
+includedir=${prefix}/include
+cc=i686-pc-linux-gnu-gcc
+cxx=i686-pc-linux-gnu-g++
+cppflags=-I${includedir} -I${prefix}/include/fftw3  -I${prefix}/include -DVSIP_IMPL_FFTW3=1 -DVSIP_IMPL_FFTW3_HAVE_FLOAT -DVSIP_IMPL_FFTW3_HAVE_DOUBLE -DVSIP_IMPL_FFTW3_HAVE_LONG_DOUBLE -DVSIP_IMPL_MPI_H_TYPE=1 -DVSIP_IMPL_PAR_SERVICE=1 -I/usr/lib64/lam/include -I/usr/lib64/lam/include/64 -m64 -pthread  -DVSIP_IMPL_AVOID_POSIX_MEMALIGN=1 -DVSIP_IMPL_FFT_USE_FLOAT=1 -DVSIP_IMPL_FFT_USE_DOUBLE=1 -DVSIP_IMPL_FFT_USE_LONG_DOUBLE=1 -DVSIP_IMPL_PROVIDE_FFT_FLOAT=1 -DVSIP_IMPL_PROVIDE_FFT_DOUBLE=1 -DVSIP_IMPL_PROVIDE_FFT_LONG_DOUBLE=1 -DVSIP_IMPL_USE_F2C_ABI -DVSIP_IMPL_USE_CBLAS=1
+cflags=-m64 -march=nocona -mmmx -msse -msse2 -msse3
+cxxflags=-O2 -DNDEBUG -funswitch-loops -fgcse-after-reload --param max-inline-insns-single=2000 --param large-function-insns=6000 --param large-function-growth=800 --param inline-unit-growth=300 -m64 -march=nocona -mmmx -msse -msse2 -msse3
+ldflags=-m64 -march=nocona -mmmx -msse -msse2 -msse3 -L${prefix}/lib/em64t -L${builtin_libdir}
+par_service=lam
+par_boot=/usr/lib64/lam/bin/lamboot
+par_halt=/usr/lib64/lam/bin/lamhalt
+qmtest_target=local_host.LocalHost
+
+Name: Sourcery VSIPL++
+Description: CodeSourcery VSIPL++ library
+Version: 
+Libs: ${ldflags} -L${libdir}  -lvsip_csl -lsvpp  -lfftw3f -lfftw3 -lfftw3l  -latlas_lapack -llapack -lcblas -latlas -lF77  -L/usr/lib64/lam/lib -llammpio -llammpi++ -llamf77mpi -lmpi -llam -laio -laio -lutil -ldl 
+Cflags: ${cppflags}

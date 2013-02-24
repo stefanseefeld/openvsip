@@ -1,0 +1,1 @@
+../ia32/ser-builtin-debug/pkgconfig/vsipl++.pc

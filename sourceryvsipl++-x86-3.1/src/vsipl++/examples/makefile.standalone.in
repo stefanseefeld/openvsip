@@ -1,0 +1,9 @@
+######################################################### -*-Makefile-*-
+#
+# Contents: Makefile for VSIPL++ example programs.
+#
+########################################################################
+
+targets := example1 mprod vmul
+
+include common.mk

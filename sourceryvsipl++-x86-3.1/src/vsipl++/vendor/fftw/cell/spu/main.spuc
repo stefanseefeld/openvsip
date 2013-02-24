@@ -1,0 +1,53 @@
+/* -*- C -*- */
+/*
+ * Copyright (c) 2007 Massachusetts Institute of Technology
+ *
+ * See the file COPYING for license information.
+ *
+ */
+
+#include <stdlib.h>
+#include <spu_intrinsics.h>
+#include <spu_mfcio.h>
+#include "fftw-spu.h"
+#include "../fftw-cell.h"
+
+static void wait(void)
+{
+     (void) spu_read_in_mbox();
+}
+
+int main(unsigned long long spu_id, unsigned long long parm)
+{  
+     static struct spu_context ctx __attribute__ ((aligned (ALIGNMENT)));
+     UNUSED(spu_id);
+     spu_writech(MFC_WrTagMask, -1);
+
+     for (;;) {
+	  wait();
+
+	  /* obtain context */
+	  X(spu_dma1d)(&ctx, parm, sizeof(ctx), MFC_GET_CMD);
+
+	  switch (ctx.op) {
+	      case FFTW_SPE_DFT:
+		   X(spu_do_dft)(&ctx.u.dft);
+		   break;
+
+	      case FFTW_SPE_TRANSPOSE:
+		   X(spu_do_transpose)(&ctx.u.transpose);
+		   break;
+
+	      case FFTW_SPE_COPY:
+		   X(spu_do_copy)(&ctx.u.copy);
+		   break;
+
+	      case FFTW_SPE_EXIT:
+		   return 0;
+	  }
+
+	  /* signal completion: */
+	  ctx.done = 1;
+	  X(spu_dma1d)(&ctx, parm, sizeof(ctx), MFC_PUTF_CMD);
+     }
+}

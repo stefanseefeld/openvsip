@@ -1,0 +1,18 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>C.4. copy</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="apc.html" title="Appendix C. Benchmark Usage"><link rel="prev" href="apcs03.html" title="C.3. conv2d"><link rel="next" href="apcs05.html" title="C.5. corr"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">C.4. copy</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="apcs03.html">Prev</a> </td><th width="60%" align="center">Appendix C. Benchmark Usage</th><td width="20%" align="right"> <a accesskey="n" href="apcs05.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id285963"></a>C.4. copy</h2></div></div></div><p>
+      </p><pre class="screen">copy -- vector copy -1 -- local copy (A = B)) -5 -- local copy
+      (memcpy)) Using assignment (A = B): -10 -- float root copy (root -&gt;
+      root) -11 -- float scatter (root -&gt; all) -12 -- float gather (all
+      -&gt; root) -13 -- float dist copy (all -&gt; all) -14 -- float
+      point-to-point (p0 -&gt; p1) -15 -- float scatter2 (root -&gt; all
+      non-root) Using Setup_assign: -20 -- float root copy (root -&gt; root)
+      -21 -- float scatter (root -&gt; all) -22 -- float gather (all -&gt;
+      root) -23 -- float dist copy (all -&gt; all) -24 -- float point-to-point
+      (p0 -&gt; p1) -25 -- float scatter2 (root -&gt; all non-root) MPI
+      low-level Par_assign directly: -100-105 -- Chained_assign -110-115 --
+      Blkvec_assign -150-155 -- Chained_assign (non-amortized setup) -160-165
+      -- Blkvec_assign (non-amortized setup) PAS low-level Par_assign
+      directly: -200-205 -- Pas_assign -210-215 -- Pas_assign_eb -220-225 --
+      Direct_pas_assign -250-255 -- Pas_assign (non-amortized setup) -260-265
+      -- Pas_assign_eb (non-amortized setup) -270-275 -- Direct_pas_assign
+      (non-amortized setup) </pre><p>
+    </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apcs05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">C.3. conv2d </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> C.5. corr</td></tr></table></div></body></html>

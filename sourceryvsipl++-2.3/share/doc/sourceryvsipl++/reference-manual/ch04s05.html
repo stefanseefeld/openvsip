@@ -1,0 +1,649 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.5. Linear System Solvers</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="functions.html" title="Chapter 4. Function Reference"><link rel="prev" href="ch04s04.html" title="4.4. Linear Algebra Matrix-Vector Functions"><link rel="next" href="ch04s06.html" title="4.6. Selection, generation, and manipulation functions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.5. Linear System Solvers</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s04.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Function Reference</th><td width="20%" align="right"> <a accesskey="n" href="ch04s06.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id319377"></a>4.5. Linear System Solvers</h2></div></div></div><p>
+    These functions and classes solve linear systems and also perform 
+    singular value decomposition.
+  </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_cholesky"></a>4.5.1. Cholesky Decomposition Solver</h3></div></div></div><p>This section describes the Cholesky decomposition processing 
+ object provided by VSIPL++.</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id319399"></a>4.5.1.1. Class template chold&lt;&gt;</h4></div></div></div><a class="indexterm" name="id319405"></a><p>The class <code class="type">chold</code> uses Cholesky decomposition 
+  to solve linear systems.</p><pre class="synopsis">template &lt;typename T,
+          return_mechanism_type ReturnMechanism = by_value&gt;
+class chold;</pre><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><code class="type">T</code></span></dt><dd><p>The value type used for the decomposition object.  May be single- 
+     or double-precision floating-point, and either real or complex.
+     </p></dd><dt><span class="term"><code class="type">ReturnMechanism</code></span></dt><dd><p>The return mechanism type indicates whether the Cholesky 
+     decomposition object's <code class="function">solve()</code> function returns 
+     results by value (<code class="type">by_value</code>) or by reference 
+     (<code class="type">by_reference</code>) into matrices provided by the caller. See 
+     <a class="xref" href="ch02s07.html#classref_return_mechanism_type" title="2.7.7. return_mechanism_type">section 2.7.7</a>
+     for details.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id319488"></a>4.5.1.2. Constructor</h4></div></div></div><a class="indexterm" name="id319493"></a><pre class="synopsis">chold(mat_uplo uplo, length_type len);</pre><p><b>Description: </b>Constructs a <code class="type">chold</code> object that will decompose 
+    <em class="parameter"><code>len</code></em> by <em class="parameter"><code>len</code></em> positive
+    definite matrices.  The parameter <em class="parameter"><code>uplo</code></em>
+    controls whether an upper LU or lower LU decomposition will be 
+    performed <a class="xref" href="ch02s07.html#classref_mat_uplo" title="2.7.6. mat_uplo">(see section 2.7.6)</a>.  Note also that <code class="type">chold</code> 
+    objects may also be copied (constructed) from other <code class="type">chold</code> 
+    objects.</p><p><b>Requirements: </b> The parameter <em class="parameter"><code>len</code></em> must be greater 
+    than zero.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id319576"></a>4.5.1.3. Accessor functions</h4></div></div></div><a class="indexterm" name="id319582"></a><a class="indexterm" name="id319594"></a><pre class="synopsis">mat_uplo uplo() const;
+length_type length() const;</pre><p><b>Description: </b>Report the attributes of this <code class="type">chold</code> object.  
+    The <code class="function">length()</code> function returns the length, equal to the 
+    number of rows as well as the number of columns in the decomposed 
+    matrix.  The <code class="function">uplo()</code> function indicates whether the lower 
+    half or upper half of a decomposed matrix is referenced.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id319641"></a>4.5.1.4. Solve Systems</h4></div></div></div><a class="indexterm" name="id319647"></a><pre class="synopsis">template &lt;typename Block&gt;
+bool 
+decompose(Matrix&lt;T, Block&gt; A);</pre><p><b>Description: </b>Performs Cholesky decomposition of <em class="parameter"><code>A</code></em>.  When 
+     it can be used, Cholesky decomposition is twice as efficient as normal
+     LU decomposition.</p><p><b>Requirements: </b>The matrix <em class="parameter"><code>A</code></em> must be the same size as
+     specified in the constructor.  Note that the contents may be overwritten, 
+     therefore <em class="parameter"><code>A</code></em> should not be modified until all
+     <code class="function">solve()</code> calls have been performed.  The matrix 
+     <em class="parameter"><code>A</code></em> must be both symmetric and positive definite 
+     for Cholesky decomposition to work.</p><p><b>Result: </b>False is returned if the decomposition fails.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id319729"></a>4.5.1.5. Solve Systems (by_value)</h4></div></div></div><p>This function is available only if the <code class="type">chold</code> class 
+   template is parameterized with <code class="code">ReturnMechanism=by_value</code>.</p><a class="indexterm" name="id319746"></a><pre class="synopsis">template &lt;mat_op_type tr,
+          typename    Block&gt;
+const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+solve(const_Matrix&lt;T, Block&gt; B);</pre><p><b>Description: </b>Solves a linear system.</p><p>The parameter <code class="type">tr</code> controls what type of operation is
+     performed on <em class="parameter"><code>A</code></em> when solving the system
+     <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(see section 2.7.3)</a>.
+     </p><p>If <code class="code">tr == mat_trans</code> and <code class="type">T</code> is not a 
+     specialization of complex, then 
+     <code class="code">A<sup>T</sup>X = B</code> is solved.</p><p>If <code class="code">tr == mat_herm</code> and <code class="type">T</code> is a 
+     specialization of complex, then 
+     <code class="code">A<sup>H</sup>X = B</code> is solved.</p><p>If <code class="code">tr == mat_ntrans</code>, then
+     <code class="code">AX = B</code> is solved.</p><p><b>Requirements: </b>The number of rows of <em class="parameter"><code>B</code></em> must be equal to 
+     the value returned by <code class="function">length()</code>.  A successful 
+     call to <code class="function">decompose()</code> must have occurred.</p><p><b>Result: </b>Returns the solution to the linear system. 
+     The returned matrix&#8217;s block type may be a different type from 
+     <code class="type">Block</code>.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id319890"></a>4.5.1.6. Solve Systems (by_reference)</h4></div></div></div><p>This function is available only if the <code class="type">chold</code> class 
+   template is parameterized with <code class="code">ReturnMechanism=by_reference</code>.</p><a class="indexterm" name="id319907"></a><pre class="synopsis">template &lt;mat_op_type tr,
+          typename    Block0,
+          typename    Block1&gt;
+bool
+solve(
+  const_Matrix&lt;T, Block0&gt; B,
+  Matrix&lt;T, Block1&gt;       X);</pre><p><b>Description: </b>Solves a linear system.</p><p>The parameter <code class="type">tr</code> controls what type of operation is
+     performed on <em class="parameter"><code>A</code></em> when solving the system
+     <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(see section 2.7.3)</a>.
+     </p><p>If <code class="code">tr == mat_trans</code> and <code class="type">T</code> is not a 
+     specialization of complex, then 
+     <code class="code">A<sup>T</sup>X = B</code> is solved.</p><p>If <code class="code">tr == mat_herm</code> and <code class="type">T</code> is a 
+     specialization of complex, then 
+     <code class="code">A<sup>H</sup>X = B</code> is solved.</p><p>If <code class="code">tr == mat_ntrans</code>, then
+     <code class="code">AX = B</code> is solved.</p><p><b>Requirements: </b>The number of rows of both <em class="parameter"><code>B</code></em> and
+     <em class="parameter"><code>X</code></em> must be equal to the value returned by 
+     <code class="function">length()</code>.  A successful call to 
+     <code class="function">decompose()</code> must have occurred.</p><p><b>Result: </b>Stores the solution in <em class="parameter"><code>X</code></em>.  True is 
+     returned if the computation succeeds.</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_cov"></a>4.5.2. Covariance Solver</h3></div></div></div><p>This section describes the covariance linear system solver function
+ provided by VSIPL++.</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id320101"></a>4.5.2.1. Solve Systems (return by value)</h4></div></div></div><a class="indexterm" name="id320106"></a><pre class="synopsis">template &lt;typename T,
+          typename Block0,
+          typename Block1&gt;
+Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+covsol(
+  Matrix&lt;T, Block0&gt;       A,
+  const_Matrix&lt;T, Block1&gt; B);</pre><p><b>Description: </b>Solves the covariance linear system
+     <code class="code">A<sup>T</sup>AX = B</code>
+     for <em class="parameter"><code>X</code></em> if type <code class="type">T</code> is real
+     and <code class="code">A<sup>H</sup>AX = B</code>
+     for <em class="parameter"><code>X</code></em> if type <code class="type">T</code> is complex.</p><p><b>Requirements: </b>The matrix <em class="parameter"><code>A</code></em> is of size 
+     <code class="varname">M</code> by <code class="varname">N</code> (where <code class="code">M &gt;= N</code>)
+     and is of rank <code class="varname">N</code>.  
+     The matrix <em class="parameter"><code>B</code></em> is of size <code class="varname">N</code>
+     by <code class="varname">K</code>.  
+     The type <code class="type">T</code> may be single- or double-precision 
+     floating-point, and either real or complex.  Temporary workspace may 
+     be allocated, which may result in nondeterministic execution time.  
+     As an alternative, use the QR routines.</p><p><b>Result: </b>The solution <code class="varname">X</code> is returned and is of
+     size <code class="varname">N</code> by <code class="varname">K</code>.  
+     Note that <em class="parameter"><code>A</code></em> may be overwritten.  The returned 
+     matrix&#8217;s block type may be a different type from <code class="type">Block0</code> or 
+     <code class="type">Block1</code>.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id320254"></a>4.5.2.2. Solve Systems (return by reference)</h4></div></div></div><pre class="synopsis">template &lt;typename T,
+          typename Block0,
+          typename Block1,
+          typename Block2&gt;
+Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+covsol(
+  Matrix&lt;T, Block0&gt;       A,
+  const_Matrix&lt;T, Block1&gt; B,
+  Matrix&lt;T, Block2&gt;       X);</pre><p><b>Description: </b>Solves the covariance linear system
+     <code class="code">A<sup>T</sup>AX = B</code>
+     for <em class="parameter"><code>X</code></em> if type <code class="type">T</code> is real
+     and <code class="code">A<sup>H</sup>AX = B</code>
+     for <em class="parameter"><code>X</code></em> if type <code class="type">T</code> is complex.</p><p><b>Requirements: </b>The matrix <em class="parameter"><code>A</code></em> is of size 
+     <code class="varname">M</code> by <code class="varname">N</code> (where <code class="code">M &gt;= N</code>)
+     and is of rank <code class="varname">N</code>.  
+     The matrix <em class="parameter"><code>B</code></em> is of size <code class="varname">N</code>
+     by <code class="varname">K</code>.  
+     The matrix <em class="parameter"><code>X</code></em> is also of size <code class="varname">N</code>
+     by <code class="varname">K</code>.  
+     The type <code class="type">T</code> may be single- or double-precision 
+     floating-point, and either real or complex.  Temporary workspace may 
+     be allocated, which may result in nondeterministic execution time.  
+     As an alternative, use the QR routines.</p><p><b>Result: </b>The solution is placed in <em class="parameter"><code>X</code></em>.  
+     Note that <em class="parameter"><code>A</code></em> may be overwritten.</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_llsq"></a>4.5.3. Linear Least Squares Solver</h3></div></div></div><p>This section describes the linear least squares solver function
+ provided by VSIPL++.</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id320411"></a>4.5.3.1. Solve Systems (return by value)</h4></div></div></div><a class="indexterm" name="id320416"></a><pre class="synopsis">template &lt;typename T,
+          typename Block0,
+          typename Block1&gt;
+Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+llsqsol(
+  Matrix&lt;T, Block0&gt;       A,
+  const_Matrix&lt;T, Block1&gt; B);</pre><p><b>Description: </b>Solves the linear least squares problem 
+     <code class="code">min<sub>X</sub> ||AX &#8722; B||<sub>2</sub></code>
+     for <em class="parameter"><code>X</code></em>.</p><p><b>Requirements: </b>The matrix <em class="parameter"><code>A</code></em> is of size 
+     <code class="varname">M</code> by <code class="varname">N</code> (where <code class="code">M &gt;= N</code>)
+     and is of rank <code class="varname">N</code>.  
+     The matrix <em class="parameter"><code>B</code></em> is of size <code class="varname">M</code>
+     by <code class="varname">K</code>.  
+     The type <code class="type">T</code> may be single- or double-precision 
+     floating-point, and either real or complex.  Temporary workspace 
+     may be allocated, which may result in nondeterministic execution time.
+     As an alternative, use the QR routines.</p><p><b>Result: </b>Returns the solution <code class="varname">X</code> which is of
+     size <code class="varname">N</code> by <code class="varname">K</code>.  
+     Note that <em class="parameter"><code>A</code></em> may be overwritten.
+     The returned matrix&#8217;s block type may be a different type from 
+     <code class="type">Block0</code> or <code class="type">Block1</code>.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id320546"></a>4.5.3.2. Solve Systems (return by reference)</h4></div></div></div><pre class="synopsis">template &lt;typename T,
+          typename Block0,
+          typename Block1,
+          typename Block2&gt;
+Matrix&lt;T, Block2&gt;
+llsqsol(
+  Matrix&lt;T, Block0&gt;       A,
+  const_Matrix&lt;T, Block1&gt; B,
+  Matrix&lt;T, Block2&gt;       X);</pre><p><b>Description: </b>Solves the linear least squares problem 
+     <code class="code">min<sub>X</sub> ||AX &#8722; B||<sub>2</sub></code>
+     for <em class="parameter"><code>X</code></em>.</p><p><b>Requirements: </b>The matrix <em class="parameter"><code>A</code></em> is of size 
+     <code class="varname">M</code> by <code class="varname">N</code> (where <code class="code">M &gt;= N</code>)
+     and is of rank <code class="varname">N</code>.  
+     The matrix <em class="parameter"><code>B</code></em> is of size <code class="varname">M</code>
+     by <code class="varname">K</code>.  
+     The matrix <em class="parameter"><code>X</code></em> is of size <code class="varname">N</code>
+     by <code class="varname">K</code>.  
+     The type <code class="type">T</code> may be single- or double-precision 
+     floating-point, and either real or complex.  Temporary workspace 
+     may be allocated, which may result in nondeterministic execution time.
+     As an alternative, use the QR routines.</p><p><b>Result: </b>Stores the solution in <code class="varname">X</code> and returns it.
+     Note that <em class="parameter"><code>A</code></em> may be overwritten.</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_lu"></a>4.5.4. LU Decomposition Solver</h3></div></div></div><p>This section describes the LU (lower and upper triangular) 
+ decomposition processing object provided by VSIPL++.</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id320679"></a>4.5.4.1. Class template lud&lt;&gt;</h4></div></div></div><a class="indexterm" name="id320684"></a><p>The class <code class="type">lud</code> performs LU decomposition 
+  to solve linear systems.</p><pre class="synopsis">template &lt;typename T,
+          return_mechanism_type ReturnMechanism = by_value&gt;
+class lud;</pre><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><code class="type">T</code></span></dt><dd><p>The value type used for the decomposition object.  May be 
+     real or complex, single- or double-precision floating-point types.
+     </p></dd><dt><span class="term"><code class="type">ReturnMechanism</code></span></dt><dd><p>The return mechanism type indicates whether the LU decomposition
+     object's <code class="function">solve()</code> function returns results 
+     by value (<code class="type">by_value</code>) or by reference 
+     (<code class="type">by_reference</code>) into matrices provided by the caller. See 
+     <a class="xref" href="ch02s07.html#classref_return_mechanism_type" title="2.7.7. return_mechanism_type">section 2.7.7</a>
+     for details.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id320766"></a>4.5.4.2. Constructor</h4></div></div></div><a class="indexterm" name="id320772"></a><pre class="synopsis">lud(length_type len);</pre><p><b>Description: </b>Constructs an <code class="type">lud</code> object that will decompose 
+    <em class="parameter"><code>len</code></em> by <em class="parameter"><code>len</code></em> matrices.
+    Note also that <code class="type">lud</code> objects may also be copied (constructed) 
+    from other <code class="type">lud</code> objects.</p><p><b>Requirements: </b> The parameter <em class="parameter"><code>len</code></em> must be greater 
+    than zero.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id320840"></a>4.5.4.3. Accessor functions</h4></div></div></div><a class="indexterm" name="id320845"></a><pre class="synopsis">length_type length() const;</pre><p><b>Description: </b>Report the length attribute of this <code class="type">lud</code> object, equal
+    to the number of rows as well as the number of columns in the decomposed
+    matrix.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id320879"></a>4.5.4.4. Solve Systems</h4></div></div></div><a class="indexterm" name="id320884"></a><pre class="synopsis">template &lt;typename Block&gt;
+bool 
+decompose(Matrix&lt;T, Block&gt; A);</pre><p><b>Description: </b>Performs LU decomposition of <em class="parameter"><code>A</code></em>.</p><p><b>Requirements: </b>The matrix <em class="parameter"><code>A</code></em> must be the same size as
+     specified in the constructor.  Note that the contents may be overwritten,
+     therefore <em class="parameter"><code>A</code></em> should not be modified until all
+     <code class="function">solve()</code> calls have been performed.</p><p><b>Result: </b>False is returned if the decomposition fails.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id320958"></a>4.5.4.5. Solve Systems (by_value)</h4></div></div></div><p>This function is available only if the <code class="type">lud</code> class
+   template is parameterized with <code class="code">ReturnMechanism=by_value</code>.</p><a class="indexterm" name="id320975"></a><pre class="synopsis">template &lt;mat_op_type tr,
+          typename    Block&gt;
+const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+solve(const_Matrix&lt;T, Block&gt; B);</pre><p><b>Description: </b>Solves a linear system.
+     The parameter <code class="type">tr</code> controls what type of operation is
+     performed on <em class="parameter"><code>A</code></em> when solving the system
+     <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(see section 2.7.3)</a>.
+     </p><p>If <code class="code">tr == mat_trans</code> and <code class="type">T</code> is not a 
+     specialization of complex, then 
+     <code class="code">A<sup>T</sup>X = B</code> is solved.</p><p>If <code class="code">tr == mat_herm</code> and <code class="type">T</code> is a 
+     specialization of complex, then 
+     <code class="code">A<sup>H</sup>X = B</code> is solved.</p><p>If <code class="code">tr == mat_ntrans</code>, then
+     <code class="code">AX = B</code> is solved.</p><p><b>Requirements: </b>The number of rows of <em class="parameter"><code>B</code></em> must be equal to 
+     the value returned by <code class="function">length()</code>.  A successful 
+     call to <code class="function">decompose()</code> must have occurred.</p><p><b>Result: </b>Returns the solution to the linear system.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id321111"></a>4.5.4.6. Solve Systems (by_reference)</h4></div></div></div><p>This function is available only if the <code class="type">lud</code> class 
+   template is parameterized with <code class="code">ReturnMechanism=by_reference</code>.</p><a class="indexterm" name="id321127"></a><pre class="synopsis">template &lt;mat_op_type tr,
+          typename    Block0,
+          typename    Block1&gt;
+bool
+solve(
+  const_Matrix&lt;T, Block0&gt; B,
+  Matrix&lt;T, Block1&gt;       X);</pre><p><b>Description: </b>Solves a linear system.
+     The parameter <code class="type">tr</code> controls what type of operation is
+     performed on <em class="parameter"><code>A</code></em> when solving the system
+     <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(see section 2.7.3)</a>.
+     </p><p>If <code class="code">tr == mat_trans</code> and <code class="type">T</code> is not a 
+     specialization of complex, then 
+     <code class="code">A<sup>T</sup>X = B</code> is solved.</p><p>If <code class="code">tr == mat_herm</code> and <code class="type">T</code> is a 
+     specialization of complex, then 
+     <code class="code">A<sup>H</sup>X = B</code> is solved.</p><p>If <code class="code">tr == mat_ntrans</code>, then
+     <code class="code">AX = B</code> is solved.</p><p><b>Requirements: </b>The number of rows of both <em class="parameter"><code>B</code></em> and
+     <em class="parameter"><code>X</code></em> must be equal to the value returned by 
+     <code class="function">length()</code>.  A successful call to 
+     <code class="function">decompose()</code> must have occurred.</p><p><b>Result: </b>Stores the solution in <em class="parameter"><code>X</code></em>.  True is 
+     returned if the computation succeeds.</p><p><b>Exceptions: </b>If the backends enabled do not support the requested LU 
+     decomposition, a <code class="type">vsip::impl::unimplemented</code> exception 
+     will be thrown.  This is a deviation from the VSIPL++ spec.</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_qr"></a>4.5.5. QR Decomposition Solver</h3></div></div></div><p>This section describes the QR decomposition processing object
+ provided by VSIPL++.</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id321299"></a>4.5.5.1. Class template qrd&lt;&gt;</h4></div></div></div><a class="indexterm" name="id321305"></a><p>The class <code class="type">qrd</code> performs QR decomposition 
+  and solves linear systems.</p><pre class="synopsis">template &lt;typename T,
+          return_mechanism_type ReturnMechanism = by_value&gt;
+class qrd;</pre><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><code class="type">T</code></span></dt><dd><p>The value type used for the decomposition object.  May be 
+     real or complex, single- or double-precision floating-point types.
+     </p></dd><dt><span class="term"><code class="type">ReturnMechanism</code></span></dt><dd><p>The return mechanism type indicates whether the QR solver
+     and product functions return results by value (<code class="type">by_value</code>)
+     or by reference (<code class="type">by_reference</code>) into matrices provided
+     by the caller. See 
+     <a class="xref" href="ch02s07.html#classref_return_mechanism_type" title="2.7.7. return_mechanism_type">section 2.7.7</a>
+     for details.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id321381"></a>4.5.5.2. Constructor</h4></div></div></div><a class="indexterm" name="id321386"></a><pre class="synopsis">qrd(length_type rows, length_type columns, storage_type st);</pre><p><b>Description: </b>Constructs a <code class="type">qrd</code> object.  The parameters 
+    <em class="parameter"><code>rows</code></em> and <em class="parameter"><code>columns</code></em> refer to the 
+    size of the <code class="varname">Q</code> matrix.  The parameter 
+    <em class="parameter"><code>st</code></em> controls how much of the <code class="varname">Q</code>
+    matrix is stored
+    <a class="xref" href="ch02s07.html#classref_storage_type" title="2.7.8. storage_type">(see section 2.7.8)</a>.
+    Note also that <code class="type">qrd</code> objects may also be copied (constructed) 
+    from other <code class="type">qrd</code> objects.</p><p><b>Requirements: </b> The number of rows must be greater than or equal 
+    to the number of columns.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id321470"></a>4.5.5.3. Accessor functions</h4></div></div></div><a class="indexterm" name="id321476"></a><a class="indexterm" name="id321488"></a><a class="indexterm" name="id321500"></a><pre class="synopsis">length_type rows() const;
+length_type columns() const;
+storage_type qstorage() const;</pre><p><b>Description: </b>Report the various attributes of this <code class="type">qrd</code> object.  The
+    number of rows is returned by <code class="function">rows()</code> and the number
+    of columns by <code class="function">columns()</code>.
+    The function <code class="function">st()</code> returns how the decomposition
+    matrix <code class="varname">Q</code> is stored by this object, if at all.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id321555"></a>4.5.5.4. Solve Systems</h4></div></div></div><a class="indexterm" name="id321561"></a><pre class="synopsis">template &lt;typename Block&gt;
+bool 
+decompose(Matrix&lt;T, Block&gt; A);</pre><p><b>Description: </b>Performs a QR decomposition of the matrix <em class="parameter"><code>A</code></em> 
+     into matrices <code class="varname">Q</code> and <code class="varname">R</code>.</p><p><b>Requirements: </b>The matrix <em class="parameter"><code>A</code></em> must be the same size as
+     specified in the constructor.  Note that the contents may be overwritten 
+     therefore <em class="parameter"><code>A</code></em> should not be modified prior to calling 
+     any other function.</p><p><b>Result: </b>False is returned if the decomposition fails because 
+     <em class="parameter"><code>A</code></em> does not have full column rank.   
+     Note: If <code class="type">T</code> is a specialization of complex, 
+     <code class="varname">Q</code> is unitary. Otherwise, <code class="varname">Q</code>
+     is orthogonal.  <code class="varname">R</code> is an upper triangular matrix.  
+     If <em class="parameter"><code>A</code></em> has full rank, then <code class="varname">R</code> is a 
+     nonsingular matrix.  No column interchanges are performed.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id321667"></a>4.5.5.5. Solve Systems (by_value)</h4></div></div></div><p>This function is available only if the <code class="type">qrd</code> class 
+   template is parameterized with <code class="code">ReturnMechanism=by_value</code></p><a class="indexterm" name="id321683"></a><pre class="synopsis">template &lt;mat_op_type       tr,
+          product_side_type ps,
+          typename          Block&gt;
+const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+prodq(const_Matrix&lt;T, Block&gt; C);</pre><p><b>Description: </b>Calculates the product of <code class="varname">Q</code> and 
+     <em class="parameter"><code>C</code></em>.  
+     The parameter <code class="type">tr</code> controls what type of operation is
+     performed on <em class="parameter"><code>C</code></em> before the product is computed
+     <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(see section 2.7.3)</a>
+     and <code class="type">ps</code> determines what side of the product 
+     <code class="varname">Q</code> is placed on <a class="xref" href="ch02s07.html#classref_product_side_type" title="2.7.5. product_side_type">(see section 2.7.5)</a>.
+     The actual product and its number of rows and columns (shown in
+     the table below) depends on the values of <code class="type">tr</code>, 
+     <code class="type">ps</code>, and <code class="function">qstorage()</code> 
+     and whether <code class="type">T</code> is not or is a specialization 
+     of complex.</p><p>For <code class="code">qstorage() == qrd_saveq1,</code></p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>QC, rows(), s</td><td>CQ, s, columns()</td></tr><tr><td>tr == mat_trans, T</td><td>Q<sup>T</sup>C, columns(), s</td><td>CQ<sup>T</sup>, s, rows()</td></tr><tr><td>tr == mat_herm, complex&lt;T&gt;</td><td>Q<sup>H</sup>C, columns(), s</td><td>CQ<sup>H</sup>, s, rows()</td></tr></tbody></table></div><p>where <em class="parameter"><code>s</code></em> is an arbitrary positive value.</p><p>For <code class="code">qstorage() == qrd_saveq</code>,</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>QC, rows(), s</td><td>CQ, s, rows()</td></tr><tr><td>tr == mat_trans, T</td><td>Q<sup>T</sup>C, rows(), s</td><td>CQ<sup>T</sup>, s, rows()</td></tr><tr><td>tr == mat_herm, complex&lt;T&gt;</td><td>Q<sup>H</sup>C, rows(), s</td><td>CQ<sup>H</sup>, s, rows()</td></tr></tbody></table></div><p><b>Requirements: </b>A successful call to <code class="function">decompose()</code> must have 
+     occurred for this object with <code class="function">qstorage()</code> equaling 
+     either <code class="type">qrd_saveq1</code> or <code class="type">qrd_saveq</code>.  Otherwise, 
+     the behavior is undefined.  The number of rows and columns (shown 
+     in the table below) of <em class="parameter"><code>C</code></em> depend on the 
+     values of <code class="type">tr</code>, <code class="type">ps</code>, and 
+     <code class="function">qstorage()</code>.</p><p>For <code class="code">qstorage() == qrd_saveq1</code>,</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>columns(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_trans</td><td>rows(), s</td><td>s, columns()</td></tr><tr><td>tr == mat_herm</td><td>rows(), s</td><td>s, columns()</td></tr></tbody></table></div><p>where <em class="parameter"><code>s</code></em> is the same variable as above.</p><p>For <code class="code">qstorage() == qrd_saveq</code>,</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>rows(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_trans</td><td>rows(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_herm</td><td>rows(), s</td><td>s, rows()</td></tr></tbody></table></div><p><b>Result: </b>Returns the product of <code class="varname">Q</code> and 
+     <em class="parameter"><code>C</code></em>.
+     The returned matrix&#8217;s block type may be a different type from 
+     <code class="type">Block</code>.</p><a class="indexterm" name="id322200"></a><pre class="synopsis">template &lt;mat_op_type tr,
+          typename    Block&gt;
+const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+rsol(
+  const_Matrix&lt;T, Block&gt; B,
+  T const                 alpha);</pre><p><b>Description: </b>Solves a linear system for <em class="parameter"><code>X</code></em>.
+     The parameter <code class="type">tr</code> controls what type of operation is
+     performed on <em class="parameter"><code>R</code></em> before the system is solved
+     <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(see section 2.7.3)</a>.
+     </p><p>If <code class="code">tr == mat_trans</code> and <code class="type">T</code> is not a 
+     specialization of complex, then 
+     <code class="code">R<sup>T</sup>X = alpha B</code> is solved.</p><p>If <code class="code">tr == mat_herm</code> and <code class="type">T</code> is a specialization 
+     of complex, then 
+     <code class="code">R<sup>H</sup>X = alpha B</code> is solved.</p><p>If <code class="code">tr == mat_ntrans</code>, then
+     <code class="code">RX = alpha B</code> is solved.</p><p><b>Requirements: </b>The number of rows in <em class="parameter"><code>B</code></em> must be equal to
+     the value returned by <code class="function">columns()</code>.  A successful 
+     call to <code class="function">decompose()</code> must have occurred.</p><p><b>Result: </b>Returns a constant matrix <em class="parameter"><code>X</code></em> containing
+     the solution.</p><a class="indexterm" name="id322346"></a><pre class="synopsis">template &lt;typename Block&gt;
+const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+covsol(const_Matrix&lt;T, Block&gt; B);</pre><p><b>Description: </b>Solves a covariance linear system for <em class="parameter"><code>X</code></em>.</p><p>If <code class="type">T</code> is not a specialization of complex, then 
+     <code class="code">A<sup>T</sup>AX = B</code> is solved,
+     where <code class="varname">A</code> is the matrix given to the most recent 
+     call to <code class="code">decompose()</code>.</p><p>If <code class="type">T</code> is a specialization of complex, then
+     <code class="code">A<sup>H</sup>AX = B</code> is solved.</p><p><b>Requirements: </b>The number of rows in <em class="parameter"><code>B</code></em> must be equal to
+     the value returned by <code class="function">columns()</code>.  Note also that 
+     <em class="parameter"><code>X</code></em> and <em class="parameter"><code>B</code></em> are 
+     element-conformant</p><p><b>Result: </b>Returns a matrix <em class="parameter"><code>X</code></em> containing the 
+     solution.</p><a class="indexterm" name="id322469"></a><pre class="synopsis">template &lt;typename Block&gt;
+Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+lsqsol(const_Matrix&lt;T, Block&gt; B)</pre><p><b>Description: </b>Solves the linear least squares problem 
+     <code class="code">min<sub>X</sub> ||AX &#8722; B||<sub>2</sub></code>
+     for <em class="parameter"><code>X</code></em>, where <code class="varname">A</code> is the matrix 
+     given to the most recent call to <code class="function">decompose()</code>.</p><p><b>Requirements: </b>The number of rows in <em class="parameter"><code>B</code></em> must be equal to
+     the value returned by <code class="function">rows()</code>.  The number of rows in
+     <em class="parameter"><code>X</code></em> will equal the value returned by 
+     <code class="function">columns()</code>.</p><p><b>Result: </b>Returns a constant matrix <em class="parameter"><code>X</code></em> containing
+     the solution.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id322577"></a>4.5.5.6. Solve Systems (by_reference)</h4></div></div></div><p>This function is available only if the <code class="type">qrd</code> class
+   template is parameterized with <code class="code">ReturnMechanism=by_reference</code></p><a class="indexterm" name="id322593"></a><pre class="synopsis">template &lt;mat_op_type       tr,
+          product_side_type ps,
+          typename          Block0,
+          typename          Block1&gt;
+bool
+prodq(
+  const_Matrix&lt;T, Block0&gt; C,
+  Matrix&lt;T, Block1&gt;       X);</pre><p><b>Description: </b>Calculates the product of <code class="varname">Q</code> and 
+     <em class="parameter"><code>C</code></em>.  
+     The parameter <code class="type">tr</code> controls what type of operation is
+     performed on <em class="parameter"><code>C</code></em> before the product is computed
+     <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(see section 2.7.3)</a>
+     and <code class="type">ps</code> determines what side of the product 
+     <code class="varname">Q</code> is placed on <a class="xref" href="ch02s07.html#classref_product_side_type" title="2.7.5. product_side_type">(see section 2.7.5)</a>.
+     The actual product depends on the values of <code class="type">tr</code>, and whether 
+     <code class="type">T</code> is not or is a specialization of complex:</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>QC</td><td>CQ</td></tr><tr><td>tr == mat_trans, T</td><td>Q<sup>T</sup>C</td><td>CQ<sup>T</sup></td></tr><tr><td>tr == mat_herm, complex&lt;T&gt;</td><td>Q<sup>H</sup>C</td><td>CQ<sup>H</sup></td></tr></tbody></table></div><p><b>Requirements: </b>A successful call to <code class="function">decompose()</code> must have 
+     occurred for this object with <code class="function">qstorage()</code> equaling 
+     either <code class="type">qrd_saveq1</code> or <code class="type">qrd_saveq</code>.  Otherwise, the 
+     behavior is undefined.  The number of rows and columns (shown in 
+     the table below) of <em class="parameter"><code>C</code></em> depend on the values of
+     <code class="type">tr</code>, <code class="type">ps</code>, and <code class="function">qstorage()</code>.</p><p>For <code class="code">qstorage() == qrd_saveq1,</code></p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>columns(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_trans</td><td>rows(), s</td><td>s, columns()</td></tr><tr><td>tr == mat_herm</td><td>rows(), s</td><td>s, columns()</td></tr></tbody></table></div><p>where <em class="parameter"><code>s</code></em> is an arbitrary positive value.</p><p>For <code class="code">qstorage() == qrd_saveq</code>,</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>rows(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_trans</td><td>rows(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_herm</td><td>rows(), s</td><td>s, rows()</td></tr></tbody></table></div><p>The number of rows and columns of <em class="parameter"><code>X</code></em> 
+   (shown in the table below) depend on the values of <code class="type">tr</code>, 
+   <code class="type">ps</code>, and <code class="function">qstorage()</code>.</p><p>For <code class="code">qstorage() == qrd_saveq1,</code></p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>rows(), s</td><td>s, columns()</td></tr><tr><td>tr == mat_trans</td><td>columns(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_herm</td><td>columns(), s</td><td>s, rows()</td></tr></tbody></table></div><p>where <em class="parameter"><code>s</code></em> is the same variable as above.</p><p>For <code class="code">qstorage() == qrd_saveq</code>,</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>rows(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_trans</td><td>rows(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_herm</td><td>rows(), s</td><td>s, rows()</td></tr></tbody></table></div><p><b>Result: </b>Calculates the product of <code class="varname">Q</code> and 
+     <em class="parameter"><code>C</code></em> stores it in <em class="parameter"><code>X</code></em>.
+     </p><a class="indexterm" name="id323171"></a><pre class="synopsis">template &lt;mat_op_type tr,
+          typename    Block0,
+          typename    Block1&gt;
+bool
+rsol(
+  const_Matrix&lt;T, Block0&gt; B,
+  T const                 alpha,
+  Matrix&lt;T, Block1&gt;       X);</pre><p><b>Description: </b>Solves a linear system for <em class="parameter"><code>X</code></em>.
+     The parameter <code class="type">tr</code> controls what type of operation is
+     performed on <em class="parameter"><code>R</code></em> before the system is solved
+     <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(see section 2.7.3)</a>.
+     </p><p>If <code class="code">tr == mat_trans</code> and <code class="type">T</code> is not a 
+     specialization of complex, then 
+     <code class="code">R<sup>T</sup>X = alpha B</code> is solved.</p><p>If <code class="code">tr == mat_herm</code> and <code class="type">T</code> is a specialization 
+     of complex, then 
+     <code class="code">R<sup>H</sup>X = alpha B</code> is solved.</p><p>If <code class="code">tr == mat_ntrans</code>, then
+     <code class="code">RX = alpha B</code> is solved.</p><p><b>Requirements: </b>The number of rows in <em class="parameter"><code>B</code></em> must be equal to
+     the value returned by <code class="function">columns()</code>.  A successful
+     call to <code class="function">decompose()</code> must have occurred.</p><p><b>Result: </b>Stores the solution in <em class="parameter"><code>X</code></em>.</p><a class="indexterm" name="id323313"></a><pre class="synopsis">template &lt;typename Block0,
+          typename Block1&gt;
+bool
+covsol(
+  const_Matrix&lt;T, Block0&gt; B,
+  Matrix&lt;T, Block1&gt;       X);</pre><p><b>Description: </b>Solves a covariance linear system for <em class="parameter"><code>X</code></em>.
+     If <code class="type">T</code> is not a specialization of complex, then 
+     <code class="code">A<sup>T</sup>AX = B</code> is solved,
+     where <code class="varname">A</code> is the matrix given to the most recent 
+     call to <code class="code">decompose()</code>.
+     If <code class="type">T</code> is a specialization of complex, then
+     <code class="code">A<sup>H</sup>AX = B</code> is solved.
+     </p><p><b>Requirements: </b>The number of rows in <em class="parameter"><code>B</code></em> must be equal to
+     the value returned by <code class="function">columns()</code>.  Note also that 
+     <em class="parameter"><code>X</code></em> is modifiable and element-conformant
+     with <em class="parameter"><code>B</code></em>.</p><p><b>Result: </b>The solution is stored in <em class="parameter"><code>X</code></em></p><a class="indexterm" name="id323425"></a><pre class="synopsis">template &lt;typename Block0,
+          typename Block1&gt;
+bool
+lsqsol(
+  const_Matrix&lt;T, Block0&gt; B,
+  Matrix&lt;T, Block1&gt;       X)   </pre><p><b>Description: </b>Solves the linear least squares problem 
+     <code class="code">min<sub>X</sub> 
+     ||AX &#8722; B||<sub>2</sub></code>
+     for <em class="parameter"><code>X</code></em>, where <code class="varname">A</code> 
+     is the matrix given to the most recent call to 
+     <code class="function">decompose()</code>.</p><p><b>Requirements: </b>The number of rows in <em class="parameter"><code>B</code></em> must be equal to
+     the value returned by <code class="function">rows()</code>.  The number of rows in
+     <em class="parameter"><code>X</code></em> must equal the value returned by 
+     <code class="function">columns()</code>.</p><p><b>Result: </b>Stores the solution in the matrix 
+     <em class="parameter"><code>X</code></em>.</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_sv"></a>4.5.6. Singular Value Decomposition</h3></div></div></div><p>This section describes the singular value decomposition processing 
+ object provided by VSIPL++.</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id323542"></a>4.5.6.1. Class template svd&lt;&gt;</h4></div></div></div><a class="indexterm" name="id323548"></a><p>The class <code class="type">svd</code> performs singular value 
+  decomposition to decompose a matrix into orthogonal or unitary matrixes 
+  and singular values.</p><pre class="synopsis">template &lt;typename T,
+          return_mechanism_type ReturnMechanism = by_value&gt;
+class svd;</pre><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><code class="type">T</code></span></dt><dd><p>The value type used for the decomposition object.  May be 
+     real or complex, single- or double-precision floating-point types.
+     </p></dd><dt><span class="term"><code class="type">ReturnMechanism</code></span></dt><dd><p>The return mechanism type indicates whether the SV decomposition
+     and product functions return results by value (<code class="type">by_value</code>) 
+     or by reference (<code class="type">by_reference</code>) into matrices provided by the 
+     caller. See 
+     <a class="xref" href="ch02s07.html#classref_return_mechanism_type" title="2.7.7. return_mechanism_type">section 2.7.7</a>
+     for details.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id323625"></a>4.5.6.2. Constructor</h4></div></div></div><a class="indexterm" name="id323631"></a><pre class="synopsis">svd(
+  length_type  rows, 
+  length_type  columns, 
+  storage_type ustorage, 
+  storage_type vstorage);</pre><p><b>Description: </b>Constructs an <code class="type">svd</code> object.
+    The parameters <em class="parameter"><code>rows</code></em> and <em class="parameter"><code>columns</code></em> 
+    refer to the size of the matrix to be decomposed.
+    The parameters <em class="parameter"><code>ustorage</code></em> and 
+    <em class="parameter"><code>vstorage</code></em> control how much of the 
+    <code class="varname">U</code> and <code class="varname">V</code> matrices are stored, 
+    respectively
+    <a class="xref" href="ch02s07.html#classref_storage_type" title="2.7.8. storage_type">(see section 2.7.8)</a>.
+    Note also that <code class="type">svd</code> objects may also be copied (constructed) 
+    from other <code class="type">svd</code> objects.</p><p><b>Requirements: </b> The number of rows and columns must both be positive.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id323721"></a>4.5.6.3. Accessor functions</h4></div></div></div><a class="indexterm" name="id323726"></a><a class="indexterm" name="id323737"></a><a class="indexterm" name="id323748"></a><a class="indexterm" name="id323759"></a><pre class="synopsis">length_type rows() const;
+length_type columns() const;
+storage_type ustorage() const;
+storage_type vstorage() const;</pre><p><b>Description: </b>Report the various attributes of this <code class="type">svd</code> object.  
+    The number of rows is returned by <code class="function">rows()</code> and
+    the number of columns by <code class="function">columns()</code>.
+    The function <code class="function">ustorage()</code> returns how the 
+    decomposition matrix <code class="varname">U</code> is stored by this 
+    object, if at all.
+    The function <code class="function">vstorage()</code> returns how the 
+    decomposition matrix <code class="code">V<sup>T</sup></code>
+    or <code class="code">V<sup>H</sup></code> is stored by 
+    this object, if at all.
+    </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id323832"></a>4.5.6.4. Solve Systems (by_value)</h4></div></div></div><p>This function is available only if the <code class="type">svd</code> class 
+   template is parameterized with <code class="code">ReturnMechanism=by_value</code></p><a class="indexterm" name="id323848"></a><pre class="synopsis">template &lt;typename Block&gt;
+const_Vector&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+decompose(Matrix&lt;T, Block&gt; A);</pre><p><b>Description: </b>Performs a singular value decomposition of the matrix 
+     <em class="parameter"><code>A</code></em> containing <code class="varname">M</code> rows
+     and <code class="varname">N</code> columns.</p><p>If T is not a specialization of complex, 
+     <code class="code">A = U SV<sup>T</sup></code>, where square 
+     orthogonal matrix <code class="varname">U</code> has the same number of 
+     rows as <em class="parameter"><code>A</code></em>, <code class="varname">S</code> is a matrix with 
+     the same shape as <em class="parameter"><code>A</code></em> and all zero values except 
+     its first <code class="varname">p</code> diagonal elements are real, nonincreasing, 
+     nonnegative values, and V is a square orthogonal matrix with the same 
+     number of columns as <em class="parameter"><code>A</code></em>.  The number of diagonal
+     elements are given by <code class="code">p = min(M, N)</code>.</p><p>If T is a specialization of complex, 
+     <code class="code">A = U SV<sup>H</sup></code>, where
+     <code class="varname">U</code>, <code class="varname">S</code>, and <code class="varname">V</code>, 
+     are similar to those described above except <code class="varname">U</code> and 
+     <code class="varname">V</code> are unitary, not orthogonal, matrices.</p><p><b>Requirements: </b>The matrix <em class="parameter"><code>A</code></em> must be the same size as
+     specified in the constructor.  Note that the contents may be overwritten 
+     therefore <em class="parameter"><code>A</code></em> should not be modified prior to calling 
+     any other function.</p><p><b>Result: </b>Returns a vector of length p containing the sinugular values
+     of <em class="parameter"><code>A</code></em> in non-increasing order.  Note that
+     memory may be allocated.  The returned vector&#8217;s block type 
+     may be a different type from <code class="type">Block</code>.</p><a class="indexterm" name="id324007"></a><pre class="synopsis">template &lt;mat_op_type       tr,
+          product_side_type ps,
+          typename          Block&gt;
+const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+produ(const_Matrix&lt;T, Block&gt; C) const;</pre><p><b>Description: </b>Calculates the product of <code class="varname">U</code> and 
+     <em class="parameter"><code>C</code></em>.  
+     The parameter <code class="type">tr</code> controls what type of operation is
+     performed on <em class="parameter"><code>C</code></em> before the product is computed
+     <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(see section 2.7.3)</a>
+     and <code class="type">ps</code> determines what side of the product 
+     <code class="varname">U</code> is placed on <a class="xref" href="ch02s07.html#classref_product_side_type" title="2.7.5. product_side_type">(see section 2.7.5)</a>.
+     The actual product and its number of rows and columns (shown in
+     the table below) depends on the values of <code class="type">tr</code>, 
+     <code class="type">ps</code>, and <code class="function">ustorage()</code> 
+     and whether <code class="type">T</code> is not or is a specialization 
+     of complex.</p><p>For <code class="code">ustorage() == qrd_uvpart,</code></p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>UC, columns(), s</td><td>CU, s, p</td></tr><tr><td>tr == mat_trans, T</td><td>U<sup>T</sup>C, p, s</td><td>CU<sup>T</sup>, s, columns()</td></tr><tr><td>tr == mat_herm, complex&lt;T&gt;</td><td>U<sup>H</sup>C, p, s</td><td>CU<sup>H</sup>, s, columns()</td></tr></tbody></table></div><p>where <em class="parameter"><code>s</code></em> is an arbitrary positive value
+   and <code class="code">p = min(M, N)</code>.</p><p>For <code class="code">ustorage() == svd_uvfull</code>,</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>UC, columns(), s</td><td>CU, s, columns()</td></tr><tr><td>tr == mat_trans, T</td><td>U<sup>T</sup>C, columns(), s</td><td>CU<sup>T</sup>, s, columns()</td></tr><tr><td>tr == mat_herm, complex&lt;T&gt;</td><td>U<sup>H</sup>C, columns(), s</td><td>CU<sup>H</sup>, s, columns()</td></tr></tbody></table></div><p><b>Requirements: </b>A successful call to <code class="function">decompose()</code> must have 
+     occurred for this object with <code class="function">ustorage()</code> equaling 
+     either <code class="type">svd_uvpart</code> or <code class="type">svd_uvfull</code>.  Otherwise, 
+     the behavior is undefined.  The number of rows and columns (shown 
+     in the table below) of <em class="parameter"><code>C</code></em> depend on the 
+     values of <code class="type">tr</code>, <code class="type">ps</code>, and 
+     <code class="function">ustorage()</code>.</p><p>For <code class="code">ustorage() == svd_uvpart,</code></p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>p, s</td><td>s, columns()</td></tr><tr><td>tr == mat_trans</td><td>columns(), s</td><td>s, p</td></tr><tr><td>tr == mat_herm</td><td>columns(), s</td><td>s, p</td></tr></tbody></table></div><p>where <em class="parameter"><code>s</code></em> is an arbitrary positive value
+   and <code class="code">p = min(M, N)</code>.</p><p>For <code class="code">ustorage() == svd_uvfull</code>,</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>columns(), s</td><td>s, columns()</td></tr><tr><td>tr == mat_trans</td><td>columns(), s</td><td>s, columns()</td></tr><tr><td>tr == mat_herm</td><td>columns(), s</td><td>s, columns()</td></tr></tbody></table></div><p><b>Result: </b>Returns the product of <code class="varname">U</code> and 
+     <em class="parameter"><code>C</code></em>.
+     The returned matrix&#8217;s block type may be a different type from 
+     <code class="type">Block</code>.</p><a class="indexterm" name="id324529"></a><pre class="synopsis">template &lt;mat_op_type       tr,
+          product_side_type ps,
+          typename          Block&gt;
+const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+prodv(const_Matrix&lt;T, Block&gt; C) const;</pre><p><b>Description: </b>Calculates the product of <code class="varname">V</code> and 
+     <em class="parameter"><code>C</code></em>.  
+     The parameter <code class="type">tr</code> controls what type of operation is
+     performed on <em class="parameter"><code>C</code></em> before the product is computed
+     <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(see section 2.7.3)</a>
+     and <code class="type">ps</code> determines what side of the product 
+     <code class="varname">V</code> is placed on <a class="xref" href="ch02s07.html#classref_product_side_type" title="2.7.5. product_side_type">(see section 2.7.5)</a>.
+     The actual product and its number of rows and columns (shown in
+     the table below) depends on the values of <code class="type">tr</code>, 
+     <code class="type">ps</code>, and <code class="function">vstorage()</code> 
+     and whether <code class="type">T</code> is not or is a specialization 
+     of complex.</p><p>For <code class="code">vstorage() == qrd_uvpart,</code></p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>VC, columns(), s</td><td>CV, s, p</td></tr><tr><td>tr == mat_trans, T</td><td>V<sup>T</sup>C, p, s</td><td>CV<sup>T</sup>, s, columns()</td></tr><tr><td>tr == mat_herm, complex&lt;T&gt;</td><td>V<sup>H</sup>C, p, s</td><td>CV<sup>H</sup>, s, columns()</td></tr></tbody></table></div><p>where <em class="parameter"><code>s</code></em> is an arbitrary positive value
+   and <code class="code">p = min(M, N)</code>.</p><p>For <code class="code">vstorage() == svd_uvfull</code>,</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>VC, columns(), s</td><td>CV, s, columns()</td></tr><tr><td>tr == mat_trans, T</td><td>V<sup>T</sup>C, columns(), s</td><td>CV<sup>T</sup>, s, columns()</td></tr><tr><td>tr == mat_herm, complex&lt;T&gt;</td><td>V<sup>H</sup>C, columns(), s</td><td>CV<sup>H</sup>, s, columns()</td></tr></tbody></table></div><p><b>Requirements: </b>A successful call to <code class="function">decompose()</code> must have 
+     occurred for this object with <code class="function">vstorage()</code> equaling 
+     either <code class="type">svd_uvpart</code> or <code class="type">svd_uvfull</code>.  Otherwise, 
+     the behavior is undefined.  The number of rows and columns (shown 
+     in the table below) of <em class="parameter"><code>C</code></em> depend on the 
+     values of <code class="type">tr</code>, <code class="type">ps</code>, and 
+     <code class="function">vstorage()</code>.</p><p>For <code class="code">vstorage() == svd_uvpart,</code></p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>p, s</td><td>s, columns()</td></tr><tr><td>tr == mat_trans</td><td>columns(), s</td><td>s, p</td></tr><tr><td>tr == mat_herm</td><td>columns(), s</td><td>s, p</td></tr></tbody></table></div><p>where <em class="parameter"><code>s</code></em> is an arbitrary positive value
+   and <code class="code">p = min(M, N)</code>.</p><p>For <code class="code">vstorage() == svd_uvfull</code>,</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>columns(), s</td><td>s, columns()</td></tr><tr><td>tr == mat_trans</td><td>columns(), s</td><td>s, columns()</td></tr><tr><td>tr == mat_herm</td><td>columns(), s</td><td>s, columns()</td></tr></tbody></table></div><p><b>Result: </b>Returns the product of <code class="varname">V</code> and 
+     <em class="parameter"><code>C</code></em>.
+     The returned matrix&#8217;s block type may be a different type from 
+     <code class="type">Block</code>.</p><a class="indexterm" name="id325051"></a><pre class="synopsis">const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+u(
+  index_type low,
+  index_type high) const;</pre><p><b>Description: </b>Returns consecutive columns in the matrix <code class="varname">U</code>
+     from a singular value decomposition.</p><p><b>Requirements: </b>A successful call to <code class="function">decompose()</code> must have 
+     occurred with <code class="function">ustorage()</code> equaling either 
+     <code class="type">svd_uvpart</code> or <code class="type">svd_uvfull</code>.  Otherwise, the 
+     behavior is undefined.</p><p><b>Result: </b>Returns the constant matrix <code class="varname">U</code> containing
+     columns low, low+1, ..., high, inclusive.</p><a class="indexterm" name="id325132"></a><pre class="synopsis">const_Matrix&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+v(
+  index_type low,
+  index_type high) const;</pre><p><b>Description: </b>Returns consecutive columns in the matrix <code class="varname">V</code>
+     from a singular value decomposition.</p><p><b>Requirements: </b>A successful call to <code class="function">decompose()</code> must have 
+     occurred with <code class="function">vstorage()</code> equaling either 
+     <code class="type">svd_uvpart</code> or <code class="type">svd_uvfull</code>.  Otherwise, the 
+     behavior is undefined.</p><p><b>Result: </b>Returns the constant matrix <code class="varname">V</code> containing
+     columns low, low+1, ..., high, inclusive.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id325214"></a>4.5.6.5. Solve Systems (by_reference)</h4></div></div></div><p>This function is available only if the <code class="type">svd</code> class 
+   template is parameterized with <code class="code">ReturnMechanism=by_reference</code></p><a class="indexterm" name="id325229"></a><pre class="synopsis">template &lt;typename Block0,
+          typename Block1&gt;
+bool
+decompose(
+  Matrix&lt;T, Block0&gt; A,
+  Vector&lt;T, Block1&gt; x);</pre><p><b>Description: </b>Performs a singular value decomposition of the matrix 
+     <em class="parameter"><code>A</code></em> containing <code class="varname">M</code> rows
+     and <code class="varname">N</code> columns.</p><p>If T is not a specialization of complex, 
+     <code class="code">A = U SV<sup>T</sup></code>, where square 
+     orthogonal matrix <code class="varname">U</code> has the same number of 
+     rows as <em class="parameter"><code>A</code></em>, <code class="varname">S</code> is a matrix with 
+     the same shape as <em class="parameter"><code>A</code></em> and all zero values except 
+     its first <code class="varname">p</code> diagonal elements are real, nonincreasing, 
+     nonnegative values, and V is a square orthogonal matrix with the same 
+     number of columns as <em class="parameter"><code>A</code></em>.  The number of diagonal
+     elements are given by <code class="code">p = min(M, N)</code>.</p><p>If T is a specialization of complex, 
+     <code class="code">A = U SV<sup>H</sup></code>, where
+     <code class="varname">U</code>, <code class="varname">S</code>, and <code class="varname">V</code>, 
+     are similar to those described above except <code class="varname">U</code> and 
+     <code class="varname">V</code> are unitary, not orthogonal, matrices.</p><p><b>Requirements: </b>The matrix <em class="parameter"><code>A</code></em> may be overwritten.  It must 
+     be the same size as specified in the constructor.  The vector
+     <em class="parameter"><code>x</code></em> must be of length p.</p><p><b>Result: </b>Returns true if the decomposition succeeds.  The vector
+     <em class="parameter"><code>x</code></em> is filled with the sinugular values
+     of <em class="parameter"><code>A</code></em> in non-increasing order.  Note that
+     memory may be allocated.</p><a class="indexterm" name="id325386"></a><pre class="synopsis">template &lt;mat_op_type       tr,
+          product_side_type ps,
+          typename          Block0,
+          typename          Block1&gt;
+bool
+produ(
+  const_Matrix&lt;T, Block0&gt; C,
+  Matrix&lt;T, Block1&gt;       X) const;</pre><p><b>Description: </b>Calculates the product of <code class="varname">U</code> and 
+     <em class="parameter"><code>C</code></em>.  
+     The parameter <code class="type">tr</code> controls what type of operation is
+     performed on <em class="parameter"><code>C</code></em> before the product is computed
+     <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(see section 2.7.3)</a>
+     and <code class="type">ps</code> determines what side of the product 
+     <code class="varname">U</code> is placed on <a class="xref" href="ch02s07.html#classref_product_side_type" title="2.7.5. product_side_type">(see section 2.7.5)</a>.
+     The actual product (shown in the table below) depends on the values of 
+     <code class="type">tr</code>, <code class="type">ps</code>, and whether <code class="type">T</code> 
+     is not or is a specialization of complex.</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>UC</td><td>CU</td></tr><tr><td>tr == mat_trans, T</td><td>U<sup>T</sup>C</td><td>CU<sup>T</sup></td></tr><tr><td>tr == mat_herm, complex&lt;T&gt;</td><td>U<sup>H</sup>C</td><td>CU<sup>H</sup></td></tr></tbody></table></div><p><b>Requirements: </b>A successful call to <code class="function">decompose()</code> must have 
+     occurred for this object with <code class="function">ustorage()</code> equaling 
+     either <code class="type">svd_uvpart</code> or <code class="type">svd_uvfull</code>.  Otherwise, the 
+     behavior is undefined.  The number of rows and columns (shown in 
+     the table below) of <em class="parameter"><code>C</code></em> depend on the values of
+     <code class="type">tr</code>, <code class="type">ps</code>, and <code class="function">ustorage()</code>.
+     </p><p>For <code class="code">ustorage() == svd_uvpart,</code></p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>p, s</td><td>s, rows()</td></tr><tr><td>tr == mat_trans</td><td>rows(), s</td><td>s, p</td></tr><tr><td>tr == mat_herm</td><td>rows(), s</td><td>s, p</td></tr></tbody></table></div><p>where <em class="parameter"><code>s</code></em> is an arbitrary positive value
+   and <code class="code">p = min(M, N)</code>.</p><p>For <code class="code">ustorage() == svd_uvfull</code>,</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>rows(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_trans</td><td>rows(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_herm</td><td>rows(), s</td><td>s, rows()</td></tr></tbody></table></div><p>The number of rows and columns of <em class="parameter"><code>X</code></em> 
+   (shown in the table below) depend on the values of <code class="type">tr</code>, 
+   <code class="type">ps</code>, and <code class="function">qstorage()</code>.</p><p>For <code class="code">ustorage() == svd_uvpart,</code></p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>rows(), s</td><td>s, p</td></tr><tr><td>tr == mat_trans</td><td>p, s</td><td>s, rows()</td></tr><tr><td>tr == mat_herm</td><td>p, s</td><td>s, rows()</td></tr></tbody></table></div><p>where <em class="parameter"><code>s</code></em> is the same variable as above.</p><p>For <code class="code">ustorage() == svd_uvfull</code>,</p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>rows(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_trans</td><td>rows(), s</td><td>s, rows()</td></tr><tr><td>tr == mat_herm</td><td>rows(), s</td><td>s, rows()</td></tr></tbody></table></div><p><b>Result: </b>Returns true if the product succeeds.  The product of 
+     <code class="varname">U</code> and <em class="parameter"><code>C</code></em> is stored 
+     in <em class="parameter"><code>X</code></em>.</p><a class="indexterm" name="id325971"></a><pre class="synopsis">template &lt;mat_op_type       tr,
+          product_side_type ps,
+          typename          Block0,
+          typename          Block1&gt;
+bool
+prodv(
+  const_Matrix&lt;T, Block0&gt; C,
+  Matrix&lt;T, Block1&gt;       X) const;</pre><p><b>Description: </b>Calculates the product of <code class="varname">V</code> and 
+     <em class="parameter"><code>C</code></em>.  
+     The parameter <code class="type">tr</code> controls what type of operation is
+     performed on <em class="parameter"><code>C</code></em> before the product is computed
+     <a class="xref" href="ch02s07.html#classref_mat_op_type" title="2.7.3. mat_op_type">(see section 2.7.3)</a>
+     and <code class="type">ps</code> determines what side of the product 
+     <code class="varname">V</code> is placed on <a class="xref" href="ch02s07.html#classref_product_side_type" title="2.7.5. product_side_type">(see section 2.7.5)</a>.
+     The actual product (shown in the table below) depends on the values of 
+     <code class="type">tr</code>, <code class="type">ps</code>, and whether <code class="type">T</code> 
+     is not or is a specialization of complex.</p><p>For <code class="code">vstorage() == qrd_uvpart,</code></p><div class="informaltable"><table width="100%" border="1"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>ps == mat_lside</th><th>ps == mat_rside</th></tr></thead><tbody><tr><td>tr == mat_ntrans</td><td>VC</td><td>CV</td></tr><tr><td>tr == mat_trans, T</td><td>V<sup>T</sup>C</td><td>CV<sup>T</sup></td></tr><tr><td>tr == mat_herm, complex&lt;T&gt;</td><td>V<sup>H</sup>C</td><td>CV<sup>H</sup></td></tr></tbody></table></div><a class="indexterm" name="id326138"></a><pre class="synopsis">template &lt;typename Block&gt;
+bool
+u(
+  index_type       low,
+  index_type       high
+  Matrix&lt;T, Block&gt; X) const;</pre><p><b>Description: </b>Returns consecutive columns in the matrix U from a singular value 
+     decomposition.</p><p><b>Requirements: </b>A successful call to <code class="function">decompose()</code> must have 
+     occurred with <code class="function">ustorage()</code> equaling either 
+     <code class="type">svd_uvpart</code> or <code class="type">svd_uvfull</code>.</p><p><b>Result: </b>Returns true if the matrix is stored.  Stores the constant matrix 
+     <code class="varname">U</code> containing columns low, low+1, ..., high, 
+     inclusive in <em class="parameter"><code>X</code></em>.</p><a class="indexterm" name="id326218"></a><pre class="synopsis">template &lt;typename Block&gt;
+bool
+v(
+  index_type       low,
+  index_type       high
+  Matrix&lt;T, Block&gt; X) const;</pre><p><b>Description: </b>Returns consecutive columns in the matrix V from a singular value 
+     decomposition.</p><p><b>Requirements: </b>A successful call to <code class="function">decompose()</code> must have 
+     occurred with <code class="function">vstorage()</code> equaling either 
+     <code class="type">svd_uvpart</code> or <code class="type">svd_uvfull</code>.</p><p><b>Result: </b>Returns true if the matrix is stored.  Stores the constant matrix 
+     <code class="varname">V</code> containing columns low, low+1, ..., high, 
+     inclusive in <em class="parameter"><code>X</code></em>.</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_toeplitz"></a>4.5.7. Toeplitz Solver</h3></div></div></div><p>This section describes the Toeplitz linear system solver function
+ provided by VSIPL++.</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id326312"></a>4.5.7.1. Solve Systems (return by value)</h4></div></div></div><a class="indexterm" name="id326318"></a><pre class="synopsis">template &lt;typename T,
+          typename Block0,
+          typename Block1,
+          typename Block2&gt;
+const_Vector&lt;T, <span class="emphasis"><em>unspecified</em></span>&gt;
+toepsol(
+  const_Vector&lt;T, Block0&gt; a,
+  const_Vector&lt;T, Block1&gt; b,
+  Vector&lt;T, Block2&gt;       w);</pre><p><b>Description: </b>Solve a real symmetric or complex Hermitian positive definite 
+     Toeplitz linear system <code class="code">Ax = b</code>, where 
+     <em class="parameter"><code>a</code></em> specifies the Toeplitz matrix 
+     <code class="varname">A</code>.  The Toeplitz linear system is 
+     real symmetric if type <code class="type">T</code> is real and is Hermitian if 
+     type <code class="type">T</code> is complex.</p><p><b>Requirements: </b>The N by N Toeplitz matrix formed from <em class="parameter"><code>a</code></em>
+     must have full rank and be positive definite.  The sizes of 
+     <em class="parameter"><code>a</code></em>, <em class="parameter"><code>b</code></em> and
+     <em class="parameter"><code>w</code></em> are equal to N.  The type 
+     <code class="type">T</code> may be single- or double-precision floating-point,
+     and either real or complex.  The vector <em class="parameter"><code>w</code></em> 
+     is used as a temporary workspace.</p><p><b>Result: </b>The solution <code class="varname">x</code> is returned.
+     The returned matrix&#8217;s block type may be a different type from 
+     <code class="type">Block0</code>, <code class="type">Block1</code> or <code class="type">Block2</code>.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id326441"></a>4.5.7.2. Solve Systems (return by reference)</h4></div></div></div><pre class="synopsis">template &lt;typename T,
+          typename Block0,
+          typename Block1,
+          typename Block2,
+          typename Block3&gt;
+const_Vector&lt;T, Block3&gt;
+toepsol(
+  const_Vector&lt;T, Block0&gt; a,
+  const_Vector&lt;T, Block1&gt; b,
+  Vector&lt;T, Block2&gt;       w,
+  Vector&lt;T, Block3&gt;       x);</pre><p><b>Description: </b>Solve a real symmetric or complex Hermitian positive definite 
+     Toeplitz linear system <code class="code">Ax = b</code>, where 
+     <em class="parameter"><code>a</code></em> specifies the Toeplitz matrix 
+     <code class="varname">A</code>.  The Toeplitz linear system is 
+     real symmetric if type <code class="type">T</code> is real and is Hermitian if 
+     type <code class="type">T</code> is complex.</p><p><b>Requirements: </b>The N by N Toeplitz matrix formed from <em class="parameter"><code>a</code></em>
+     must have full rank and be positive definite.  The sizes of 
+     <em class="parameter"><code>a</code></em>, <em class="parameter"><code>b</code></em>, 
+     <em class="parameter"><code>w</code></em> and <em class="parameter"><code>x</code></em> are equal to N.
+     The type <code class="type">T</code> may be single- or double-precision floating-point,
+     and either real or complex.  The vector <em class="parameter"><code>w</code></em> 
+     is used as a temporary workspace.</p><p><b>Result: </b>The solution is stored in <em class="parameter"><code>x</code></em> and
+     returned.</p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="functions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.4. Linear Algebra Matrix-Vector Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 4.6. Selection, generation, and manipulation functions</td></tr></table></div></body></html>

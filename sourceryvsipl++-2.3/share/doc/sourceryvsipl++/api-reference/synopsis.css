@@ -1,0 +1,279 @@
+/* This is the default stylesheet used by the HTML formatter */
+body
+{
+  margin-left: 5%;
+  margin-right: 5%;
+  color: #003030;
+  background: #ffffff;
+  font-family:arial,sans-serif;
+}
+:link { color: #770000; text-decoration: none;}
+:visited { color: #770000; text-decoration: none;}
+
+span.keyword { font-style: italic;}
+span.variable { font-style: italic;}
+span.name { font-weight: bold; }
+
+.tag-heading
+{ 
+  font-weight: bold;
+}
+
+.tag-section
+{ 
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.tag-section th.dt
+{ 
+  font-weight: normal;
+  font-style: italic;
+  padding-right: 20px;
+}
+
+table.form
+{
+  background-color: #aaaaaa;
+  border-spacing: 1px;
+}
+table.form td
+{
+  background-color: #f2f5f7;
+  padding: 5px;
+}
+table.form th
+{
+  background-color: #f2f5f7;
+  padding: 5px;
+}
+
+/* The navigation bar */
+
+div.navigation
+{ 
+  border: 1px solid #aaaaaa;
+  background-color: #f2f5f7;
+  padding: 5px;
+}
+
+div.navigation span:first-child
+{
+  border-left: none;
+  padding: 2px;
+}
+
+div.navigation span 
+{
+  border-left: 1px solid #aaaaaa;
+  padding: 2px;
+}
+
+div.navigation span.selected
+{
+  background-color: #dbdee0;
+}
+
+/* Tree view(s) */
+
+div.tree-navigation a
+{
+  border-left: 1px solid #aaaaaa;
+  margin: 5px;
+}
+div.tree-navigation a:first-child 
+{
+  border-left: none;
+  margin: 5px;
+}
+
+div.xref-name
+{ 
+  border-top: 1px solid #aaaaaa;
+}
+
+div.template { margin-top: 0.5em; font-style: italic; }
+a.name { font-weight: bold; }
+div.module { padding: 1.0em;}
+div.declarations { padding: 1.0em;}
+div.desc {
+    border: none;
+    color: #003030;
+}
+
+.heading
+{
+  clear:both;
+  font-weight: bold;
+  padding: 0.1em;
+  margin: 0.1em;
+  border: 1px solid #aaaaaa;
+  background: #f2f5f7;
+}
+.heading .toggle
+{
+  font-size: 1em;
+  font-weight: normal;
+  margin-right: 1em;
+}
+.FileIndex .heading
+{
+  font-size: 0.8em;
+}
+
+.links .file,
+.summary .item .synopsis,
+.detail .item .synopsis,
+.body .item .synopsis
+{
+  float: left;
+}
+.links .xref,
+.links .source,
+.body .item .xref,
+.body .item .source,
+.summary .item .xref,
+.summary .item .source,
+.detail .item .xref,
+.detail .item .source,
+.primary-template,
+.specializations
+{
+  float: right;
+}
+.summary .item .doc,
+.detail .item .doc,
+.doc /* This one refers to top-level class docs, which needs more qualification. */
+{
+  clear:both;
+  /* Setting position: relative on this blocks allows to move the '+'/'-' 
+     toggle relative to this. */
+  position: relative;
+  margin-left: 2em;
+  font-size: smaller;
+  padding: 0.5em;
+}
+.body .item .doc .expand-toggle,
+.body .item .doc .collapse-toggle,
+.heading .toggle
+{
+  cursor: pointer;
+  background-color: #f2f5f7;
+  color: #303030;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+.body .item .doc .expand-toggle,
+.body .item .doc .collapse-toggle
+{
+  border: 1px solid #aaaaaa;
+}
+/* In case javascript is disabled, don't display those: */
+.collapsed,
+.toggle,
+.collapse-toggle { display: none;}
+
+.body .item .doc .collapse-toggle
+{
+  display: block;
+  position: absolute;
+  left: -2em;
+  border: 1px solid #aaaaaa;
+  background-color: #f2f5f7;
+  color: #303030;
+  cursor: pointer;
+}
+
+div.enumerator 
+{
+  margin-left: 2em;
+}
+
+div.module-section
+{
+  margin-left: 0.5em;
+}
+
+div.module-section img
+{
+  vertical-align: text-bottom;
+}
+
+div.files
+{
+  margin-left: 1em;
+}
+
+div.filepage-scope 
+{
+  margin-left: 1em;
+}
+
+div.section
+{
+  margin-left: 2em;
+}
+
+div.logo
+{
+  clear: both;
+  border-top: 1px solid #aaaaaa;
+  margin-left: 2em;
+  text-align: center;
+  color: #dddddd;
+}
+img {  border: 0; }
+div.class-module
+{
+  font-size: 1.5em;
+  text-align: right;
+}
+div.class-template 
+{
+  font-size: 1.7em;
+}
+div.class-name
+{
+  font-size: 1.7em;
+  margin-bottom: 1em;
+}
+ul.tree
+{
+  padding-left: 1em;
+}
+div.nameindex-item 
+{
+  margin-left: 1em;
+}
+
+/* Style for the SXR view. */
+
+pre.sxr
+{
+  border: 1px solid #aaaaaa;
+  background-color: #f2f5f7;
+  font-size: smaller;
+}
+pre.sxr .lineno
+{
+  border-right: 1px solid #aaaaaa;
+  font-style: italic;
+  font-size: 90%;
+  padding: .5em;
+}
+pre.sxr .line
+{
+  margin-left: .2em;
+  padding-left: .4em;
+}
+pre.sxr .py-string { background: transparent; color: #006030;}
+pre.sxr .py-comment { background: transparent; color: #003060;}
+pre.sxr .py-keyword { background: transparent; color: #600000;}
+
+pre.sxr .keyword { font-weight: bold;}
+pre.sxr .comment { color: green;}
+pre.sxr .string { color: green;}
+pre.sxr .literal { color: blue;}
+
+.docutils dt { font-weight: bold;}
+.docutils .field-name { text-align: right;}

@@ -1,0 +1,531 @@
+
+
+/* Copyright (c) 2010 by CodeSourcery.  All rights reserved. */
+
+/// Description
+///   CUDA kernel for raising a value by a power.
+
+#include <cuComplex.h>
+#include "util.hpp"
+#include <vsip/support.hpp>
+#include <complex>
+
+namespace dev
+{
+// 1-D unit stride
+__global__ void 
+pow(float const* in1, float const* in2, float* out, size_t length)
+{
+  int const tx = threadIdx.x;
+  int const bx = blockIdx.x;
+
+  int const idx = __mul24(blockDim.x, bx) + tx;
+  if (idx < length)
+    out[idx] = powf(in1[idx], in2[idx]);
+}
+
+__global__ void 
+pow(cuComplex const* in1, float const* in2, cuComplex* out, size_t length)
+{
+  int const tx = threadIdx.x;
+  int const bx = blockIdx.x;
+
+  int const idx = __mul24(blockDim.x, bx) + tx;
+  if (idx < length)
+  {
+    float mag_in, phase_in, mag_out, phase_out;
+
+    mag_in = sqrtf(in1[idx].x * in1[idx].x + in1[idx].y * in1[idx].y);
+    phase_in = atan2f(in1[idx].y, in1[idx].x);
+
+    mag_out = powf(mag_in, in2[idx]);
+    phase_out = phase_in * in2[idx];
+
+    out[idx].x = mag_out * cosf(phase_out);
+    out[idx].y = mag_out * sinf(phase_out);
+  }
+}
+
+__global__ void 
+pow(float const* in1, cuComplex const* in2, cuComplex* out, size_t length)
+{
+  int const tx = threadIdx.x;
+  int const bx = blockIdx.x;
+
+  int const idx = __mul24(blockDim.x, bx) + tx;
+  if (idx < length)
+  {
+    float mag_out, phase_out;
+
+    mag_out = powf(in1[idx], in2[idx].x);
+    phase_out = in2[idx].y * logf(in1[idx]);
+
+    out[idx].x = mag_out * cosf(phase_out);
+    out[idx].y = mag_out * sinf(phase_out);
+  }
+}
+
+__global__ void 
+pow(cuComplex const* in1, cuComplex const* in2, cuComplex* out, size_t length)
+{
+  int const tx = threadIdx.x;
+  int const bx = blockIdx.x;
+
+  int const idx = __mul24(blockDim.x, bx) + tx;
+  if (idx < length)
+  {
+    float mag_in, phase_in, mag_out, phase_out;
+
+    mag_in = sqrtf(in1[idx].x * in1[idx].x + in1[idx].y * in1[idx].y);
+    phase_in = atan2f(in1[idx].y, in1[idx].x);
+
+    mag_out = powf(mag_in, in2[idx].x);
+    mag_out *= expf(-in2[idx].y * phase_in);
+    phase_out = in2[idx].x * phase_in + in2[idx].y * logf(mag_in);
+
+    out[idx].x = mag_out * cosf(phase_out);
+    out[idx].y = mag_out * sinf(phase_out);
+  }
+}
+// 1-D general stride
+__global__ void 
+pow(float const* in1, ptrdiff_t in1_stride,
+    float const* in2, ptrdiff_t in2_stride,
+    float* out, ptrdiff_t out_stride, size_t length)
+{
+  int const tx = threadIdx.x;
+  int const bx = blockIdx.x;
+
+  int const tid = __mul24(blockDim.x, bx) + tx;
+  int const in1_idx = __mul24(tid, in1_stride);
+  int const in2_idx = __mul24(tid, in2_stride);
+  int const out_idx = __mul24(tid, out_stride);
+  if (tid < length)
+    out[out_idx] = powf(in1[in1_idx], in2[in2_idx]);
+}
+
+__global__ void 
+pow(cuComplex const* in1, ptrdiff_t in1_stride,
+    float const* in2, ptrdiff_t in2_stride,
+    cuComplex* out, ptrdiff_t out_stride, size_t length)
+{
+  int const tx = threadIdx.x;
+  int const bx = blockIdx.x;
+
+  int const tid = __mul24(blockDim.x, bx) + tx;
+  int const in1_idx = __mul24(tid, in1_stride);
+  int const in2_idx = __mul24(tid, in2_stride);
+  int const out_idx = __mul24(tid, out_stride);
+  if (tid < length)
+  {
+    float mag_in, phase_in, mag_out, phase_out;
+
+    mag_in = sqrtf(in1[in1_idx].x * in1[in1_idx].x + in1[in1_idx].y * in1[in1_idx].y);
+    phase_in = atan2f(in1[in1_idx].y, in1[in1_idx].x);
+
+    mag_out = powf(mag_in, in2[in2_idx]);
+    phase_out = phase_in * in2[in2_idx];
+
+    out[out_idx].x = mag_out * cosf(phase_out);
+    out[out_idx].y = mag_out * sinf(phase_out);
+  }
+}
+
+__global__ void 
+pow(float const* in1, ptrdiff_t in1_stride,
+    cuComplex const* in2, ptrdiff_t in2_stride,
+    cuComplex* out, ptrdiff_t out_stride, size_t length)
+{
+  int const tx = threadIdx.x;
+  int const bx = blockIdx.x;
+
+  int const tid = __mul24(blockDim.x, bx) + tx;
+  int const in1_idx = __mul24(tid, in1_stride);
+  int const in2_idx = __mul24(tid, in2_stride);
+  int const out_idx = __mul24(tid, out_stride);
+  if (tid < length)
+  {
+    float mag_out, phase_out;
+
+    mag_out = powf(in1[in1_idx], in2[in2_idx].x);
+    phase_out = in2[in2_idx].y * logf(in1[in1_idx]);
+
+    out[out_idx].x = mag_out * cosf(phase_out);
+    out[out_idx].y = mag_out * sinf(phase_out);
+  }
+}
+
+__global__ void 
+pow(cuComplex const* in1, ptrdiff_t in1_stride,
+    cuComplex const* in2, ptrdiff_t in2_stride,
+    cuComplex* out, ptrdiff_t out_stride, size_t length)
+{
+  int const tx = threadIdx.x;
+  int const bx = blockIdx.x;
+
+  int const tid = __mul24(blockDim.x, bx) + tx;
+  int const in1_idx = __mul24(tid, in1_stride);
+  int const in2_idx = __mul24(tid, in2_stride);
+  int const out_idx = __mul24(tid, out_stride);
+  if (tid < length)
+  {
+    float mag_in, phase_in, mag_out, phase_out;
+
+    mag_in = sqrtf(in1[in1_idx].x * in1[in1_idx].x + in1[in1_idx].y * in1[in1_idx].y);
+    phase_in = atan2f(in1[in1_idx].y, in1[in1_idx].x);
+
+    mag_out = powf(mag_in, in2[in2_idx].x);
+    mag_out *= expf(-in2[in2_idx].y * phase_in);
+    phase_out = in2[in2_idx].x * phase_in + in2[in2_idx].y * logf(mag_in);
+
+    out[out_idx].x = mag_out * cosf(phase_out);
+    out[out_idx].y = mag_out * sinf(phase_out);
+  }
+}
+// 2-D general stride
+__global__ void 
+pow(float const* in1, ptrdiff_t in1_row_stride, ptrdiff_t in1_col_stride,
+    float const* in2, ptrdiff_t in2_row_stride, ptrdiff_t in2_col_stride,
+    float* out, ptrdiff_t out_row_stride, ptrdiff_t out_col_stride,
+    size_t num_rows, size_t num_cols)
+{
+  int const tx = threadIdx.x;
+  int const ty = threadIdx.y;
+  int const bx = blockIdx.x;
+  int const by = blockIdx.y;
+
+  int const tidx = __mul24(blockDim.x, bx) + tx;
+  int const tidy = __mul24(blockDim.y, by) + ty;
+  int const in1_idx = __mul24(tidy, in1_row_stride) + __mul24(tidx, in1_col_stride);
+  int const in2_idx = __mul24(tidy, in2_row_stride) + __mul24(tidx, in2_col_stride);
+  int const out_idx = __mul24(tidy, out_row_stride) + __mul24(tidx, out_col_stride);
+  if (tidy < num_rows && tidx < num_cols)
+    out[out_idx] = powf(in1[in1_idx], in2[in2_idx]);
+}
+
+__global__ void 
+pow(cuComplex const* in1, ptrdiff_t in1_row_stride, ptrdiff_t in1_col_stride,
+    float const* in2, ptrdiff_t in2_row_stride, ptrdiff_t in2_col_stride,
+    cuComplex* out, ptrdiff_t out_row_stride, ptrdiff_t out_col_stride,
+    size_t num_rows, size_t num_cols)
+{
+  int const tx = threadIdx.x;
+  int const ty = threadIdx.y;
+  int const bx = blockIdx.x;
+  int const by = blockIdx.y;
+
+  int const tidx = __mul24(blockDim.x, bx) + tx;
+  int const tidy = __mul24(blockDim.y, by) + ty;
+  int const in1_idx = __mul24(tidy, in1_row_stride) + __mul24(tidx, in1_col_stride);
+  int const in2_idx = __mul24(tidy, in2_row_stride) + __mul24(tidx, in2_col_stride);
+  int const out_idx = __mul24(tidy, out_row_stride) + __mul24(tidx, out_col_stride);
+  if (tidy < num_rows && tidx < num_cols)
+  {
+    float mag_in, phase_in, mag_out, phase_out;
+
+    mag_in = sqrtf(in1[in1_idx].x * in1[in1_idx].x + in1[in1_idx].y * in1[in1_idx].y);
+    phase_in = atan2f(in1[in1_idx].y, in1[in1_idx].x);
+
+    mag_out = powf(mag_in, in2[in2_idx]);
+    phase_out = phase_in * in2[in2_idx];
+
+    out[out_idx].x = mag_out * cosf(phase_out);
+    out[out_idx].y = mag_out * sinf(phase_out);
+  }
+}
+
+__global__ void 
+pow(float const* in1, ptrdiff_t in1_row_stride, ptrdiff_t in1_col_stride,
+    cuComplex const* in2, ptrdiff_t in2_row_stride, ptrdiff_t in2_col_stride,
+    cuComplex* out, ptrdiff_t out_row_stride, ptrdiff_t out_col_stride,
+    size_t num_rows, size_t num_cols)
+{
+  int const tx = threadIdx.x;
+  int const ty = threadIdx.y;
+  int const bx = blockIdx.x;
+  int const by = blockIdx.y;
+
+  int const tidx = __mul24(blockDim.x, bx) + tx;
+  int const tidy = __mul24(blockDim.y, by) + ty;
+  int const in1_idx = __mul24(tidy, in1_row_stride) + __mul24(tidx, in1_col_stride);
+  int const in2_idx = __mul24(tidy, in2_row_stride) + __mul24(tidx, in2_col_stride);
+  int const out_idx = __mul24(tidy, out_row_stride) + __mul24(tidx, out_col_stride);
+  if (tidy < num_rows && tidx < num_cols)
+  {
+    float mag_out, phase_out;
+
+    mag_out = powf(in1[in1_idx], in2[in2_idx].x);
+    phase_out = in2[in2_idx].y * logf(in1[in1_idx]);
+
+    out[out_idx].x = mag_out * cosf(phase_out);
+    out[out_idx].y = mag_out * sinf(phase_out);
+  }
+}
+
+__global__ void 
+pow(cuComplex const* in1, ptrdiff_t in1_row_stride, ptrdiff_t in1_col_stride,
+    cuComplex const* in2, ptrdiff_t in2_row_stride, ptrdiff_t in2_col_stride,
+    cuComplex* out, ptrdiff_t out_row_stride, ptrdiff_t out_col_stride,
+    size_t num_rows, size_t num_cols)
+{
+  int const tx = threadIdx.x;
+  int const ty = threadIdx.y;
+  int const bx = blockIdx.x;
+  int const by = blockIdx.y;
+
+  int const tidx = __mul24(blockDim.x, bx) + tx;
+  int const tidy = __mul24(blockDim.y, by) + ty;
+  int const in1_idx = __mul24(tidy, in1_row_stride) + __mul24(tidx, in1_col_stride);
+  int const in2_idx = __mul24(tidy, in2_row_stride) + __mul24(tidx, in2_col_stride);
+  int const out_idx = __mul24(tidy, out_row_stride) + __mul24(tidx, out_col_stride);
+  if (tidy < num_rows && tidx < num_cols)
+  {
+    float mag_in, phase_in, mag_out, phase_out;
+
+    mag_in = sqrtf(in1[in1_idx].x * in1[in1_idx].x + in1[in1_idx].y * in1[in1_idx].y);
+    phase_in = atan2f(in1[in1_idx].y, in1[in1_idx].x);
+
+    mag_out = powf(mag_in, in2[in2_idx].x);
+    mag_out *= expf(-in2[in2_idx].y * phase_in);
+    phase_out = in2[in2_idx].x * phase_in + in2[in2_idx].y * logf(mag_in);
+
+    out[out_idx].x = mag_out * cosf(phase_out);
+    out[out_idx].y = mag_out * sinf(phase_out);
+  }
+}
+}// namespace dev
+
+namespace vsip
+{
+namespace impl
+{
+namespace cuda
+{
+// 1-D unit stride
+void
+pow(
+  float const*     in1,
+  float const*     in2,
+  float*           out,
+  length_type      length)
+{
+  dim3 grid, threads;
+  distribute_vector(length, grid, threads);
+
+  dev::pow<<<grid, threads>>>(in1, in2, out, length);
+}
+
+void
+pow(
+  std::complex<float> const*     in1,
+  float const*                   in2,
+  std::complex<float>*           out,
+  length_type                    length)
+{
+  dim3 grid, threads;
+  distribute_vector(length, grid, threads);
+
+  dev::pow<<<grid, threads>>>(reinterpret_cast<cuComplex const*>(in1),
+                              in2, reinterpret_cast<cuComplex*>(out), length);
+}
+
+void
+pow(
+  float const*                   in1,
+  std::complex<float> const*     in2,
+  std::complex<float>*           out,
+  length_type                    length)
+{
+  dim3 grid, threads;
+  distribute_vector(length, grid, threads);
+
+  dev::pow<<<grid, threads>>>(in1, reinterpret_cast<cuComplex const*>(in2),
+                              reinterpret_cast<cuComplex*>(out), length);
+}
+
+void
+pow(
+  std::complex<float> const*     in1,
+  std::complex<float> const*     in2,
+  std::complex<float>*           out,
+  length_type      length)
+{
+  dim3 grid, threads;
+  distribute_vector(length, grid, threads);
+
+  dev::pow<<<grid, threads>>>(reinterpret_cast<cuComplex const*>(in1),
+                              reinterpret_cast<cuComplex const*>(in2),
+                              reinterpret_cast<cuComplex*>(out), length);
+}
+// 1-D general stride
+void
+pow(
+  float const*     in1,
+  stride_type      in1_stride,
+  float const*     in2,
+  stride_type      in2_stride,
+  float*           out,
+  stride_type      out_stride,
+  length_type      length)
+{
+  dim3 grid, threads;
+  distribute_vector(length, grid, threads);
+
+  dev::pow<<<grid, threads>>>(in1, in1_stride,
+                              in2, in2_stride,
+                              out, out_stride, length);
+}
+
+void
+pow(
+  std::complex<float> const*     in1,
+  stride_type                    in1_stride,
+  float const*                   in2,
+  stride_type                    in2_stride,
+  std::complex<float>*           out,
+  stride_type                    out_stride,
+  length_type                    length)
+{
+  dim3 grid, threads;
+  distribute_vector(length, grid, threads);
+
+  dev::pow<<<grid, threads>>>(reinterpret_cast<cuComplex const*>(in1), in1_stride,
+                              in2, in2_stride, reinterpret_cast<cuComplex*>(out),
+                              out_stride, length);
+}
+
+void
+pow(
+  float const*                   in1,
+  stride_type                    in1_stride,
+  std::complex<float> const*     in2,
+  stride_type                    in2_stride,
+  std::complex<float>*           out,
+  stride_type                    out_stride,
+  length_type                    length)
+{
+  dim3 grid, threads;
+  distribute_vector(length, grid, threads);
+
+  dev::pow<<<grid, threads>>>(in1, in1_stride, reinterpret_cast<cuComplex const*>(in2),
+                              in2_stride, reinterpret_cast<cuComplex*>(out), out_stride,
+                              length);
+}
+
+void
+pow(
+  std::complex<float> const* in1,
+  stride_type                in1_stride,
+  std::complex<float> const* in2,
+  stride_type                in2_stride,
+  std::complex<float>*       out,
+  stride_type                out_stride,
+  length_type                length)
+{
+  dim3 grid, threads;
+  distribute_vector(length, grid, threads);
+
+  dev::pow<<<grid, threads>>>(reinterpret_cast<cuComplex const *>(in1), in1_stride,
+			      reinterpret_cast<cuComplex const *>(in2), in2_stride,
+			      reinterpret_cast<cuComplex*>(out), out_stride,
+			      length);
+}
+// 2-D general stride
+void
+pow(
+  float const*     in1,
+  stride_type      in1_row_stride,
+  stride_type      in1_col_stride,
+  float const*     in2,
+  stride_type      in2_row_stride,
+  stride_type      in2_col_stride,
+  float*           out,
+  stride_type      out_row_stride,
+  stride_type      out_col_stride,
+  length_type      nrows,
+  length_type      ncols)
+{
+  dim3 grid, threads;
+  distribute_matrix(nrows, ncols, grid, threads);
+
+  dev::pow<<<grid, threads>>>(in1, in1_row_stride, in1_col_stride,
+                              in2, in2_row_stride, in2_col_stride,
+                              out, out_row_stride, out_col_stride,
+                              nrows, ncols);
+}
+
+void
+pow(
+  std::complex<float> const*     in1,
+  stride_type                    in1_row_stride,
+  stride_type                    in1_col_stride,
+  float const*                   in2,
+  stride_type                    in2_row_stride,
+  stride_type                    in2_col_stride,
+  std::complex<float>*           out,
+  stride_type                    out_row_stride,
+  stride_type                    out_col_stride,
+  length_type                    nrows,
+  length_type                    ncols)
+{
+  dim3 grid, threads;
+  distribute_matrix(nrows, ncols, grid, threads);
+
+  dev::pow<<<grid, threads>>>(reinterpret_cast<cuComplex const*>(in1),
+                              in1_row_stride, in1_col_stride,
+                              in2, in2_row_stride, in2_col_stride,
+                              reinterpret_cast<cuComplex*>(out),
+                              out_row_stride, out_col_stride, nrows, ncols);
+}
+
+void
+pow(
+  float const*                   in1,
+  stride_type                    in1_row_stride,
+  stride_type                    in1_col_stride,
+  std::complex<float> const*     in2,
+  stride_type                    in2_row_stride,
+  stride_type                    in2_col_stride,
+  std::complex<float>*           out,
+  stride_type                    out_row_stride,
+  stride_type                    out_col_stride,
+  length_type                    nrows,
+  length_type                    ncols)
+{
+  dim3 grid, threads;
+  distribute_matrix(nrows, ncols, grid, threads);
+
+  dev::pow<<<grid, threads>>>(in1, in1_row_stride, in1_col_stride,
+                              reinterpret_cast<cuComplex const*>(in2),
+                              in2_row_stride, in2_col_stride,
+                              reinterpret_cast<cuComplex*>(out),
+                              out_row_stride, out_col_stride, nrows, ncols);
+}
+
+void
+pow(
+  std::complex<float> const* in1,
+  stride_type                in1_row_stride,
+  stride_type                in1_col_stride,
+  std::complex<float> const* in2,
+  stride_type                in2_row_stride,
+  stride_type                in2_col_stride,
+  std::complex<float>*       out,
+  stride_type                out_row_stride,
+  stride_type                out_col_stride,
+  length_type                nrows,
+  length_type                ncols)
+{
+  dim3 grid, threads;
+  distribute_matrix(nrows, ncols, grid, threads);
+
+  dev::pow<<<grid, threads>>>(reinterpret_cast<cuComplex const *>(in1),
+                              in1_row_stride, in1_col_stride,
+			      reinterpret_cast<cuComplex const *>(in2),
+                              in2_row_stride, in2_col_stride,
+			      reinterpret_cast<cuComplex*>(out),
+                              out_row_stride, out_col_stride, nrows, ncols);
+}
+} // namespace vsip::impl::cuda
+} // namespace vsip::impl
+} // namespace vsip

@@ -1,0 +1,9 @@
+######################################################### -*-Makefile-*-
+#
+# Contents: Makefile for VSIPL++ example radar programs.
+#
+########################################################################
+
+targets := waveforms matched_filter 
+
+include ../common.mk

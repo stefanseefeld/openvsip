@@ -1,0 +1,1 @@
+../em64t/ser-builtin-debug/pkgconfig/vsipl++.pc

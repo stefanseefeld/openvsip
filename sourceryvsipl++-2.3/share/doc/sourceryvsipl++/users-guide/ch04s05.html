@@ -1,0 +1,80 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.5. Creating custom evaluators</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="custom_expr_evaluation.html" title="Chapter 4. Custom Expression Evaluation"><link rel="prev" href="ch04s04.html" title="4.4. Creating custom expressions"><link rel="next" href="profiling.html" title="Chapter 5. Profiling"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.5. Creating custom evaluators</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s04.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Custom Expression Evaluation</th><td width="20%" align="right"> <a accesskey="n" href="profiling.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id280219"></a>4.5. Creating custom evaluators</h2></div></div></div><p>In the previous section we have seen how to improve the expression
+    evaluation by using the return-value optimization technique to avoid
+    certain temporaries. However, there may be more that can be done to
+    improve performance.</p><p>It may, for example, be possible to fuse multiple operations into
+    one. Some platforms provide a fused "multiply-add" instruction that may be
+    used, some algorithms are optimized for combined evaluation such as an FFT
+    with a scalar multiplication, etc.</p><p>To be able to take advantage of those opportunities, we need to
+    'see' the whole expression at once, so we can dispatch the relevant
+    sub-expression to such 'backends'.</p><p>For common cases, the library already performs this internally.
+    However, sometimes users have their own optimized code that needs to be
+    hooked into expression evaluation</p><p>In this section, we will develop an expression evaluator that
+    matches the expression <code class="code">interpolate(scale(a, 2.), 32)</code> from the
+    last section.</p><p>Assignments are evaluated using the dispatch mechanism described in
+    <a class="xref" href="dispatcher.html" title="Chapter 3. Using the Dispatch Framework">Chapter 3, &#8220;Using the Dispatch Framework&#8221;</a>. To provide a custom evaluator for a
+    particular expression assignment, it is thus necessary to specialize an
+    <code class="type">Evaluator</code>, using <code class="type">op::assign&lt;D&gt;</code> as
+    operation tag, and <code class="type">be::user</code> as backend tag:</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id280274"></a>4.5.1. Specializing an evaluators for a particular expression
+      type</h3></div></div></div><p>To make Sourcery VSIPL++ use a custom evaluator, we need to specialize
+      the <code class="type">vsip_csl::dispatcher::Evaluator</code> template for the
+      particular expression type we are interested in. Further, we need to
+      model the <a href="../reference-manual/./dispatcher.html#evaluator" class="olink">evaluator concept</a>.</p><p>The type of the expression can be discovered using
+      <code class="function">type_name()</code>:</p><pre class="programlisting">std::cout
+  &lt;&lt; type_name(interpolate(scale(a, 2.),32))
+  &lt;&lt; std::endl;</pre><p>This yields (approximately):</p><pre class="screen">vsip::Vector&lt;
+  float,
+  vsip_csl::expr::Unary&lt;
+    example::Interpolator,
+    vsip_csl::expr::Unary&lt;
+      example::Scale,
+      vsip::Dense&lt;1u, float, tuple&lt;0u, 1u, 2u&gt;,
+                  vsip::Local_map&gt;,
+      false&gt;
+    const&gt;,
+  false&gt; const&gt;</pre><p>The block type is thus (with some details removed for
+      clarity):</p><pre class="screen">Unary&lt;Interpolator,
+      Unary&lt;Scale, Dense&lt;1&gt;, false&gt;
+      const,
+      false,
+      const&gt;</pre><p>This can be visualized like this:</p><div class="mediaobject" align="center"><img src="images/eval/expression-type-detail.png" align="middle"></div><p>i.e., it is a <code class="type">Unary</code> whose functor is an
+      <code class="type">Interpolator</code>. Its argument block, in turn, is a
+      <code class="type">Unary</code> whose functor is a <code class="type">Scale</code>, and its
+      argument block is a <code class="type">Dense&lt;1&gt;</code>. This allows us to write
+      a matching evaluator:</p><pre class="programlisting">namespace vsip_csl {
+namespace dispatcher {
+  template &lt;typename ResultBlockType,
+            typename ArgumentBlockType&gt;
+  struct Evaluator&lt;op::assign&lt;1&gt;,
+                   be::user void(ResultBlockType &amp;,
+                                 expr::Unary&lt;Interpolator, expr::Unary&lt;Scale, ArgumentBlockType&gt;
+const&gt; const &amp;)&gt;
+  {
+    typedef typename
+      ArgumentBlockType::value_type value_type;
+    typedef ResultBlockType LHS;
+    typedef expr::Unary&lt;Interpolator,
+                        expr::Unary&lt;Scale, ArgumentBlockType&gt; const&gt;
+      RHS;
+    static bool const ct_valid = true;
+    static bool rt_valid(LHS &amp;, RHS const &amp;)
+    { return true;}
+    static void exec(LHS &amp;lhs, RHS const &amp;rhs) {} // TBD
+};</pre><p>This evaluator will match the desired expression. As usual, the
+      <code class="constant">ct_valid</code> and <code class="function">rt_valid()</code>
+      members can be used to refine the selection process.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id280419"></a>4.5.2. Accessing the expression nodes.</h3></div></div></div><p>The terminals in this expression are the block, the interpolator's
+      target size, as well as the scale value. Once these three are available,
+      the entire expression may be evaluated in a fused
+      <code class="function">scaled_interpolate()</code>, as shown here:</p><pre class="programlisting">static void exec(LHS &amp;lhs, RHS const &amp;rhs)
+{
+  // rhs.arg() yields Unary&lt;Scale, ArgumentBlockType&gt;,
+  // rhs.arg().arg() thus returns the terminal ArgumentBlockType block...
+  ArgumentBlockType &amp;block = rhs.arg().arg();
+  // ...and rhs.arg().operation() the Scale&lt;ArgumentBlockType&gt; functor.
+  value_type scale = rhs.functor().argument.functor().func.value;
+  // rhs.operation() yields the Interpolator&lt;Unary&lt;Scale, ...&gt; functor.
+  length_type new_size(rhs.operation().size(1, 0));
+  // wrap terminal blocks in views for convenience, and evaluate.
+  Vector&lt;value_type, LHS&gt; result(lhs);
+  const_Vector&lt;value_type, ArgumentBlockType const&gt; argument(block);
+  scaled_interpolate(result, argument, size, scale, new_size);
+}</pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="custom_expr_evaluation.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="profiling.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.4. Creating custom expressions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 5. Profiling</td></tr></table></div></body></html>

@@ -1,0 +1,50 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>7.4. Direct Data Access to real matrix views</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="cvsip_extensions.html" title="Chapter 7. Sourcery VSIPL API extensions"><link rel="prev" href="cvsip_cvdda.html" title="7.3. Direct Data Access to complex vector views"><link rel="next" href="cvsip_cmdda.html" title="7.5. Direct Data Access to complex matrix views"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">7.4. Direct Data Access to real matrix views</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="cvsip_cvdda.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Sourcery VSIPL API extensions</th><td width="20%" align="right"> <a accesskey="n" href="cvsip_cmdda.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="cvsip_mdda"></a>7.4. Direct Data Access to real matrix views</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="vsip_csl_mattr"></a>7.4.1. vsip_csl_mattr_&lt;type&gt;</h3></div></div></div><pre class="synopsis">typedef struct 
+{
+  vsip_scalar_<span class="emphasis"><em>&lt;type&gt;</em></span> *data;
+  vsip_stride  row_stride;
+  vsip_length  row_length;
+  vsip_stride  col_stride;
+  vsip_length  col_length;
+} vsip_csl_mattr_<span class="emphasis"><em>&lt;type&gt;</em></span>;</pre><p>where <span class="emphasis"><em>&lt;type&gt;</em></span> can be one of <code class="varname">f</code>,
+     <code class="varname">d</code>, <code class="varname">i</code>, <code class="varname">bl</code>, 
+     <code class="varname">si</code>, <code class="varname">uc</code>, <code class="varname">vi</code>, or
+     <code class="varname">mi</code> to represent float, double, int, boolean, short int,
+     unsigned char, vector index, or matrix index, respectively.</p><div class="variablelist"><p class="title"><b>Member description</b></p><dl><dt><span class="term">data</span></dt><dd><p>A pointer to the data array of the appropriate type (see the VSIPL
+           specification for definitions of <code class="code">vsip_scalar_<span class="emphasis"><em>&lt;type&gt;</em></span></code>).
+         </p></dd><dt><span class="term">row_stride, </span><span class="term">col_stride</span></dt><dd><p>The row-stride and column-stride of the array, i.e. the distance (in units of
+           <code class="code">vsip_scalar_<span class="emphasis"><em>&lt;type&gt;</em></span></code>) between
+           two adjacent elements within a row and within a column, respectively.</p></dd><dt><span class="term">row_length, </span><span class="term">col_length</span></dt><dd><p>Number of elements per row (i.e., number of columns), and
+           number of elements per column (i.e., number of rows) in the array.</p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="vsip_csl_mgetattrib"></a>7.4.2. <code class="function">vsip_csl_mgetattrib_&lt;type&gt;</code></h3></div></div></div><a class="indexterm" name="id339343"></a><a class="indexterm" name="id339356"></a><a class="indexterm" name="id339368"></a><a class="indexterm" name="id339380"></a><a class="indexterm" name="id339392"></a><a class="indexterm" name="id339405"></a><a class="indexterm" name="id339417"></a><a class="indexterm" name="id339429"></a><pre class="synopsis">void 
+vsip_csl_mgetattrib_f(vsip_mview_f const *matrix, vsip_csl_mattr_f *attrib);
+void
+vsip_csl_mgetattrib_d(vsip_mview_d const *matrix, vsip_csl_mattr_d *attrib);
+void
+vsip_csl_mgetattrib_i(vsip_mview_i const *matrix, vsip_csl_mattr_i *attrib);
+void
+vsip_csl_mgetattrib_si(vsip_mview_si const *matrix, vsip_csl_mattr_si *attrib);
+void
+vsip_csl_mgetattrib_uc(vsip_mview_uc const *matrix, vsip_csl_mattr_uc *attrib);
+void
+vsip_csl_mgetattrib_bl(vsip_mview_bl const *matrix, vsip_csl_mattr_bl *attrib);
+void
+vsip_csl_mgetattrib_vi(vsip_mview_vi const *matrix, vsip_csl_mattr_vi *attrib);
+void
+vsip_csl_mgetattrib_mi(vsip_mview_mi const *matrix, vsip_csl_mattr_mi *attrib);
+</pre><p><b>Description: </b>Query the direct data access attributes for a real matrix.</p><p><b>Result: </b>
+   The struct pointed to by <code class="varname">attrib</code> is filled with
+   the direct-data-access attributes for <code class="varname">matrix</code>.
+  </p><p><b>Note: </b>
+   The pointer is <span class="emphasis"><em>undefined</em></span> if the <code class="type">block</code> is currently <span class="emphasis"><em>released</em></span>. 
+   A valid pointer returned when the <code class="type">block</code> is currently <span class="emphasis"><em>admitted</em></span> becomes undefined 
+   if the <code class="type">block</code> is subsequently <span class="emphasis"><em>released</em></span>.
+  </p><p><b>Example: </b></p><pre class="programlisting">
+vsip_mview_f *matrix = ...;
+vsip_csl_mattr_f dda;
+vsip_csl_mgetattrib_f(src, &amp;dda);
+if (dda.data)
+{
+  for (i = 0; i != dda.col_length; ++i)
+    for (j = 0; j != dda.row_length; ++i)
+      dda.data[i * dda.col_stride + j * dda.row_stride] = i;
+}
+  </pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="cvsip_cvdda.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="cvsip_extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="cvsip_cmdda.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">7.3. Direct Data Access to complex vector views </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 7.5. Direct Data Access to complex matrix views</td></tr></table></div></body></html>

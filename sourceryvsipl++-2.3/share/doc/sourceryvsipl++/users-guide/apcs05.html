@@ -1,0 +1,24 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>C.5. corr</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="apc.html" title="Appendix C. Benchmark Usage"><link rel="prev" href="apcs04.html" title="C.4. copy"><link rel="next" href="apcs06.html" title="C.6. CUDA Benchmark Usage"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">C.5. corr</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="apcs04.html">Prev</a> </td><th width="60%" align="center">Appendix C. Benchmark Usage</th><td width="20%" align="right"> <a accesskey="n" href="apcs06.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id285997"></a>C.5. corr</h2></div></div></div><p>
+      </p><pre class="screen">corr -- correlation option dim backend support type biased
+      ------ --- ------- ------- -------------- ------ -1 1 n/a full float yes
+      -2 1 n/a same float yes -3 1 n/a min float yes -4 1 n/a full float no -5
+      1 n/a same float no -6 1 n/a min float no -7 1 n/a full
+      complex&lt;float&gt; yes -8 1 n/a same complex&lt;float&gt; yes -9 1 n/a
+      min complex&lt;float&gt; yes -10 1 n/a full complex&lt;float&gt; no -11
+      1 n/a same complex&lt;float&gt; no -12 1 n/a min complex&lt;float&gt; no
+      -13 2 [O] full float yes -14 2 [O] same float yes -15 2 [O] min float
+      yes -16 2 [O] full float no -17 2 [O] same float no -18 2 [O] min float
+      no -19 2 [O] full complex&lt;float&gt; yes -20 2 [O] same
+      complex&lt;float&gt; yes -21 2 [O] min complex&lt;float&gt; yes -22 2
+      [O] full complex&lt;float&gt; no -23 2 [O] same complex&lt;float&gt; no
+      -24 2 [O] min complex&lt;float&gt; no -25 2 [G] full float yes -26 2 [G]
+      same float yes -27 2 [G] min float yes -28 2 [G] full float no -29 2 [G]
+      same float no -30 2 [G] min float no -31 2 [G] full complex&lt;float&gt;
+      yes -32 2 [G] same complex&lt;float&gt; yes -33 2 [G] min
+      complex&lt;float&gt; yes -34 2 [G] full complex&lt;float&gt; no -35 2
+      [G] same complex&lt;float&gt; no -36 2 [G] min complex&lt;float&gt; no
+      Notes: [O] -- optimized generic backend [G] -- generic backend
+      Parameters: -param N -- size of coefficient vector (default 16) -start N
+      -- starting problem size 2^N (default 4, or 16 points) -loop_start N --
+      initial number of calibration loops (default 5000) </pre><p>
+    </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apcs06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">C.4. copy </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> C.6. CUDA Benchmark Usage</td></tr></table></div></body></html>

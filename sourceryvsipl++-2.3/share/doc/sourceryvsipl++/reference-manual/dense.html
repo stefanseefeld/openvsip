@@ -1,0 +1,87 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>5.3. The Dense class template</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="advanced-types.html" title="Chapter 5. Advanced VSIPL++ Data Types"><link rel="prev" href="layout.html" title="5.2. The Layout template"><link rel="next" href="extensions.html" title="Chapter 6. Extension Reference"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">5.3. The Dense class template</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="layout.html">Prev</a> </td><th width="60%" align="center">Chapter 5. Advanced VSIPL++ Data Types</th><td width="20%" align="right"> <a accesskey="n" href="extensions.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="dense"></a>5.3. The Dense class template</h2></div></div></div><a class="indexterm" name="id332896"></a><p><b>Description. </b>Dense models the <a class="xref" href="advanced-types.html#allocatable-block" title="5.1.3. Allocatable Block concept">Section 5.1.3, &#8220;Allocatable Block concept&#8221;</a>
+     concept. It explicitly stores one value for each index in its domain, in a dense
+     memory block.</p><pre class="synopsis">template &lt;dimension_type D = 1,
+          typename T = VSIP_DEFAULT_VALUE_TYPE,
+	  typename Order = tuple&lt;0,1,2&gt;,
+	  typename Map = Local_map&gt;
+class Dense
+{
+public:
+  Dense(Domain&lt;D&gt; const &amp;dom, T value, Map const &amp;map);
+  Dense(Domain&lt;D&gt; const &amp;dom, Map const &amp;map);
+  Dense(Domain&lt;D&gt; const &amp;dom, T *data, Map const &amp;map);
+
+  user_storage_type user_storage() const;
+  bool admitted() const;
+  void admit(bool update);
+  void release(bool update);
+  void release(bool update, T *&amp;data);
+  void find(T *&amp;data);
+  void rebind(T *data);
+  void rebind(T *data, Domain&lt;D&gt; const &amp;dom);
+
+};</pre><p>The interface for complex Dense blocks has some additional member
+   functions to handle user storage.</p><pre class="synopsis">template &lt;dimension_type D,
+          typename T,
+  	  typename Order,
+	  typename Map&gt;
+class Dense&lt;D, complex&lt;T&gt;, Order, Map&gt;
+{
+public:
+  Dense(Domain&lt;D&gt; const &amp;dom, complex&lt;T&gt; value, Map const &amp;map);
+  Dense(Domain&lt;D&gt; const &amp;dom, Map const &amp;map);
+  Dense(Domain&lt;D&gt; const &amp;dom, complex&lt;T&gt; *data, Map const &amp;map);
+  Dense(Domain&lt;D&gt; const &amp;dom, T *data, Map const &amp;map);
+  Dense(Domain&lt;D&gt; const &amp;dom, T *real, T *imag, Map const &amp;map);
+
+  user_storage_type user_storage() const;
+  bool admitted() const;
+  void admit(bool update);
+  void release(bool update);
+  void release(bool update, complex&lt;T&gt; *&amp;data);
+  void release(bool update, T *&amp;data);
+  void release(bool update, T *&amp;real, T *&amp;imag);
+  void find(complex&lt;T&gt; *&amp;data);
+  void find(T *&amp;data);
+  void find(T *&amp;real, T *&amp;imag);
+  void rebind(complex&lt;T&gt; *data);
+  void rebind(T *data);
+  void rebind(T *real, T *imag);
+  void rebind(complex&lt;T&gt; *data, Domain&lt;D&gt; const &amp;dom);
+  void rebind(T *data, Domain&lt;D&gt; const &amp;dom);
+  void rebind(T *real, T *imag, Domain&lt;D&gt; const &amp;dom);
+
+};</pre><p><b>Template parameters. </b>
+       </p><div class="variablelist"><dl><dt><span class="term">D</span></dt><dd><p>The block's dimension.</p></dd><dt><span class="term">T</span></dt><dd><p>The block's value-type.</p></dd><dt><span class="term">Order</span></dt><dd><p>The dimension ordering. This is expressed using tuples, i.e.
+	     tuple&lt;0,1,2&gt;, tuple&lt;1,0,2&gt;, etc., or aliases such as
+	     row2_type or col2_type.</p></dd><dt><span class="term">Map</span></dt><dd><p>The block's map-type.</p></dd></dl></div><p>
+     </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id333025"></a>5.3.1. Constructors</h3></div></div></div><pre class="synopsis">Dense(Domain&lt;D&gt; const &amp;dom, Map const &amp;map);</pre><p><b>Description. </b>Construct a Dense block.
+       </p><pre class="synopsis">Dense(Domain&lt;D&gt; const &amp;dom, value_type value, Map const &amp;map);</pre><p><b>Description. </b>Construct a Dense block, with all values initialized to 
+       <em class="parameter"><code>value</code></em></p><pre class="synopsis">Dense(Domain&lt;D&gt; const &amp;dom, value_type *data, Map const &amp;map);</pre><p><b>Description. </b>Construct a Dense block using user-storage. The block's data may only be
+       accessed after a call to <code class="function">admit()</code>.</p><pre class="synopsis">Dense(Domain&lt;D&gt; const &amp;dom, scalar_type *data, Map const &amp;map);
+Dense(Domain&lt;D&gt; const &amp;dom, scalar_type *real, scalar_type *imag, Map const &amp;map);</pre><p><b>Description. </b>Construct a complex Dense block using user-storage. In the first case
+       the data is passed in as an interleaved array. In the second case the data
+       is passed in as a split pair of real arrays, holding the real and imaginary
+       parts of the data. The block's data may only be accessed after a call to 
+       <code class="function">admit()</code>. </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id333120"></a>5.3.2. User-storage functions</h3></div></div></div><pre class="synopsis">user_storage_type user_storage() const;</pre><p><b>Description. </b>Return the type of user-storage of this block.</p><pre class="synopsis">void admit(bool update);</pre><p><b>Description. </b>Admit the user-storage, allowing the block to access the data.
+       If <em class="parameter"><code>update</code></em> is <code class="constant">true</code>, this operation
+       may perform a copy into the block's own storage.</p><pre class="synopsis">bool admitted() const;</pre><p><b>Description. </b>Return <code class="constant">true</code> if the block is being admitted.</p><pre class="synopsis">void release(bool update);
+void release(bool update, value_type *&amp;data);</pre><p><b>Description. </b>Release the user storage. If <em class="parameter"><code>update</code></em> is 
+       <code class="constant">true</code>, this operation may perform a copy into the user
+       storage. If a value-type pointer is provided, it is set to the start of the user 
+       storage block. If the block doesn't use user storage, set 
+       <em class="parameter"><code>data</code></em> to <code class="constant">0</code>.</p><pre class="synopsis">void release(bool update, scalar_type *&amp;data);
+void release(bool update, scalar_type *&amp;real, scalar_type *&amp;imag);</pre><p><b>Description. </b>If this is a complex block, two additional <code class="function">release()</code>
+       functions are provided. The first returns a pointer to interleaved-complex
+       array, the second the two pointers to the split complex pair of arrays.</p><pre class="synopsis">void find(value_type *&amp;data);</pre><p><b>Description. </b>Return the start of the user-storage of this block. If the block does not
+       use user-storage, return <code class="constant">0</code>.</p><pre class="synopsis">void find(scalar_type *&amp;data);
+void find(scalar_type *&amp;real, scalar_type *&amp;imag);</pre><p><b>Description. </b>These two variants are only available for complex blocks. The first returns
+       the pointer to the interleaved complex array, the second the two pointers to the
+       split complex pair of arrays.</p><pre class="synopsis">void rebind(value_type *data);
+void rebind(value_type *data, Domain&lt;D&gt; const &amp;dom);</pre><p><b>Description. </b>Rebind the block to a new user-storage array. If a <code class="type">Domain</code>
+       is provided, reset the block's size accordingly.</p><pre class="synopsis">void rebind(scalar_type *data);
+void rebind(scalar_type *real, scalar_type *imag);
+void rebind(scalar_type *data, Domain&lt;D&gt; const &amp;dom);
+void rebind(scalar_type *real, scalar_type *imag, Domain&lt;D&gt; const &amp;dom);</pre><p><b>Description. </b>These variants are only available for complex blocks. The first rebinds
+       the block to the interleaved complex array, the second to two split-complex
+       arrays. If a <code class="type">Domain</code> is provided, reset the block's size accordingly.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="layout.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="advanced-types.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="extensions.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">5.2. The Layout template </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 6. Extension Reference</td></tr></table></div></body></html>

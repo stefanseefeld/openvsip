@@ -1,0 +1,125 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.2. Sort Functions</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="extensions.html" title="Chapter 6. Extension Reference"><link rel="prev" href="extensions.html" title="Chapter 6. Extension Reference"><link rel="next" href="extension_reduce.html" title="6.3. Reduction Functions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">6.2. Sort Functions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="extensions.html">Prev</a> </td><th width="60%" align="center">Chapter 6. Extension Reference</th><td width="20%" align="right"> <a accesskey="n" href="extension_reduce.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="extension_sort"></a>6.2. Sort Functions</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_sort_indices"></a>6.2.1. <code class="function">sort_indices</code></h3></div></div></div><a class="indexterm" name="id333399"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename T,
+              typename Block1,
+              typename Block2,
+              typename FunctorT&gt;
+    void
+    sort_indices(
+            Vector&lt;index_type, Block1&gt; indices,
+      const_Vector&lt;T,          Block2&gt; data,
+          FunctorT                     sort_functor
+      );</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>the type of the elements in vector <em class="parameter"><code>data</code></em>.
+     </p></dd><dt><span class="term"><em class="parameter"><code>Block1</code></em></span></dt><dd><p>the block type of vector <em class="parameter"><code>indices</code></em>.
+     </p></dd><dt><span class="term"><em class="parameter"><code>Block2</code></em></span></dt><dd><p>the block type of vector <em class="parameter"><code>data</code></em>.
+     </p></dd><dt><span class="term"><em class="parameter"><code>FunctorT</code></em></span></dt><dd><p>a class type with a member
+      <code class="function">bool operator()(T, T)</code>.
+      The default value is <code class="code">std::less&lt;T&gt;</code>.
+     </p></dd></dl></div><p><b>Description: </b>
+   <code class="function">sort_indices</code> overwrites <em class="parameter"><code>indices</code></em>
+   with index values such that <code class="code">sort_functor(data(indices(i)), data(indices(j)))</code>
+   is true iff <code class="code">i &lt;= j</code>.
+   The vector <em class="parameter"><code>data</code></em> is not modifed in any way.
+  </p><p><b>Requirements: </b>
+   Vectors <em class="parameter"><code>indices</code></em> and <em class="parameter"><code>data</code></em>
+   must have the same size.
+  </p><p><b>Example: </b></p><pre class="programlisting">Vector&lt;float&gt; vec(4); 
+Vector&lt;index_type&gt; inx(4);
+
+vec(0) = 11.;
+vec(1) = 14.;
+vec(2) = 13.;
+vec(3) = 12.;
+
+sort_indices(inx, vec);
+
+std::cout &lt;&lt; inx &lt;&lt; std::endl;  // prints 0 3 2 1
+
+sort_indices(inx, vec, greater&lt;float&gt;());
+
+std::cout &lt;&lt; inx &lt;&lt; std::endl;  // prints 1 2 3 0
+
+std::cout &lt;&lt; vec &lt;&lt; std::endl;  // prints 11 14 13 12</pre><p><b>See Also: </b>  
+   </p><div class="variablelist"><dl><dt><span class="term"><code class="function">sort_data</code></span></dt><dd><a class="xref" href="extension_sort.html#functionref_sort_data" title="6.2.2. sort_data (out of place)">(section 6.2.2)</a></dd><dt><span class="term"><code class="function">sort_data (in place)</code></span></dt><dd><a class="xref" href="extension_sort.html#functionref_sort_data_ip" title="6.2.3. sort_data (in place)">(section 6.2.3)</a></dd></dl></div><p>
+  </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_sort_data"></a>6.2.2. <code class="function">sort_data (out of place)</code></h3></div></div></div><a class="indexterm" name="id333665"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename T,
+              typename Block1,
+              typename Block2,
+              typename FunctorT&gt;
+    void
+    sort_data(
+      const_Vector&lt;T, Block1&gt; data_in,
+            Vector&lt;T, Block2&gt; data_out,
+          FunctorT            sort_functor
+      );</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>the type of the elements in vectors <em class="parameter"><code>data_in</code></em>
+      and <em class="parameter"><code>data_out</code></em>.
+     </p></dd><dt><span class="term"><em class="parameter"><code>Block1</code></em></span></dt><dd><p>the block type of vector <em class="parameter"><code>data_in</code></em>.
+     </p></dd><dt><span class="term"><em class="parameter"><code>Block2</code></em></span></dt><dd><p>the block type of vector <em class="parameter"><code>data_out</code></em>.
+     </p></dd><dt><span class="term"><em class="parameter"><code>FunctorT</code></em></span></dt><dd><p>a class type with a member
+      <code class="function">bool operator()(T, T)</code>.
+      The default value is <code class="code">std::less&lt;T&gt;</code>.
+     </p></dd></dl></div><p><b>Description: </b>
+   After copying <em class="parameter"><code>data_in</code></em> to
+   <em class="parameter"><code>data_out</code></em>,
+   <code class="function">sort_data</code> rearranges
+   the values such that <code class="code">sort_functor(data_out(i), data_out(j))</code>
+   is true iff <code class="code">i &lt;= j</code>.
+   The vector <em class="parameter"><code>data_in</code></em> is not modifed in any way.
+  </p><p><b>Requirements: </b>
+   Vectors <em class="parameter"><code>data_in</code></em> and <em class="parameter"><code>data_out</code></em>
+   must have the same size.
+  </p><p><b>Example: </b></p><pre class="programlisting">Vector&lt;float&gt; vec(4); 
+Vector&lt;float&gt; out(4);
+
+vec(0) = 11.;
+vec(1) = 14.;
+vec(2) = 13.;
+vec(3) = 12.;
+
+sort_data(vec, out);
+
+std::cout &lt;&lt; out &lt;&lt; std::endl;  // prints 11 12 13 14
+
+sort_data(vec, out, greater&lt;float&gt;());
+
+std::cout &lt;&lt; out &lt;&lt; std::endl;  // prints 11 12 13 14
+
+std::cout &lt;&lt; vec &lt;&lt; std::endl;  // prints 11 14 13 12</pre><p><b>See Also: </b>  
+   </p><div class="variablelist"><dl><dt><span class="term"><code class="function">sort_data (in place)</code></span></dt><dd><a class="xref" href="extension_sort.html#functionref_sort_data_ip" title="6.2.3. sort_data (in place)">(section 6.2.3)</a></dd><dt><span class="term"><code class="function">sort_indices</code></span></dt><dd><a class="xref" href="extension_sort.html#functionref_sort_indices" title="6.2.1. sort_indices">(section 6.2.1)</a></dd></dl></div><p>
+  </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_sort_data_ip"></a>6.2.3. <code class="function">sort_data (in place)</code></h3></div></div></div><a class="indexterm" name="id333948"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename T,
+              typename BlockT,
+              typename FunctorT&gt;
+    void
+    sort_data(
+            Vector&lt;T, BlockT&gt; data,
+          FunctorT            sort_functor
+      );</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>the type of the elements in vector <em class="parameter"><code>data</code></em>.
+     </p></dd><dt><span class="term"><em class="parameter"><code>BlockT</code></em></span></dt><dd><p>the block type of vector <em class="parameter"><code>data</code></em>.
+     </p></dd><dt><span class="term"><em class="parameter"><code>FunctorT</code></em></span></dt><dd><p>a class type with a member
+      <code class="function">bool operator()(T, T)</code>.
+      The default value is <code class="code">std::less&lt;T&gt;</code>.
+     </p></dd></dl></div><p><b>Description: </b>
+   <code class="function">sort_data</code> rearranges
+   the values such that <code class="code">sort_functor(data(i), data(j))</code>
+   is true iff <code class="code">i &lt;= j</code>.
+  </p><p><b>Requirements: </b>
+   N/A
+  </p><p><b>Example: </b></p><pre class="programlisting">Vector&lt;float&gt; vec(4); 
+Vector&lt;float&gt; out(4);
+
+vec(0) = 11.; vec(1) = 14.; vec(2) = 13.; vec(3) = 12.;
+
+sort_data(vec);
+
+std::cout &lt;&lt; vec &lt;&lt; std::endl;  // prints 11 12 13 14
+
+vec(0) = 11.; vec(1) = 14.; vec(2) = 13.; vec(3) = 12.;
+
+sort_data(vec, greater&lt;float&gt;());
+
+std::cout &lt;&lt; vec &lt;&lt; std::endl;  // prints 14 13 12 11</pre><p><b>See Also: </b>  
+   </p><div class="variablelist"><dl><dt><span class="term"><code class="function">sort_data</code></span></dt><dd><a class="xref" href="extension_sort.html#functionref_sort_data" title="6.2.2. sort_data (out of place)">(section 6.2.2)</a></dd><dt><span class="term"><code class="function">sort_indices</code></span></dt><dd><a class="xref" href="extension_sort.html#functionref_sort_indices" title="6.2.1. sort_indices">(section 6.2.1)</a></dd></dl></div><p>
+  </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="extensions.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="extension_reduce.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 6. Extension Reference </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 6.3. Reduction Functions</td></tr></table></div></body></html>

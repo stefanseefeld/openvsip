@@ -1,0 +1,272 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>8.2. Improving Parallel Temporal Locality</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-parallel.html" title="Chapter 8. Parallel Fast Convolution"><link rel="prev" href="chap-parallel.html" title="Chapter 8. Parallel Fast Convolution"><link rel="next" href="sec-parallel-io.html" title="8.3. Performing I/O"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">8.2. Improving Parallel Temporal Locality</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="chap-parallel.html">Prev</a> </td><th width="60%" align="center">Chapter 8. Parallel Fast Convolution</th><td width="20%" align="right"> <a accesskey="n" href="sec-parallel-io.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id284393"></a>8.2. Improving Parallel Temporal Locality</h2></div></div></div><p>In the previous chapter, you improved the performance of the fast
+    convolution program by exploiting temporary cache locality to process data
+    while it was "hot" in the cache. In this section, you will convert that
+    program to run efficiently in parallel.</p><p>If we apply maps (as in <a class="xref" href="chap-parallel.html#sec-parallel-fastconv" title="8.1. Parallel Fast Convolution">Section 8.1, &#8220;Parallel Fast Convolution&#8221;</a>),
+    but do not adjust the algorithm in use, the code in <a class="xref" href="sec-serial-temporal-locality.html" title="7.2. Serial Optimization: Temporal Locality">Section 7.2, &#8220;Serial Optimization: Temporal Locality&#8221;</a> will not run faster when
+    deployed on multiple processors. In particular, every processor will want
+    to update <code class="varname">tmp</code> for every row. Therefore, all processors
+    will perform the forward FFT and vector-multiply for each row of the
+    matrix.</p><p>VSIPL++ provides <em class="firstterm">local subviews</em> to solve this
+    problem. For a given processor and view, the local subview is that portion
+    of the view located on the processor. You can obtain the local subview of
+    any view by invoking its <code class="methodname">local</code> member
+    function:</p><pre class="programlisting"> view_type::local_type l_data =
+    data.local();)</pre><p>Every view class defines a type (<code class="classname">local_type</code>)
+    which is the type of a local subview. The
+    <code class="classname">local_type</code> is the same kind of view as the view
+    containing it, so, in this case, <code class="varname">l_data</code> is a matrix.
+    There is virtually no overhead in creating a local subview like
+    <code class="varname">l_data</code>. In particular, no data is copied; instead,
+    <code class="varname">l_data</code> just refers to the local portion of
+    <code class="varname">data</code>. We can now use the same cache-friendly algorithm
+    from <a class="xref" href="sec-serial-temporal-locality.html" title="7.2. Serial Optimization: Temporal Locality">Section 7.2, &#8220;Serial Optimization: Temporal Locality&#8221;</a>on the local
+    subview:</p><pre class="programlisting"> rep_view_type::local_type l_replica = replica.local();
+ for (index_type l_r=0; l_r &lt; l_data.size(0); ++l_r)
+ {
+   for_fft(l_data.row(l_r), tmp);
+   tmp *= l_replica;
+   inv_fft(tmp, l_data.row(l_r));
+ }</pre><p>Because each processor now iterates over only the rows of the matrix
+    that are local, there is no longer any duplicated effort. Applying maps,
+    as in <a class="xref" href="chap-parallel.html#sec-parallel-fastconv" title="8.1. Parallel Fast Convolution">Section 8.1, &#8220;Parallel Fast Convolution&#8221;</a> above, results in the
+    following complete program:</p><pre class="programlisting">
+      /***********************************************************************
+  Included Files
+***********************************************************************/
+
+#include &lt;vsip/initfin.hpp&gt;
+#include &lt;vsip/support.hpp&gt;
+#include &lt;vsip/signal.hpp&gt;
+#include &lt;vsip/math.hpp&gt;
+#include &lt;vsip/map.hpp&gt;
+
+using namespace vsip;
+
+
+
+/***********************************************************************
+  Main Program
+***********************************************************************/
+
+int
+main(int argc, char** argv)
+{
+  // Initialize the library.
+  vsipl vpp(argc, argv);
+
+  typedef complex&lt;float&gt; value_type;
+
+  typedef Map&lt;Block_dist, Whole_dist&gt;               map_type;
+  typedef Dense&lt;2, value_type, row2_type, map_type&gt; block_type;
+  typedef Matrix&lt;value_type, block_type&gt;            view_type;
+
+  typedef Dense&lt;1, value_type, row1_type, Replicated_map&lt;1&gt; &gt;
+                                                    replica_block_type;
+  typedef Vector&lt;value_type, replica_block_type&gt;    replica_view_type;
+
+  // Parameters.
+  length_type npulse = 64;	// number of pulses
+  length_type nrange = 256;	// number of range cells
+
+  // Maps.
+  map_type          map = map_type(num_processors(), 1);
+  Replicated_map&lt;1&gt; replica_map;
+
+  // Views.
+  replica_view_type  replica(nrange, replica_map);
+  view_type          data(npulse, nrange, map);
+  Vector&lt;value_type&gt; tmp(nrange); 
+
+  // A forward Fft for converting the time-domain data to the
+  // frequency domain.
+  typedef Fft&lt;const_Vector, value_type, value_type, fft_fwd, by_reference&gt;
+		for_fft_type;
+  for_fft_type  for_fft(Domain&lt;1&gt;(nrange), 1.0);
+
+  // An inverse Fft for converting the frequency-domain data back to
+  // the time-domain.
+  typedef Fft&lt;const_Vector, value_type, value_type, fft_inv, by_reference&gt;
+	  	inv_fft_type;
+  inv_fft_type  inv_fft(Domain&lt;1&gt;(nrange), 1.0/nrange);
+
+  // Initialize data to zero.
+  data    = value_type();
+  replica = value_type();
+
+  // Before fast convolution, convert the replica into the
+  // frequency domain
+  for_fft(replica.local());
+
+  view_type::local_type         l_data    = data.local();
+  replica_view_type::local_type l_replica = replica.local();
+
+  for (index_type l_r=0; l_r &lt; l_data.size(0); ++l_r)
+  {
+    for_fft(l_data.row(l_r), tmp);
+    tmp *= l_replica;
+    inv_fft(tmp, l_data.row(l_r));
+  }
+}
+
+    </pre><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id284524"></a>8.2.1. Implicit Parallelism: Parallel Foreach</h3></div></div></div><p>You may feel that the original formulation using implicitly
+      parallel operators was simpler and more intuitive than the
+      more-efficient variant using explicit loops. Sourcery VSIPL++ provides
+      an extension to the VSIPL++ API that allows you to retain the elegance
+      of that formulation while still obtaining good temporal locality.</p><p>In particular, Sourcery VSIPL++ provides a "parallel foreach"
+      operator. This operator applies an arbitrary user-defined function (or
+      an object that behaves like a function) to each of the rows or columns
+      of a matrix. In this section, you will see how to use this
+      approach.</p><p>First, declare a <code class="classname">Fast_convolution</code> template
+      class. The template parameter <code class="classname">T</code> is used to
+      indicate the value type of the fast convolution computation (such as
+      <code class="classname">complex&lt;float&gt;</code>):</p><pre class="programlisting">template &lt;typename T&gt; class Fast_convolution
+      {</pre><p>This class will perform the forward FFT and inverse FFTs on each
+      row, so you must declare the FFTs:</p><pre class="programlisting"> typedef Fft&lt;const_Vector, T, T, fft_fwd,
+             by_reference&gt;
+  for_fft_type;
+ typedef Fft&lt;const_Vector, T, T,
+             fft_inv, by_reference&gt;
+  inv_fft_type;
+ Vector&lt;T&gt; replica_;
+ Vector&lt;T&gt; tmp_;
+ for_fft_type for_fft_;
+ inv_fft_type inv_fft_;</pre><p>Next, define a constructor for
+      <code class="classname">Fast_convolution</code>. The constructor stores a copy
+      of the replica, and also uses the replica to determine the number of
+      elements required for the FFTs and temporary vector.</p><pre class="programlisting">template &lt;typename Block&gt;
+ Fast_convolution(Vector&lt;T, Block&gt; replica)
+ : replica_(replica.size()),
+   tmp_(replica.size()),
+   for_fft_(Domain&lt;1&gt;(replica.size()), 1.0),
+   inv_fft_(Domain&lt;1&gt;(replica.size()), 1.0/replica.size())
+{
+  replica_ = replica;
+}</pre><p>The most important part of the
+      <code class="classname">Fast_convolution</code> class is the
+      <code class="code">operator()</code> function. This function performs a fast
+      convolution for a single row of the matrix:</p><pre class="programlisting"> template &lt;typename Block1,
+           typename Block2,
+           dimension_type Dim&gt;
+ void operator()( Vector&lt;T, Block1&gt; in,
+                  Vector&lt;T, Block2&gt; out,
+                  Index&lt;Dim&gt; /*idx*/)
+ {
+   for_fft_(in, tmp_);
+   tmp_ *= replica_;
+   inv_fft_(tmp_, out);
+ }</pre><p>The <code class="function">foreach_vector</code> template will apply the
+      new class you have just defined to the rows of the matrix:</p><pre class="programlisting"> Fast_convolution&lt;value_type&gt;
+  fconv(replica.local());
+ foreach_vector&lt;tuple&lt;0, 1&gt; &gt;(fconv, data);</pre><p>The resulting program contains no explicit loops, but still has
+      good temporal locality. Here is the complete program, using the parallel
+      foreach operator:</p><pre class="programlisting">
+        /***********************************************************************
+  Included Files
+***********************************************************************/
+
+#include &lt;vsip/initfin.hpp&gt;
+#include &lt;vsip/support.hpp&gt;
+#include &lt;vsip/signal.hpp&gt;
+#include &lt;vsip/math.hpp&gt;
+#include &lt;vsip/map.hpp&gt;
+#include &lt;vsip/parallel.hpp&gt;
+
+using namespace vsip;
+
+
+
+/***********************************************************************
+  Main Program
+***********************************************************************/
+
+template &lt;typename T&gt;
+class Fast_convolution
+{
+  typedef Fft&lt;const_Vector, T, T, fft_fwd, by_reference&gt; for_fft_type;
+  typedef Fft&lt;const_Vector, T, T, fft_inv, by_reference&gt; inv_fft_type;
+
+public:
+  template &lt;typename Block&gt;
+  Fast_convolution(
+    Vector&lt;T, Block&gt; replica)
+    : replica_(replica.size()),
+      tmp_    (replica.size()),
+      for_fft_(Domain&lt;1&gt;(replica.size()), 1.0),
+      inv_fft_(Domain&lt;1&gt;(replica.size()), 1.0/replica.size())
+  {
+    replica_ = replica;
+  }
+
+  template &lt;typename       Block1,
+	    typename       Block2,
+	    dimension_type Dim&gt;
+  void operator()(
+    Vector&lt;T, Block1&gt; in,
+    Vector&lt;T, Block2&gt; out,
+    Index&lt;Dim&gt;        /*idx*/)
+  {
+    for_fft_(in, tmp_);
+    tmp_ *= replica_;
+    inv_fft_(tmp_, out);
+  }
+
+  // Member data.
+private:
+  Vector&lt;T&gt;    replica_;
+  Vector&lt;T&gt;    tmp_;
+  for_fft_type for_fft_;
+  inv_fft_type inv_fft_;
+};
+
+
+
+int
+main(int argc, char** argv)
+{
+  // Initialize the library.
+  vsipl vpp(argc, argv);
+
+  typedef complex&lt;float&gt; value_type;
+
+  typedef Map&lt;Block_dist, Whole_dist&gt;               map_type;
+  typedef Dense&lt;2, value_type, row2_type, map_type&gt; block_type;
+  typedef Matrix&lt;value_type, block_type&gt;            view_type;
+
+  typedef Dense&lt;1, value_type, row1_type, Replicated_map&lt;1&gt; &gt;
+                                                    replica_block_type;
+  typedef Vector&lt;value_type, replica_block_type&gt;    replica_view_type;
+
+  // Parameters.
+  length_type npulse = 64;	// number of pulses
+  length_type nrange = 256;	// number of range cells
+
+  // Maps.
+  map_type          map = map_type(num_processors(), 1);
+  Replicated_map&lt;1&gt; replica_map;
+
+  // Views.
+  replica_view_type replica(nrange, replica_map);
+  view_type         data(npulse, nrange, map);
+  view_type         tmp (npulse, nrange, map);
+
+  // A forward Fft for computing the frequency-domain version of
+  // the replica.
+  typedef Fft&lt;const_Vector, value_type, value_type, fft_fwd, by_reference&gt;
+		for_fft_type;
+  for_fft_type  for_fft (Domain&lt;1&gt;(nrange), 1.0);
+
+  Fast_convolution&lt;value_type&gt; fconv(replica.local());
+
+  // Initialize data to zero.
+  data    = value_type();
+  replica = value_type();
+
+  // Before fast convolution, convert the replica into the
+  // frequency domain
+  for_fft(replica.local());
+
+  // Perform fast convolution.
+  foreach_vector&lt;tuple&lt;0, 1&gt; &gt;(fconv, data);
+}
+
+      </pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="chap-parallel.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-parallel.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sec-parallel-io.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 8. Parallel Fast Convolution </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 8.3. Performing I/O</td></tr></table></div></body></html>

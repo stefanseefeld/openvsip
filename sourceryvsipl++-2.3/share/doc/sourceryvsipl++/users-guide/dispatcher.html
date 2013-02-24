@@ -1,0 +1,29 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 3. Using the Dispatch Framework</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="pt01.html" title="Part I. Working with Sourcery VSIPL++"><link rel="prev" href="ch02s04.html" title="2.4. Requesting a specific data layout"><link rel="next" href="ch03s02.html" title="3.2. Compile-time dispatch"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 3. Using the Dispatch Framework</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s04.html">Prev</a> </td><th width="60%" align="center">Part I. Working with Sourcery VSIPL++</th><td width="20%" align="right"> <a accesskey="n" href="ch03s02.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="dispatcher"></a>Chapter 3. Using the Dispatch Framework</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="dispatcher.html#id279440">3.1. Introduction</a></span></dt><dt><span class="section"><a href="ch03s02.html">3.2. Compile-time dispatch</a></span></dt><dt><span class="section"><a href="ch03s03.html">3.3. Runtime dispatch</a></span></dt></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id279440"></a>3.1. Introduction</h2></div></div></div><p>Writing High-Performance code for a wide range of hardware is very
+    challenging. Typically, the software is targetted at particular hardware
+    or optimized for a specific set of parameters. This article describes a
+    mechanism to interface a set of functions covering the same functionality
+    but for different hardware or types of input with a single API, using a
+    mechanism to dispatch to the most appropriate backend.</p><p>Sourcery VSIPL++ is configurable to target a wide range of backend
+    implementations for most of its functions. it achives portability by
+    hiding these backends behind common interfaces, yet strives to minimize
+    the calling overhead by doing as much as possible at compile-time.</p><p>When the user performs a particular operation (e.g., adding two
+    vectors) the library must select an appropriate implementation. For
+    example, if the vectors are single-precision floating-point types, then a
+    special SIMD routine might be used to perform the additional efficiently.
+    Or, if the vectors are distributed across processors, multi-processor
+    communication might be required.</p><p>When determining how to implement a given operation, Sourcery
+    VSIPL++ performs a two-step process. One step is performed at
+    compile-time; the other at run-time. Conceptually, the process is as
+    follows:</p><div class="orderedlist"><ol type="1"><li><p>Sourcery VSIPL++ forms a list of all possible implementations of
+        the operation.</p></li><li><p>At compile-time, those implementations which do not accept
+        arguments of appropriate types, or which are otherwise inappropriate
+        for reasons which can be determined statically, are eliminated.</p></li><li><p>At run-time, each implementation not yet eliminated at
+        compile-time is queried to see whether it can perform the operation.
+        The first implementation that is able to perform the operation is
+        used.</p></li></ol></div><p>Each implementation is provided as a (possibly partial)
+    specialization of the Evaluator class template. The library checks the
+    <code class="varname">ct_valid</code> static data member to determine compile-time
+    suitability and calls the <code class="function">rt_valid()</code> static member
+    function at run-time to determine run-time suitability. The actual
+    implementation of the operation is performed by the
+    <code class="function">exec()</code> static member function.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="pt01.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch03s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">2.4. Requesting a specific data layout </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 3.2. Compile-time dispatch</td></tr></table></div></body></html>

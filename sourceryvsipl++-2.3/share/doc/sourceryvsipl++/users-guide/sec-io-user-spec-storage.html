@@ -1,0 +1,139 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>7.3. Performing I/O with User-Specified Storage</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-serial.html" title="Chapter 7. Fast Convolution"><link rel="prev" href="sec-serial-temporal-locality.html" title="7.2. Serial Optimization: Temporal Locality"><link rel="next" href="sec-io-extdata.html" title="7.4. Performing I/O with External Data Access"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">7.3. Performing I/O with User-Specified Storage</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="sec-serial-temporal-locality.html">Prev</a> </td><th width="60%" align="center">Chapter 7. Fast Convolution</th><td width="20%" align="right"> <a accesskey="n" href="sec-io-extdata.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="sec-io-user-spec-storage"></a>7.3. Performing I/O with User-Specified Storage</h2></div></div></div><p>The previous sections have ignored the acquisition of actual sensor
+    data by setting the input data to zero. This section shows how to
+    initialize <code class="code">data</code> before performing the fast
+    convolution.</p><p>To perform I/O with external routines (such as the POSIX
+    <code class="function">read</code> and <code class="function">write</code> functions) it is
+    necessary to obtain a pointer to the raw data used by Sourcery VSIPL++.
+    Sourcery VSIPL++ provides two ways to do this: you may use either
+    <em class="firstterm">user-defined storage</em> or <em class="firstterm">external data
+    access</em>. In this section you will use user-defined storage to
+    perform I/O. Later, in <a class="xref" href="sec-io-extdata.html" title="7.4. Performing I/O with External Data Access">Section 7.4, &#8220;Performing I/O with External Data Access&#8221;</a> you will see how
+    to use external data access for I/O.</p><p>VSIPL++ allows you to create a block with user-specified storage by
+    giving VSIPL++ a pointer to previously allocated data when the block is
+    created. This block is just like a normal block, except that it now has
+    two states: "admitted" and "released". When the block is admitted, the
+    data is owned by VSIPL++ and the block can be used with any VSIPL++
+    functions. When the block is released, the data is owned by you allowing
+    you to perform operations directly on the data. The states allow VSIPL++
+    to potentially reorganize data for higher performance while it is
+    admitted. (Attempting to use the pointer while the block is admitted, or
+    use the block while it is released will result in unspecified
+    behavior!)</p><p>The first step is to allocate the data manually.</p><pre class="programlisting"> std::vector&lt;value_type&gt;
+    buffer(npulse*nrange);</pre><p>Next, you create a VSIPL++ <code class="function">Dense</code> block,
+    providing it with the pointer.</p><pre class="programlisting"> Dense&lt;2, value_type&gt;
+ block(Domain&lt;2&gt;(nrange, npulse), &amp;buffer.front());</pre><p>Since the pointer to data does not encode the data dimensions, it is
+    necessary to create the block with explicit dimensions.</p><p>Finally, you create a VSIPL++ view that uses this block.</p><pre class="programlisting"> Matrix&lt;value_type&gt; data(block);</pre><p>The view determines its size from the block, so there is no need to
+    specify the dimensions again.</p><p>Now you're ready to perform I/O. When a user-specifed storage block
+    is first created, it is released.</p><pre class="programlisting"> ... setup IO
+ ...
+ read(..., &amp;buffer.front(),
+      sizeof(value_type)*nrange*npulse);
+ ... check for errors (of course!)
+ ...</pre><p>Finally, you need to admit the block so that it and the view can be
+    used by VSIPL++.</p><pre class="programlisting"> data.block().admit(true);</pre><p>The <code class="varname">true</code> argument indicates that the data values
+    sould be preserved by the admit. In cases where the values do not need to
+    preserved (such as admitting a block after output I/O has been performed
+    and before the block will be overwritten by new values in VSIPL++) you can
+    use <code class="varname">false</code> instead.</p><p>After admitting the block, you can use <code class="varname">data</code> as
+    before to perform fast convolution. Here is the complete program,
+    including I/O to output the result after the computation.</p><pre class="programlisting">
+      /***********************************************************************
+  Included Files
+***********************************************************************/
+
+#include &lt;vsip/initfin.hpp&gt;
+#include &lt;vsip/support.hpp&gt;
+#include &lt;vsip/signal.hpp&gt;
+#include &lt;vsip/math.hpp&gt;
+#include &lt;vector&gt;
+
+using namespace vsip;
+
+
+
+/***********************************************************************
+  Main Program
+***********************************************************************/
+
+int
+main(int argc, char** argv)
+{
+  // Initialize the library.
+  vsipl vpp(argc, argv);
+
+  typedef complex&lt;float&gt; value_type;
+
+  // Parameters.
+  length_type npulse = 64;	// number of pulses
+  length_type nrange = 256;	// number of range cells
+
+  // Allocate data.
+  std::vector&lt;value_type&gt; data(npulse*nrange);
+
+  // Blocks.
+  Dense&lt;2, value_type&gt; block(Domain&lt;2&gt;(npulse, nrange), &amp;data.front());
+
+  // Views.
+  Vector&lt;value_type&gt; replica(nrange);
+  Matrix&lt;value_type&gt; data(block);
+  Matrix&lt;value_type&gt; tmp(npulse, nrange);
+
+  // A forward Fft for computing the frequency-domain version of
+  // the replica.
+  typedef Fft&lt;const_Vector, value_type, value_type, fft_fwd, by_reference&gt;
+		for_fft_type;
+  for_fft_type  for_fft (Domain&lt;1&gt;(nrange), 1.0);
+
+  // A forward Fftm for converting the time-domain data matrix to the
+  // frequency domain.
+  typedef Fftm&lt;value_type, value_type, row, fft_fwd, by_reference&gt;
+	  	for_fftm_type;
+  for_fftm_type for_fftm(Domain&lt;2&gt;(npulse, nrange), 1.0);
+
+  // An inverse Fftm for converting the frequency-domain data back to
+  // the time-domain.
+  typedef Fftm&lt;value_type, value_type, row, fft_inv, by_reference&gt;
+	  	inv_fftm_type;
+  inv_fftm_type inv_fftm(Domain&lt;2&gt;(npulse, nrange), 1.0/(nrange));
+
+  // Initialize data to zero.
+  data    = value_type();
+  replica = value_type();
+
+  // Before fast convolution, convert the replica to the the
+  // frequency domain
+  for_fft(replica);
+
+
+  // Read input.
+  view.block().release(false);
+  size_t size = read(0, &amp;data.front(), sizeof(value_type)*nrange*npulse);
+  assert(size == sizeof(value_type)*nrange*npulse));
+  view.block().admit(true);
+
+  // Perform fast convolution.
+
+  // Convert to the frequency domain.
+  for_fftm(data, tmp);
+
+  // Perform element-wise multiply for each pulse.
+  tmp = vmmul&lt;0&gt;(replica, tmp);
+
+  // Convert back to the time domain.
+  inv_fftm(tmp, data);
+
+  // Write output.
+  view.block().release(true);
+  size_t size = write(0, &amp;data.front(), sizeof(value_type)*nrange*npulse);
+  assert(size == sizeof(value_type)*nrange*npulse));
+  view.block().admit(false);
+}
+
+    </pre><p>The program also includes extra <code class="function">release()</code> and
+    <code class="function">admit()</code> calls before and after the input and output
+    I/O sections. For this example, they are not strictly necessary. However
+    they are good practice because they make it clear in the program where the
+    block is admitted and released. They also make it easier to modify the
+    program to process data repeatedly in a loop, and to use separate buffers
+    for input and output data. Because the extra calls have a
+    <code class="varname">false</code> update argument, they incur no overhead.</p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sec-serial-temporal-locality.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-serial.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sec-io-extdata.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">7.2. Serial Optimization: Temporal Locality </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 7.4. Performing I/O with External Data Access</td></tr></table></div></body></html>

@@ -1,0 +1,18 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>5.2. The Layout template</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="advanced-types.html" title="Chapter 5. Advanced VSIPL++ Data Types"><link rel="prev" href="advanced-types.html" title="Chapter 5. Advanced VSIPL++ Data Types"><link rel="next" href="dense.html" title="5.3. The Dense class template"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">5.2. The Layout template</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="advanced-types.html">Prev</a> </td><th width="60%" align="center">Chapter 5. Advanced VSIPL++ Data Types</th><td width="20%" align="right"> <a accesskey="n" href="dense.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="layout"></a>5.2. The Layout template</h2></div></div></div><a class="indexterm" name="id332762"></a><p><b>Description. </b>The Layout template is simple tuple representing compile-time information
+     about a block's data (storage) layout.</p><pre class="synopsis">template &lt;dimension_type D,
+          typename Order,
+          typename PackType,
+          typename ComplexType&gt;
+{
+  static dimension_type const dim = D;
+  typedef PackType pack_type;
+  typedef Order order_type;
+  typedef ComplexType complex_type;
+};</pre><p><b>Template parameters. </b>
+       </p><div class="variablelist"><dl><dt><span class="term">D</span></dt><dd><p>The block's dimension.</p></dd><dt><span class="term">Order</span></dt><dd><p>The dimension ordering. This is expressed using tuples, i.e.
+	     tuple&lt;0,1,2&gt;, tuple&lt;1,0,2&gt;, etc., or aliases such as
+	     row2_type or col2_type.</p></dd><dt><span class="term">PackType</span></dt><dd><p>One of <code class="type">Stride_unit</code>, <code class="type">Stride_unit_dense</code>,
+	     <code class="type">Stride_unit_align&lt;...&gt;</code>, or <code class="type">Stride_unknown</code>.
+	     </p></dd><dt><span class="term">ComplexType</span></dt><dd><p>One of <code class="type">Any_type</code>, <code class="type">Cmplx_inter_fmt</code>, or
+	     <code class="type">Cmplx_split_fmt</code>.</p></dd></dl></div><p>
+     </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="advanced-types.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="advanced-types.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="dense.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 5. Advanced VSIPL++ Data Types </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 5.3. The Dense class template</td></tr></table></div></body></html>

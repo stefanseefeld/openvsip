@@ -1,0 +1,20 @@
+CompilerTable.languages=c cplusplus
+CompilerTable.c_kind=GCC
+CompilerTable.c_path=@CC@
+CompilerTable.cplusplus_kind=GCC
+CompilerTable.cplusplus_path=@CXX@
+CompilerTable.cplusplus_options= -I@abs_top_srcdir@/tests -I@abs_top_builddir@/src -I@abs_top_srcdir@/src @CPPFLAGS@ @CXXFLAGS@
+CompilerTable.cplusplus_ldflags= @LDFLAGS@ -L@abs_top_builddir@/lib/ @VSIP_CSL_LIB@ -lsvpp @LIBS@
+
+CompilationTest.target=@QMTEST_TARGET@
+ExecutableTest.host=@QMTEST_TARGET@
+CompilerTest.execution_timeout=600
+
+par_service.name=@PAR_SERVICE@
+par_service.boot=@PAR_BOOT@
+par_service.halt=@PAR_HALT@
+
+cvsip.c_options=@CPPFLAGS@ -I@abs_top_builddir@/cvsip -I@abs_top_builddir@/src -I@abs_top_srcdir@/cvsip -I@abs_top_srcdir@/src -I@abs_top_srcdir@/tests @CFLAGS@
+cvsip.c_ldflags=@LDFLAGS@ -L@abs_top_builddir@/lib/ -lsvsip @VSIP_CSL_LIB@ -lsvpp @LIBS@ -lstdc++
+cvsip.cplusplus_options=@CPPFLAGS@ -I@abs_top_builddir@/cvsip -I@abs_top_builddir@/src -I@abs_top_srcdir@/cvsip -I@abs_top_srcdir@/src -I@abs_top_srcdir@/tests @CFLAGS@
+cvsip.cplusplus_ldflags=@LDFLAGS@ -L@abs_top_builddir@/lib/ -lsvsip @VSIP_CSL_LIB@ -lsvpp @LIBS@

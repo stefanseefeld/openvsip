@@ -1,0 +1,21 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.2. Scalar Data Types</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="datatypes.html" title="Chapter 2. Basic VSIPL++ Data Types and Constants"><link rel="prev" href="datatypes.html" title="Chapter 2. Basic VSIPL++ Data Types and Constants"><link rel="next" href="ch02s03.html" title="2.3. Indexes and Domains"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">2.2. Scalar Data Types</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="datatypes.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Basic VSIPL++ Data Types and Constants</th><td width="20%" align="right"> <a accesskey="n" href="ch02s03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id275363"></a>2.2. Scalar Data Types</h2></div></div></div><p>Sourcery VSIPL++ defines default types for scalar floating-point and integer
+  data, in both real and complex forms:
+</p><pre class="screen">typedef float scalar_f;
+typedef int scalar_i;
+typedef std::complex&lt;scalar_f&gt; cscalar_f;
+typedef std::complex&lt;scalar_i&gt; cscalar_i;</pre><p>
+  </p><p>
+   Sourcery VSIPL++ also supports double-precision scalar and complex data
+   types.
+  </p><p>In addition, Sourcery VSIPL++ defines a number of integer types for indices,
+  strides, and other related values. </p><div class="variablelist"><dl><dt><span class="term">
+      <code class="literal">dimension_type</code>
+     </span></dt><dd>Unsigned integer for dimension numbers (0, 1, or 2).</dd><dt><span class="term">
+      <code class="literal">index_type</code>
+     </span></dt><dd>Unsigned integer for view indices.</dd><dt><span class="term">
+      <code class="literal">index_difference_type</code>
+     </span></dt><dd>Signed integer for index differences.</dd><dt><span class="term">
+      <code class="literal">stride_type</code>
+     </span></dt><dd>Signed integer for strides in index ranges.</dd><dt><span class="term">
+      <code class="literal">length_type</code>
+     </span></dt><dd>Unsigned integer for lengths of index ranges.</dd></dl></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="datatypes.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="datatypes.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch02s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 2. Basic VSIPL++ Data Types and Constants </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 2.3. Indexes and Domains</td></tr></table></div></body></html>

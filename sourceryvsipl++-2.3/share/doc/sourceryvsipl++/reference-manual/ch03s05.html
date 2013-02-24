@@ -1,0 +1,280 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>3.5. Tensor Operations</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="operations.html" title="Chapter 3. Overview of VSIPL++ Operations"><link rel="prev" href="ch03s04.html" title="3.4. Matrix Operations"><link rel="next" href="functions.html" title="Chapter 4. Function Reference"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">3.5. Tensor Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s04.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Overview of VSIPL++ Operations</th><td width="20%" align="right"> <a accesskey="n" href="functions.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id284337"></a>3.5. Tensor Operations</h2></div></div></div><p>VSIPL++ Tensor objects represent three-dimensional sets of
+  data. The type of values stored in the tensor is given by the first
+  template argument.</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id284347"></a>3.5.1. Tensor Generation Functions</h3></div></div></div><p>
+    </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">A = 0</code>
+      </span></dt><dd>Clears tensor to value 0.</dd><dt><span class="term">
+       <code class="literal">A = value</code>
+      </span></dt><dd>Fills tensor with scalar value
+      <code class="literal">value</code>.</dd></dl></div><p>
+   </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id284398"></a>3.5.2. Tensor Copy</h3></div></div></div><p>
+    </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">Z = A</code>
+      </span></dt><dd>Copies value from tensor <code class="literal">A</code> into tensor
+      <code class="literal">Z</code>.</dd></dl></div><p>
+   </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id284438"></a>3.5.3. Tensor Arithmetic Elementwise Unary Operations and Functions</h3></div></div></div><p>The following elementwise unary operations can be performed on
+   tensors, producing a tensor result: </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">acos(A)</code>
+      </span></dt><dd>Trigonometric arc cosine <a class="xref" href="ch04s02.html#functionref_acos" title="4.2.1. acos">(section 4.2.1)</a></dd><dt><span class="term">
+       <code class="literal">arg(A)</code>
+      </span></dt><dd>Phase angle of complex <a class="xref" href="ch04s02.html#functionref_arg" title="4.2.4. arg">(section 4.2.4)</a></dd><dt><span class="term">
+       <code class="literal">asin(A)</code>
+      </span></dt><dd>Trigonometric arc sine <a class="xref" href="ch04s02.html#functionref_asin" title="4.2.5. asin">(section 4.2.5)</a></dd><dt><span class="term">
+       <code class="literal">atan(A)</code>
+      </span></dt><dd>Trigonometric arc tangent <a class="xref" href="ch04s02.html#functionref_atan" title="4.2.6. atan">(section 4.2.6)</a></dd><dt><span class="term">
+       <code class="literal">bnot(A)</code>
+      </span></dt><dd>Boolean not <a class="xref" href="ch04s02.html#functionref_lnot" title="4.2.35. lnot">(section 4.2.35)</a></dd><dt><span class="term">
+       <code class="literal">ceil(A)</code>
+      </span></dt><dd>Round floating-point value up to next integral value <a class="xref" href="ch04s02.html#functionref_ceil" title="4.2.12. ceil">(section 4.2.12)</a></dd><dt><span class="term">
+       <code class="literal">conj(A)</code>
+      </span></dt><dd>Complex conjugate <a class="xref" href="ch04s02.html#functionref_conj" title="4.2.13. conj">(section 4.2.13)</a></dd><dt><span class="term">
+       <code class="literal">cos(A)</code>
+      </span></dt><dd>Trigonometric cosine <a class="xref" href="ch04s02.html#functionref_cos" title="4.2.14. cos">(section 4.2.14)</a></dd><dt><span class="term">
+       <code class="literal">cosh(A)</code>
+      </span></dt><dd>Hyperbolic cosine <a class="xref" href="ch04s02.html#functionref_cosh" title="4.2.15. cosh">(section 4.2.15)</a></dd><dt><span class="term">
+       <code class="literal">euler(A)</code>
+      </span></dt><dd>Rotate complex unit vector by angle <a class="xref" href="ch04s02.html#functionref_euler" title="4.2.18. euler">(section 4.2.18)</a></dd><dt><span class="term">
+       <code class="literal">exp(A)</code>
+      </span></dt><dd>Natural exponential <a class="xref" href="ch04s02.html#functionref_exp" title="4.2.19. exp">(section 4.2.19)</a></dd><dt><span class="term">
+       <code class="literal">exp10(A)</code>
+      </span></dt><dd>Base-10 exponential <a class="xref" href="ch04s02.html#functionref_exp10" title="4.2.20. exp10">(section 4.2.20)</a></dd><dt><span class="term">
+       <code class="literal">floor(A)</code>
+      </span></dt><dd>Round floating-point value down to next integral value <a class="xref" href="ch04s02.html#functionref_floor" title="4.2.22. floor">(section 4.2.22)</a></dd><dt><span class="term">
+       <code class="literal">imag(A)</code>
+      </span></dt><dd>Imaginary part of complex <a class="xref" href="ch04s02.html#functionref_imag" title="4.2.27. imag">(section 4.2.27)</a></dd><dt><span class="term">
+       <code class="literal">is_finite(A)</code>
+      </span></dt><dd>Is floating-point value finite <a class="xref" href="ch04s02.html#functionref_is_nan" title="4.2.29. is_nan">(section 4.2.29)</a></dd><dt><span class="term">
+       <code class="literal">is_nan(A)</code>
+      </span></dt><dd>Is floating-point value not a number (NaN) <a class="xref" href="ch04s02.html#functionref_is_nan" title="4.2.29. is_nan">(section 4.2.29)</a></dd><dt><span class="term">
+       <code class="literal">is_normal(A)</code>
+      </span></dt><dd>Is floating-point value normal <a class="xref" href="ch04s02.html#functionref_is_normal" title="4.2.30. is_normal">(section 4.2.30)</a></dd><dt><span class="term">
+       <code class="literal">lnot(A)</code>
+      </span></dt><dd>Logical not <a class="xref" href="ch04s02.html#functionref_lnot" title="4.2.35. lnot">(section 4.2.35)</a></dd><dt><span class="term">
+       <code class="literal">log(A)</code>
+      </span></dt><dd>Base-e logarithm <a class="xref" href="ch04s02.html#functionref_log" title="4.2.36. log">(section 4.2.36)</a></dd><dt><span class="term">
+       <code class="literal">log10(A)</code>
+      </span></dt><dd>Base-10 logarithm <a class="xref" href="ch04s02.html#functionref_log10" title="4.2.37. log10">(section 4.2.37)</a></dd><dt><span class="term">
+       <code class="literal">mag(A)</code>
+      </span></dt><dd>Magnitude <a class="xref" href="ch04s02.html#functionref_mag" title="4.2.42. mag">(section 4.2.42)</a></dd><dt><span class="term">
+       <code class="literal">magsq(A)</code>
+      </span></dt><dd>Magnitude squared <a class="xref" href="ch04s02.html#functionref_magsq" title="4.2.43. magsq">(section 4.2.43)</a></dd><dt><span class="term">
+       <code class="literal">neg(A)</code>
+      </span></dt><dd>Negation <a class="xref" href="ch04s02.html#functionref_neg" title="4.2.53. neg">(section 4.2.53)</a></dd><dt><span class="term">
+       <code class="literal">real(A)</code>
+      </span></dt><dd>Real part of complex <a class="xref" href="ch04s02.html#functionref_real" title="4.2.55. real">(section 4.2.55)</a></dd><dt><span class="term">
+       <code class="literal">recip(A)</code>
+      </span></dt><dd>Recipricol <a class="xref" href="ch04s02.html#functionref_recip" title="4.2.56. recip">(section 4.2.56)</a></dd><dt><span class="term">
+       <code class="literal">rsqrt(A)</code>
+      </span></dt><dd>Recipricol square root <a class="xref" href="ch04s02.html#functionref_rsqrt" title="4.2.57. rsqrt">(section 4.2.57)</a></dd><dt><span class="term">
+       <code class="literal">sin(A)</code>
+      </span></dt><dd>Trigonometric sine <a class="xref" href="ch04s02.html#functionref_sin" title="4.2.59. sin">(section 4.2.59)</a></dd><dt><span class="term">
+       <code class="literal">sinh(A)</code>
+      </span></dt><dd>Hyperbolic sine <a class="xref" href="ch04s02.html#functionref_sinh" title="4.2.60. sinh">(section 4.2.60)</a></dd><dt><span class="term">
+       <code class="literal">sq(A)</code>
+      </span></dt><dd>Square <a class="xref" href="ch04s02.html#functionref_sq" title="4.2.61. sq">(section 4.2.61)</a></dd><dt><span class="term">
+       <code class="literal">sqrt(A)</code>
+      </span></dt><dd>Square root <a class="xref" href="ch04s02.html#functionref_sqrt" title="4.2.62. sqrt">(section 4.2.62)</a></dd><dt><span class="term">
+       <code class="literal">tan(A)</code>
+      </span></dt><dd>Trigonometric tangent <a class="xref" href="ch04s02.html#functionref_tan" title="4.2.64. tan">(section 4.2.64)</a></dd><dt><span class="term">
+       <code class="literal">tanh(A)</code>
+      </span></dt><dd>Hyperbolic tangent <a class="xref" href="ch04s02.html#functionref_tanh" title="4.2.65. tanh">(section 4.2.65)</a></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id285131"></a>3.5.4. Tensor Arithmetic Elementwise Binary Operations and
+   Functions</h3></div></div></div><p>The following elementwise binary operations can be performed on
+   tensors, producing a tensor result: </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">add(A)</code>
+      </span></dt><dd>Addition <a class="xref" href="ch04s02.html#functionref_add" title="4.2.2. add">(section 4.2.2)</a></dd><dt><span class="term">
+       <code class="literal">atan2(A)</code>
+      </span></dt><dd>Arc tangent of quotient <a class="xref" href="ch04s02.html#functionref_atan2" title="4.2.7. atan2">(section 4.2.7)</a></dd><dt><span class="term">
+       <code class="literal">band(A)</code>
+      </span></dt><dd>Bitwise and <a class="xref" href="ch04s02.html#functionref_band" title="4.2.8. band">(section 4.2.8)</a></dd><dt><span class="term">
+       <code class="literal">bor(A)</code>
+      </span></dt><dd>Bitwise or <a class="xref" href="ch04s02.html#functionref_bor" title="4.2.9. bor">(section 4.2.9)</a></dd><dt><span class="term">
+       <code class="literal">bxor(A)</code>
+      </span></dt><dd>Bitwise exclusive or <a class="xref" href="ch04s02.html#functionref_bxor" title="4.2.11. bxor">(section 4.2.11)</a></dd><dt><span class="term">
+       <code class="literal">div(A)</code>
+      </span></dt><dd>Division <a class="xref" href="ch04s02.html#functionref_div" title="4.2.16. div">(section 4.2.16)</a></dd><dt><span class="term">
+       <code class="literal">eq(A)</code>
+      </span></dt><dd>Equality comparison <a class="xref" href="ch04s02.html#functionref_eq" title="4.2.17. eq">(section 4.2.17)</a></dd><dt><span class="term">
+       <code class="literal">fmod(A)</code>
+      </span></dt><dd>Floating-point modulo (remainder after division) <a class="xref" href="ch04s02.html#functionref_fmod" title="4.2.23. fmod">(section 4.2.23)</a></dd><dt><span class="term">
+       <code class="literal">ge(A)</code>
+      </span></dt><dd>Greater-than or equal comparison <a class="xref" href="ch04s02.html#functionref_ge" title="4.2.24. ge">(section 4.2.24)</a></dd><dt><span class="term">
+       <code class="literal">gt(A)</code>
+      </span></dt><dd>Greater-than comparison <a class="xref" href="ch04s02.html#functionref_gt" title="4.2.25. gt">(section 4.2.25)</a></dd><dt><span class="term">
+       <code class="literal">hypot(A)</code>
+      </span></dt><dd>Hypotenuse of right triangle <a class="xref" href="ch04s02.html#functionref_hypot" title="4.2.26. hypot">(section 4.2.26)</a></dd><dt><span class="term">
+       <code class="literal">jmul(A)</code>
+      </span></dt><dd>Conjugate multiply <a class="xref" href="ch04s02.html#functionref_jmul" title="4.2.32. jmul">(section 4.2.32)</a></dd><dt><span class="term">
+       <code class="literal">land(A)</code>
+      </span></dt><dd>Logical and <a class="xref" href="ch04s02.html#functionref_land" title="4.2.33. land">(section 4.2.33)</a></dd><dt><span class="term">
+       <code class="literal">le(A)</code>
+      </span></dt><dd>Less-than or equal comparison <a class="xref" href="ch04s02.html#functionref_le" title="4.2.34. le">(section 4.2.34)</a></dd><dt><span class="term">
+       <code class="literal">lor(A)</code>
+      </span></dt><dd>Logical or <a class="xref" href="ch04s02.html#functionref_lor" title="4.2.38. lor">(section 4.2.38)</a></dd><dt><span class="term">
+       <code class="literal">lt(A)</code>
+      </span></dt><dd>Less-than comparison <a class="xref" href="ch04s02.html#functionref_lt" title="4.2.39. lt">(section 4.2.39)</a></dd><dt><span class="term">
+       <code class="literal">lxor(A)</code>
+      </span></dt><dd>Logical exclusive or <a class="xref" href="ch04s02.html#functionref_lxor" title="4.2.40. lxor">(section 4.2.40)</a></dd><dt><span class="term">
+       <code class="literal">max(A)</code>
+      </span></dt><dd>Maxima <a class="xref" href="ch04s02.html#functionref_max" title="4.2.44. max">(section 4.2.44)</a></dd><dt><span class="term">
+       <code class="literal">maxmg(A)</code>
+      </span></dt><dd>Magnitude maxima <a class="xref" href="ch04s02.html#functionref_maxmg" title="4.2.45. maxmg">(section 4.2.45)</a></dd><dt><span class="term">
+       <code class="literal">maxmgsq(A)</code>
+      </span></dt><dd>Magnitude squared maxima <a class="xref" href="ch04s02.html#functionref_maxmgsq" title="4.2.46. maxmgsq">(section 4.2.46)</a></dd><dt><span class="term">
+       <code class="literal">min(A)</code>
+      </span></dt><dd>Minima <a class="xref" href="ch04s02.html#functionref_min" title="4.2.47. min">(section 4.2.47)</a></dd><dt><span class="term">
+       <code class="literal">minmg(A)</code>
+      </span></dt><dd>Magnitude minima <a class="xref" href="ch04s02.html#functionref_minmg" title="4.2.48. minmg">(section 4.2.48)</a></dd><dt><span class="term">
+       <code class="literal">minmgsq(A)</code>
+      </span></dt><dd>Magnitude squared minima <a class="xref" href="ch04s02.html#functionref_minmgsq" title="4.2.49. minmgsq">(section 4.2.49)</a></dd><dt><span class="term">
+       <code class="literal">mul(A)</code>
+      </span></dt><dd>Multiplication <a class="xref" href="ch04s02.html#functionref_mul" title="4.2.51. mul">(section 4.2.51)</a></dd><dt><span class="term">
+       <code class="literal">ne(A)</code>
+      </span></dt><dd>Not equal comparison <a class="xref" href="ch04s02.html#functionref_ne" title="4.2.52. ne">(section 4.2.52)</a></dd><dt><span class="term">
+       <code class="literal">pow(A)</code>
+      </span></dt><dd>Raise to power <a class="xref" href="ch04s02.html#functionref_pow" title="4.2.54. pow">(section 4.2.54)</a></dd><dt><span class="term">
+       <code class="literal">sub(A)</code>
+      </span></dt><dd>Subtract <a class="xref" href="ch04s02.html#functionref_sub" title="4.2.63. sub">(section 4.2.63)</a></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id285718"></a>3.5.5. Tensor Arithmetic Elementwise Ternary Operations and
+   Functions</h3></div></div></div><p>The following elementwise ternary operations can be performed on
+   tensors, producing a tensor result: </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">am(A)</code>
+      </span></dt><dd>Fused addition-multiplication <a class="xref" href="ch04s02.html#functionref_am" title="4.2.3. am">(section 4.2.3)</a></dd><dt><span class="term">
+       <code class="literal">expoavg(A)</code>
+      </span></dt><dd>Exponential average <a class="xref" href="ch04s02.html#functionref_expoavg" title="4.2.21. expoavg">(section 4.2.21)</a></dd><dt><span class="term">
+       <code class="literal">ite(A)</code>
+      </span></dt><dd>Addition <a class="xref" href="ch04s02.html#functionref_ite" title="4.2.31. ite">(section 4.2.31)</a></dd><dt><span class="term">
+       <code class="literal">ma(A)</code>
+      </span></dt><dd>Fused multiplication-addition <a class="xref" href="ch04s02.html#functionref_ma" title="4.2.41. ma">(section 4.2.41)</a></dd><dt><span class="term">
+       <code class="literal">msb(A)</code>
+      </span></dt><dd>Fused multiplication-subtraction <a class="xref" href="ch04s02.html#functionref_msb" title="4.2.50. msb">(section 4.2.50)</a></dd><dt><span class="term">
+       <code class="literal">sbm(A)</code>
+      </span></dt><dd>Fused subtraction-multiplication <a class="xref" href="ch04s02.html#functionref_sbm" title="4.2.58. sbm">(section 4.2.58)</a></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id285859"></a>3.5.6. Tensor Type Conversions</h3></div></div></div><p>A tensor with one type of values can be converted a tensor with
+   another type of values using <code class="literal">view_cast</code>.</p><p>For example, to convert a tensor of floats <code class="literal">A</code> into
+   a tensor of ints <code class="literal">Z</code>: </p><pre class="screen">Tensor&lt;float&gt; A(size);
+Tensor&lt;int&gt;   Z(size);
+Z = view_cast&lt;int&gt;(A)
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id285896"></a>3.5.7. Tensor Arithmetic Elementwise Binary Operations and
+   Functions</h3></div></div></div><p>The following arithmetic elementwise binary operations and functions
+   are available on tensors: </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">Z = add(A, B)</code>
+      </span></dt><dd>Addition, <code class="literal">Z(n) = A(n) + B(n)</code><a class="xref" href="ch04s02.html#functionref_add" title="4.2.2. add">(section 4.2.2)</a></dd><dt><span class="term">
+       <code class="literal">Z = div(A, B)</code>
+      </span></dt><dd>Division, <code class="literal">Z(n) = A(n) / B(n)</code><a class="xref" href="ch04s02.html#functionref_div" title="4.2.16. div">(section 4.2.16)</a></dd><dt><span class="term">
+       <code class="literal">Z = max(A, B)</code>
+      </span></dt><dd>Maximum of <code class="literal">A(n)</code> and
+      <code class="literal">B(n)</code></dd><dt><span class="term">
+       <code class="literal">Z = min(A, B)</code>
+      </span></dt><dd>Minimum of <code class="literal">A(n)</code> and
+      <code class="literal">B(n)</code></dd><dt><span class="term">
+       <code class="literal">Z = mul(A, B)</code>
+      </span></dt><dd>Multiplication, <code class="literal">Z(n) = A(n) * B(n)</code><a class="xref" href="ch04s02.html#functionref_mul" title="4.2.51. mul">(section 4.2.51)</a></dd><dt><span class="term">
+       <code class="literal">Z = sub(A, B)</code>
+      </span></dt><dd>Subtraction, <code class="literal">Z(n) = A(n) - B(n)</code><a class="xref" href="ch04s02.html#functionref_sub" title="4.2.63. sub">(section 4.2.63)</a></dd></dl></div><p>Addition, subtraction, multiplication, and division can also be
+   written in operator form: </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">Z = A + B</code>
+      </span></dt><dd>equivalent to <code class="literal">Z = add(A, B)</code></dd><dt><span class="term">
+       <code class="literal">Z = A - B</code>
+      </span></dt><dd>equivalent to <code class="literal">Z = sub(A, B)</code></dd><dt><span class="term">
+       <code class="literal">Z = A * B</code>
+      </span></dt><dd>equivalent to <code class="literal">Z = mul(A, B)</code></dd><dt><span class="term">
+       <code class="literal">Z = A / B</code>
+      </span></dt><dd>equivalent to <code class="literal">Z = div(A, B)</code></dd></dl></div><p>In all the preceding functions and operations, either of the tensor
+   operands can be replaced with scalar operands.</p><p>For example, to perform a scalar-tensor multiply: </p><pre class="screen">Z = a * B;
+</pre><p> or </p><pre class="screen">Z = mul(a, B);
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286176"></a>3.5.8. Tensor Logical Elementwise Binary Operations and Functions</h3></div></div></div><p>
+    </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">Z = eq(A, B)</code>
+      </span></dt><dd><code class="literal">Z(n) = A(n) == B(n)</code></dd><dt><span class="term">
+       <code class="literal">Z = gt(A, B)</code>
+      </span></dt><dd><code class="literal">Z(n) = A(n) &gt; B(n)</code></dd><dt><span class="term">
+       <code class="literal">Z = gte(A, B)</code>
+      </span></dt><dd><code class="literal">Z(n) = A(n) &gt;= B(n)</code></dd><dt><span class="term">
+       <code class="literal">Z = lt(A, B)</code>
+      </span></dt><dd><code class="literal">Z(n) = A(n) &lt; B(n)</code></dd><dt><span class="term">
+       <code class="literal">Z = lte(A, B)</code>
+      </span></dt><dd><code class="literal">Z(n) = A(n) &lt;= B(n)</code></dd><dt><span class="term">
+       <code class="literal">Z = ne(A, B)</code>
+      </span></dt><dd><code class="literal">Z(n) = A(n) != B(n)</code></dd></dl></div><p>
+   </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286316"></a>3.5.9. Tensor Arithmetic Elementwise Ternary Operations and
+   Functions</h3></div></div></div><p>The following arithmetic elementwise ternary operations and functions
+   are available on tensors: </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">Z = ma(A, B, C)</code>
+      </span></dt><dd>Multiply-add, <code class="literal">Z(n) = A(n) * B(n) +
+      C(n)</code></dd><dt><span class="term">
+       <code class="literal">Z = am(A, B, C)</code>
+      </span></dt><dd>Add-multiply, <code class="literal">Z(n) = A(n) + B(n) *
+      C(n)</code></dd></dl></div><p>In all the preceding functions and operations, one or more of the
+   tensor operands can be replaced with scalar operands.</p><p>For example, to scale a tensor, then apply an offset: </p><pre class="screen">Z = scale * A + offset;
+</pre><p> or </p><pre class="screen">Z = ma(scale, A, offset);
+</pre><p> (where <code class="literal">scale</code> and <code class="literal">offset</code> are
+   scalar values)</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286403"></a>3.5.10. Tensor Non-Arithmetic Elementwise Ternary Operations and
+   Functions</h3></div></div></div><p>
+    </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">Z = ite(bool_tensor, A, B)</code>
+      </span></dt><dd>For the m,n,pth element of <code class="literal">Z</code>, sets
+      value to nth element of<code class="literal">A</code> if m,n,pth element of
+      bool_tensor is true, otherwise sets value to the m,n,pth element of
+      <code class="literal">B</code>.  Notionally equivalent to C
+      <code class="literal">?:</code> operator.  <code class="literal">(Foreach n) Z[m, n, p] =
+      bool_tensor[m, n, p] ? A[m, n, p] : B[m, n, p]</code></dd></dl></div><p>
+   </p><p>In all the preceding functions and operations, one or more of the
+   tensor operands can be replaced with scalar operands.</p><p>For example, the apply a scalar threshold <code class="literal">b</code> to a
+   tensor: </p><pre class="screen">Z = ite(A &gt; b, A, b);
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286480"></a>3.5.11. Tensor Reductions</h3></div></div></div><p>The following functions reduce a tensor to a single value:
+   </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="code">z = alltrue(A)</code>
+      </span></dt><dd>When the element type of <code class="varname">A</code> is <code class="type">bool</code>,
+       the function returns <code class="constant">true</code> if all
+       the elements are <code class="constant">true</code>;
+       otherwise <code class="constant">false</code>.  When the element type
+       is something else,
+       see <a class="xref" href="ch04s03.html#functionref_alltrue" title="4.3.1. alltrue">(section 4.3.1)</a> for more information.
+      </dd><dt><span class="term">
+       <code class="code">z = anytrue(A)</code>
+      </span></dt><dd>When the element type of <code class="varname">A</code> is <code class="type">bool</code>,
+       the function returns <code class="constant">true</code> if any
+       elements are <code class="constant">true</code>;
+       otherwise <code class="constant">false</code>.  When the element type
+       is something else,
+       see <a class="xref" href="ch04s03.html#functionref_anytrue" title="4.3.2. anytrue">(section 4.3.2)</a> for more information.
+      </dd><dt><span class="term">
+       <code class="literal">z = sumval(A)</code>
+      </span></dt><dd>Return the sum of <code class="literal">A</code>'s values.</dd><dt><span class="term">
+       <code class="literal">z = sumsqval(A)</code>
+      </span></dt><dd>Return the sum of the squares of <code class="literal">A</code>'s values.</dd><dt><span class="term">
+       <code class="literal">z = meanval(A)</code>
+      </span></dt><dd>Return the mean of <code class="literal">A</code>'s values.</dd><dt><span class="term">
+       <code class="literal">z = meansqval(A)</code>
+      </span></dt><dd>Return the mean of the squares of <code class="literal">A</code>'s values.</dd></dl></div><p>The following functions reduce a tensor to a single value that
+   corresponds to an element within the vector. </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">z = maxval(A, idx)</code>
+      </span></dt><dd>return the maximum value of <code class="literal">A</code>.
+      Set <code class="literal">idx</code> to the index of this element
+      (<code class="literal">A.get(idx[0], idx[1], idx[2]) == z</code>).</dd><dt><span class="term">
+       <code class="literal">z = maxmgval(A, idx)</code>
+      </span></dt><dd>return the maximum value of the magnitude of 
+      <code class="literal">A</code>.  Set <code class="literal">idx</code> to the index of
+      this element (<code class="literal">mag(A.get(idx[0], idx[1], idx[2])) ==
+      z</code>).</dd><dt><span class="term">
+       <code class="literal">z = maxmgsqval(A, idx)</code>
+      </span></dt><dd>return the maximum value of the magnitude squared of 
+      <code class="literal">A</code>.  Set <code class="literal">idx</code> to the index of
+      this element (<code class="literal">magsq(A.get(idx[0], idx[1], idx[2])) ==
+      z</code>).</dd><dt><span class="term">
+       <code class="literal">z = minval(A, idx)</code>
+      </span></dt><dd>return the minimum value of <code class="literal">A</code>.
+      Set <code class="literal">idx</code> to the index of this element
+      (<code class="literal">A.get(idx[0], idx[1], idx[2]) == z</code>).</dd><dt><span class="term">
+       <code class="literal">z = minmgval(A, idx)</code>
+      </span></dt><dd>return the minimum value of the magnitude of 
+      <code class="literal">A</code>.  Set <code class="literal">idx</code> to the index of
+      this element (<code class="literal">mag(A.get(idx[0], idx[1], idx[2])) ==
+      z</code>).</dd><dt><span class="term">
+       <code class="literal">z = minmgsqval(A, idx)</code>
+      </span></dt><dd>return the minimum value of the magnitude squared of 
+      <code class="literal">A</code>.  Set <code class="literal">idx</code> to the index of
+      this element (<code class="literal">magsq(A.get(idx[0], idx[1], idx[2])) ==
+      z</code>).</dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286864"></a>3.5.12. Tensor Random Number Generation</h3></div></div></div><p>VSIPL++ provides facilities to generate tensors of random
+ number through the class template <code class="type">Rand</code>. Once constructed
+ with compile-time selections, a <code class="type">Rand</code> object can generate
+ a tensor of random numbers through the invocation of one of its
+ member functions.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch03s04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="operations.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="functions.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">3.4. Matrix Operations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 4. Function Reference</td></tr></table></div></body></html>

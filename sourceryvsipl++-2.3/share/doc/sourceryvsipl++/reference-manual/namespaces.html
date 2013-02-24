@@ -1,0 +1,52 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 1. VSIPL++ File Structure and Namespaces</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><meta name="description" content="This chapter provides an introduction to the basic structure of a program which uses the VSIPL++ library, as well as the layout of header files and C++ namespaces within the library."><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="index.html" title="Sourcery VSIPL++"><link rel="prev" href="index.html" title="Sourcery VSIPL++"><link rel="next" href="ch01s02.html" title="1.2. Namespaces"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 1. VSIPL++ File Structure and Namespaces</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="index.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch01s02.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="namespaces"></a>Chapter 1. VSIPL++ File Structure and Namespaces</h2></div><div><div class="abstract"><p class="title"><b>Abstract</b></p><p>
+    This chapter provides an introduction to the basic structure of a
+    program which uses the VSIPL++ library, as well as the layout of
+    header files and C++ namespaces within the library.
+   </p></div></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="namespaces.html#id274866">1.1. Initialization and Basic Program Structure</a></span></dt><dt><span class="section"><a href="ch01s02.html">1.2. Namespaces</a></span></dt><dt><span class="section"><a href="ch01s03.html">1.3. Header Files</a></span></dt></dl></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id274866"></a>1.1. Initialization and Basic Program Structure</h2></div></div></div><p>
+   The minimum requirements for a VSIPL++ program are to include the
+   <code class="filename">vsip/initfin.hpp</code> header, and to create a
+   <code class="literal">vsip::vsipl</code> object before doing any VSIPL++
+   operations.  For example:
+</p><pre class="screen">#include &lt;vsip/initfin.hpp&gt;
+int main()
+{
+  vsip::vsipl vsipl_initialization_object;
+  // ...
+}</pre><p>
+   Creating the <code class="literal">vsip::vsipl</code> object initializes
+   the library, sets up common storage, and allocates coprocessors
+   (if applicable).  These are then freed when the object is 
+   destroyed.  Typically, the <code class="literal">vsip::vsipl</code> object
+   is declared as a local variable at the beginning of
+   <code class="literal">main</code> and implicitly destroyed at the end of it,
+   but this is not a requirement.
+  </p><p>
+   When multiple <code class="literal">vsip::vsipl</code> objects are created,
+   the library is initialized when the first one is created, and 
+   subsequent object creations do nothing.  Similarly, the library
+   resources are only released when all of the existing
+   <code class="literal">vsip::vsipl</code> objects have been destroyed.  Thus,
+   multiple components of a program can access the library
+   independently without needing to explicitly coordinate a single
+   VSIPL++ library initialization and finalization.
+  </p><p>
+   The behavior of the library can also be controlled by command-line
+   arguments passed to the executable, as described in the User's
+   Guide and Tutorial.  To
+   enable this, the 
+   <code class="literal">argc</code> and <code class="literal">argv</code> arguments to
+   <code class="literal">main</code> should be passed to the contructor for the
+   <code class="literal">vsip::vsipl</code> object, as in this example:
+</p><pre class="screen">#include &lt;vsip/initfin.hpp&gt;
+int main(int argc, char **argv)
+{
+  vsip::vsipl vsipl_initialization_object(argc, argv);
+  // ...
+}</pre><p>
+   The constructor then modifies the argument count and argument list, 
+   removing the arguments which it recognizes.  Thus, when a program
+   will be processing additional command-line arguments, it can be 
+   advantageous to call the <code class="literal">vsip::vsipl</code> constructor
+   first; then, the code to process the additional arguments will not
+   need to be modified to ignore the VSIPL++ arguments.
+  </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="index.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch01s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Sourcery VSIPL++ </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 1.2. Namespaces</td></tr></table></div></body></html>

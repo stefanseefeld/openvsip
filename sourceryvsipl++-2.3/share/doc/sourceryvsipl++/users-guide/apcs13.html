@@ -1,0 +1,37 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>C.13. FFTW3 Benchmark Usage</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="apc.html" title="Appendix C. Benchmark Usage"><link rel="prev" href="apcs12.html" title="C.12. fftm"><link rel="next" href="apcs14.html" title="C.14. fir"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">C.13. FFTW3 Benchmark Usage</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="apcs12.html">Prev</a> </td><th width="60%" align="center">Appendix C. Benchmark Usage</th><td width="20%" align="right"> <a accesskey="n" href="apcs14.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id286350"></a>C.13. FFTW3 Benchmark Usage</h2></div></div></div><p> This appendix presents the displays from the FFTW3 benchmarks.
+    </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286360"></a>C.13.1. fft</h3></div></div></div><p>
+        </p><pre class="screen">fftw3/fft -- FFTW3 Fft (fast fourier transform) Single
+        precision, Interleaved complex Planning effor: estimate: -1 -- op:
+        out-of-place CC fwd fft -2 -- ip: in-place CC fwd fft -4 -- op:
+        out-of-place CC fwd fft + UNALIGNED Planning effor: measure: -11 --
+        op: out-of-place CC fwd fft -12 -- ip: in-place CC fwd fft -14 -- op:
+        out-of-place CC fwd fft + UNALIGNED -15 -- op: out-of-place CC fwd fft
+        + PRESERVE_INPUT -16 -- op: out-of-place CC fwd fft + PRESERVE_INPUT +
+        ND Planning effor: patient: -21 -- op: out-of-place CC fwd fft -22 --
+        ip: in-place CC fwd fft -24 -- op: out-of-place CC fwd fft + UNALIGNED
+        Planning effor: exhaustive: -31 -- op: out-of-place CC fwd fft -32 --
+        ip: in-place CC fwd fft -34 -- op: out-of-place CC fwd fft + UNALIGNED
+        Single precision, Split complex Planning effor: estimate: -51 -- op:
+        out-of-place CC fwd fft -52 -- ip: in-place CC fwd fft Planning effor:
+        measure: -61 -- op: out-of-place CC fwd fft -62 -- ip: in-place CC fwd
+        fft Planning effor: patient: -71 -- op: out-of-place CC fwd fft -72 --
+        ip: in-place CC fwd fft </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286395"></a>C.13.2. fftm</h3></div></div></div><p>
+        </p><pre class="screen">fftw3/fftm -- FFTW3 FFTM (multiple fast fourier transform)
+        benchmark Single precision, interlaved, ESTIMATE -1 -- out-of-place CC
+        fwd fft, fixed rows, row-major -11 -- out-of-place CC fwd fft, fixed
+        cols, row-major -21 -- out-of-place CC fwd fft, fixed rows, col-major
+        -31 -- out-of-place CC fwd fft, fixed cols, col-major Single
+        precision, interlaved, MEASURE -1-1 -- out-of-place CC fwd fft, fixed
+        rows, row-major -111 -- out-of-place CC fwd fft, fixed cols, row-major
+        -121 -- out-of-place CC fwd fft, fixed rows, col-major -131 --
+        out-of-place CC fwd fft, fixed cols, col-major Single precision,
+        interlaved, PATIENT -201 -- out-of-place CC fwd fft, fixed rows,
+        row-major -211 -- out-of-place CC fwd fft, fixed cols, row-major -221
+        -- out-of-place CC fwd fft, fixed rows, col-major -231 -- out-of-place
+        CC fwd fft, fixed cols, col-major Parameters for all cases -p:sw [0|1]
+        -- save wisdom (default 0) Parameters (for sweeping FFT size, cases 1
+        through 6) -p:rows ROWS -- set number of pulses (default 64)
+        Parameters (for sweeping number of FFTs, cases 11 through 16) -p:size
+        SIZE -- size of pulse (default 2048) </pre><p>
+      </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs12.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apcs14.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">C.12. fftm </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> C.14. fir</td></tr></table></div></body></html>

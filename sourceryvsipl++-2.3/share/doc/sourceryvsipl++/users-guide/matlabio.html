@@ -1,0 +1,259 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.3. Matlab IO</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-ref-api.html" title="Chapter 1. API overview"><link rel="prev" href="blocks.html" title="1.2. Blocks"><link rel="next" href="dda.html" title="Chapter 2. Direct Data Access"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">1.3. Matlab IO</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="blocks.html">Prev</a> </td><th width="60%" align="center">Chapter 1. API overview</th><td width="20%" align="right"> <a accesskey="n" href="dda.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="matlabio"></a>1.3. Matlab IO</h2></div></div></div><p>Sourcery Sourcery VSIPL++'s <code class="literal">vsip_csl</code> library has
+    routines that can read and write views from Matlab formated text and
+    binary files.</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id278574"></a>1.3.1. Matlab Text (.m) Files</h3></div></div></div><p>The <code class="literal">Matlab_text_formatter</code> object writes a view
+      to an output stream in Matlab text file format (Matlab text files
+      commonly have an <code class="literal">.m</code> suffix).</p><p>The following example illustrates using the
+      <code class="literal">Matlab_text_formatter</code> to write a matrix and a vector
+      to the same file.</p><p>The first part of the example shows the necessary
+      <code class="literal">include</code>s and declarations. In addition to any
+      Sourcery VSIPL++ headers necessary for your program (the example includes
+      headers for vectors, matrices, and generation functions), it is also
+      necessary to include the <code class="code">vsip_csl/matlab_text_formatter.hpp</code>
+      header file. The example also uses the <code class="literal">vsip</code> and
+      <code class="literal">vsip_csl</code> namespaces for convenience.</p><pre class="programlisting">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+
+#include &lt;vsip/initfin.hpp&gt;
+#include &lt;vsip/vector.hpp&gt;
+#include &lt;vsip/matrix.hpp&gt;
+#include &lt;vsip/selgen.hpp&gt;
+#include &lt;vsip/map.hpp&gt;
+
+#include &lt;vsip_csl/matlab_text_formatter.hpp&gt;
+
+using namespace vsip;
+using namespace vsip_csl;</pre><p>The second part of the example shows writing a file. First matrix
+      <code class="literal">m</code> and view <code class="literal">v</code> are created and
+      filled with ramp data. Then an output file stream <code class="literal">out</code>
+      is created. Finally, <code class="literal">Matlab_text_formatter</code> is used to
+      write the views.</p><pre class="programlisting">  // Initialize matrix 'm'.
+  Matrix&lt;float&gt; m(3, 3); 
+  for(index_type i=0;i&lt;3;i++)
+    m.row(i) = ramp&lt;float&gt;(3*i, 1, 3); 
+
+  // Initialize vector 'v'.
+  Vector&lt;float&gt; v(3);
+  v = ramp&lt;float&gt;(0, 1, 3); 
+
+  // Open output stream to file 'temp.m'.
+  std::ofstream out("text.m");
+
+  // Write 'm' and 'a' to output stream
+  out &lt;&lt; Matlab_text_formatter&lt;Matrix&lt;float&gt; &gt;(m, "m");
+  out &lt;&lt; Matlab_text_formatter&lt;Vector&lt;float&gt; &gt;(v, "v");</pre><p>The output file <code class="literal">temp.m</code> contains the
+      following</p><pre class="programlisting">m = 
+[
+  [ 0 1 2 ] 
+  [ 3 4 5 ] 
+  [ 6 7 8 ] 
+];
+v = 
+[ 0 1 2 ];</pre><p>This text file can be run inside of a Matlab console window to
+      load matrix <code class="literal">a</code> and vector <code class="literal">v</code>.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id278714"></a>1.3.2. Matlab Binary Files (.mat)</h3></div></div></div><p>The <code class="literal">Matlab_bin_formatter</code> object can read and
+      write views to a streams in Matlab binary file format (Matlab binary
+      files commonly have a <code class="literal">.mat</code> suffix). For reading
+      matlab binary files, the iterator interface described in the next
+      section may be more convenient.</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id278737"></a>1.3.2.1. Writing a Matlab Binary Format File</h4></div></div></div><p>Writing matlab binary format files is similar to writing text
+        format files, except that a header must be written to the file with
+        <code class="literal">Matlab_bin_header</code> before writing each view with
+        <code class="literal">Matlab_binary_formatter</code>. The following example
+        shows how to write a matrix and a vector to a <code class="literal">.mat</code>
+        file.</p><p>The first part of the example shows the necessary
+        <code class="literal">include</code>s and declarations. In addition to any
+        Sourcery VSIPL++ headers necessary for your program (the example includes
+        headers for vectors, matrices, and generation functions), it is also
+        necessary to include the
+        <code class="code">vsip_csl/matlab_bin_formatter.hpp</code> header file. The
+        example also uses the <code class="literal">vsip</code> and
+        <code class="literal">vsip_csl</code> namespaces for convenience.</p><pre class="programlisting">#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+
+#include &lt;vsip/initfin.hpp&gt;
+#include &lt;vsip/vector.hpp&gt;
+#include &lt;vsip/matrix.hpp&gt;
+#include &lt;vsip/selgen.hpp&gt;
+#include &lt;vsip/map.hpp&gt;
+
+#include &lt;vsip_csl/matlab_bin_formatter.hpp&gt;
+
+using namespace vsip;
+using namespace vsip_csl;</pre><p>The second part of the example shows writing a file. First
+        matrix <code class="literal">m</code> and view <code class="literal">v</code> are created
+        and filled with ramp data. Then an output file stream
+        <code class="literal">out</code> is created. Finally,
+        <code class="literal">Matlab_text_formatter</code> is used to write the
+        views.</p><pre class="programlisting">  // Initialize matrix 'm'.
+  Matrix&lt;float&gt; m(3, 3); 
+  for(index_type i=0;i&lt;3;i++)
+    m.row(i) = ramp&lt;float&gt;(3*i, 1, 3); 
+
+  // Initialize vector 'v'.
+  Vector&lt;float&gt; v(3);
+  v = ramp&lt;float&gt;(0, 1, 3); 
+
+  // Open output stream to file 'sample.mat'.
+  std::ofstream out("sample.mat");
+
+  // Write matlab binary format header.  This must is done once at the 
+  // beginning of the file before any views can be written.
+  out &lt;&lt; Matlab_bin_hdr("example");
+  
+  // Write 'm' and 'v' to output stream
+  out &lt;&lt; Matlab_bin_formatter&lt;Matrix&lt;float&gt; &gt;(m, "m");
+  out &lt;&lt; Matlab_bin_formatter&lt;Vector&lt;float&gt; &gt;(v, "v");</pre><p>This result file <code class="literal">sample.mat</code> can be read by
+        Matlab, or other programs capable of reading matlab binary format
+        files, such as Octave and Sourcery Sourcery VSIPL++ applications.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id278855"></a>1.3.2.2. Reading a Matlab Binary Format File</h4></div></div></div><p>Reading a matlab binary format file is similar to writing one.
+        After the file is opened, it is necessary to read the file header.
+        This header is used by each of the subsequent reads. The following
+        example shows how to read the views back from the
+        <code class="literal">sample.mat</code> file written in the previous
+        example.</p><p>The same includes are used for this example.</p><p>First matrix <code class="literal">m</code> and view <code class="literal">v</code>
+        are created. Their size must match the size of the views in the matlab
+        binary file. Next an input stream is created to read the binary data.
+        The header is read first into a <code class="literal">Matlab_bin_header</code>.
+        Finally each view is read, using
+        <code class="literal">Matlab_bin_formatter</code> objects.</p><pre class="programlisting">  // Create matrix and vector views of correct size.
+  Matrix&lt;float&gt; m(3, 3); 
+  Vector&lt;float&gt; v(3);
+    
+  // Open an input stream to read sample.mat.
+  std::ifstream in("sample.mat");
+
+  // Read matlab binary format file header.  This must be done once
+  // after the file is opened before reading any views.  The header is
+  // then used by Matlab_bin_formatter to determine global file
+  // parameters such as endianness, etc.
+  Matlab_bin_hdr h;
+  in &gt;&gt; h;
+
+  // Read the views.
+  in &gt;&gt; Matlab_bin_formatter&lt;Matrix&lt;float&gt; &gt;(m, "m", h); 
+  in &gt;&gt; Matlab_bin_formatter&lt;Vector&lt;float&gt; &gt;(v, "v", h);</pre><p>Note that when using <code class="literal">Matlab_bin_formatter</code> the
+        size and types of the Sourcery VSIPL++ views <code class="literal">m</code> and
+        <code class="literal">v</code> must match the size and type of the views stored
+        in the binary file. If they do not match, an exception will be thrown.
+        In situations were the size and type are not known in advance, it may
+        be more convenient to use the Matlab iterator interface, described in
+        the next section.</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id278944"></a>1.3.3. Matlab_file iterator interface</h3></div></div></div><p>In situations where the size, type, and order of views written in
+      a matlab file is not known in advance, the
+      <code class="literal">Matlab_file</code> interface should be used to read the
+      file. <code class="literal">Matlab_file</code> provides an iterator interface to
+      step through each view in a file. The size, type, and name of each view
+      can be queried before it is read. This allows an appropriate Sourcery VSIPL++
+      view to be constructed dynamically.</p><p>The <code class="literal">Matlab_file</code> object handles opening and
+      reading a file. It provides a standard iterator interface with
+      <code class="literal">begin</code> and <code class="literal">end</code> functions.</p><p><code class="literal">Matlab_file::iterator</code>s correspond to views in
+      the file. Dereferencing the iterator returns a
+      <code class="literal">Matlab_view_header</code> object. This contains information
+      about the view, including its name, type, dimensionality, and
+      size.</p><p>The <code class="literal">read_view</code> function reads the view referred
+      to by the iterator.</p><p>The following example shows how to read the <code class="literal">m</code>
+      matrix from the <code class="literal">sample.mat</code> binary file used in the
+      previous examples.</p><p>The first part of the example shows the necessary
+      <code class="literal">include</code>s and declarations. The
+      <code class="literal">Matlab_file</code> interface is contained in the
+      <code class="literal">vsip_csl/matlab_file.hpp</code> header file.</p><pre class="programlisting">#include &lt;iostream&gt;&gt;
+#include &lt;fstream&gt;
+
+#include &lt;vsip/initfin.hpp&gt;
+#include &lt;vsip/vector.hpp&gt;
+#include &lt;vsip/matrix.hpp&gt;
+#include &lt;vsip/selgen.hpp&gt;
+#include &lt;vsip/map.hpp&gt;
+
+#include &lt;vsip_csl/matlab_file.hpp&gt;
+
+using namespace vsip;
+using namespace vsip_csl;</pre><p>The second part of the example shows how to read the file. First
+      the <code class="literal">Matlab_file</code> object <code class="literal">mf</code> is
+      created. Then iterators <code class="literal">begin</code> and
+      <code class="literal">end</code> are created to iterate over the views stored in
+      the file. For each view, the name and size are checked to determine if
+      it should be read. Finally, <code class="literal">read_view</code> is used to read
+      the selected view.</p><pre class="programlisting">  // Create Matlab_file object for 'sample.mat' file.
+  Matlab_file mf("sample.mat");
+  Matlab_file::iterator cur = mf.begin();
+  Matlab_file::iterator end = mf.end();
+  Matlab_view_header* vhdr;
+
+  // Block pointer to hold the matrix.  The block will be allocated
+  // once it's size is known.
+  Dense&lt;2, float&gt;* m_block = NULL;
+
+  // Iterate through views in file.
+  while (cur != end)
+  {
+    vhdr = *cur;
+
+    // Check if view is the one we're looking for.
+    if(!strcmp(vhdr-&gt;array_name, "m") &amp;&amp; vhdr-&gt;num_dims == 2)
+    {   
+      // Check for multiple views named "m" in file.
+      assert(m_block == NULL);
+
+      // Create block and view.
+      // At this point we can make the block size match size in the file.
+      m_block = new Dense&lt;2, float&gt;(Domain&lt;2&gt;(vhdr-&gt;dims[0], vhdr-&gt;dims[1]));
+      Matrix&lt;float&gt; tmp(*m_block);
+
+      // Read view from file.
+      mf.read_view(tmp, cur);
+    }   
+
+    ++cur; // Move to next view stored in the file.
+  }
+
+  // Check that we found a view named "a" in file.
+  assert(m_block != NULL);
+
+  // Create a view to process "m".
+  Matrix&lt;float&gt; m(*m_block);</pre><p>The handling of vectors in Matlab files requires special
+      consideration. Matlab stores vectors as matrices with one dimensions of
+      size 1. Sourcery VSIPL++ can read matlab vectors as either Sourcery VSIPL++ vectors
+      or matrices.</p><p>The following example shows how to read the <code class="literal">v</code>
+      vector from the <code class="literal">sample.mat</code> binary file used in the
+      previous examples.</p><pre class="programlisting">  // Create Matlab_file object for 'sample.mat' file.
+  Matlab_file mf("sample.mat");
+  Matlab_file::iterator cur = mf.begin();
+  Matlab_file::iterator end = mf.end();
+  Matlab_view_header* vhdr;
+
+  // Block pointer to hold the vector.  The block will be allocated
+  // once it's size is known.
+  Dense&lt;1, float&gt;* v_block = NULL;
+
+  // Iterate through views in file.
+  while (cur != end)
+  {
+    vhdr = *cur;
+
+    // Check if view is the one we're looking for.
+    //  
+    // Note: even though 'v' is a vector, it will be 2D because of how
+    //       matlab stores vectors.
+    if(!strcmp(vhdr-&gt;array_name, "v") &amp;&amp; vhdr-&gt;num_dims == 2)
+    {   
+      // Check for multiple views named "m" in file.
+      assert(v_block == NULL);
+
+      // Determine the vector's size:
+      length_type size = std::max(vhdr-&gt;dims[0], vhdr-&gt;dims[1]);
+
+      // Create block and view.
+      // At this point we can make the block size match size in the file.
+      v_block = new Dense&lt;1, float&gt;(Domain&lt;1&gt;(size));
+      Vector&lt;float&gt; tmp(*v_block);
+
+      // Read view from file.
+      mf.read_view(tmp, cur);
+    }   
+
+    ++cur; // Move to next view stored in the file.
+  }
+
+  // Check that we found a view named "a" in file.
+  assert(v_block != NULL);
+
+  // Create a view to process "m".
+  Vector&lt;float&gt; v(*v_block);
+</pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="blocks.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-ref-api.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="dda.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">1.2. Blocks </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Direct Data Access</td></tr></table></div></body></html>

@@ -1,0 +1,72 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>3.2. Compile-time dispatch</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="dispatcher.html" title="Chapter 3. Using the Dispatch Framework"><link rel="prev" href="dispatcher.html" title="Chapter 3. Using the Dispatch Framework"><link rel="next" href="ch03s03.html" title="3.3. Runtime dispatch"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">3.2. Compile-time dispatch</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="dispatcher.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using the Dispatch Framework</th><td width="20%" align="right"> <a accesskey="n" href="ch03s03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id279524"></a>3.2. Compile-time dispatch</h2></div></div></div><p>Let us assume we want to implement an operation
+    <code class="type">Operation</code> by means of three backend classes
+    <code class="classname">A_impl</code>, <code class="classname">B_impl</code>, and
+    <code class="classname">C_impl</code>, all modeling the same concept:</p><pre class="programlisting">class A_impl { static void process(int*, size_t); };
+template &lt;typename T&gt; class B_impl
+{
+  static void process(T*, size_t);
+};
+template &lt;typename T&gt; class C_impl
+{
+  static void process(T*, size_t);
+};</pre><p>For each backend, we define an Evaluator, that is, a meta-function
+    that will be used to evaluate whether for a given type this backend is
+    usable.</p><p>Then we expose these backends by declaring a list of backends for
+    the operation in question, so the dispatcher can iterate over it to find
+    the first match. (Note that typically this list will also depend on
+    configuration parameters, so the selection of the appropriate backend is
+    in fact done in part at configure time and in part at compile time.</p><pre class="programlisting">#include &lt;vsip/opt/dispatch.hpp&gt;
+struct Operation;
+struct A; struct B; struct C;
+namespace vsip_csl
+{
+  namespace dispatcher
+  {
+    template &lt;&gt; struct Evaluator&lt;Operation, A, int&gt;
+    { static
+      bool const ct_valid = true;
+      typedef A_impl backend;
+    };
+    template
+      &lt;typename T&gt; struct Evaluator&lt;Operation, B, T&gt;
+    { static bool const ct_valid =
+        has_feature&lt;T&gt;::value;
+        typedef B_impl&lt;T&gt; backend;
+    };
+    template
+      &lt;typename T&gt; struct Evaluator&lt;Operation, C, T&gt;
+    {
+      static bool const ct_valid = true;
+      typedef C_impl&lt;T&gt; backend;
+    };
+    template &lt;&gt; struct List&lt;Operation&gt;
+    {
+      typedef
+        Make_type_list&lt;A, B, C&gt;::type type;
+    };
+  }
+}</pre><p> </p><p>Here, the Evaluator declares <code class="type">A</code> to be
+    available for <code class="type">int</code> types, <code class="type">B</code> is defined in a way
+    that allows some external meta-function has_feature to evaluate the
+    availability of this backend for a given type, while Evaluator C declares
+    C to be available for all types. (Typically, a catch-all backend is made
+    available that is guaranteed to work for all types, but as it is slow, it
+    is only available if no other backend matches.)</p><p> </p><p>With that,
+    writing the wrapper function that will do the actual dispatch is very
+    simple:</p><p> </p><pre class="programlisting">template &lt;typename T&gt;
+void process(T *input, size_t size)
+{ // Evaluate the dispatch (at compile-time): using
+  vsip_csl::dispatcher::Dispatcher&lt;Operation, T&gt;;
+  typedef
+    Dispatcher&lt;Operation, T&gt;::backend backend_type;
+  // Now use it.
+  backend_type::process(input, size);
+}</pre><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id279611"></a>3.2.1. Implementation details</h3></div></div></div><p>The <code class="classname">List&lt;Operation&gt;</code> type above
+      creates a type-list of backend tags. The
+      <code class="classname">Dispatcher&lt;Operation&gt;</code> class template
+      constructs a type-list of Evaluators from that, which the compiler
+      iterates over to select the first item for which the
+      <code class="varname">ct_valid</code> member is <code class="constant">true</code>.</p><p>In other words, the
+      <code class="classname">Dispatcher&lt;Operation&gt;</code> acts as a
+      meta-function that takes a typename <code class="type">T</code> as input, and returns
+      a backend.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="dispatcher.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="dispatcher.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch03s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 3. Using the Dispatch Framework </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 3.3. Runtime dispatch</td></tr></table></div></body></html>

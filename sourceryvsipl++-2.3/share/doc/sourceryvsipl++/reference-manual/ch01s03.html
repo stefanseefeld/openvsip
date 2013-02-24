@@ -1,0 +1,36 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.3. Header Files</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="namespaces.html" title="Chapter 1. VSIPL++ File Structure and Namespaces"><link rel="prev" href="ch01s02.html" title="1.2. Namespaces"><link rel="next" href="datatypes.html" title="Chapter 2. Basic VSIPL++ Data Types and Constants"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">1.3. Header Files</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch01s02.html">Prev</a> </td><th width="60%" align="center">Chapter 1. VSIPL++ File Structure and Namespaces</th><td width="20%" align="right"> <a accesskey="n" href="datatypes.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id275028"></a>1.3. Header Files</h2></div></div></div><p>
+   Much like the C++ standard library, the VSIPL++ library contains
+   separate header files for each feature set.  Thus, a program unit
+   should include the header files necessary for the features it
+   uses.  For example, as we have already seen, the
+   <code class="literal">vsip::vsipl</code> initialization object requires the
+   <code class="filename">vsip/initfin.hpp</code> header file.
+  </p><p>
+   The following header files are available:
+  </p><p><code class="filename">vsip/complex.hpp</code> defines VSIPL++'s
+  complex number facilities.</p><p><code class="filename">vsip/dense.hpp</code> defines VSIPL++'s
+  <code class="code">Dense</code> block type.  This file is included automatically
+  by the view header files.</p><p><code class="filename">vsip/domain.hpp</code> defines VSIPL++'s
+  <code class="type">Domain</code> and <code class="type">Index</code> handling.</p><p><code class="filename">vsip/initfin.hpp</code> defines VSIPL++'s
+  library initialization and finalization.</p><p><code class="filename">vsip/map.hpp</code> defines VSIPL++'s
+  <code class="type">Map</code> class template for distributing data across
+  multiple processors.</p><p><code class="filename">vsip/math.hpp</code> defines VSIPL++'s
+  mathematical operations on views.</p><p><code class="filename">vsip/matrix.hpp</code> defines VSIPL++'s
+  <code class="type">Matrix</code> view class template</p><p><code class="filename">vsip/parallel.hpp</code> defines VSIPL++'s
+  parallel suppport functions.</p><p><code class="filename">vsip/random.hpp</code> defines VSIPL++'s random
+  number generator.</p><p><code class="filename">vsip/selgen.hpp</code> defines VSIPL++'s
+  selection and generation functions.</p><p><code class="filename">vsip/signal.hpp</code> defines VSIPL++'s signal
+  processing objects and functions.</p><p><code class="filename">vsip/solvers.hpp</code> defines VSIPL++'s
+  linear algebra solvers.</p><p><code class="filename">vsip/support.hpp</code> defines VSIPL++'s
+  support types.</p><p><code class="filename">vsip/tensor.hpp</code> defines VSIPL++'s
+  <code class="type">Tensor</code> view class template.</p><p><code class="filename">vsip/vector.hpp</code> defines VSIPL++'s
+  <code class="type">Vector</code> view class template.</p><p>
+   The directory structure for the header files parallels the 
+   namespace structure.  Thus, header files defining things in the
+   <code class="literal">vsip</code> namespace will be in the
+   <code class="filename">vsip</code>
+   directory; header files defining things in the 
+   <code class="literal">vsip_csl::img</code> namespace will be in the
+   <code class="filename">vsip_csl/img</code>
+   directory, and so forth.
+  </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch01s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="namespaces.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="datatypes.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">1.2. Namespaces </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Basic VSIPL++ Data Types and Constants</td></tr></table></div></body></html>

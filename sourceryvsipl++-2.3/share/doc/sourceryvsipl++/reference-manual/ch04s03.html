@@ -1,0 +1,309 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.3. Reduction Functions</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="functions.html" title="Chapter 4. Function Reference"><link rel="prev" href="ch04s02.html" title="4.2. Elementwise Functions"><link rel="next" href="ch04s04.html" title="4.4. Linear Algebra Matrix-Vector Functions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.3. Reduction Functions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s02.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Function Reference</th><td width="20%" align="right"> <a accesskey="n" href="ch04s04.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id313639"></a>4.3. Reduction Functions</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_alltrue"></a>4.3.1. <code class="function">alltrue</code></h3></div></div></div><a class="indexterm" name="id313656"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename                      T,
+              template &lt;typename, typename&gt; class ViewT,
+              typename                      BlockT&gt;
+    T
+    alltrue(ViewT&lt;T, BlockT&gt; v);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>is the type of the elements in the view and of the return
+     value.</p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>is the type of the parameter <em class="parameter"><code>v</code></em>. It must be
+     <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+     <code class="type">const_Tensor</code>.</p></dd></dl></div><p><b>Description: </b>When <em class="parameter"><code>T</code></em> is <code class="type">bool</code>, the function
+  returns <code class="constant">true</code> if all elements are
+  <code class="constant">true</code>, otherwise <code class="constant">false</code>. When
+  <em class="parameter"><code>T</code></em> is another type, <code class="function">alltrue</code>
+  returns the application of accumulation operator <code class="function">band</code>
+  with base value <code class="constant">&#732;(T())</code> applied to
+  <em class="parameter"><code>v</code></em>.</p><p><b>Requirements: </b>The template parameter <code class="type">ViewT</code> must be
+  <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+  <code class="type">const_Tensor</code>.</p><p><b>Result: </b><code class="function">alltrue</code> returns a scalar value of type
+  <em class="parameter"><code>T</code></em>.</p><p><b>Example: </b></p><pre class="programlisting">Vector&lt;bool&gt; bvec(4, true);
+
+std::cout &lt;&lt; alltrue(bvec) &lt;&lt; std::endl; // prints 1
+
+Vector&lt;int&gt; vec(3); 
+
+vec(0) = 0x00ff; 
+vec(1) = 0x119f; 
+vec(2) = 0x92f7; 
+
+std::cout &lt;&lt; alltrue(vec) == 0x0097 &lt;&lt; std::endl; // prints 1</pre><p><b>See Also: </b><code class="function">band</code> <a class="xref" href="ch04s02.html#functionref_band" title="4.2.8. band">(section 4.2.8)</a></p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_anytrue"></a>4.3.2. <code class="function">anytrue</code></h3></div></div></div><a class="indexterm" name="id313891"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename                      T,
+              template &lt;typename, typename&gt; class ViewT,
+              typename                      BlockT&gt;
+    T
+    anytrue(ViewT&lt;T, BlockT&gt; v);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>is the type of the elements in the view and of the return
+     value.</p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>is the type of the parameter <em class="parameter"><code>v</code></em>.</p></dd></dl></div><p><b>Description: </b>When <em class="parameter"><code>T</code></em> is <code class="type">bool</code>, the function
+  returns <code class="constant">true</code> if at least one element is
+  <code class="constant">true</code>, otherwise <code class="constant">false</code>. When
+  <em class="parameter"><code>T</code></em> is another type, <code class="function">anytrue</code>
+  returns the application of accumulation operator <code class="function">bor</code>
+  with base value <code class="constant">T()</code> applied to
+  <em class="parameter"><code>v</code></em>.</p><p><b>Requirements: </b>The template parameter <code class="type">ViewT</code> must be
+  <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+  <code class="type">const_Tensor</code>.</p><p><b>Result: </b><code class="function">anytrue</code> returns a scalar value of type
+  <em class="parameter"><code>T</code></em>.</p><p><b>Example: </b></p><pre class="programlisting">Vector&lt;bool&gt; bvec(4, true);
+
+std::cout &lt;&lt; anytrue(bvec) &lt;&lt; std::endl; // prints 1
+
+Vector&lt;int&gt; vec(3); 
+
+vec(0) = 0x00ff; 
+vec(1) = 0x119f; 
+vec(2) = 0x92f7; 
+
+std::cout &lt;&lt; anytrue(vec) == 0x93ff &lt;&lt; std::endl; // prints 1</pre><p><b>See Also: </b><code class="function">bor</code> <a class="xref" href="ch04s02.html#functionref_bor" title="4.2.9. bor">(section 4.2.9)</a></p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_maxmgsqval"></a>4.3.3. <code class="function">maxmgsqval</code></h3></div></div></div><a class="indexterm" name="id314114"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename                      T,
+              template &lt;typename, typename&gt; class ViewT,
+              typename                      BlockT&gt;
+    T
+    maxmgsqval(
+        ViewT&lt;complex&lt;T&gt;, BlockT&gt;         v,
+        Index&lt;ViewT&lt;complex&lt;T&gt;, BlockT&gt;::dim&gt;&amp; idx);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>is the type of the elements in the view and of the return
+     value.</p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>is the type of the parameter <em class="parameter"><code>v</code></em>. It must be
+     <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+     <code class="type">const_Tensor</code>.</p></dd></dl></div><p><b>Description: </b><code class="function">maxmgsqval</code> computes the maximum squared magnitude
+  of all the elements of the view and returns that value. It also returns,
+  through the parameter <em class="parameter"><code>idx</code></em>, the indices to locate that
+  value in the view.</p><p><b>Requirements: </b>The template parameter <code class="type">ViewT</code> must be
+  <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+  <code class="type">const_Tensor</code>. The function parameters <em class="parameter"><code>v</code></em>
+  and <em class="parameter"><code>idx</code></em> are defined in terms of
+  <code class="type">complex&lt;T&gt;</code>.</p><p><b>Result: </b><code class="function">maxmgsqval</code> returns a scalar value of type
+  <em class="parameter"><code>T.</code></em></p><p><b>Example: </b></p><pre class="programlisting">   length_type         size = 13; 
+   typedef float T;
+   Vector&lt;complex&lt;T&gt; &gt; vec(size, complex&lt;T&gt;(3, 4));
+   Index&lt;1&gt;            idx;
+   T                   val;
+
+   vec(1) = complex&lt;T&gt;(6, 8); 
+   vec(2) = complex&lt;T&gt;(0.3, 0.4);
+
+   val = maxmgsqval(vec, idx);
+   cout &lt;&lt; val &lt;&lt; endl;  // prints 100
+   cout &lt;&lt; idx &lt;&lt; endl;  // prints 1</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_maxmgval"></a>4.3.4. <code class="function">maxmgval</code></h3></div></div></div><a class="indexterm" name="id314309"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename                      T,
+              template &lt;typename, typename&gt; class ViewT,
+              typename                      BlockT&gt;
+    T
+    maxmgval(
+        ViewT&lt;T, BlockT&gt;         v,
+        Index&lt;ViewT&lt;T, BlockT&gt;::dim&gt;&amp; idx);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>is the type of the elements in the view and of the return
+     value.</p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>is the type of the parameter <em class="parameter"><code>v</code></em>. It must be
+     <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+     <code class="type">const_Tensor</code>.</p></dd></dl></div><p><b>Description: </b><code class="function">maxmgval</code> computes the maximum magnitude of all
+  the elements of the view and returns that value. It also returns, through
+  the parameter <em class="parameter"><code>idx</code></em>, the indices to locate that value
+  in the view.</p><p><b>Requirements: </b>The template parameter <code class="type">ViewT</code> must be
+  <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+  <code class="type">const_Tensor</code>.</p><p><b>Result: </b>When <em class="parameter"><code>T</code></em> is <code class="type">complex&lt;W&gt;</code>,
+  <code class="function">maxmgval</code> returns a scalar value of type
+  <em class="parameter"><code>W</code></em>; otherwise it returns a value of type
+  <em class="parameter"><code>T</code></em>.</p><p><b>Example: </b></p><pre class="programlisting">   length_type         size = 13; 
+   typedef float T;
+   Vector&lt;complex&lt;T&gt; &gt; vec(size, complex&lt;T&gt;(3, 4));
+   Index&lt;1&gt;            idx;
+   T                   val;
+
+   vec(1) = complex&lt;T&gt;(6, 8); 
+   vec(2) = complex&lt;T&gt;(0.3, 0.4);
+
+   val = maxmgval(vec, idx);
+   cout &lt;&lt; val &lt;&lt; endl;  // prints 10
+   cout &lt;&lt; idx &lt;&lt; endl;  // prints 1</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_maxval"></a>4.3.5. <code class="function">maxval</code></h3></div></div></div><a class="indexterm" name="id314506"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename                      T,
+              template &lt;typename, typename&gt; class ViewT,
+              typename                      BlockT&gt;
+    T
+    maxval(
+        ViewT&lt;T, BlockT&gt;         v,
+        Index&lt;ViewT&lt;T, BlockT&gt;::dim&gt;&amp; idx);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>is the type of the elements in the view and of the return
+     value.</p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>is the type of the parameter <em class="parameter"><code>v</code></em>. It must be
+     <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+     <code class="type">const_Tensor</code>.</p></dd></dl></div><p><b>Description: </b><code class="function">maxval</code> computes the maximum of all the elements
+  of the view and returns that value. It also returns, through the parameter
+  <em class="parameter"><code>idx</code></em>, the indices to locate that value in the
+  view.</p><p><b>Requirements: </b>The template parameter <code class="type">ViewT</code> must be
+  <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+  <code class="type">const_Tensor</code>.</p><p><b>Result: </b><code class="function">maxval</code> returns a scalar value of type
+  <em class="parameter"><code>T</code></em>.</p><p><b>Example: </b></p><pre class="programlisting">Vector&lt;float&gt; vec(4); 
+
+vec(0) = 0.;
+vec(1) = 1.;
+vec(2) = 3.;
+vec(3) = 2.;
+
+Index&lt;1&gt;  idx;
+float val = maxval(vec,idx);
+std::cout &lt;&lt; val &lt;&lt; std::endl;  // prints 3.0
+std::cout &lt;&lt; idx &lt;&lt; std::endl;  // prints 2</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_meansqval"></a>4.3.6. <code class="function">meansqval</code></h3></div></div></div><a class="indexterm" name="id314686"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename                      T,
+              template &lt;typename, typename&gt; class ViewT,
+              typename                      BlockT&gt;
+    T
+    meansqval(ViewT&lt;T, BlockT&gt; v);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>is the type of the elements in the view and of the return
+     value.</p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>is the type of the parameter <em class="parameter"><code>v</code></em>. It must be
+     <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+     <code class="type">const_Tensor</code>.</p></dd></dl></div><p><b>Description: </b><code class="function">meansqval</code> sums the squares of all the elements of
+  the view and returns that value divided by the number of elements.</p><p><b>Requirements: </b>The template parameter <code class="type">ViewT</code> must be
+  <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+  <code class="type">const_Tensor</code>.</p><p><b>Result: </b><code class="function">meansqval</code> returns a scalar value of type
+  <em class="parameter"><code>T</code></em>.</p><p><b>Example: </b></p><pre class="programlisting">Vector&lt;float&gt; vec(4); 
+
+vec(0) = 0.;
+vec(1) = 1.;
+vec(2) = 2.;
+vec(3) = 3.;
+
+std::cout &lt;&lt; meansqval(vec) &lt;&lt; std::endl;  // prints 3.5</pre><p><b>See Also: </b><code class="function">add</code> <a class="xref" href="ch04s02.html#functionref_add" title="4.2.2. add">(section 4.2.2)</a></p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_meanval"></a>4.3.7. <code class="function">meanval</code></h3></div></div></div><a class="indexterm" name="id314878"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename                      T,
+              template &lt;typename, typename&gt; class ViewT,
+              typename                      BlockT&gt;
+    T
+    meanval(ViewT&lt;T, BlockT&gt; v);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>is the type of the elements in the view and of the return
+     value.</p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>is the type of the parameter <em class="parameter"><code>v</code></em>. It must be
+     <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+     <code class="type">const_Tensor</code>.</p></dd></dl></div><p><b>Description: </b><code class="function">meanval</code> sums all the elements of the view and
+  returns that value divided by the number of elements.</p><p><b>Requirements: </b>The template parameter <code class="type">ViewT</code> must be
+  <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+  <code class="type">const_Tensor</code>.</p><p><b>Result: </b><code class="function">meanval</code> returns a scalar value of type
+  <em class="parameter"><code>T</code></em>.</p><p><b>Example: </b></p><pre class="programlisting">Vector&lt;float&gt; vec(4); 
+
+vec(0) = 0.;
+vec(1) = 1.;
+vec(2) = 2.;
+vec(3) = 3.;
+
+std::cout &lt;&lt; meanval(vec) &lt;&lt; std::endl;  // prints 1.5</pre><p><b>See Also: </b><code class="function">add</code> <a class="xref" href="ch04s02.html#functionref_add" title="4.2.2. add">(section 4.2.2)</a></p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_minmgsqval"></a>4.3.8. <code class="function">minmgsqval</code></h3></div></div></div><a class="indexterm" name="id315069"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename                      T,
+              template &lt;typename, typename&gt; class ViewT,
+              typename                      BlockT&gt;
+    T
+    minmgsqval(
+        ViewT&lt;complex&lt;T&gt;, BlockT&gt;         v,
+        Index&lt;ViewT&lt;complex&lt;T&gt;, BlockT&gt;::dim&gt;&amp; idx);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>is the type of the elements in the view and of the return
+     value.</p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>is the type of the parameter <em class="parameter"><code>v</code></em>. It must be
+     <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+     <code class="type">const_Tensor</code>.</p></dd></dl></div><p><b>Description: </b><code class="function">minmgsqval</code> computes the minimum squared magnitude
+  of all the elements of the view and returns that value. It also returns,
+  through the parameter <em class="parameter"><code>idx</code></em>, the indices to locate that
+  value in the view.</p><p><b>Requirements: </b>The template parameter <code class="type">ViewT</code> must be
+  <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+  <code class="type">const_Tensor</code>. The function parameters <em class="parameter"><code>v</code></em>
+  and <em class="parameter"><code>idx</code></em> are defined in terms of
+  <code class="type">complex&lt;T&gt;</code>.</p><p><b>Result: </b><code class="function">minmgsqval</code> returns a scalar value of type
+  <em class="parameter"><code>T.</code></em></p><p><b>Example: </b></p><pre class="programlisting">   length_type         size = 13; 
+   typedef float T;
+   Vector&lt;complex&lt;T&gt; &gt; vec(size, complex&lt;T&gt;(3, 4));
+   Index&lt;1&gt;            idx;
+   T                   val;
+
+   vec(1) = complex&lt;T&gt;(6, 8); 
+   vec(2) = complex&lt;T&gt;(0.3, 0.4);
+
+   val = minmgsqval(vec, idx);
+   cout &lt;&lt; val &lt;&lt; endl;  // prints 0.25
+   cout &lt;&lt; idx &lt;&lt; endl;  // prints 2</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_minmgval"></a>4.3.9. <code class="function">minmgval</code></h3></div></div></div><a class="indexterm" name="id315264"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename                      T,
+              template &lt;typename, typename&gt; class ViewT,
+              typename                      BlockT&gt;
+    T
+    minmgval(
+        ViewT&lt;T, BlockT&gt;         v,
+        Index&lt;ViewT&lt;T, BlockT&gt;::dim&gt;&amp; idx);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>is the type of the elements in the view and of the return
+     value.</p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>is the type of the parameter <em class="parameter"><code>v</code></em>. It must be
+     <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+     <code class="type">const_Tensor</code>.</p></dd></dl></div><p><b>Description: </b><code class="function">minmgval</code> computes the minimum magnitude of all
+  the elements of the view and returns that value. It also returns, through
+  the parameter <em class="parameter"><code>idx</code></em>, the indices to locate that value
+  in the view.</p><p><b>Requirements: </b>The template parameter <code class="type">ViewT</code> must be
+  <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+  <code class="type">const_Tensor</code>.</p><p><b>Result: </b>When <em class="parameter"><code>T</code></em> is <code class="type">complex&lt;W&gt;</code>,
+  <code class="function">minmgval</code> returns a scalar value of type
+  <em class="parameter"><code>W</code></em>; otherwise it returns a value of type
+  <em class="parameter"><code>T</code></em>.</p><p><b>Example: </b></p><pre class="programlisting">   length_type         size = 13; 
+   typedef float T;
+   Vector&lt;complex&lt;T&gt; &gt; vec(size, complex&lt;T&gt;(3, 4));
+   Index&lt;1&gt;            idx;
+   T                   val;
+
+   vec(1) = complex&lt;T&gt;(6, 8); 
+   vec(2) = complex&lt;T&gt;(0.3, 0.4);
+
+   val = minmgval(vec, idx);
+   cout &lt;&lt; val &lt;&lt; endl;  // prints 0.5
+   cout &lt;&lt; idx &lt;&lt; endl;  // prints 2</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_minval"></a>4.3.10. <code class="function">minval</code></h3></div></div></div><a class="indexterm" name="id315461"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename                      T,
+              template &lt;typename, typename&gt; class ViewT,
+              typename                      BlockT&gt;
+    T
+    minval(
+        ViewT&lt;T, BlockT&gt;         v,
+        Index&lt;ViewT&lt;T, BlockT&gt;::dim&gt;&amp; idx);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>is the type of the elements in the view and of the return
+     value.</p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>is the type of the parameter <em class="parameter"><code>v</code></em>. It must be
+     <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+     <code class="type">const_Tensor</code>.</p></dd></dl></div><p><b>Description: </b><code class="function">minval</code> computes the minimum of all the elements
+  of the view and returns that value. It also returns, through the parameter
+  <em class="parameter"><code>idx</code></em>, the indices to locate that value in the
+  view.</p><p><b>Requirements: </b>The template parameter <code class="type">ViewT</code> must be
+  <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+  <code class="type">const_Tensor</code>.</p><p><b>Result: </b><code class="function">minval</code> returns a scalar value of type
+  <em class="parameter"><code>T</code></em>.</p><p><b>Example: </b></p><pre class="programlisting">Vector&lt;float&gt; vec(4); 
+
+vec(0) = 3.;
+vec(1) = 1.;
+vec(2) = 0.;
+vec(3) = 2.;
+
+Index&lt;1&gt;  idx;
+float val = minval(vec,idx);
+std::cout &lt;&lt; val &lt;&lt; std::endl;  // prints 0.0
+std::cout &lt;&lt; idx &lt;&lt; std::endl;  // prints 2</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_sumsqval"></a>4.3.11. <code class="function">sumsqval</code></h3></div></div></div><a class="indexterm" name="id315641"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename                      T,
+              template &lt;typename, typename&gt; class ViewT,
+              typename                      BlockT&gt;
+    T
+    sumsqval(ViewT&lt;T, BlockT&gt; v);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>is the type of the elements in the view and of the return
+     value.</p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>is the type of the parameter <em class="parameter"><code>v</code></em>. It must be
+     <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+     <code class="type">const_Tensor</code>.</p></dd></dl></div><p><b>Description: </b><code class="function">sumsqval</code> sums the squares of all the elements of
+  the view and returns that value.</p><p><b>Requirements: </b>The template parameter <code class="type">ViewT</code> must be
+  <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+  <code class="type">const_Tensor</code>.</p><p><b>Result: </b><code class="function">sumsqval</code> returns a scalar value of type
+  <em class="parameter"><code>T</code></em>.</p><p><b>Example: </b></p><pre class="programlisting">Vector&lt;float&gt; vec(4); 
+
+vec(0) = 0.;
+vec(1) = 1.;
+vec(2) = 2.;
+vec(3) = 3.;
+
+std::cout &lt;&lt; sumsqval(vec) &lt;&lt; std::endl;  // prints 14.0</pre><p><b>See Also: </b><code class="function">add</code> <a class="xref" href="ch04s02.html#functionref_add" title="4.2.2. add">(section 4.2.2)</a></p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="functionref_sumval"></a>4.3.12. <code class="function">sumval</code></h3></div></div></div><a class="indexterm" name="id315833"></a><p><b>Syntax: </b>
+   </p><pre class="synopsis">    template &lt;typename                      T,
+              template &lt;typename, typename&gt; class ViewT,
+              typename                      BlockT&gt;
+    T
+    sumval(ViewT&lt;T, BlockT&gt; v);</pre><p>
+  </p><div class="variablelist"><p class="title"><b>Template parameters</b></p><dl><dt><span class="term"><em class="parameter"><code>T</code></em></span></dt><dd><p>is the type of the elements in the view and of the return
+     value.</p></dd><dt><span class="term"><em class="parameter"><code>ViewT</code></em></span></dt><dd><p>is the type of the parameter <em class="parameter"><code>v</code></em>. It must be
+     <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+     <code class="type">const_Tensor</code>.</p></dd></dl></div><p><b>Description: </b><code class="function">sumval</code> sums all the elements of the view and
+  returns that value.</p><p><b>Requirements: </b>The template parameter <code class="type">ViewT</code> must be
+  <code class="type">const_Vector</code>, <code class="type">const_Matrix</code> or
+  <code class="type">const_Tensor</code>.</p><p><b>Result: </b><code class="function">sumval</code> returns a scalar value of type
+  <em class="parameter"><code>T</code></em>.</p><p><b>Example: </b></p><pre class="programlisting">Vector&lt;float&gt; vec(4); 
+
+vec(0) = 0.;
+vec(1) = 1.;
+vec(2) = 2.;
+vec(3) = 3.;
+
+std::cout &lt;&lt; sumval(vec) &lt;&lt; std::endl;  // prints 6.0</pre><p><b>See Also: </b><code class="function">add</code> <a class="xref" href="ch04s02.html#functionref_add" title="4.2.2. add">(section 4.2.2)</a></p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="functions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.2. Elementwise Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 4.4. Linear Algebra Matrix-Vector Functions</td></tr></table></div></body></html>

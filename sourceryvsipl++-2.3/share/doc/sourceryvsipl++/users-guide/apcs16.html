@@ -1,0 +1,32 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>C.16. IPP Benchmark Usage</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="apc.html" title="Appendix C. Benchmark Usage"><link rel="prev" href="apcs15.html" title="C.15. HPEC_KERNEL Benchmark Usage"><link rel="next" href="apcs17.html" title="C.17. LAPACK Benchmark Usage"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">C.16. IPP Benchmark Usage</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="apcs15.html">Prev</a> </td><th width="60%" align="center">Appendix C. Benchmark Usage</th><td width="20%" align="right"> <a accesskey="n" href="apcs17.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id286539"></a>C.16. IPP Benchmark Usage</h2></div></div></div><p> This appendix presents the displays from the IPP benchmarks.
+    </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286549"></a>C.16.1. conv</h3></div></div></div><p>
+        </p><pre class="screen">conv -- IPP Convolution -1: Perform convolution on float
+        vector. Default Parameters: -loop_start 5000 // Suggest number of
+        loops for calibration. -start 4 // Starting problem size is 2^4 or 16.
+        -param 16 // Size of coefficient kernel. </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286566"></a>C.16.2. fft</h3></div></div></div><p>
+        </p><pre class="screen">ipp/fft -- IPP Fft (fast fourier transform) benchmark Single
+        precision -1 -- inter-op: interleaved, out-of-place CC fwd fft -2 --
+        inter-ip: interleaved, in-place CC fwd fft (vrsn &gt;= 5) -11 --
+        split-op: interleaved, out-of-place CC fwd fft -12 -- split-ip:
+        interleaved, out-of-place CC fwd fft (vrsn &gt;= 5) </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286585"></a>C.16.3. fft_ext</h3></div></div></div><p>
+        </p><pre class="screen">fft_ext -- FFT using Ext_data to call IPP -1: FFT on vector
+        complex&lt;float&gt; </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286602"></a>C.16.4. mcopy</h3></div></div></div><p>
+        </p><pre class="screen">mcopy -- float matrix copy using IPP -1: rows -&gt; rows
+        select algorithm -2: rows -&gt; cols select algorithm -3: cols -&gt;
+        rows select algorithm -4: cols -&gt; cols select algorithm -11: rows
+        -&gt; rows copy algorithm -12: rows -&gt; cols copy algorithm -13:
+        cols -&gt; rows copy algorithm -14: cols -&gt; cols copy algorithm
+        -22: rows -&gt; cols transpose algorithm -23: cols -&gt; rows
+        transpose algorithm Default parameters: -stop 12 // Largest problem
+        size is 2^12 or 4096 </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286622"></a>C.16.5. vmul</h3></div></div></div><p>
+        </p><pre class="screen">vmul -- IPP vector multiply -1: float VSIPL++ allocation -2:
+        complex&lt;float&gt; VSIPL++ allocation -12: complex&lt;float&gt; IPP
+        allocation (ippsMul_32fc) (in place) -22: complex&lt;float&gt; IPP
+        allocation (ippsMul_32fc_I) (in place) -101: float IPP allocation
+        (ippsMul_32f) -102: complex&lt;float&gt; IPP allocation (ippsMul_32fc)
+        </pre><p>
+      </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs15.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apcs17.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">C.15. HPEC_KERNEL Benchmark Usage </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> C.17. LAPACK Benchmark Usage</td></tr></table></div></body></html>

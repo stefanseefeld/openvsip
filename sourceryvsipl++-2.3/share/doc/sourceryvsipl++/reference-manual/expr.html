@@ -1,0 +1,113 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.6. Expression block types</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="extensions.html" title="Chapter 6. Extension Reference"><link rel="prev" href="dispatcher.html" title="6.5. Dispatcher - related types"><link rel="next" href="fft_be.html" title="6.7. FFT backend API"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">6.6. Expression block types</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="dispatcher.html">Prev</a> </td><th width="60%" align="center">Chapter 6. Extension Reference</th><td width="20%" align="right"> <a accesskey="n" href="fft_be.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="expr"></a>6.6. Expression block types</h2></div></div></div><p>Unless otherwise noted, all types described in this section live in
+ the <code class="code">vsip_csl::expr</code> namespace.</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="expr-unary-functor-concept"></a>6.6.1. The UnaryFunctor concept</h3></div></div></div><a class="indexterm" name="id337137"></a><p><b>Description. </b>A Unary functor computes a result block from a single argument block. It is most frequently used in conjunction with the <code class="type">Unary</code> template to represent non-elementwise unary block expressions.</p><p><b>Valid expressions. </b>
+       </p><div class="segmentedlist"><table border="0"><thead><tr class="segtitle"><th>Expression</th><th>Requirements</th><th>Semantics</th></tr></thead><tbody><tr class="seglistitem"><td class="seg">F&lt;B&gt;</td><td class="seg">B is a valid <a class="link" href="advanced-types.html#block" title="5.1. Blocks">Block</a> model.</td><td class="seg">F needs to be instantiable with arbitrary block types.</td></tr><tr class="seglistitem"><td class="seg">F&lt;B&gt;::dim</td><td class="seg"></td><td class="seg">The dimensionality of the result block</td></tr><tr class="seglistitem"><td class="seg">F&lt;B&gt;::result_type</td><td class="seg"></td><td class="seg">The value-type of the result block</td></tr><tr class="seglistitem"><td class="seg">F&lt;B&gt;::map_type</td><td class="seg"></td><td class="seg">The map-type of the result block</td></tr><tr class="seglistitem"><td class="seg">f.arg()</td><td class="seg"></td><td class="seg">Return a const reference to the argument block.</td></tr><tr class="seglistitem"><td class="seg">f.size()</td><td class="seg"></td><td class="seg">Return the total size of the result block.</td></tr><tr class="seglistitem"><td class="seg">f.size(X, d)</td><td class="seg"></td><td class="seg">Return the size of the result block.</td></tr><tr class="seglistitem"><td class="seg">f.map()</td><td class="seg"></td><td class="seg">Return the map of the result block.</td></tr><tr class="seglistitem"><td class="seg">f.apply(result)</td><td class="seg"></td><td class="seg">Apply the functor, and store the result in <em class="parameter"><code>result</code></em>.</td></tr></tbody></table></div><p>
+     </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="expr-unary"></a>6.6.2. The Unary class template</h3></div></div></div><a class="indexterm" name="id337319"></a><p><b>Description. </b>
+       A Unary block is an expression block with a single argument block.
+       It models the <a class="link" href="advanced-types.html#block" title="5.1. Blocks"><code class="type">Block</code> concept</a>.
+     </p><pre class="synopsis">template &lt;template &lt;typename&gt; class Operation,
+          typename ArgumentBlock,
+          bool Elementwise = false&gt;
+class Unary;</pre><p><b>Template parameters. </b>
+       </p><div class="variablelist"><dl><dt><span class="term">Operation</span></dt><dd><p>
+	       If <code class="code">Elementwise == true</code>,
+	       a model of the ElementwiseUnaryFunctor concept,
+	       otherwise a model of the <a class="link" href="expr.html#expr-unary-functor-concept" title="6.6.1. The UnaryFunctor concept">
+	       <code class="type">UnaryFunctor</code> concept</a>
+	     </p></dd><dt><span class="term">ArgumentBlock</span></dt><dd></dd></dl></div><p>
+     </p><p>The interface (and implementation) of the <code class="type">Unary</code> template depends
+     slightly on whether the expression is element-wise. Thus two specializations are
+     provided.</p><pre class="synopsis">template &lt;template &lt;typename&gt; class Operation, typename Block&gt;
+class Unary&lt;Operation, Block, true&gt;
+{
+public:
+  Unary(Block const &amp;);
+  Unary(Operation&lt;Block&gt; const &amp;, Block const &amp;);
+
+  operation_type const &amp;operation() const;
+  Block const &amp;arg() const;
+};</pre><pre class="synopsis">template &lt;template &lt;typename&gt; class Operation, typename Block&gt;
+class Unary&lt;Operation, Block, false&gt;
+{
+public:
+  Unary(Operation&lt;Block&gt; const &amp;);
+
+  operation_type const &amp;operation() const;
+  Block const &amp;arg() const;
+  void evaluate() const;
+  template &lt;typename ResultBlock&gt;
+  void apply(ResultBlock &amp;result) const;
+};</pre><p><b>Member functions. </b>
+	 </p><div class="variablelist"><dl><dt><span class="term">operation()</span></dt><dd><p>Return the operation associated with this expression.</p></dd><dt><span class="term">arg()</span></dt><dd><p>Return the argument block associated with this expression.</p></dd><dt><span class="term">evaluate()</span></dt><dd><p>Evaluate the operation, storing the result in the state of
+	       this expression block.</p></dd><dt><span class="term">apply()</span></dt><dd><p>Evaluate the operation, storing the result in the provided 
+	       block argument.</p></dd></dl></div><p>
+       </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="expr-unary-functor"></a>6.6.3. The Unary_functor class template</h3></div></div></div><a class="indexterm" name="id337518"></a><p><b>Description. </b>Unary_functor models the <a class="link" href="expr.html#expr-unary-functor-concept" title="6.6.1. The UnaryFunctor concept">UnaryFunctor</a> concept. To use it, derive from it and provide an <code class="function">apply()</code> that performs the desired operation.</p><pre class="synopsis">template &lt;typename ArgumentBlockType&gt;
+    class Unary_functor
+{
+public:
+  Unary_functor(ArgumentBlockType const &amp;);
+  template &lt;typename ResultBlockType&gt;
+  void apply(ResultBlockType &amp;r) const {} // implement in derived class
+};</pre><div class="example"><a name="id337558"></a><p class="title"><b>Example 6.4. Use of Unary_functor</b></p><div class="example-contents"><pre class="programlisting">template &lt;typename ArgumentBlockType&gt;
+struct Operation : Unary_functor&lt;ArgumentBlockType&gt;
+{
+  Operation(ArgumentBlockType const &amp;arg)
+    : Unary_functor&lt;ArgumentBlockType&gt;(arg) {}
+  template &lt;typename ResultBlockType&gt;
+  void apply(ResultBlockType &amp;result) const
+  { compute(result, this-&gt;arg());}
+};
+
+// Implement 'operate' as a lazy function
+template &lt;typename T, typename BlockType&gt;
+lazy_Vector&lt;T, Unary&lt;Operation, BlockType&gt; const&gt;
+operate(const_Vector&lt;T, BlockType&gt; input)
+{
+  Operation&lt;BlockType&gt; operation(input.block());
+  Unary&lt;Operation, BlockType&gt; block(operation);
+  return lazy_Vector&lt;T, Unary&lt;Operation, BlockType&gt; const&gt;(block);
+};</pre></div></div><br class="example-break"></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="expr-binary-functor-concept"></a>6.6.4. The BinaryFunctor concept</h3></div></div></div><a class="indexterm" name="id337590"></a><p><b>Description. </b>A Binary functor computes a result block from two argument blocks. It is most frequently used in conjunction with the <code class="type">Binary</code> template to represent non-elementwise binary block expressions.</p><p><b>Valid expressions. </b>
+       </p><div class="segmentedlist"><table border="0"><thead><tr class="segtitle"><th>Expression</th><th>Requirements</th><th>Semantics</th></tr></thead><tbody><tr class="seglistitem"><td class="seg">F&lt;B1, B2&gt;</td><td class="seg">B1 and B2 are valid <a class="link" href="advanced-types.html#block" title="5.1. Blocks">Block</a> models.</td><td class="seg">F needs to be instantiable with arbitrary block types.</td></tr><tr class="seglistitem"><td class="seg">F&lt;B1, B2&gt;::dim</td><td class="seg"></td><td class="seg">The dimensionality of the result block</td></tr><tr class="seglistitem"><td class="seg">F&lt;B1, B2&gt;::result_type</td><td class="seg"></td><td class="seg">The value-type of the result block</td></tr><tr class="seglistitem"><td class="seg">F&lt;B1, B2&gt;::map_type</td><td class="seg"></td><td class="seg">The map-type of the result block</td></tr><tr class="seglistitem"><td class="seg">f.arg1(), f.arg2()</td><td class="seg"></td><td class="seg">Return const references to the argument blocks.</td></tr><tr class="seglistitem"><td class="seg">f.size()</td><td class="seg"></td><td class="seg">Return the total size of the result block.</td></tr><tr class="seglistitem"><td class="seg">f.size(X, d)</td><td class="seg"></td><td class="seg">Return the size of the result block.</td></tr><tr class="seglistitem"><td class="seg">f.map()</td><td class="seg"></td><td class="seg">Return the map of the result block.</td></tr><tr class="seglistitem"><td class="seg">f.apply(result)</td><td class="seg"></td><td class="seg">Apply the functor, and store the result in <em class="parameter"><code>result</code></em>.</td></tr></tbody></table></div><p>
+     </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="expr-binary"></a>6.6.5. The Binary class template</h3></div></div></div><a class="indexterm" name="id337772"></a><p><b>Description. </b>
+       A Binary block is an expression block with two argument blocks.
+       It models the <a class="link" href="advanced-types.html#block" title="5.1. Blocks"><code class="type">Block</code> concept</a>.
+     </p><pre class="synopsis">template &lt;template &lt;typename, typename&gt; class Operation,
+          typename Argument1Block, typename Argument2Block,
+          bool Elementwise = false&gt;
+class Binary;</pre><p><b>Template parameters. </b>
+       </p><div class="variablelist"><dl><dt><span class="term">Operation</span></dt><dd><p>
+	       If <code class="code">Elementwise == true</code>,
+	       a model of the ElementwiseBinaryFunctor concept,
+	       otherwise a model of the <a class="link" href="expr.html#expr-binary-functor-concept" title="6.6.4. The BinaryFunctor concept">
+	       <code class="type">BinaryFunctor</code> concept</a>
+	     </p></dd><dt><span class="term">Argument1Block, Argument2Block</span></dt><dd></dd></dl></div><p>
+     </p><p>The interface (and implementation) of the <code class="type">Binary</code> template depends
+     slightly on whether the expression is element-wise. Thus two specializations are
+     provided.</p><pre class="synopsis">template &lt;template &lt;typename, typename&gt; class Operation, 
+          typename Arg1, typename Arg2&gt;
+class Binary&lt;Operation, Arg1, Arg2, true&gt;
+{
+public:
+  Unary(Arg1 const &amp;, Arg2 const &amp;);
+  Unary(Operation&lt;Arg1, Arg2&gt; const &amp;, Arg1 const &amp;, Arg2 const &amp;);
+
+  operation_type const &amp;operation() const;
+  Arg1 const &amp;arg1() const;
+  Arg2 const &amp;arg2() const;
+};</pre><pre class="synopsis">template &lt;template &lt;typename, typename&gt; class Operation,
+          typename Arg1, typename Arg2&gt;
+class Binary&lt;Operation, Arg1, Arg2, false&gt;
+{
+public:
+  Binary(Operation&lt;Arg1, Arg2&gt; const &amp;);
+
+  operation_type const &amp;operation() const;
+  Arg1 const &amp;arg1() const;
+  Arg2 const &amp;arg2() const;
+  void evaluate() const;
+  template &lt;typename ResultBlock&gt;
+  void apply(ResultBlock &amp;result) const;
+};</pre><p><b>Member functions. </b>
+	 </p><div class="variablelist"><dl><dt><span class="term">operation()</span></dt><dd><p>Return the operation associated with this expression.</p></dd><dt><span class="term">arg1(), arg2()</span></dt><dd><p>Return the argument blocks associated with this expression.</p></dd><dt><span class="term">evaluate()</span></dt><dd><p>Evaluate the operation, storing the result in the state of
+	       this expression block.</p></dd><dt><span class="term">apply()</span></dt><dd><p>Evaluate the operation, storing the result in the provided 
+	       block argument.</p></dd></dl></div><p>
+       </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="dispatcher.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="fft_be.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">6.5. Dispatcher - related types </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 6.7. FFT backend API</td></tr></table></div></body></html>

@@ -1,0 +1,37 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.2. Obtaining the Benchmarks</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-benchmarking.html" title="Chapter 6. Benchmarking"><link rel="prev" href="chap-benchmarking.html" title="Chapter 6. Benchmarking"><link rel="next" href="sec-benchmarking-running.html" title="6.3. Running Performance Tests"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">6.2. Obtaining the Benchmarks</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="chap-benchmarking.html">Prev</a> </td><th width="60%" align="center">Chapter 6. Benchmarking</th><td width="20%" align="right"> <a accesskey="n" href="sec-benchmarking-running.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="sec-benchmarking-obtaining"></a>6.2. Obtaining the Benchmarks</h2></div></div></div><p> The performance benchmarks are built and are ready to run as soon
+    as Sourcery VSIPL++ is installed. However, they may be rebuilt from source
+    if desired. This section explains what to do in either case. </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id282035"></a>6.2.1. Binary Packages</h3></div></div></div><p> If you installed Sourcery VSIPL++ from a binary package (the most
+      common case), then no additional steps are necessary -- the executable
+      images may be found in the <code class="filename">benchmarks/</code> subdirectory
+      in the top-level install directory. </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id282053"></a>6.2.2. Source Packages</h3></div></div></div><p> If you are using the full source package for Sourcery VSIPL++,
+      the benchmarks may be built simply by typing </p><pre class="screen">&gt; make
+      benchmarks </pre><p> from the top-level source directory (the one
+      containing GNUMakefile and the <code class="filename">benchmarks</code>
+      subdirectory). </p><p> The makefile contains instructions to build only those benchmarks
+      which are appropriate for a given system. For example, on a system with
+      Mercury SAL installed, it will build the ones under
+      <code class="filename">benchmarks/sal/</code> as well as the ones in
+      <code class="filename">benchmarks/</code>. </p><p> If you are making changes to one particular benchmark and would
+      like to rebuild just it, then provide the executable name as the make
+      target. For example, to rebuild the elementwise vector multiply
+      benchmark <code class="filename">vmul</code>, enter </p><pre class="screen">&gt; make
+      benchmarks/vmul </pre><p> </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id282111"></a>6.2.3. Standalone</h3></div></div></div><p> If you wish to build only the benchmarks themselves, without
+      rebuilding the entire library, then you may use a stand-alone makefile
+      provided for this purpose. First, make a copy of the benchmark sources
+      from the <code class="filename">share/benchmarks/</code> subdirectory in the
+      top-level install directory, or simply copy the
+      <code class="filename">benchmarks/</code> directory from the source tree. </p><p> To rebuild all benchmarks, enter the following command:
+      </p><pre class="screen">&gt; make -f make.standalone </pre><p> </p><p> To rebuild a certain benchmark, enter the target name as well.
+      For example: </p><pre class="screen">&gt; make -f make.standalone vmul </pre><p> </p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id282154"></a>6.2.3.1. Optmization Settings</h4></div></div></div><p> In order to experiment with different optimization settings for
+        the compiler when building the benchmarks, it may be helpful to know
+        that the makefiles, both in the source tree and stand-alone, use
+        pkg-config to extract the appropriate build flags for a given
+        architecture and operating system. As with most GNU Make projects,
+        these are stored in a variable named <code class="literal">CXXFLAGS</code>. You
+        may alter those values by editing the makefile and specifying options
+        after the ones extracted using pkg-config, or you may replace its
+        value entirely with your own. Before making changes, it may be helpful
+        to capture the output from a clean rebuild for later comparison. Use
+        this command or one similar to accomplish this: </p><pre class="screen">&gt; make -f
+        make.standalone clean &gt; make -f make.standalone &amp;&gt; build.log
+        </pre><p> </p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="chap-benchmarking.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-benchmarking.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sec-benchmarking-running.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 6. Benchmarking </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 6.3. Running Performance Tests</td></tr></table></div></body></html>

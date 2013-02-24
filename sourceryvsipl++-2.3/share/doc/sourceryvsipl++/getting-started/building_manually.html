@@ -1,0 +1,74 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.2. Building Manually</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-building-applications.html" title="Chapter 4. Building Applications"><link rel="prev" href="chap-building-applications.html" title="Chapter 4. Building Applications"><link rel="next" href="ch04s03.html" title="4.3. Running Serial Applications"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.2. Building Manually</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="chap-building-applications.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Building Applications</th><td width="20%" align="right"> <a accesskey="n" href="ch04s03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="building_manually"></a>4.2. Building Manually</h2></div></div></div><p>
+     The file
+     <code class="filename">/opt/codesourcery/sourceryvsipl++-2.3/share/sourceryvsipl++/example1.cpp</code>
+     contains a very simple VSIPL++ program.  You can use this file as a
+     template for developing much more complex programs.
+    </p><p>
+     When building Sourcery VSIPL++ applications, you must ensure that your
+     compiler can find the necessary header and library files.  Since
+     Sourcery VSIPL++ may depend on other libraries, the easiest way to
+     determine the necessary compiler directives is with the
+     <code class="command">pkg-config</code> command.
+    </p><p>
+     Before <code class="command">pkg-config</code> can find information about
+     Sourcery VSIPL++, it is necessary to make sure that Sourcery
+     VSIPL++'s <code class="filename">lib/pkgconfig</code> subdirectory is in
+     <code class="command">pkg-config</code>'s search path.  You can
+     check the search path by examining the <code class="envar">PKG_CONFIG_PATH</code>
+     environment variable.  To set the path:
+     </p><pre class="screen">&gt; export PKG_CONFIG_PATH=/opt/codesourcery/sourceryvsipl++-2.3/lib/pkgconfig</pre><p>
+    </p><p>
+     First, determine what compiler is recommended:
+     </p><pre class="screen">&gt; CXX=`pkg-config vsipl++ --variable=cxx`</pre><p>
+   </p><p>
+     Second, to compile the program, use the following command:
+     </p><pre class="screen">&gt; $CXX -c `pkg-config vsipl++ --cflags` \
+                          `pkg-config vsipl++ --variable=cxxflags` \
+      /opt/codesourcery/sourceryvsipl++-2.3/share/sourceryvsipl++/example1.cpp</pre><p>
+    </p><p>
+     Finally, to link the program, use the following command:
+     </p><pre class="screen">&gt; $CXX -o example1 example1.o `pkg-config --libs vsipl++`</pre><p>
+    </p><p>
+     Now that you have built the example program, you can run it like any
+     other program, with:
+     </p><pre class="screen">&gt; ./example1</pre><p>
+    </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id279729"></a>4.2.1. Using <code class="command">pkg-config</code></h3></div></div></div><p>
+     When building applications, it is important to use the same C++
+     compiler that was used to build the Sourcery VSIPL++ library.  Different
+     C++ compilers, even different versions of the same compiler, may
+     have incompatible linking conventions or different standard library
+     implementations.  However, it is possible to determine the compiler
+     used to build Sourcery VSIPL++ via pkg-config:
+     </p><pre class="screen">&gt; pkg-config --variable=cxx vsipl++</pre><p>
+     Using this, the previous commands to compile and link the example
+     program become:
+</p><pre class="screen">&gt; `pkg-config --variable=cxx vsipl++` \
+          -c `pkg-config --cflags vsipl++`
+	  /opt/codesourcery/sourceryvsipl++-2.3/share/sourceryvsipl++/example1.cpp
+&gt; `pkg-config --variable=cxx vsipl++` \
+          -o example1 example1.o `pkg-config --libs vsipl++`</pre><p>
+    </p><p>
+     If pkg-config is not available on your system, you can specify the
+     search paths manually.  With most compilers, the
+     <code class="option">-I</code> switch can be used to specify directories
+     containing header files.  Use the following command to compile the
+     program:
+</p><pre class="screen">&gt; g++ -c -I /opt/vsip/include \
+      /opt/codesourcery/sourceryvsipl++-2.3/share/sourceryvsipl++/example1.cpp</pre><p>
+    </p><p>
+     To link the program manually, you must tell the compiler where to
+     find the libraries when linking.  For most compilers, the
+     <code class="option">-L</code> switch is used to specify directories to search
+     for libraries, while the <code class="option">-l</code> switch is used to
+     specify the names of libraries to use.  Use the following command
+     to link the program:
+     </p><pre class="screen">&gt; g++ -o example1 -L /opt/codesourcery/sourceryvsipl++-2.3/lib example1.o -l vsip</pre><p>
+    </p><p>
+     If Sourcery VSIPL++ was configured to use other libraries, such as MPI,
+     it will be necessary to manually specify <code class="option">-L</code> and
+     <code class="option">-l</code> options accordingly.  These necessary options
+     can be determined by looking in the
+     <code class="filename">/opt/codesourcery/sourceryvsipl++-2.3/lib/pkgconfig/vsipl++.pc</code> file.  It
+     contains a line prefixed with "Libs:" which indicates the libraries
+     necessary to link a Sourcery VSIPL++ program.
+    </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="chap-building-applications.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-building-applications.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 4. Building Applications </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 4.3. Running Serial Applications</td></tr></table></div></body></html>

@@ -1,0 +1,33 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Appendix A. Build Variants</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="index.html" title="Sourcery VSIPL++"><link rel="prev" href="ch04s05.html" title="4.5. Building Applications with the VSIPL API"><link rel="next" href="csl.html" title="Appendix B. Sourcery VSIPL++ Software License Agreement"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Appendix A. Build Variants</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s05.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="csl.html">Next</a></td></tr></table><hr></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="build-variants"></a>Appendix A. Build Variants</h2></div></div></div><p>
+   Most Sourcery VSIPL++ packages contain multiple variants of the compiled
+   binary portions of the library.  These divide up along the following
+   axes:
+
+   </p><div class="variablelist"><dl><dt><span class="term">Target Platform</span></dt><dd><p>
+       Sourcery VSIPL++ supports a number of target platforms and platform variants,
+       with separate libraries for each variant.  For example, on many
+       platforms there are 32-bit and 64-bit variants; there may also be
+       multiple variants that use different back-end libraries.
+      </p></dd><dt><span class="term">Serial/Parallel</span></dt><dd><p>
+       In packages which support MPI-based parallelism across multiple
+       processors or machines, there are "Parallel" versions of the library in
+       which this parallelism is enabled, and "Serial" versions in which it is
+       not.
+      </p></dd><dt><span class="term">Debug/Release</span></dt><dd><p>
+      "Debug" versions of the library are compiled without optimization and
+       with all error-checking enabled in order to facilitate development and
+       debugging of applications.  "Release" versions are compiled with
+       optimization enabled and with limited error-checking in order to obtain
+       best performance.
+      </p></dd></dl></div><p>
+  </p><p>
+   The following table lists the library variants that have been installed as
+   part of this Sourcery VSIPL++ package.  The variant name can be used as the
+   <code class="option">VARIANT</code> option parameter to the
+   <code class="command">vsip-create-workspace</code> command (see 
+   <a class="xref" href="chap-building-applications.html#using_workspace" title="4.1. Using a Sourcery VSIPL++ Example Workspace">Section 4.1, &#8220;Using a Sourcery VSIPL++ Example Workspace&#8221;</a>), or to identify the appropriate
+   <code class="filename">.pc</code> file to use with <code class="command">pkg-config</code>
+   (see <a class="xref" href="building_manually.html" title="4.2. Building Manually">Section 4.2, &#8220;Building Manually&#8221;</a>).
+  </p><p>
+   </p><div class="table"><a name="id280080"></a><p class="title"><b>Table A.1. Installed Sourcery VSIPL++ Variants</b></p><div class="table-contents"><table summary="Installed Sourcery VSIPL++ Variants" border="0"><colgroup><col><col></colgroup><thead><tr><th>Variant name</th><th>Configuration</th></tr></thead><tbody><tr><td><code class="code">ia32-ser-intel</code></td><td>Intel x86 (SSE2) with Intel IPP/MKL, Serial, Release</td></tr><tr><td><code class="code">ia32-ser-intel-debug</code></td><td>Intel x86 (SSE2) with Intel IPP/MKL, Serial, Debug</td></tr><tr><td><code class="code">ia32-ser-builtin</code></td><td>Intel x86 (SSE2), Serial, Release</td></tr><tr><td><code class="code">ia32-ser-builtin-debug</code></td><td>Intel x86 (SSE2), Serial, Debug</td></tr><tr><td><code class="code">em64t-ser-intel</code></td><td>Intel x86-64 with Intel IPP/MKL, Serial, Release</td></tr><tr><td><code class="code">em64t-par-intel</code></td><td>Intel x86-64 with Intel IPP/MKL, Parallel (LAM MPI), Release</td></tr><tr><td><code class="code">em64t-ser-intel-debug</code></td><td>Intel x86-64 with Intel IPP/MKL, Serial, Debug</td></tr><tr><td><code class="code">em64t-par-intel-debug</code></td><td>Intel x86-64 with Intel IPP/MKL, Parallel (LAM MPI), Debug</td></tr><tr><td><code class="code">em64t-ser-builtin</code></td><td>Intel x86-64, Serial, Release</td></tr><tr><td><code class="code">em64t-par-builtin</code></td><td>Intel x86-64, Parallel (LAM MPI), Release</td></tr><tr><td><code class="code">em64t-ser-builtin-debug</code></td><td>Intel x86-64, Serial, Debug</td></tr><tr><td><code class="code">em64t-par-builtin-debug</code></td><td>Intel x86-64, Parallel (LAM MPI), Debug</td></tr></tbody></table></div></div><p><br class="table-break">
+  </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s05.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="csl.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.5. Building Applications with the VSIPL API </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Appendix B. Sourcery VSIPL++ Software License Agreement</td></tr></table></div></body></html>

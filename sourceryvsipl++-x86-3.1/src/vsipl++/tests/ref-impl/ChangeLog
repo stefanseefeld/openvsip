@@ -1,0 +1,218 @@
+2005-09-18  Jules Bergmann  <jules@codesourcery.com>
+
+	* tests/ref-impl/view-math.cpp: Replace call to C-VSIPL
+	  vsip_hypot_f with local function.
+
+2005-09-15  Jules Bergmann  <jules@codesourcery.com>
+
+	* tests/ref-impl/view-math.cpp: Fix bug with land test (should use
+	  '&&').  Remove implementation specific test of acos (relied on
+	  template signature).
+
+2005-09-13  Jules Bergmann  <jules@codesourcery.com>
+
+	* tests/matrix-const.cpp: Remove use of const_Matrix constructors
+	  accepting other value and block types.
+	* tests/vector-const.cpp: Likewise.
+
+2005-09-13  Jules Bergmann  <jules@codesourcery.com>
+
+	* tests/solver-chol.cpp: User vsip::upper/lower instead of
+	  chold::upper/lower.
+
+2005-08-26  Jules Bergmann  <jules@codesourcery.com>
+
+	Remove implementation specific tests.
+	* tests/pointer.cpp: Move file to unit-tests.
+	* tests/subblock.cpp: Move file to unit-tests.
+	* tests/GNUmakefile.cpp: Remove pointer and subblock.
+	* tests/run-tests.sh: Likewise.
+
+2005-08-23  Jules Bergmann  <jules@codesourcery.com>
+
+	* tests/fft-coverage.cpp: Don't use deprecated fft_dir type.
+
+2005-08-10  Jules Bergmann  <jules@codesourcery.com>
+
+	* tests/matrix-math.cpp: Remove implementation specific test
+	  of acos (relied on template signature).
+	* tests/vector-math.cpp: Likewise.
+
+2005-07-27  Jules Bergmann  <jules@codesourcery.com>
+
+	* tests/admitrelease.cpp: Determine dimension-ordering by comparing
+	  tuple against row2_type.
+
+2005-07-26  Don McCoy  <don@codesourcery.com>
+	
+	* tests/admitrelease.cpp: renamed tuple Dim0/1/2 to impl_dim0/1/2
+
+2005-07-22  Jules Bergmann  <jules@codesourcery.com>
+
+	* tests/test.hpp: Include math.hpp instead of math-reductions.hpp.
+
+2005-06-28  Jules Bergmann  <jules@codesourcery.com>
+
+	* tests/admitrelease.cpp: Change 'UPPER_CASE' enum and variable
+	  names to 'lower_case'.  Change 'UPPERCASE' class names to 'Lower'.
+	* tests/dense.cpp: Likewise.
+	* tests/fft-coverage.cpp: Likewise.
+	* tests/math-matvec.cpp: Likewise.
+	* tests/signal-convolution.cpp: Likewise.
+	* tests/signal-correlation.cpp: Likewise.
+	* tests/signal-fft.cpp: Likewise.
+	* tests/signal-fir.cpp: Likewise.
+	* tests/solvers-chol.cpp: Likewise.
+	* tests/solvers-lu.cpp: Likewise.
+	* tests/solvers-qr.cpp: Likewise.
+	* tests/test-util.hpp (TestSeqIterator): Remove repeated typedef.
+
+2005-04-11  Jules Bergmann  <jules@codesourcery.com>
+	
+	* tests/admitrelease.cpp: Use explicit Domain<> objects instead
+	  of implicit ones to avoid gcc 3.3 bug.
+	* tests/fft-coverage.cpp: Likewise.
+	
+2005-03-17  Jules Bergmann  <jules@codesourcery.com>
+
+	Assign copyright to Georgia Tech Research Corporation.
+	
+2005-03-16  Jules Bergmann  <jules@codesourcery.com>
+
+	Change type name suffix from _t to _type.
+	
+2005-03-07  Jules Bergmann  <jules@codesourcery.com>
+
+	* dense.cpp (test_mutable_refcount): New tests to check that
+	  increment_count() and decrement_count() work for const blocks.
+
+	Updates to work with const_View's block() returning a
+	const block_t&:
+	* test-util.hpp: Add block() accessor to VectorStorage,
+	  ConstVectorStorage, MatrixStorage, and ConstMatrixStorage.
+	* math-reductions.cpp: Use Storage block() function.
+	* selgen.cpp: Likewise
+	
+2005-03-02  Jules Bergmann  <jules@codesourcery.com>
+
+	Update: block reference counts now starting at 1.
+	* dense.cpp: Removed unnecessary increment_count() (since count
+	  now starts at 1).
+	* subblock.cpp: Likewise.
+	* matrix-const.cpp: Add explicit decrement_count() when passing
+	  block to view for ownership.
+	* vector-const.cpp: Likewise.
+	* test-util.hpp: Call decrement_count for blocks owned by
+	  Storage objects.
+
+	* math-reductions.cpp: Test meansqval for views of complex.
+	* math-scalarview.cpp: Test view-scalar cases.
+	* signal-windows.cpp: Update cheby() signature to be consistent.
+
+	Update: class names changed to match conventions.
+	* random.cpp: Change class name to "Random".
+	* solvers-covsol.cpp: Likewise.
+	* signal-convolution.cpp: Change class name to "Convolution".
+	* signal-correlation.cpp: Change class name to "Correlation".
+	
+2005-02-24  Jules Bergmann  <jules@codesourcery.com>
+
+	* fft-coverage.cpp: New tests for FFT and FFTM.
+	* signal-fft.cpp: Update for new FFT and FFTM interface.
+	* GNUmakefile: Add rules for new test.
+	* run-tests: Add invocation for new test.
+	
+2005-02-17  Jules Bergmann  <jules@codesourcery.com>
+
+	* admitrelease.cpp: New test for user-storage.
+	* solvers-covsol.cpp: New test for covariance solver.
+	* GNUmakefile: Add rules for new tests.
+	* run-tests.sh: Add invocation for new tests.
+	* test.hpp (maxdiff): Utility to compare matrices, vectors.
+	
+2005-01-18  Jules Bergmann  <jules@codesourcery.com>
+
+	* test.hpp: insist() now a macro that can report line number of
+	failing test (change in head).
+	* vector-const.cpp, matrix-const.cpp: fix use to work with insist()
+	macro.
+	
+2004-12-20  Jules Bergmann  <jules@codesourcery.com>
+
+	* matrix.cpp: Test real/imaginary subviews.
+	* vector.cpp: Likewise.
+	* subblock.cpp: Update to reflect new implementation-specific
+	name for subblocks.
+
+	
+2004-12-18  Jules Bergmann  <jules@codesourcery.com>
+
+	* matrix.cpp: Enabled test of matrix transpose views.
+	
+	
+2004-12-17  Jules Bergmann  <jules@codesourcery.com>
+
+	* selgen.cpp: Const_View test coverage for indexbool() and gather().
+	* test-util.hpp: Add 'dim' property value to Storage classes.
+	* math-reductions.cpp: Const_View test coverage for maxval(),
+	alltrue(), and sumval().
+	
+
+2004-12-16  Jules Bergmann  <jules@codesourcery.com>
+
+	* view-math.cpp: Hardened scalar-view tests for add, sub, mul,
+	div, and expoavgo to cover changes in math-scalarview.hpp
+	* signal-convolution.cpp: Update for const_View.
+	* signal-correlation.cpp: Likewise.
+	* signal-fft.cpp: Likewise.
+
+	
+2004-12-16  Jules Bergmann  <jules@codesourcery.com>
+
+	* GNUmakefile: Add targets for new tests.
+	* run-tests.sh: Add new tests.
+	* test-util.hpp: New storage helper classes, TestSeqIterator class
+	for test value generation.
+	* matrix-const.cpp: New tests for const_Matrix.
+	* vector-const.cpp: New tests for const_Vector.
+	* view-math.cpp: New tests for view math, similar to vector-math
+	and matrix-math, but slightly more extensive.
+	* vector-math.cpp: Remove redundant tests covered by view-math.cpp
+
+	
+2004-12-16  Jules Bergmann  <jules@codesourcery.com>
+
+	* math.hpp: Remove cmag test (no longer in spec), remove ma(int,
+	int, int) test (not required by spec).
+	* vector-math: Remove cadd(), csub() tests (no long in spec).
+	
+2004-12-16  Jules Bergmann  <jules@codesourcery.com>
+
+	* test.hpp (check_entry): Update for const_Vector/const_Matrix
+	* dim-order.cpp: Likewise.
+	* signal-windows.cpp: Likewise.
+	* vector.cpp: Likewise.
+
+	
+2004-11-18  Jules Bergmann  <jules@codesourcery.com>
+
+	* matrix.cpp (main): Create separate insist() cases.
+	* signal-windows.cpp: Create seperate blackman testcase as
+	callable function.  Provides regression test for bug: subviews of
+	vectors returned by window function not correct.
+	* subblock.cpp (main): Removed tests relying on unspecified
+	behavior.
+	* vector-math.cpp: Added detailed test-cases for multiply-add
+	(ma), add-multiply (am), and exponential average (expoavg).
+	* dim-order.cpp: New program -- tests for dimension ordering.
+	* test-util.hpp: New header -- utiliies for generalizing tests.
+	(default values, view storage).
+	* run-tests.sh: New shell script prints test names as they
+	are run (makes it easier to determine which test is failing).
+	
+2004-11-04  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* dense.cpp (main): Add tests for admit/release, remove tests
+	for non-required block accessor functions (such as domain())
+	* vector.cpp (main): Additional insist checks.
+

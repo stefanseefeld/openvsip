@@ -1,0 +1,119 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.4. Creating custom expressions</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="custom_expr_evaluation.html" title="Chapter 4. Custom Expression Evaluation"><link rel="prev" href="ch04s03.html" title="4.3. Expression templates in Sourcery VSIPL++"><link rel="next" href="ch04s05.html" title="4.5. Creating custom evaluators"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.4. Creating custom expressions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s03.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Custom Expression Evaluation</th><td width="20%" align="right"> <a accesskey="n" href="ch04s05.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id280029"></a>4.4. Creating custom expressions</h2></div></div></div><p>Sourcery VSIPL++ allows you to write custom functions that participate in
+    expression template dispatch and evaluation. This optimizes handling of
+    the functions return value and allows custom evaluators to recognize fused
+    expressions containing the expression.</p><p>Let us work through an example, starting with function
+    scale():</p><pre class="programlisting">template &lt;typename T,
+          typename BlockType&gt;
+Vector&lt;T&gt; scale(Vector&lt;T, BlockType&gt; a, T value)
+{
+  Vector&lt;T&gt; r = a * value;
+  return r;
+}</pre><p>This function takes a vector, scales it by a scalar value, and
+    returns the result. As the result is returned by-value, it gets copied
+    during assignment. In other words, the return value is a temporary object,
+    which we may want to avoid.</p><p>To do that, we use a variant of a technique known as
+    <span class="emphasis"><em>return value optimization</em></span>. We rewrite
+    <code class="function">scale()</code> to return an expression type, which is only
+    evaluated once the result object is available, so the computed value can
+    be stored in-place. To do that, we capture the function logic into a
+    functor, and rewrite the <code class="function">scale()</code> function to return
+    an <span class="emphasis"><em>expression block</em></span> vector:</p><pre class="programlisting">using vsip_csl::expr::Unary;
+using vsip_csl::expr::Unary_functor;
+// Scale implements a call operator that scales its input
+// argument, and returns it by reference.
+template
+  &lt;typename ArgumentBlockType&gt; struct Scale :
+    Unary_functor&lt;ArgumentBlockType&gt;
+{
+  Scale(ArgumentBlockType const &amp;a,
+        typename ArgumentBlockType::value_type s) :
+    Unary_functor&lt;ArgumentBlockType&gt;(a), value(s)
+    {}
+  template &lt;typename ResultBlockType&gt;
+  void apply(ResultBlockType &amp;r) const
+  {
+    ArgumentBlockType const &amp;a = this-&gt;arg();
+    for (index_type i = 0; i != r.size(); ++i)
+      r.put(i, a.get(i) * value);
+  }
+  typename
+    ArgumentBlockType::value_type value;
+};
+// scale is a return-block optimised function returning an expression.
+template &lt;typename T,
+          typename BlockType&gt;
+const_Vector&lt;T,
+             Unary&lt;Scale, BlockType&gt; const&gt;
+scale(const_Vector&lt;T, BlockType&gt; input, T value)
+{
+  Scale&lt;BlockType&gt; s(input.block(), value);
+  Unary&lt;Scale, BlockType&gt; block(s);
+  return const_Vector&lt;T, Unary&lt;Scale,
+    BlockType&gt; const&gt;(block);
+}</pre><p>With that improvement, the <code class="function">scale()</code> function
+    in</p><pre class="programlisting">Vector&lt;&gt; a(8);
+Vector&lt;&gt; r = scale(a, 2.f);</pre><p>is entirely evaluated during the assignment.</p><p>The <a href="../reference-manual/./expr.html#expr-unary-functor" class="olink"> <code class="type">Unary_functor</code></a> above
+    poses certain requirements on its function parameter. If they can't be
+    met, we need to write a different functor. For example:</p><pre class="programlisting">using vsip_csl::View_block_storage;
+template &lt;typename ArgumentBlockType&gt;
+struct Interpolator
+{
+public:
+  typedef typename
+    ArgumentBlockType::value_type value_type;
+  typedef typename
+    ArgumentBlockType::value_type result_type;
+  typedef typename
+    ArgumentBlockType::map_type map_type;
+  static vsip::dimension_type const
+    dim = ArgumentBlockType::dim;
+  Interpolator(
+    ArgumentBlockType const &amp;a,
+    Domain&lt;ArgumentBlockType::dim&gt; const &amp;s)
+    : argument_(a), size_(s) {}
+  // Report the size of the new interpolated block
+  length_type size() const
+    { return size_.size();}
+  length_type size(dimension_type b,
+                   dimension_type d) const
+  {
+    assert(b == ArgumentBlockType::dim);
+    return size_[d].size();
+  }
+  map_type const &amp;map() const
+  {
+    return argument_.map();
+  }
+  ArgumentBlockType const &amp;arg() const
+  {
+    return argument_;
+  }
+  template &lt;typename ResultBlockType&gt; void
+    apply(ResultBlockType &amp;) const
+  {
+    std::cout &lt;&lt; "apply interpolation !" &lt;&lt; std::endl;
+    // interpolate 'argument' into 'result'
+  }
+private:
+  typename
+    View_block_storage&lt;ArgumentBlockType&gt;::expr_type argument_;
+    Domain&lt;ArgumentBlockType::dim&gt; size_;
+};</pre><p>creates a new vector of different shape than the input Vector. To
+    see the full requirements for the <code class="type">UnaryFunctor</code>, see <a href="../reference-manual/./expr.html#expr-unary-functor" class="olink">Section 6.6.3, &#8220;The Unary_functor class template&#8221;</a>.</p><p>Here again, to write an <code class="function">interpolate()</code> function
+    that evaluates lazily, we need to return an <span class="emphasis"><em>expression
+    block</em></span> vector:</p><pre class="programlisting">template &lt;typename T, typename BlockType&gt;
+  const_Vector&lt;T, Unary&lt;Interpolator, BlockType&gt; const&gt;
+  interpolate(const_Vector&lt;T, BlockType&gt; arg,
+              Domain&lt;1&gt; const &amp;size)
+  {
+    typedef Unary&lt;Interpolator, BlockType&gt; expr_block_type;
+    Interpolator&lt;BlockType&gt; interpolator(arg.block(), size);
+    expr_block_type block(interpolator);
+    return const_Vector&lt;T, expr_block_type const&gt;(block);
+  }</pre><p>Now we can combine the above functions into a single
+    expression:</p><pre class="programlisting">Vector&lt;float&gt; a(8, 2.);
+Vector&lt;float&gt; b = interpolate(scale(a, 2.f), 32);</pre><p>The above demonstrates how to improve performance of an expression
+    evaluation by using a technique that is a variant of the well-known
+    <span class="emphasis"><em>return value optimization</em></span>, where a copy operation
+    (and a temporary object) may in certain cases be elided, if the result can
+    be evaluated in-place.</p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="custom_expr_evaluation.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.3. Expression templates in Sourcery VSIPL++ </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 4.5. Creating custom evaluators</td></tr></table></div></body></html>

@@ -1,0 +1,698 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>3.3. Configuration</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-installation-source.html" title="Chapter 3. Installation from Source"><link rel="prev" href="ch03s02.html" title="3.2. Obtaining the Source Code"><link rel="next" href="ch03s04.html" title="3.4. Compilation and Installation"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">3.3. Configuration</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s02.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Installation from Source</th><td width="20%" align="right"> <a accesskey="n" href="ch03s04.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id277030"></a>3.3. Configuration</h2></div></div></div><p>
+    Before building Sourcery VSIPL++, you must run a configuration script
+    to tell Sourcery VSIPL++ what C++ compiler you are using and what
+    optional software you wish to use.  After running the
+    configuration script, you will build and install the Sourcery VSIPL++
+    library.
+   </p><p>
+    These instructions assume that your shell's current directory is the
+    <code class="filename">sourceryvsipl++-2.3</code> directory created when you 
+    unpacked the VSIPL++ distribution.  If you want to allow
+    Sourcery VSIPL++ to automatically configure itself, run:
+</p><pre class="screen">&gt; ./configure</pre><p>
+    You will see output explaining the configuration decisions that
+    Sourcery VSIPL++ is making.
+   </p><p>
+    There are several options that you can use to tell Sourcery VSIPL++
+    about your particular environment.
+    </p><div class="variablelist"><dl><dt><span class="term"><code class="option">CXX=<em class="replaceable"><code>path</code></em></code></span></dt><dd><p>
+	Use <em class="replaceable"><code>path</code></em> as the C++ compiler.
+	If you do not provide this option, Sourcery VSIPL++ will search 
+	for a C++ compiler in your <code class="envar">PATH</code>.
+       </p></dd><dt><span class="term"><code class="option">CXXFLAGS=<em class="replaceable"><code>flags</code></em></code></span></dt><dd><p>
+	Use <em class="replaceable"><code>flags</code></em> as flags to pass to the 
+	C++ compiler.  The default value depends on your compiler.  If
+	you are using multiple flags (like <code class="option">-O2
+	-ffast-math</code>), you must enclose the
+	<em class="replaceable"><code>flags</code></em> in quotes so that the shell
+	will consider all of the flags as a single argument.
+       </p></dd><dt><span class="term"><code class="option">--prefix=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+	Install the library in <em class="replaceable"><code>directory</code></em>.
+	Header files will be placed in a subdirectory of 
+	<em class="replaceable"><code>directory</code></em> named
+	<code class="filename">include</code>; the library itself will be 
+	placed in <code class="filename">lib</code>.  You will need to have 
+	sufficient permissions to write to the installation directory.
+	The default installation directory is
+	<code class="filename">/usr/local</code>, which is usually not writable
+	by non-administrators; therefore, you may want to use your
+	home directory as an installation directory.   
+       </p></dd><dt><span class="term"><code class="option">--host=<em class="replaceable"><code>architecture</code></em></code></span></dt><dd><p>
+        Specify the host-architecture that Sourcery VSIPL++
+        will be built for.
+
+        The default is to build Sourcery VSIPL++ to run native on
+        build machine.  This option is useful when cross-compiling
+        Sourcery VSIPL++.
+       </p></dd><dt><span class="term"><code class="option">--disable-parallel</code></span></dt><dd><p>
+	Do not use a parallel communications library, even if an appropriate 
+	MPI library is detected.  This option is useful if you want to 
+	build a uniprocessor version of Sourcery VSIPL++.  By default, MPI 
+	support will be included if it is available.
+       </p></dd><dt><span class="term"><code class="option">--enable-parallel</code></span></dt><dd><p>
+        Search for and use a communications library for support of
+	multi-processor systems for parallel computation.
+       </p></dd><dt><span class="term"><code class="option">--enable-parallel=<em class="replaceable"><code>lib</code></em></code>
+      </span></dt><dd><p>
+	Search for and use the parallel communications library 
+	indicated by <em class="replaceable"><code>lib</code></em>.  Available
+	options are <code class="option">lam</code>, <code class="option">mpich2</code>, 
+	<code class="option">intelmpi</code>, <code class="option">openmpi</code>,
+	<code class="option">mpipro</code>, and <code class="option">pas</code>.
+       </p><p>
+        <code class="option">lam</code> selects the LAM/MPI library.
+       </p><p>
+        <code class="option">mpich2</code> selects the MPICH2 library.
+       </p><p>
+        <code class="option">intelmpi</code> selects the Intel MPI Library.
+       </p><p>
+        <code class="option">openmpi</code> selects then Open MPI library.
+       </p><p>
+        <code class="option">mpipro</code> selects Verari's MPI/Pro.  This 
+	option is necessary when using MPI/Pro on the Mercury platform.
+       </p><p>
+        <code class="option">pas</code> enables the use of Mercury Parallel 
+	Acceleration System (PAS) for parallel services if found.  
+	This option is necessary to use PAS on the Mercury platform, 
+	and when using PAS for Linux clusters.
+       </p></dd><dt><span class="term"><code class="option">--with-mpi-prefix=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+	Search for MPI installation in
+	<em class="replaceable"><code>directory</code></em> first.  MPI headers should
+        be in <em class="replaceable"><code>directory/include</code></em>, MPI
+	libraries in <em class="replaceable"><code>directory/lib</code></em>, and
+        MPI compilation commands (either <code class="filename">mpicxx</code> or
+        <code class="filename">mpiCC</code>) should be in
+        <em class="replaceable"><code>directory/bin</code></em>.  This option is
+	useful if MPI is installed in a non-standard location, or if
+	multiple MPI versions are installed.
+       </p></dd><dt><span class="term"><code class="option">--with-mpi-cxxflags=<em class="replaceable"><code>flags</code></em></code>
+      <code class="option">--with-mpi-libs=<em class="replaceable"><code>flags</code></em></code></span></dt><dd><p>
+        In some cases, Sourcery VSIPL++ is unable to automatically detect
+        the required compiler and linker options to enable MPI.  In
+        these cases, the required C++ compiler flags can be specified
+        using the <code class="option">--with-mpi-cxxflags</code> option, and the
+        required linker (library) flags can be specified using the
+        <code class="option">--with-mpi-libs</code>.  These options must be used
+        together, and when they are used, the specific type of the MPI
+        library in use must be specified with the
+        <code class="option">--enable-parallel=<em class="replaceable"><code>type</code></em></code>
+        option.
+       </p></dd><dt><span class="term"><code class="option">--disable-exceptions</code></span></dt><dd><p>
+	Do not use C++ exceptions.  Errors that would previously have
+	generated an exception now cause an abort().  This option is
+	useful if you want to build Sourcery VSIPL++ with a compiler
+	that does not implement exceptions.  By default, exceptions
+	are used.
+       </p></dd><dt><span class="term"><code class="option">--with-ipp</code></span></dt><dd><p>
+        Enable the use of the Intel Performance Primitives (IPP)
+	if found.  Enabling IPP will accelerate the performance of
+	signal processing and view element-wise operations.
+       </p></dd><dt><span class="term"><code class="option">--with-ipp=win</code></span></dt><dd><p>
+        Enable the use of the Intel Performance Primitives (IPP)
+	for Windows if found.  This option is useful when configuring
+	Sourcery VSIPL++ on a Windows system.
+       </p></dd><dt><span class="term"><code class="option">--with-ipp-prefix=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+	Search for IPP installation in
+	<em class="replaceable"><code>directory</code></em> first.  IPP headers
+	should be in the <code class="filename">include</code> subdirectory of
+	<em class="replaceable"><code>directory</code></em> and IPP libraries should
+	be in the <code class="filename">lib</code> subdirectory.  This option
+	has the effect of enabling IPP
+	(i.e. <code class="option">--with-ipp</code>).  This option is useful
+	if IPP is installed in a non-standard location, or if multiple
+	IPP versions are installed.
+       </p></dd><dt><span class="term"><code class="option">--with-ipp-suffix=<em class="replaceable"><code>suffix</code></em></code></span></dt><dd><p>
+        Use a processor specific version of the IPP libraries, as
+        indicated by <em class="replaceable"><code>suffix</code></em>.  For example,
+        the suffix em64t will select IPP libraries specific to em64t
+        processors.  By default, non-suffix IPP libraries are used,
+        which determine the architecture at run-time and dynamically
+        load the appropriate processor-specific libraries.  This
+        option is useful if the automatic dispatcher is not able to
+        determine the correct architecture.
+       </p></dd><dt><span class="term"><code class="option">--with-sal</code></span></dt><dd><p>
+        Enable the use of the Mercury Scientific Algorithm Library (SAL)
+	if found.  Enabling SAL will accelerate the performance of
+	view element-wise operations, linear algebra, solvers, and
+        signal processing operations.
+       </p></dd><dt><span class="term"><code class="option">--with-sal-include=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+        Search for SAL header files in <em class="replaceable"><code>directory</code></em>
+        first.  This option has the effect of enabling SAL
+	(i.e. <code class="option">--with-sal</code>).  This option is useful
+	if SAL headers is installed in a non-standard location, such
+        as when using the CSAL library.  However, it should not be
+        necessary when building native on Mercury system.
+       </p></dd><dt><span class="term"><code class="option">--with-sal-lib=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+        Search for SAL library files in <em class="replaceable"><code>directory</code></em>
+        first.  This option has the effect of enabling SAL
+	(i.e. <code class="option">--with-sal</code>).  This option is useful
+	if SAL libraries is installed in a non-standard location, such
+        as when using the CSAL library.  However, it should not be
+        necessary when building native on Mercury system.
+       </p></dd><dt><span class="term"><code class="option">--with-cuda</code></span></dt><dd><p>
+        Enable the use of NVidia's Compute Unified Device Architecture (CUDA).
+	This enables the use of certain graphics processing units (GPUs) as
+	computational accelerators (see NVidia's website for a list of 
+	compatible cards).  For FFT support, use <code class="option">--enable-fft=cuda</code>
+	in addition to this option.
+       </p></dd><dt><span class="term"><code class="option">--enable-fft=<em class="replaceable"><code>lib</code></em></code></span></dt><dd><p>
+        Search for and use the FFT library indicated by
+        <em class="replaceable"><code>lib</code></em> to perform FFTs.  Valid choices
+        for <em class="replaceable"><code>lib</code></em> include
+        <code class="option">fftw3</code>, <code class="option">cuda</code>, <code class="option">ipp</code>,
+        <code class="option">sal</code>, and <code class="option">cvsip</code> which select
+        FFTW3, CUDA, IPP, SAL, and C VSIPL libraries respectively.  A fourth
+        option, <code class="option">builtin</code>, selects the FFTW3 library
+        that comes with Sourcery VSIPL++ (default).  This option
+        should be used if an existing FFTW3 library is not available.
+        If no FFT library is to be used (disabling Sourcery VSIPL++'s
+        FFT functionality), <code class="option">no_fft</code> should be chosen
+        for <em class="replaceable"><code>lib</code></em>.  Multiple libraries may be
+        given as a comma separated list.  When performing an FFT,
+        VSIPL++ will use the first library in the list that can
+        support the FFT parameters.  For example, on Mercury systems
+        <code class="option">--enable-fft=sal,builtin</code> would use SAL's FFT
+        when possible, falling back to VSIPL++'s builtin FFTW3
+        otherwise.
+       </p></dd><dt><span class="term"><code class="option">--with-fftw3-prefix=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+	Search for FFTW3 installation in
+	<em class="replaceable"><code>directory</code></em> first.  FFTW3 headers
+	should be in the <code class="filename">include</code> subdirectory of
+	<em class="replaceable"><code>directory</code></em> and FFTW3 libraries should
+	be in the <code class="filename">lib</code> subdirectory.  This option
+	has the effect of enabling FFTW3 for FFTs
+	(i.e. <code class="option">--with-fft=fftw3</code>).  This option is useful
+	if FFTW3 is installed in a non-standard location, or if multiple
+	FFTW3 versions are installed.
+       </p></dd><dt><span class="term"><code class="option">--disable-fftw3-simd</code></span></dt><dd><p>
+        Disable builtin FFTW3 from using SIMD ISA extensions
+	(such as AltiVec or SSE2).  By default, FFTW3 uses
+	SIMD ISA extensions because they improve performance.
+	However, this option is useful when building for a platform
+	that does not support the ISA extensions.
+       </p></dd><dt><span class="term"><code class="option">--with-lapack</code></span></dt><dd><p>
+        Enable Sourcery VSIPL++ to search for an appropriate
+	LAPACK implementation on the platform.  If found, it
+	will be used to perform linear algebra (matrix-vector
+	products and solvers).
+       </p></dd><dt><span class="term"><code class="option">--with-lapack=<em class="replaceable"><code>lib</code></em></code></span></dt><dd><p>
+        Search for and use the LAPACK library indicated by
+        <em class="replaceable"><code>lib</code></em> to perform linear algebra
+        (matrix-vector products and solvers).  Valid choices for
+        <em class="replaceable"><code>lib</code></em> include <code class="option">mkl</code>,
+	<code class="option">acml</code>, <code class="option">atlas</code>, 
+        <code class="option">generic</code>, <code class="option">builtin</code>, and
+        <code class="option">no</code>.
+       </p><p>
+        <code class="option">mkl</code> selects the Intel Math Kernel Library (MKL)
+	to perform linear algebra if found.
+       </p><p>
+        <code class="option">mkl_win</code> selects the Intel Math Kernel Library (MKL)
+	on Windows systems to perform linear algebra if found.
+       </p><p>
+        <code class="option">acml</code> selects the AMD Core Math Library (ACML) to 
+        perform linear algebra if found.
+       </p><p>
+        <code class="option">atlas</code> selects the ATLAS library
+	to perform linear algebra if found.
+       </p><p>
+        <code class="option">generic</code> selects a generic LAPACK library
+	(-llapack) to perform linear algebra if found.
+       </p><p>
+        <code class="option">builtin</code> selects a version of LAPACK 
+        that doesn't require ATLAS.
+       </p><p>
+        <code class="option">no</code> is used to disable searching for a LAPACK
+        library.
+       </p></dd><dt><span class="term"><code class="option">--with-acml-prefix=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+	Search for ACML installation in
+	<em class="replaceable"><code>directory</code></em> first.  ACML headers
+	should be in the <code class="filename">include</code> subdirectory of
+        the install directory, whose path depends on the exact version of
+        the library you have.  Similarly, ACML  libraries should
+	be in the <code class="filename">lib</code> subdirectory.  This option
+	has the effect of enabling ACML for lapack
+	(i.e. <code class="option">--with-lapack=acml</code>).  This option is useful
+	if the ACML is installed in a non-standard location, or if multiple
+	ACML versions are installed.
+       </p></dd><dt><span class="term"><code class="option">--with-atlas-prefix=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+	Search for ATLAS installation in
+	<em class="replaceable"><code>directory</code></em> first.  ATLAS headers
+	should be in the <code class="filename">include</code> subdirectory of
+	<em class="replaceable"><code>directory</code></em> and ATLAS libraries should
+	be in the <code class="filename">lib</code> subdirectory, unless otherwise
+	specified by <code class="option">--with-atlas-include</code> and
+	<code class="option">--with-atlas-libdir</code>, respectively.  This option
+	has the effect of enabling ATLAS for lapack
+	(i.e. <code class="option">--with-lapack=atlas</code>).  This option is useful
+	if ATLAS is installed in a non-standard location, or if multiple
+	ATLAS versions are installed.
+       </p></dd><dt><span class="term"><code class="option">--with-atlas-include=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+	Search for ATLAS include headers in
+	<em class="replaceable"><code>directory</code></em> first.  This option
+	has the effect of enabling ATLAS for lapack
+	(i.e. <code class="option">--with-lapack=atlas</code>).  This option is useful
+	if ATLAS is installed in a location that does not fit 
+	the pattern assumed by <code class="option">--with-atlas-prefix</code>.
+       </p></dd><dt><span class="term"><code class="option">--with-atlas-libdir=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+	Search for ATLAS library files in
+	<em class="replaceable"><code>directory</code></em> first.  This option
+	has the effect of enabling ATLAS for lapack
+	(i.e. <code class="option">--with-lapack=atlas</code>).  This option is useful
+	if ATLAS is installed in a location that does not fit 
+	the pattern assumed by <code class="option">--with-atlas-prefix</code>.
+       </p></dd><dt><span class="term"><code class="option">--with-mkl-prefix=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+	Search for MKL installation in
+	<em class="replaceable"><code>directory</code></em> first.  MKL headers
+	should be in the <code class="filename">include</code> subdirectory of
+	<em class="replaceable"><code>directory</code></em> and MKL libraries should
+	be in the <code class="filename">lib/(arch)</code> subdirectory.  This option
+	has the effect of enabling MKL for lapack
+	(i.e. <code class="option">--with-lapack=mkl</code>).  This option is useful
+	if MKL is installed in a non-standard location, or if multiple
+	MKL versions are installed.
+       </p></dd><dt><span class="term"><code class="option">--with-mkl-arch=<em class="replaceable"><code>architecture</code></em></code></span></dt><dd><p>
+        Used in conjunction with <code class="option">--with-mkl-prefix</code> to
+        specify which library subdirectory of MKL to use.  If
+	<code class="option">--with-mkl-prefix=<em class="replaceable"><code>directory</code></em></code>
+	is used to specify the MKL prefix, libraries are searched for
+	in <code class="filename">directory/architecture</code>.  By default
+	<em class="replaceable"><code>architecture</code></em> is deduced based on
+	the platform.  This option is useful if this deduction is
+	incorrect.
+       </p></dd><dt><span class="term"><code class="option">--without-cblas</code></span></dt><dd><p>
+        Disables the use of the C BLAS API, forcing the use of the
+        Fortran BLAS API.  This option is useful if building on a
+        platform that does not provide the C BLAS API.
+       </p></dd><dt><span class="term"><code class="option">--with-cbe-sdk</code></span></dt><dd><p>
+        Enable the use of the IBM Cell/B.E. Software Development Kit
+        (SDK) version 3.0 or 3.1 if found.  Enabling the Cell/B.E. SDK
+        will accelerate the performance of FFTs,
+        vector-multiplication, vector-matrix multiplication, and fast
+        convolution.
+       </p></dd><dt><span class="term"><code class="option">--with-cbe-sdk-sysroot=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+	Search for Cell/B.E. SDK libraries and headers in a sysroot at
+	<em class="replaceable"><code>directory</code></em>, rather than in the system
+	root directory (or the default sysroot location, in the case of
+	SDK version 2.1).  This option has the effect of enabling use of
+	the Cell/B.E. SDK (i.e.	<code class="option">--with-cbe-sdk</code>).
+	This option is used for cross-compilation.
+       </p></dd><dt><span class="term"><code class="option">--with-numa</code></span></dt><dd><p>
+        Enable the use of libnuma.  This is useful on Cell/B.E. systems
+        to insure that SPE resources allocated for accelertion are
+        local to the PPE running VSIPL++.
+       </p></dd><dt><span class="term"><code class="option">--with-cvsip</code></span></dt><dd><p>
+        Enable Sourcery VSIPL++ to search for an appropriate C VSIPL
+        implementation on the platform.  If found, it will be used to
+        perform linear algebra (matrix-vector products and solvers)
+        and some signal processing (convolution, correlation, and
+        FIR).  If the <code class="option">--enable-fft=cvsip</code> option is
+        also given, the VSIPL implementation will be used to perform
+        FFTs.
+       </p></dd><dt><span class="term"><code class="option">--with-cvsip-prefix=<em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
+	Search for a C VSIPL installation in
+	<em class="replaceable"><code>directory</code></em> first.  Headers should be
+	in the <code class="filename">include</code> subdirectory of
+	<em class="replaceable"><code>directory</code></em> and libraries should be
+	in the <code class="filename">lib</code> subdirectory.  This option has
+	the effect of enabling the use of a VSIPL back end as if the
+	option <code class="option">--with-cvsip</code> had been given.  This
+	option is useful if VSIPL is installed in a non-standard
+	location, or if multiple VSIPL versions are installed.
+       </p></dd><dt><span class="term"><code class="option">--enable-only-ref-impl</code></span></dt><dd><p>
+        Configure Sourcery VSIPL++ to be used as the VSIPL++ reference
+        implementation.  When the BSD licensed files are configured
+        with this option, the result is the VSIPL++ reference
+        implementation.  This option implies the
+        <code class="option">--enable-fft=cvsip</code> and
+        <code class="option">--with-cvsip</code> options. Refer to
+        <a class="xref" href="ch03s03.html#cfg-ref-impl" title="3.3.4. Configuration Notes for the Reference Implementation">Section 3.3.4, &#8220;Configuration Notes for the Reference Implementation&#8221;</a> for
+        more information on configuring the reference implementation.
+       </p></dd><dt><span class="term"><code class="option">--with-png</code></span></dt><dd><p>
+	Enables PNG I/O support, using libpng. By default, PNG support is enabled
+        if libpng is found during configuration.
+       </p></dd><dt><span class="term"><code class="option">--enable-simd-loop-fusion</code></span></dt><dd><p>
+        Enable VSIPL++ to generate SIMD instructions for loop-fusion
+        expressions (containing data that is SIMD aligned).
+
+        This option is useful for increasing performance of many
+        VSIPL++ expressions on platforms with SIMD instruction
+        set extensions (such as Intel SSE, or Power VMX/AltiVec).
+
+        The default is not to generate SIMD instructions.
+       </p></dd><dt><span class="term"><code class="option">--enable-simd-unaligned-loop-fusion</code></span></dt><dd><p>
+        Enable VSIPL++ to generate SIMD instructions for loop-fusion
+        expressions, possibly containing data that is SIMD unaligned.
+
+        This option is useful for increasing performance of VSIPL++
+        expressions that work with unaligned data on platforms with
+        SIMD instruction set extensions (such as Intel SSE, or Power
+        VMX/AltiVec).
+
+        The default is to follow the setting of
+        <code class="option">--enable-simd-loop-fusion</code>.
+       </p></dd><dt><span class="term"><code class="option">--with-complex=<em class="replaceable"><code>format</code></em></code></span></dt><dd><p>
+        Specify the <em class="replaceable"><code>format</code></em> for storing
+        complex numbers.
+
+        Valid choices for <em class="replaceable"><code>format</code></em> are
+        <code class="option">inter</code> and <code class="option">split</code>, which
+        select interleaved and split storage respectively.
+
+        This option is useful when a platform has better
+        performance using a particular complex storage format.
+
+        The default complex storage format is <code class="option">inter</code>.
+       </p></dd><dt><span class="term"><code class="option">--enable-timer=<em class="replaceable"><code>timer</code></em></code></span></dt><dd><p>
+        Use <em class="replaceable"><code>timer</code></em> type of timer for
+        profiling. Valid choices for <em class="replaceable"><code>timer</code></em>
+        include <code class="option">none</code>, <code class="option">posix</code>,
+        <code class="option">realtime</code>, <code class="option">pentiumtsc</code>, and
+        <code class="option">x86_64_tsc</code>, and <code class="option">power_tb</code>.
+        By default no timer is used
+        (<code class="option"><em class="replaceable"><code>timer</code></em>=none</code>
+
+	This option is necessary when you intent to use the libary's
+	profiling or performance API features.
+       </p><p>
+        <code class="option">none</code> disables profile timing.
+       </p><p>
+        <code class="option">posix</code> selects the POSIX timer if present
+	on the system.
+       </p><p>
+        <code class="option">realtime</code> selects the POSIX realtime timer if present
+	on the system.
+       </p><p>
+        <code class="option">pentiumtsc</code> selects the Pentium time-stamp
+        counter (TSC) timer if present on the system.
+       </p><p>
+        <code class="option">x86_64_tsc</code> selects the x86-64 (or em64t)
+        time-stamp counter (TSC) timer if present on the system.
+       </p><p>
+        <code class="option">power_tb</code> selects the Power architecture
+	timebase counter timer if present on the system.
+       </p></dd><dt><span class="term"><code class="option">--enable-cpu-mhz=<em class="replaceable"><code>speed</code></em></code></span></dt><dd><p>
+        Use <em class="replaceable"><code>speed</code></em> MHz as the counter
+        frequency for the Pentium and x86-64 timestamp counters.  By
+        default, the counter frequency is queried from the operating
+        system at runtime.  This option is useful if the correct
+        counter frequency cannot be determined.
+       </p></dd><dt><span class="term"><code class="option">--with-obj-ext=<em class="replaceable"><code>EXT</code></em></code></span></dt><dd><p>
+        Specify <em class="replaceable"><code>EXT</code></em> as the file extension
+        to be used for object files.  Object files will be
+        named <code class="filename">file.<em class="replaceable"><code>EXT</code></em></code>.
+	Default value is determined heuristically by configure.
+       </p></dd><dt><span class="term"><code class="option">--with-lib-ext=<em class="replaceable"><code>EXT</code></em></code></span></dt><dd><p>
+        Specify <em class="replaceable"><code>EXT</code></em> as the file extension
+        to be used for library archive files.  Library archive files will be
+        named <code class="filename">file.<em class="replaceable"><code>EXT</code></em></code>.
+	Default value is determined heuristically by configure.
+       </p></dd><dt><span class="term"><code class="option">--with-exe-ext=<em class="replaceable"><code>EXT</code></em></code></span></dt><dd><p>
+        Specify <em class="replaceable"><code>EXT</code></em> as the file extension
+        to be used for executable files.  Executable files will be
+        named <code class="filename">file<em class="replaceable"><code>EXT</code></em></code>.
+	Unlike <code class="option">--with-obj-ext</code> and
+	<code class="option">--with-lib-ext</code>, no "." is implied.
+	Default value is determined heuristically by configure.
+       </p></dd><dt><span class="term"><code class="option">--enable-shared-acconfig</code></span></dt><dd><p>
+        Generate an acconfig.hpp that can be shared by different
+        configurations by putting macros on the compiler command line.
+	This is useful when building binary packages.
+
+	Normally an acconfig.hpp file is generated that can only be
+	used by one configuration.
+       </p></dd><dt><span class="term"><code class="option">--enable-shared-libs</code></span></dt><dd><p>
+        Build shared libraries as well as static libraries.  This
+        requires that position-independent code be generated,
+        which may reduce performance.
+       </p></dd></dl></div><p>
+   </p><p>
+    <a class="xref" href="ch03s03.html#ex-configure" title="Example 3.1. Configuring Sourcery VSIPL++">Example 3.1, &#8220;Configuring Sourcery VSIPL++&#8221;</a> shows how to use the configure
+    script to use particular optimization options for the C++
+    compiler on a system where MPI support is not required.  The
+    exact output will vary from system to system, but the output
+    shown here is representative.
+   </p><div class="example"><a name="ex-configure"></a><p class="title"><b>Example 3.1. Configuring Sourcery VSIPL++</b></p><div class="example-contents"><pre class="screen">&gt; ./configure CXXFLAGS="-O2 -ffast-math" --disable-mpi
+checking build system type... i686-pc-linux-gnu
+checking host system type... i686-pc-linux-gnu
+checking for g++... g++
+checking for C++ compiler default output file name... a.out
+checking whether the C++ compiler works... yes
+checking whether we are cross compiling... no
+checking for suffix of executables... 
+checking for suffix of object files... o
+checking whether we are using the GNU C++ compiler... yes
+checking whether g++ accepts -g... yes
+checking for bugs in g++ and its runtime... no bugs found
+checking for openjade... openjade
+checking for pdfjadetex... pdfjadetex
+checking for a BSD-compatible install... /usr/bin/install -c
+configure: creating ./config.status
+config.status: creating src/vsip/impl/acconfig.hpp
+config.status: creating src/vsip/GNUmakefile.inc
+config.status: creating tests/context
+config.status: creating tests/QMTest/configuration
+config.status: creating doc/GNUmakefile.inc
+config.status: creating GNUmakefile
+config.status: creating src/vsip/impl/acconfig.hpp</pre></div></div><br class="example-break"><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id278601"></a>3.3.1. Configuration Notes for Mercury Systems</h3></div></div></div><p>
+     When configuring Sourcery VSIPL++ for a Mercury
+     PowerPC system, the following environment variables
+     and configuration flags are recommended:
+     </p><div class="itemizedlist"><ul type="disc"><li><p><code class="option">CXX=ccmc++</code></p><p>
+	This selects the <code class="option">ccmc++</code> cross compiler as the
+        C++ compiler.
+       </p></li><li><p><code class="option">CC=ccmc</code></p><p>
+	This selects the <code class="option">ccmc</code> cross compiler as the
+        C compiler.
+       </p></li><li><p><code class="option">AR=armc</code></p><p>
+	This selects the <code class="option">armc</code> archiver.
+       </p></li><li><p><code class="option">AR_FLAGS=cr</code></p><p>
+	This selects the <code class="option">c</code> (create archive if it
+	does not exist) and <code class="option">r</code> (replace files in
+	archive) flags for the <code class="option">armc</code> archiver.
+	<code class="option">armc</code> does not support the <code class="option">u</code>
+        flag (only replace files if they are an update).
+       </p></li><li><p><code class="option">CXXFLAGS="--no_implicit_include -Onotailrecursion -t <em class="replaceable"><code>architecture</code></em> --no_exceptions -Ospeed --max_inlining -DNDEBUG --diag_suppress 177,550"</code></p><p>
+        These are the recommended flags for compiling Sourcery VSIPL++
+        with the GreenHills C++ compiler on the Mercury platform.
+        These flags fall into two categories: those necessary for
+        a correct build, and those optional for good performance.
+        The following are necessary to correctly build the library:
+        </p><div class="itemizedlist"><ul type="circle"><li><p><code class="option">--no_implicit_include</code></p><p>
+           GreenHills enables implicit inclusion by default. This permits
+           the compiler to assume that if it needs to instantiate a
+           template entity defined in a .hpp file it can implicitly
+           include the corresponding .cpp file to get the source code for
+           the definition.
+          </p><p>
+           Sourcery VSIPL++ does not use this capability.  Leaving this
+           feature enabled will result in multiple symbol definition errors
+           at link-time.
+          </p><p>
+           Note: it is only necessary to disable implicit includes when
+           building the library.  After the library has been installed,
+           applications using it may enable implicit includes.
+          </p></li><li><p><code class="option">-Onotailrecursion</code></p><p>
+           This disables optimization of tail-recursive functions.
+           This optimization has a defect which is triggered by
+           some of Sourcery VSIPL++'s algorithms.
+          </p></li></ul></div><p>
+       </p><p>
+        The following flags will improve the performance of the library
+        and applications.  These should be used for production.
+        </p><div class="itemizedlist"><ul type="circle"><li><p>
+           <code class="option">-t <em class="replaceable"><code>architecture</code></em></code>
+          </p><p>
+           This flag directs the compiler to generate code optimized
+           for processor variant and endian-ness specified by
+           <em class="replaceable"><code>architecture</code></em>.
+           Valid choices are listed in the <code class="filename">ccmc++</code>
+           documentation and include
+           <code class="option">ppc7400</code>, <code class="option">ppc7400_le</code>,
+           <code class="option">ppc7445</code>, and <code class="option">ppc7445_le</code>.
+          </p></li><li><p><code class="option">--no_exceptions</code></p><p>
+           Disable exception handling, which can have a large
+           performance overhead with the GreenHills compiler.
+           This should be used in conjunction
+           with the configure flag <code class="option">--disable-exceptions</code>.
+          </p></li><li><p><code class="option">-Ospeed</code></p><p>
+           This option instructs the compiler to enable all optimizations
+           which improve speed.
+          </p></li><li><p><code class="option">--max_inlining</code></p><p>
+           By default, GreenHills will only consider functions composed
+           entirely of straightline code (no control flow) for inlining.
+           <code class="option">--max_inlining</code> instructs the compiler
+           to consider all functions (whether containing control flow
+           statements or not) for inlining, subject to the usual
+           restraints in the case of excessively large or complicated
+           functions.
+          </p></li><li><p><code class="option">-DNDEBUG</code></p><p>
+           Disable assertions.  This option should be used when
+           configuring the library for performance.
+          </p></li><li><p><code class="option">--diag_suppress 177,550</code></p><p>
+           This option suppresses compiler diagnostics warning
+           about unused variables.  When compiling with
+           <code class="option">-DNDEBUG</code> assertions are removed that
+           may be the only reference to a variable.
+          </p></li></ul></div><p>
+       </p><p>
+        When compiling a development or debug version of the library,
+        replace <code class="option">-Ospeed -DNDEBUG</code> with <code class="option">-g</code>.
+       </p></li><li><p><code class="option">--host=powerpc</code></p><p>
+        Cross compile for the PowerPC processor.
+       </p></li><li><p><code class="option">--with-sal</code></p><p>
+        Enable the SAL library.
+       </p></li><li><p><code class="option">--enable-fft=sal,builtin</code></p><p>
+        Use SAL and Sourcery VSIPL++ builtin FFTW3 to perform FFT
+        operations.  SAL FFT will be used for FFTs with power-of-two
+	sizes, FFTW3 will be used otherwise.
+       </p></li><li><p><code class="option">--with-fftw3-cflags="-O2"</code></p><p>
+        Compile Sourcery VSIPL++'s builtin FFTW3 library with
+	optimization level <code class="option">-O2</code>.  (Compiling
+	FFTW3 with optimization level <code class="option">-O3</code>
+	produces link-errors with GreenHills C related to the
+	handling of static functions.  CodeSourcery is currently
+	developing a work-around for this.)
+       </p></li><li><p><code class="option">--with-complex=split</code></p><p>
+        Store complex data in split format by default.
+       </p></li><li><p><code class="option">--disable-exceptions</code></p><p>
+        Disable the use of exceptions from within the library.
+       </p></li><li><p><code class="option">--enable-parallel=mpipro</code></p><p>
+        Enable the use of Verari MPI/Pro for communications.
+       </p></li><li><p><code class="option">--enable-timer=realtime</code></p><p>
+        Use the POSIX-realtime timer for profiling.
+       </p></li></ul></div><p>
+    </p><p>
+     The file <code class="filename">examples/mercury/mcoe-setup.sh</code> is
+     an example of how to configure Sourcery VSIPL++ for the Mercury
+     with these options.
+    </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id279001"></a>3.3.2. Configuration Notes for Windows Systems</h3></div></div></div><p>
+     Before configuring Sourcery VSIPL++ for a Microsoft Windows
+     systems, the follow prerequisites are recommended:
+     </p><div class="itemizedlist"><ul type="disc"><li><p>
+       The Cygwin environment for Windows, including the GNU make and
+       sed packages.
+
+       Sourcery VSIPL++ uses this as development environment for
+       configuring and building the Sourcery VSIPL++ library.  Cygwin
+       is not necessary to build and run Sourcery VSIPL++
+       applications.
+
+       For more information on the Cygwin environment, visit
+       <a class="ulink" href="http://www.cygwin.com/" target="_top">http://www.cygwin.com/</a></p></li><li><p>
+       Intel C++ for Windows, version 9.1 or later.  This may require
+       installation of a Microsoft C++ compiler and Microsoft
+       SDK for windows.  For more information on Intel C++ and its
+       requirements:
+       <a class="ulink" href="http://www.intel.com/cd/software/products/asmo-na/eng/compilers/279578.htm" target="_top">http://www.intel.com/cd/software/products/asmo-na/eng/compilers/279578.htm</a>
+       </p></li><li><p>
+       Intel IPP and MKL for Windows.</p></li></ul></div><p>
+    </p><p>
+     When configuring Sourcery VSIPL++ for a Microsoft Windows
+     system, the following environment variables and configuration
+     flags are recommended:
+     </p><div class="itemizedlist"><ul type="disc"><li><p><code class="option">CXX=icl</code></p><p>
+	This selects the Intel C/C++ compiler <code class="command">icl</code> as the
+        C++ compiler.
+       </p></li><li><p><code class="option">CC=icl</code></p><p>
+	This selects the Intel C/C++ compiler <code class="option">icl</code> at the
+        C compiler.
+       </p></li><li><p><code class="option">CXXFLAGS="/Qcxx-features /Qvc8"</code></p><p>
+        These are the recommended flags for compiling Sourcery VSIPL++
+        with the Intel C++ compiler on Microsoft Windows platforms.
+        
+        The following are necessary to correctly build the library:
+        </p><div class="itemizedlist"><ul type="circle"><li><p><code class="option">/Qcxx-features</code></p><p>
+	   This enables standard C++ features for exception handling
+	   and RTTI.
+          </p></li><li><p><code class="option">/Qvc8</code></p><p>
+	   This enables Microsoft Visual Studio 2005 compatibility. 
+	   If using another version of Visual Studio, please consult
+	   the Intel C++ documentation for the correct option.
+          </p></li></ul></div><p>
+       </p></li><li><p><code class="option">--build=i686-cygwin</code></p><p>
+        Configure to build library in the cygwin environment.
+       </p></li><li><p><code class="option">--host=i686-mingw32</code></p><p>
+        Target the resulting library to run on Microsoft Windows systems
+	with the Win32 API.
+       </p></li><li><p><code class="option">--with-ipp=win</code></p><p>
+        Enable the IPP library for Windows.
+	
+	This requires that the IPP header, library, and DLL directories be
+	present in your <code class="envar">INCLUDE</code>, <code class="envar">LIB</code>,
+	and <code class="envar">PATH</code> directories, respectively.  Manually
+	passing these paths to <code class="command">configure</code> in Windows
+	is not recommended.
+       </p></li><li><p><code class="option">--enable-fft=ipp</code></p><p>
+        Use the IPP FFT functions to perform FFT operations.
+       </p></li><li><p><code class="option">--with-lapack=mkl_win</code></p><p>
+        Use the MKL library for Windows to implement linear-algebra
+	operations.
+
+	This requires that the MKL header and library directories be
+	present in your <code class="envar">INCLUDE</code> and <code class="envar">LIB</code>,
+	directories, respectively.  Manually passing these paths to
+	<code class="command">configure</code> in Windows is not recommended.
+	
+       </p></li><li><p><code class="option">--disable-parallel</code></p><p>
+        Disable parallel service.  Sourcery VSIPL++ does not support MPI on
+	Windows at this time.
+       </p></li></ul></div><p>
+    </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="cfg-cell-be"></a>3.3.3. Configuration Notes for Cell/B.E. Systems</h3></div></div></div><p>
+     When configuring Sourcery VSIPL++ for a Cell/B.E. host system,
+     the following environment variables and configuration flags are
+     recommended:
+     </p><div class="itemizedlist"><ul type="disc"><li><p><code class="option">--with-cbe-sdk</code></p><p>
+        Enable use of the Cell/B.E. SDK and the Cell Math Library
+	(CML).  This is necessary to use the Cell/B.E.'s SPE
+	processors to accelerate VSIPL++ functionality.
+        If the SDK is not installed in the standard location, the
+        <code class="option">--with-cbe-sdk-prefix</code> should be used to
+        specify the location.
+       </p></li><li><p><code class="option">--with-cml-prefix=PATH</code></p><p>
+        Specify the installation path of CML.  Headers are
+	installed in a subdirectory named include; libraries
+	in one named lib.
+       </p><p>
+        To install headers and libraries in other places, use
+	instead the options <code class="option">--with-cml-include</code>
+	and <code class="option">--with-cml-libdir</code>.
+       </p></li><li><p><code class="option">--with-cml-include=PATH</code></p><p>
+        Specify the directory containing CML header files.
+	Use this option in conjunction with
+	<code class="option">--with-cml-libdir</code>.
+	Do not use with <code class="option">--with-cml-prefix</code>.
+       </p></li><li><p><code class="option">--with-cml-libdir=PATH</code></p><p>
+        Specify the directory containing CML libraries.
+	Use this option in conjunction with
+	<code class="option">--with-cml-include</code>.
+	Do not use with <code class="option">--with-cml-prefix</code>.
+       </p></li><li><p><code class="option">--with-numa</code></p><p>
+        Enable use of libnuma for SPE/PPE affinity control.  This
+	may improve program performance by allocating SPEs close to
+	the PPEs running VSIPL++.
+       </p></li><li><p><code class="option">--enable-timer=power_tb</code></p><p>
+        Enable the Power Timebase high-resolution timer.  This option
+	is useful when using profiling or running library benchmarks.
+       </p></li></ul></div><p>
+    </p><p>
+     Two additional options must be specified when using a non-Cell/B.E.
+     build system to cross-compile Sourcery VSIPL++ for a Cell/B.E. host
+     system.
+     </p><div class="itemizedlist"><ul type="disc"><li><p><code class="option">--host=powerpc-cell-linux-gnu</code></p><p>
+        Define the host system type.
+       </p></li><li><p><code class="option">--with-cbe-sdk-sysroot=<em class="replaceable"><code>directory</code></em></code></p><p>
+        Specify the Cell/B.E. sysroot location.  Typically, this will be
+        <code class="filename">/opt/cell/sysroot</code> on
+        a standard SDK 3.0 cross-compiler installation.
+       </p></li></ul></div><p>
+    </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="cfg-ref-impl"></a>3.3.4. Configuration Notes for the Reference Implementation</h3></div></div></div><p>
+     If you wish to use the BSD-licensed reference-implementation
+     subset of Sourcery VSIPL++, you must configure with the following
+     option:
+     </p><div class="itemizedlist"><ul type="disc"><li><p><code class="option">--enable-only-ref-impl</code></p><p>
+        Build only the reference-implementation subset of Sourcery
+        VSIPL++.  If you do not use this option, the complete,
+        optimized implementation of Sourcery VSIPL++ will be built.
+       </p></li></ul></div><p>
+    </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch03s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-installation-source.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch03s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">3.2. Obtaining the Source Code </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 3.4. Compilation and Installation</td></tr></table></div></body></html>

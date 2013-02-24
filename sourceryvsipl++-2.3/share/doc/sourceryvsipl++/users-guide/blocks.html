@@ -1,0 +1,144 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.2. Blocks</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-ref-api.html" title="Chapter 1. API overview"><link rel="prev" href="chap-ref-api.html" title="Chapter 1. API overview"><link rel="next" href="matlabio.html" title="1.3. Matlab IO"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">1.2. Blocks</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="chap-ref-api.html">Prev</a> </td><th width="60%" align="center">Chapter 1. API overview</th><td width="20%" align="right"> <a accesskey="n" href="matlabio.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="blocks"></a>1.2. Blocks</h2></div></div></div><p>The data accessed and manipulated through the View API is actually
+    stored in blocks. Blocks are reference-countable, allowing multiple views
+    to share a single block. However, blocks may themselves be proxies that
+    access their data from other blocks (possibly computing the actual values
+    only when these values are accessed). These blocks are thus not
+    modifiable. They aren't allocated directly by users, but rather internally
+    during the creation of subviews, for example.</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="dense"></a>1.2.1. Dense Blocks</h3></div></div></div><p>The default block type used by all views is <code class="type">Dense</code>,
+      meaning that <code class="type">Vector&lt;float&gt;</code> is actually a shorthand
+      notation for <code class="type">Vector&lt;float, Dense&lt;1, float&gt; &gt;</code>.
+      As such <code class="type">Dense</code> is the most common block type directly used
+      by users. Dense blocks are modifiable and allocatable. They explicitly
+      store one value for each index in the supported domain:</p><pre class="programlisting">// create uninitialized array of size 3
+Dense&lt;1, float&gt; array1(Domain&lt;1&gt;(3));
+
+// create array of size 3 with initial values 0.f
+Dense&lt;1, float&gt; array2(Domain&lt;1&gt;(3), 0.f);
+
+// assign array2 to array1
+array1 = array2;
+
+// access first item
+float value = array1.get(0);
+
+// modify first item
+array1.put(0, 1.f);
+</pre><p>A dense block get its size from the <code class="type">Domain</code> argument
+      passed to its constructor. You can also specify an initial value.</p><p>What is the difference between</p><pre class="programlisting">Dense&lt;1, float&gt; blk1(Domain&lt;1&gt;(0, 1, 10));</pre><p>and</p><pre class="programlisting">Dense&lt;1, float&gt; blk2(Domain&lt;1&gt;(107, -3, 10));</pre><p>Nothing. Only the domain's dimension sizes are used in creating a
+      <code class="type">Dense</code> block; its offset and stride are ignored.</p><p>You use the following class template to create a dense block
+      type:</p><pre class="programlisting">template &lt;dimension_type	Dim,
+          typename T,
+          typename OrderT,
+          typename MapT&gt;
+class Dense;</pre><p>It has the following parameters:</p><div class="variablelist"><dl><dt><span class="term">Dim</span></dt><dd><p>the number of block dimensions</p></dd><dt><span class="term">T</span></dt><dd><p>the type of values stored in the block</p></dd><dt><span class="term">OrderT</span></dt><dd><p>the dimension ordering</p></dd><dt><span class="term">MapT</span></dt><dd><p>how data is distributed</p></dd></dl></div><p><em class="parameter"><code>Dim</code></em> and <em class="parameter"><code>T</code></em> are used
+      most commonly, but all parameters have default values.</p><p>Most often you will access data values and information with views.
+      Using a block directly, you can check its size</p><pre class="programlisting">size = blk.size();       // returns block's total size
+size = blk.size(Dim, d); // returns block size in dimension d
+                         // useful if block is 1,x-dimensional.</pre><p>and perform element-wise operations.</p><pre class="programlisting">cur_value = blk.get(idx); // return the value stored at index <code class="varname">idx</code>
+blk.put(idx, new_value);  // change the value stored at index <code class="varname">idx</code></pre><p>You can also access user storage. See <a class="xref" href="blocks.html#user-storage" title="1.2.1.2. User Storage">Section 1.2.1.2, &#8220;User Storage&#8221;</a>. You can also attach a view to a
+      block.</p><pre class="programlisting">Dense&lt;1, float&gt;* blk = new Block(Domain&lt;1&gt;(n_elem));
+Vector&lt;float, Dense&lt;1, float&gt; &gt; v(*blk);</pre><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="layout"></a>1.2.1.1. Layout</h4></div></div></div><p>Beside the two template parameters already discussed above,
+        <code class="type">Dense</code> provides an optional third parameter to specify its
+        dimension ordering. Using this parameter you can explicitly control
+        whether a 2-dimensional array should be stored in row-major or
+        column-major format:</p><pre class="programlisting">// array using row-major ordering
+Dense&lt;2, float, tuple&lt;0, 1&gt; &gt; rm_array;
+
+// array using column-major ordering
+Dense&lt;2, float, tuple&lt;1, 0&gt; &gt; cm_array;
+</pre><p>Row-major arrays store rows as contiguous chunks of memory.
+        Iterating over its columns will thus access close-by memory regions,
+        reducing cache misses and thus enhancing performance:</p><pre class="programlisting">length_type size = rm_array.size(0);
+for (index_type i = 0; i != size; ++i)
+  rm_array.put(i, 1.f);</pre><p>Layout can affect <span class="emphasis"><em>locality</em></span> and is important
+        for performance.</p><p>Sourcery VSIPL++ provides <code class="literal">typedef</code>s for
+        <code class="type">tuple</code>:</p><div class="variablelist"><dl><dt><span class="term">row<em class="replaceable"><code>D</code></em>_type</span></dt><dd><p>indicates a D-dimensional row-major
+              <code class="type">tuple</code>.</p></dd><dt><span class="term">col<em class="replaceable"><code>D</code></em>_type</span></dt><dd><p>indicates a D-dimensional column-major
+              <code class="type">tuple</code>.</p></dd></dl></div><p>To create a row-major 2-dimensional dense block:</p><pre class="programlisting">Dense&lt;2, float, row2_type&gt; block(Domain&lt;2&gt;(3, 3));</pre><p>To create a column-major 2-dimensional dense
+        block:</p><pre class="programlisting">Dense&lt;2, float, col2_type&gt; block(Domain&lt;2&gt;(3, 3));</pre><p>It is good practice to use layout explicitly when declaring
+        views. Instead of</p><pre class="programlisting">Matrix&lt;T&gt; data(rows, cols);</pre><p>use</p><pre class="programlisting">typedef Dense&lt;2, T, row2_type&gt; block_type;
+typedef Matrix&lt;T, block_type&gt;  view_type;
+view_type data(rows, cols);</pre><p>This makes it easier to change dimension-ordering and add
+        parallel mappings.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="user-storage"></a>1.2.1.2. User Storage</h4></div></div></div><p>They also allow user-storage to be provided, either at
+        construction time, or later via a call to
+        <code class="function">rebind</code>:</p><pre class="programlisting">float *storage = ...;
+
+// create array operating on user storage
+Dense&lt;1, float&gt; array3(Domain&lt;1&gt;(3), storage);
+
+// create uninitialized array...
+Dense&lt;1, float&gt; array4(Domain&lt;1&gt;(3));
+
+// ...and rebind it to user-storage
+array4.rebind(storage);</pre><p>However, special care has to be taken in these cases to
+        synchronize the user storage with the block using it. While the
+        storage is being used via the block it was rebound to, it has to be
+        <span class="emphasis"><em>admitted</em></span>, and <span class="emphasis"><em>released</em></span> in
+        order to be accessed directly, i.e. outside the block.</p><pre class="programlisting">// grant exclusive access to the block
+array3.admit(true);
+
+// modify it
+array3.put(0, 1.f);
+
+// force synchronization with storage
+array3.release();
+
+// access storage directly
+assert(storage == 1.f);</pre><p><code class="function">admit</code> and <code class="function">release</code> take
+        a <code class="type">boolean</code> update flag:</p><div class="itemizedlist"><ul type="disc"><li><p>true indicates that consistency is required.</p></li><li><p>false indicates that consistency is not required.</p></li></ul></div><p>If the library does not re-arrange or copy data, the
+        <code class="varname">update</code> may have no effect - but applications should
+        not assume this. If library does re-arrange or copy data,
+        <code class="varname">update</code> tells the library when consistency is
+        required. If consistency is not required, the library may skip
+        re-arrangement or copy.</p><p>Why would you set <code class="varname">update</code> to
+        <code class="literal">false</code>? Consider a block used to bring external data
+        into the system:</p><pre class="programlisting">float ptr[10];
+Dense&lt;1, float&gt; block(10, ptr);
+for (...)
+  fread(ptr, 10, sizeof(float), FILE); // read data from file
+  block.admit(true);                   // admit data in block
+  ... use data read in from file ...   // require consistency
+  block.release(false);                // release block
+  ... don't care about data ...        // don't require consistency</pre><p>After the <code class="function">release</code>, the data referred to by
+        <code class="varname">ptr</code> will not be used,</p><div class="itemizedlist"><ul type="disc"><li><p>it will just be overwritten;</p></li><li><p>reorganizing block's data is unnecessary;</p></li><li><p>if library reorganizes complex data (for example, converting
+            from interleaved to split to facilitate SIMD), then setting
+            <code class="varname">update</code> to false on <code class="function">release</code>
+            will avoid unnecessary reorganization.</p></li></ul></div><p>You can check the admit/release state of a block with
+        <code class="function">admitted</code>. For example:</p><pre class="programlisting">float buf[10];
+Dense&lt;1, float&gt; block(10, buf);
+assert(block.admitted() == false);
+block.admit(true);
+assert(block.admitted() == true);
+block.release(true);
+assert(block.admitted() == false);</pre><p>A block without user-storage is admitted at all times. Calls to
+        <code class="function">admitted</code> will always return
+        <code class="literal">true</code>.</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id278102"></a>1.2.2. Reference Counting</h3></div></div></div><p>One important function of views is to reference count
+      blocks.</p><div class="itemizedlist"><ul type="disc"><li><p>Each block maintains a reference count.</p></li><li><p>Initially the reference count is one.</p></li><li><p>When a new view is created on the block, the count is
+          incremented.</p></li><li><p>When a view is destroyed, the view's block's count is
+          decremented.</p></li><li><p>When a block's count goes to zero, it is freed.</p></li></ul></div><p>For example:</p><pre class="programlisting">for (int i=0; i&lt;1000; ++i) {
+Vector&lt;float&gt; vec(10);	// allocate 10-element vector
+... use vec ...
+}                      // vec goes out of scope,
+                       // its block refcount is decremented
+                       // if it is zero, block is freed.</pre><p>For another example:</p><pre class="programlisting">Dense&lt;1, float&gt;* blk = new Block(Domain&lt;1&gt;(n_elem)); // blk count is 1
+Vector&lt;float, Dense&lt;1, float&gt; &gt; v(*blk);             // blk count is 2</pre><p>Initializing a block&#8217;s reference count to one prevents user
+      created blocks from being freed inadvertently. Consider</p><pre class="programlisting">Dense&lt;1, float&gt; blk(n_elem); // allocate blk on the stack.
+Vector&lt;float&gt; v(blk);</pre><p>If blk's reference count went to zero, it would attempt to destroy
+      itself. This would cause undefined behavior.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id278190"></a>1.2.3. Complex Data</h3></div></div></div><p>There are three ways to specify complex storage:</p><div class="variablelist"><dl><dt><span class="term">Array Format</span></dt><dd><p>Directly, with a pointer to complex values.</p><pre class="programlisting">Dense&lt;Dim, complex&lt;float&gt; &gt;(length_type, complex&lt;float&gt;*);</pre></dd><dt><span class="term">Interleaved</span></dt><dd><p>A scalar pointer to interleaved real/imaginary
+            values.</p><pre class="programlisting">Dense&lt;Dim, complex&lt;float&gt; &gt;(length_type, float*);</pre></dd><dt><span class="term">Split</span></dt><dd><p>Two scalar pointers, one to real values, one to
+            imaginary.</p><pre class="programlisting">Dense&lt;Dim, complex&lt;float&gt; &gt;(length_type, float *, float *);</pre></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id278261"></a>1.2.4. Storage Pointer</h3></div></div></div><p>To find the pointer bound to a released user-storage
+      block:</p><pre class="programlisting">void Dense&lt;Dim, T&gt;::find(T*&amp; pointer);</pre><p>For example:</p><pre class="programlisting">Dense&lt;1, float&gt; block(size, data_buffer);
+float *ptr;
+block.find(ptr);</pre><p><code class="function">find</code>'s behavior depends on the admit/release
+      state:</p><div class="itemizedlist"><ul type="disc"><li><p>If block is released, <code class="function">find</code> places the
+          block's storage pointer in <code class="varname">ptr</code>.</p></li><li><p>If block is admitted, <code class="function">find</code> places
+          <code class="literal">NULL</code> in <code class="varname">ptr</code>.</p></li><li><p>Also, if block is not a user storage block, it places
+          <code class="literal">NULL</code> in <code class="varname">ptr</code>.</p></li></ul></div><p>For complex user-storage blocks:</p><div class="itemizedlist"><ul type="disc"><li><p>with interleaved format:</p><pre class="programlisting">void Dense&lt;1, complex&lt;float&gt; &gt;::find(float*&amp;);</pre></li></ul></div><div class="itemizedlist"><ul type="disc"><li><p>with split format:</p><pre class="programlisting">void Dense&lt;1, complex&lt;float&gt; &gt;::find(float*&amp;, float*&amp;);</pre></li></ul></div><div class="itemizedlist"><ul type="disc"><li><p>with array format, the standard find() is used.</p></li></ul></div><p>To change the storage pointer that a block is bound
+      to:</p><pre class="programlisting">void Dense&lt;Dim, T&gt;::rebind(T* pointer);</pre><p><code class="function">rebind</code> only works for released blocks.
+      Otherwise its behavior is undefined.</p><p>For complex user-storage blocks:</p><div class="itemizedlist"><ul type="disc"><li><p>with interleaved format:</p><pre class="programlisting">void Dense&lt;1, complex&lt;float&gt; &gt;::rebind(float*);</pre></li></ul></div><div class="itemizedlist"><ul type="disc"><li><p>with split format:</p><pre class="programlisting">void Dense&lt;1, complex&lt;float&gt; &gt;::rebind(float*, float*);</pre></li></ul></div><div class="itemizedlist"><ul type="disc"><li><p>with array format, the standard <code class="function">rebind</code> is
+          used.</p></li></ul></div><p>Finally, the storage type of a block can be
+      checked:</p><pre class="programlisting">user_storage_t Dense&lt;Dim, T&gt;::user_storage();</pre><p><code class="type">user_storage_t</code> is an enumeration whose values are
+      described below.</p><p>If the block does have user-specified storage,
+      <code class="function">user_storage</code> returns:</p><div class="variablelist"><dl><dt><span class="term"><code class="literal">array_format</code></span></dt><dd><p>for array format, all scalar storage, and some complex
+            storage.</p></dd><dt><span class="term"><code class="literal">interleaved_format</code></span></dt><dd><p>for interleaved complex storage.</p></dd><dt><span class="term"><code class="literal">interleaved_format</code></span></dt><dd><p>for split complex storage.</p></dd></dl></div><p>If the block does not have user-specified storage, it returns
+      <code class="literal">no_user_format</code>.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="chap-ref-api.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-ref-api.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="matlabio.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 1. API overview </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 1.3. Matlab IO</td></tr></table></div></body></html>

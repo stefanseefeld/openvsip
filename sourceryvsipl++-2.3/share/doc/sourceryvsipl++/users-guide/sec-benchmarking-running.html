@@ -1,0 +1,63 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.3. Running Performance Tests</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-benchmarking.html" title="Chapter 6. Benchmarking"><link rel="prev" href="sec-benchmarking-obtaining.html" title="6.2. Obtaining the Benchmarks"><link rel="next" href="sec-benchmarking-output.html" title="6.4. Benchmark Output"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">6.3. Running Performance Tests</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="sec-benchmarking-obtaining.html">Prev</a> </td><th width="60%" align="center">Chapter 6. Benchmarking</th><td width="20%" align="right"> <a accesskey="n" href="sec-benchmarking-output.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="sec-benchmarking-running"></a>6.3. Running Performance Tests</h2></div></div></div><p> Benchmarks are invoked as follows: </p><pre class="screen">&gt;
+    <em class="replaceable"><code>benchmark</code></em>
+    <em class="replaceable"><code>-test-number</code></em> <em class="replaceable"><code>[-option[ -option[
+    ...]]]</code></em> </pre><p> Test numbers are defined individually for
+    each benchmark and represent various combinations of algorithms and
+    parameters used for a given performance measurement. Valid test numbers
+    begin at one. Most benchmarks utilize zero to display a list of valid
+    tests numbers. For example: </p><pre class="screen">&gt; vmul -0 vmul -- vector
+    multiplication single-precision: Vector-Vector: -1 -- Vector&lt; float
+    &gt; * Vector&lt; float &gt; -2 -- Vector&lt;complex&lt;float&gt;&gt; *
+    Vector&lt;complex&lt;float&gt;&gt; -3 --
+    Vector&lt;complex&lt;float&gt;&gt; * Vector&lt;complex&lt;float&gt;&gt;
+    (SPLIT) -4 -- Vector&lt;complex&lt;float&gt;&gt; *
+    Vector&lt;complex&lt;float&gt;&gt; (INTER) -5 -- Vector&lt; float &gt; *
+    Vector&lt;complex&lt;float&gt;&gt; Scalar-Vector: -11 -- float *
+    Vector&lt; float &gt; -12 -- float * Vector&lt;complex&lt;float&gt;&gt;
+    -13 -- complex&lt;float&gt; * Vector&lt;complex&lt;float&gt;&gt; -14 --
+    t_svmul2 -15 -- t_svmul2 -15 -- t_svmul3 -15 -- t_svmul4 -21 --
+    t_vmul_dom1 -22 -- t_vmul_dom1 -31 -- t_vmul_ip1 -32 -- t_vmul_ip1
+    double-precision: (101-113) (131-132) &gt; </pre><p> </p><p> While performance tests may be run simply by specifiying the test
+    number, several options are provided making it possible to control a
+    variety of useful parameters. These parameters affect either the way the
+    test is run or the type of output provided in the results. A summary of
+    the most useful options is provided below: </p><p>
+      </p><div class="variablelist"><p class="title"><b>Controlling the range of problem sizes</b></p><dl><dt><span class="term">
+            <code class="literal">-start <em class="replaceable"><code>M</code></em></code>
+          </span></dt><dd><p> Sets the starting problem size to
+            2^<em class="replaceable"><code>M</code></em>. Defaults to 2 (4 points). </p></dd><dt><span class="term">
+            <code class="literal">-stop <em class="replaceable"><code>M</code></em></code>
+          </span></dt><dd><p> Sets the stopping problem size to
+            2^<em class="replaceable"><code>M</code></em>. Defaults to 21 (2097152 points).
+            </p></dd></dl></div><p>
+    </p><p>
+      </p><div class="variablelist"><p class="title"><b>Controlling the samples taken</b></p><dl><dt><span class="term">
+            <code class="literal">-samples <em class="replaceable"><code>S</code></em></code>
+          </span></dt><dd><p> Sets the number of samples taken to
+            <em class="replaceable"><code>S</code></em>. Defaults to one. When <span class="mathphrase">S
+            <code class="literal">&gt;</code> 2</span>, the median value is
+            reported. </p></dd><dt><span class="term">
+            <code class="literal">-ms <em class="replaceable"><code>time</code></em></code>
+          </span></dt><dd><p> Sets the goal time that each measurement should take, in
+            hundredths-of-a-second. Defaults to 25 (250 ms). </p></dd></dl></div><p>
+    </p><p>
+      </p><div class="variablelist"><p class="title"><b>Benchmark specific parameters</b></p><dl><dt><span class="term">
+            <code class="literal">-param <em class="replaceable"><code>value</code></em></code>
+          </span></dt><dd><p> Sets the user-specified parameter, where
+            <em class="replaceable"><code>value</code></em> is used in some instances to
+            override a default value of a parameter, such as the number of
+            rows or columns in an input matrix for example. The effect, if
+            any, is dependent on each individual benchmark. </p></dd></dl></div><p>
+    </p><p>
+      </p><div class="variablelist"><p class="title"><b>Reporting</b></p><dl><dt><span class="term">
+            <code class="literal">-pts</code>
+          </span></dt><dd><p> Report millions of points per second (MPT/s). This is the
+            default. </p></dd><dt><span class="term">
+            <code class="literal">-ops</code>
+          </span></dt><dd><p> Reports millions of operations per second (MOP/s). </p></dd><dt><span class="term">
+            <code class="literal">-iob</code>
+          </span></dt><dd><p> Reports millions of input/output operations per second
+            (MB/s) (by summing read and write iob_per_point). </p></dd><dt><span class="term">
+            <code class="literal">-all</code>
+          </span></dt><dd><p> Reports all three statistics: MPT/s, MOP/s, MB/s </p></dd></dl></div><p>
+    </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sec-benchmarking-obtaining.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-benchmarking.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sec-benchmarking-output.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">6.2. Obtaining the Benchmarks </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 6.4. Benchmark Output</td></tr></table></div></body></html>

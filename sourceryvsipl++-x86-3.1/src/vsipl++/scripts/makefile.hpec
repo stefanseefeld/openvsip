@@ -1,0 +1,40 @@
+########################################################################
+#
+# File:   scripts/makefile.hpec
+# Author: Don McCoy
+# Date:   2010-05-19
+#
+# Contents: Makefile for generating performance profiles and summary
+#           reports (used to generate datasheet).
+#
+########################################################################
+
+scripts_dir := ./scripts
+benchmarks_dir := ./benchmarks
+
+
+########################################################################
+# Targets
+########################################################################
+
+all: datasheet
+
+characterize::
+	@echo
+	@echo Running HPEC Characterization
+	$(scripts_dir)/char.pl -runonly		\
+		-have fftw3			\
+		-bdir $(benchmarks_dir)		\
+		-db $(scripts_dir)/char.db	\
+		-hpec
+
+datasheet: characterize
+	@echo
+	@echo Generating HPEC Datasheet
+	$(scripts_dir)/datasheet.pl			\
+		-db $(scripts_dir)/hpec_datasheet.db	\
+		-o hpec_datasheet.txt
+	$(scripts_dir)/datasheet.pl			\
+		-db $(scripts_dir)/hpec_datasheet.db	\
+		-fmt csv				\
+		-o hpec_datasheet.csv

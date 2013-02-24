@@ -1,0 +1,103 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.4. Vector Objects</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="datatypes.html" title="Chapter 2. Basic VSIPL++ Data Types and Constants"><link rel="prev" href="ch02s03.html" title="2.3. Indexes and Domains"><link rel="next" href="ch02s05.html" title="2.5. Matrix Objects"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">2.4. Vector Objects</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02s03.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Basic VSIPL++ Data Types and Constants</th><td width="20%" align="right"> <a accesskey="n" href="ch02s05.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id276173"></a>2.4. Vector Objects</h2></div></div></div><p>VSIPL++ Vector objects represent one-dimensional sets of data.</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id276182"></a>2.4.1. Vector Declarations</h3></div></div></div><p>The type of values stored in the vector is given by the first
+   template argument. </p><p>Examples: </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">Vector&lt;scalar_f&gt;</code>
+      </span></dt><dd>A vector of default (single-precision) floating-point
+      values.</dd><dt><span class="term">
+       <code class="literal">Vector&lt;double&gt;</code>
+      </span></dt><dd>A vector of double-precision floating-point values.</dd><dt><span class="term">
+       <code class="literal">Vector&lt;cscalar_f&gt;</code>
+      </span></dt><dd>A vector of default (single-precision) complex
+      values.</dd><dt><span class="term">
+       <code class="literal">Vector&lt;complex&lt;double&gt; &gt;</code>
+      </span></dt><dd>A vector of double-precision complex values.</dd></dl></div><p>Optionally, the physical storage format can be controlled by the
+   second template argument, which specifies the block type used to represent
+   the data. If this is not specified, the default block type of
+   <code class="literal">Dense</code> is used, which represents data stored in
+   contiguous memory.</p><p>Example: </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">Vector&lt;float, Dense&lt;1, float&gt; &gt;</code>
+      </span></dt><dd>A vector of single-precision floating-point values,
+      explicitly specified with <code class="literal">Dense&lt;1,
+      float&gt;</code> storage.</dd></dl></div><p>Vectors can also be of type <code class="literal">const_Vector</code>, in which
+   case their values cannot be modified directly.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id276314"></a>2.4.2. Vector Constructors</h3></div></div></div><p>Vectors are created by declaring an object of type
+   <code class="literal">Vector</code>. The following constructors exist: </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">Vector&lt;float&gt; A(size)</code>
+      </span></dt><dd>Creates a vector with given size, with its values
+      uninitialized.</dd><dt><span class="term">
+       <code class="literal">Vector&lt;float&gt; A(size, value)</code>
+      </span></dt><dd>Creates a vector with given size, with its Values initialized
+      to <code class="literal">value</code>.</dd><dt><span class="term">
+       <code class="literal">Vector&lt;float&gt; A(block)</code>
+      </span></dt><dd>Creates a vector which is associated with the given data
+      block.</dd><dt><span class="term">
+       <code class="literal">Vector&lt;float&gt; A(vector)</code>
+      </span></dt><dd>Creates a vector which is a either a copy or an alias
+      of the given vector, with type casts as necessary. (If
+      <code class="literal">A</code> and <code class="literal">vector</code> have the same
+      block type, a reference (alias) is created.  Otherwise a
+      copy is performed.)</dd></dl></div><p>Vectors of <code class="literal">const_Vector</code> type can only be
+   constructed from existing Vectors with the block and vector
+   constructor forms.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id276426"></a>2.4.3. Vector Attributes</h3></div></div></div><p>The following operations can be performed on a vector in order to
+   determine various attributes. </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">A.size()</code>
+      </span></dt><dd>Returns the total number of elements in a vector.</dd><dt><span class="term">
+       <code class="literal">A.size(d)</code>
+      </span></dt><dd>Returns the number of elements in the
+      vector's <code class="literal">d</code>th dimension. Since vectors are
+      one-dimensional, this is only defined for <code class="literal">d = 0</code>,
+      and <code class="literal">size(0) == size()</code>.</dd><dt><span class="term">
+       <code class="literal">A.length()</code>
+      </span></dt><dd>Equivalent to <code class="literal">A.size()</code>.</dd><dt><span class="term">
+       <code class="literal">A.block()</code>
+      </span></dt><dd>Returns the underlying data-storage block for the
+      vector.</dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id276526"></a>2.4.4. Vector Elements</h3></div></div></div><p>The following operations can be performed on a vector to read values
+   from or write values to particular elements of the vector. </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">A(n)</code>
+      </span></dt><dd>Returns an lvalue reference to the <code class="literal">n</code>th
+      value of a vector. Unless the vector is
+      a <code class="literal">const_vector</code>, this can be used both to read values
+      from the vector and to write values to it.</dd><dt><span class="term">
+       <code class="literal">A.get(n)</code>
+      </span></dt><dd>Returns the <code class="literal">n</code>th value of a vector. This is
+      generally more efficient than <code class="literal">A(n)</code> for retrieving the
+      values of an elements.</dd><dt><span class="term">
+       <code class="literal">A.put(n, value)</code>
+      </span></dt><dd>Sets the <code class="literal">n</code>th value of a vector to
+      <code class="literal">value</code>. As with <code class="literal">A.get(n)</code>, this is
+      generally more efficient than using <code class="literal">A(n)</code>.</dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id276634"></a>2.4.5. Vector Subviews</h3></div></div></div><p>VSIPL++ allows subviews of vectors to be created. A subview
+   represents a subset of the original vector. The subview aliases the
+   original vector, that is changes to the subview will be reflected in the
+   original vector, and visa versa. </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">A(Domain&lt;1&gt;(start, stride, size))</code>
+      </span></dt><dd>Return a subview of <code class="literal">A</code>. The subview is of
+      size <code class="literal">size</code>. The nth element of the subview refers to
+      the <code class="literal">start + n*stride</code> element
+      of <code class="literal">A</code>.</dd><dt><span class="term">
+       <code class="literal">A.get(Domain&lt;1&gt;(start, stride, size))</code>
+      </span></dt><dd>Return a <code class="literal">const_Vector</code> subview
+      of <code class="literal">A</code>.</dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="sectionref_subview"></a>2.4.6. Subview Vector Variables</h3></div></div></div><p>The subview type of a vector type allows for the creation of
+   variables that reference subviews of a vector. For example,
+
+   </p><pre class="screen">Vector&lt;scalar_f&gt;::subview_type A = view(Domain&lt;1&gt;(f, s, l));</pre><p>
+
+   will create a variable <code class="literal">A</code> that references the
+   given subdomain of <code class="literal">view</code>. Thus, modifying
+   elements of <code class="literal">A</code> will modify the corresponding
+   elements of <code class="literal">view</code> and visa versa.</p><p>The underlying storage is reference-counted,
+   and it will not be deallocated until all references have been destroyed.
+   Thus, even if <code class="literal">view</code> is destroyed, the elements of
+   <code class="literal">A</code> will continue to be valid until it is destroyed as
+   well.</p><p>It is also possible to declare constant subview variables that cannot
+   be modified directly, thus preventing unexpected alterations to the primary
+   vector. These are declared with <code class="literal">const_subview_type</code>, as
+   (for instance) </p><pre class="screen">Vector&lt;scalar_f&gt;::const_subview_type A = view(Domain&lt;1&gt;(f, s, l));</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id276792"></a>2.4.7. Special Vector Subviews of Complex Vectors.</h3></div></div></div><p>There are two additional subview functions for vectors of complex
+   numbers: </p><div class="variablelist"><dl><dt><span class="term">
+       <code class="literal">real(A)</code>
+      </span></dt><dd>returns subview of real values in complex vector A</dd><dt><span class="term">
+       <code class="literal">imag(A)</code>
+      </span></dt><dd>returns subview of imaginary values in complex vector
+      A</dd></dl></div><p>Reference variables for the real and imaginary variables have the
+   types <code class="literal">Vector&lt;T&gt;::realview_type</code> and
+   <code class="literal">Vector&lt;T&gt;::imagview_type</code>, respectively, or
+   <code class="literal">Vector&lt;T&gt;::const_realview_type</code> and
+   <code class="literal">Vector&lt;T&gt;::const_imagview_type</code> for subviews that
+   cannot be directly modified.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="datatypes.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch02s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">2.3. Indexes and Domains </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 2.5. Matrix Objects</td></tr></table></div></body></html>

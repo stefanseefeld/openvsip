@@ -1,0 +1,69 @@
+########################################################################
+#
+# File:   examples/ukernel/GNUmakefile.inc.in
+# Author: Stefan Seefeld
+# Date:   2009-06-18
+#
+# Contents: ukernel makefile.
+#
+########################################################################
+
+########################################################################
+# Variables
+########################################################################
+
+examples_ukernel_plugins_src :=					\
+	$(wildcard $(srcdir)/examples/ukernel/kernels/cbe_accel/*.cpp)
+
+examples_ukernel_plugins_obj := $(patsubst $(srcdir)/%.cpp, %.$(OBJEXT),\
+				    $(examples_ukernel_plugins_src))
+examples_ukernel_plugins_exe := $(patsubst $(srcdir)/%.cpp, %,	\
+				    $(examples_ukernel_plugins_src))
+examples_ukernel_plugins_plg := $(patsubst $(srcdir)/examples/ukernel/kernels/cbe_accel/%.cpp,\
+                                    examples/ukernel/%.plg,\
+				    $(examples_ukernel_plugins_src))
+
+examples_ukernel_app_src := $(wildcard $(srcdir)/examples/ukernel/*.cpp)
+examples_ukernel_app_obj := $(patsubst $(srcdir)/%.cpp, %.$(OBJEXT), $(examples_ukernel_app_src))
+examples_ukernel_app_exe := $(patsubst $(srcdir)/%.cpp, %, $(examples_ukernel_app_src))
+
+$(examples_ukernel_plugins_obj): override CPP_FLAGS_SPU += -I $(srcdir)/examples/ukernel
+$(examples_ukernel_app_obj): override CXXFLAGS += -I $(srcdir)/examples/ukernel
+
+########################################################################
+# Rules
+########################################################################
+
+$(examples_ukernel_plugins_obj): %.$(OBJEXT): %.cpp
+	mkdir -p $(@D)
+	$(CXX_SPU) -c $(CPP_FLAGS_SPU) $(CXXFLAGS_SPU) -o $@ $<
+
+$(examples_ukernel_plugins_exe): %: %.$(OBJEXT)
+	$(link_spu_plugin)
+
+$(examples_ukernel_plugins_plg): examples/ukernel/%.plg: examples/ukernel/kernels/cbe_accel/%
+	@echo generating plugin $@
+	$(CREATE_PLUGIN) -o $@ $<
+
+$(examples_ukernel_app_obj): %.$(OBJEXT): %.cpp
+	mkdir -p $(@D)
+	$(compile)
+
+$(examples_ukernel_app_exe): %: %.$(OBJEXT) $(libs)
+	$(link_app)
+
+examples:: $(examples_ukernel_plugins_plg) $(examples_ukernel_app_exe)
+
+clean::
+	rm -f $(examples_ukernel_plugins_plg) $(examples_ukernel_app_exe)
+
+install-svxx::
+	for src in $(patsubst $(srcdir)/examples/%, %, \
+                     $(shell find $(srcdir)/examples/ukernel/ -name '*.hpp' -o -name '*.cpp')); do \
+          $(INSTALL) -d $(DESTDIR)$(pkgdatadir)/`dirname $$src`; \
+          $(INSTALL_DATA) $(srcdir)/examples/$$src $(DESTDIR)$(pkgdatadir)/`dirname $$src`; \
+        done
+	$(INSTALL_DATA) examples/ukernel/makefile.standalone \
+          $(DESTDIR)$(pkgdatadir)/ukernel/Makefile
+	$(INSTALL_DATA) examples/ukernel/makefile.spu.standalone \
+          $(DESTDIR)$(pkgdatadir)/ukernel/Makefile.spu

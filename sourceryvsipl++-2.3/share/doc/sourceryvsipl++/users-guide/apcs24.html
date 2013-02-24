@@ -1,0 +1,45 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>C.24. MPI Benchmark Usage</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="apc.html" title="Appendix C. Benchmark Usage"><link rel="prev" href="apcs23.html" title="C.23. memwrite_simd"><link rel="next" href="apcs25.html" title="C.25. prod"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">C.24. MPI Benchmark Usage</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="apcs23.html">Prev</a> </td><th width="60%" align="center">Appendix C. Benchmark Usage</th><td width="20%" align="right"> <a accesskey="n" href="apcs25.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id286797"></a>C.24. MPI Benchmark Usage</h2></div></div></div><p> This appendix presents the displays from the MPI benchmarks.
+    </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286807"></a>C.24.1. alltoall</h3></div></div></div><p>
+        </p><pre class="screen">alltoall -- MPI alltoall. Method ------------ alltoall --
+        MPI_alltoall alltoallv -- MPI_alltoall with local copy isend --
+        MPI_isend / MPI_recv isend_x -- MPI_isend / MPI_recv with local copy
+        persistent -- MPI 'persistant' communication persistent_x -- MPI
+        'persistant' communication with local copy -1: rows -&gt; rows,
+        alltoall -2: rows -&gt; cols, alltoall -11: rows -&gt; rows, isend
+        -12: rows -&gt; cols, isend -21: rows -&gt; rows, isend_x -22: rows
+        -&gt; cols, isend_x -31: rows -&gt; rows, persistent -32: rows -&gt;
+        cols, persistent -41: rows -&gt; rows, persistent_x (copy, single row,
+        phase=1) -42: rows -&gt; cols, persistent_x (copy, single row,
+        phase=1) -101: rows -&gt; rows, alltoall -102: rows -&gt; cols,
+        alltoall -111: rows -&gt; rows, isend -112: rows -&gt; cols, isend
+        -121: rows -&gt; rows, isend_x -122: rows -&gt; cols, isend_x -131:
+        rows -&gt; rows, persistent -132: rows -&gt; cols, persistent ---
+        FIXED ROWS from here down --- -141: rows -&gt; rows, persistent_x
+        (nocopy, single row, phase=2) -142: rows -&gt; cols, persistent_x
+        (nocopy, single row, phase=2) -143: rows -&gt; rows, persistent_x
+        (nocopy, single row, phase=2) (np) -144: rows -&gt; cols, persistent_x
+        (nocopy, single row, phase=2) (np) -151: rows -&gt; rows, persistent_x
+        (nocopy, single row, phase=1) -152: rows -&gt; cols, persistent_x
+        (nocopy, single row, phase=1) -153: rows -&gt; rows, persistent_x
+        (nocopy, single row, phase=1) (np) -154: rows -&gt; cols, persistent_x
+        (nocopy, single row, phase=1) (np) -161: rows -&gt; rows, persistent_x
+        (nocopy, single row, phase=0) -162: rows -&gt; cols, persistent_x
+        (nocopy, single row, phase=0) -163: rows -&gt; rows, persistent_x
+        (nocopy, single row, phase=0) (np) -164: rows -&gt; cols, persistent_x
+        (nocopy, single row, phase=0) (np) -201: rows -&gt; rows, persistent_x
+        (copy, single row, phase=2) -202: rows -&gt; cols, persistent_x (copy,
+        single row, phase=2) -171: rows -&gt; rows, alltoallv (nocopy) -172:
+        rows -&gt; cols, alltoallv (nocopy) -173: rows -&gt; rows, alltoallv
+        (nocopy) (np) -174: rows -&gt; cols, alltoallv (nocopy) (np) -181:
+        rows -&gt; rows, alltoallv (copy) -182: rows -&gt; cols, alltoallv
+        (copy) -183: rows -&gt; rows, alltoallv (copy) (np) -184: rows -&gt;
+        cols, alltoallv (copy) (np) Parameter: default ----------------
+        -1..-99 -param 1 Number of columns per row -stop 11 Stop at 2^11
+        -100.. -param 48 Number of rows -stop 15 Stop at 2^15 </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286849"></a>C.24.2. copy</h3></div></div></div><p>
+        </p><pre class="screen">copy -- MPI point-to-point messaging (aka "copy"). vector
+        struct ------ ------ -10: isend no no -11: isend early no -12: isend
+        early early -13: isend early late -14: isend late no -15: isend late
+        late -20: persistent no no -21: persistent early no -22: persistent
+        early early </pre><p>
+      </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs23.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apcs25.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">C.23. memwrite_simd </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> C.25. prod</td></tr></table></div></body></html>

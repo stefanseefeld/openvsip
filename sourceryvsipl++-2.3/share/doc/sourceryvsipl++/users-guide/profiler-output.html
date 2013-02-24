@@ -1,0 +1,112 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>5.3. Profiler Output</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="profiling.html" title="Chapter 5. Profiling"><link rel="prev" href="ch05s02.html" title="5.2. Using the Profiler"><link rel="next" href="chap-benchmarking.html" title="Chapter 6. Benchmarking"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">5.3. Profiler Output</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch05s02.html">Prev</a> </td><th width="60%" align="center">Chapter 5. Profiling</th><td width="20%" align="right"> <a accesskey="n" href="chap-benchmarking.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="profiler-output"></a>5.3. Profiler Output</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id280979"></a>5.3.1. Log File Format</h3></div></div></div><p>The profiler outputs a small header at the beginning of each log
+      file which is the same accumulate and trace modes. The data that follows
+      the header is different depending on the mode. The header describes the
+      profiling mode used, the low-level timer used to measure clock ticks and
+      the number of clock ticks per second.</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id280991"></a>5.3.1.1. Accumulate mode</h4></div></div></div><pre class="screen"><code class="code"># mode: pm_accum # timer: x86_64_tsc_time #
+        clocks_per_sec: 3591375104 # # tag : total ticks : num calls : op
+        count : mops</code></pre><p>The respective columns that follow the header are: </p><div class="variablelist"><dl><dt><span class="term">tag</span></dt><dd><p>A descriptive name of the operation. This is either a
+                name used internally or specified by the user.</p></dd><dt><span class="term">total ticks</span></dt><dd><p>The time spent in the scope in processor ticks.</p></dd><dt><span class="term">num calls</span></dt><dd><p>The number of times the scope was entered.</p></dd><dt><span class="term">op count</span></dt><dd><p>The number of operations performed per scope.</p></dd><dt><span class="term">mops</span></dt><dd><p>The calculated performance figure in millions of
+                operations per second. <span class="mathphrase">(num_calls * op_count *
+                    10<sup>-6</sup>) / (total_ticks /
+                    clocks_per_sec)</span></p></dd></dl></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id281090"></a>5.3.1.2. Trace mode</h4></div></div></div><pre class="screen"># mode: pm_trace # timer: x86_64_tsc_time # clocks_per_sec:
+        3591375104 # # index : tag : ticks : open id : op count</pre><p>The respective columns that follow the header are: </p><div class="variablelist"><dl><dt><span class="term">index</span></dt><dd><p>The entry number, beginning at one.</p></dd><dt><span class="term">tag</span></dt><dd><p>A descriptive name of the operation. This is either a
+                name used internally or specified by the user.</p></dd><dt><span class="term">ticks</span></dt><dd><p>The current reading from the processor clock.</p></dd><dt><span class="term">open id</span></dt><dd><p>If zero, indicates the start of a scope. If non-zero,
+                this indicates the end of an scope and refers to the index of
+                corresponding start of the scope.</p></dd><dt><span class="term">op count</span></dt><dd><p>The number of operations performed per scope, or zero to
+                indicate the end of an scope.</p></dd></dl></div><p>Note that the timings expressed in 'ticks' may be converted to
+        seconds by dividing by the 'clocks_per_second' constant in the
+        header.</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="profile-names"></a>5.3.2. Scope names</h3></div></div></div><p>Sourcery VSIPL++ uses the following names for profiling objects
+      and functions within the library. These names are readable text
+      containing information that varies depending on the operation being
+      profiled.</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id281198"></a>5.3.2.1. Signal Processing and Matrix Vector Operations</h4></div></div></div><p>These operations follow this general format: </p><pre class="screen">OPERATION
+        [DIM] DATATYPE SIZE</pre><p> OPERATION gives the object or function
+        name, including direction for FFTs.</p><p>DIM is the number of dimensions (when needed).</p><p>DATATYPE describes the data types involved in the operation.
+        FFTs have two listed, describing both the input type as well as the
+        output type, which may be different. See <a class="xref" href="profiler-output.html#data-type-names" title="Table 5.2. Data Type Names">Table 5.2, &#8220;Data Type Names&#8221;</a> below.</p><p>SIZE is expressed by giving the number of elements in each
+        dimension.</p><p>The specific operations profiled at this time are: </p><table class="simplelist" border="0" summary="Simple list"><tr><td>
+              <code class="code">Convolution [1D|2D] T
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">Correlation [1D|2D] <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">Fft 1D [Inv|Fwd]
+              <em class="replaceable"><code>I</code></em>-<em class="replaceable"><code>O</code></em>
+              [by_ref|by_val] <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">Fftm 2D [Inv|Fwd]
+              <em class="replaceable"><code>I</code></em>-<em class="replaceable"><code>O</code></em>
+              [by_ref|by_val] <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">Fir <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">Iir <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">dot <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">cvjdot <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">trans <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">herm <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">kron <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE_A</code></em>
+              <em class="replaceable"><code>SIZE_B</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">outer <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">gemp <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">gems <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">cumsum <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr><tr><td>
+              <code class="code">modulate <em class="replaceable"><code>T</code></em>
+              <em class="replaceable"><code>SIZE</code></em></code>
+            </td></tr></table><p>In all cases, data types <code class="code">T, I and O</code> above are
+        expressed using a notation similar to the BLAS/LAPACK convention as in
+        the following table:</p><div class="table"><a name="data-type-names"></a><p class="title"><b>Table 5.2. Data Type Names</b></p><div class="table-contents"><table summary="Data Type Names" border="0"><colgroup><col><col><col></colgroup><thead><tr><th> </th><th>Views</th><th>Scalars</th></tr></thead><tbody><tr><td>single precision real</td><td>
+                  <code class="code">S</code>
+                </td><td>
+                  <code class="code">s</code>
+                </td></tr><tr><td>single precision complex</td><td>
+                  <code class="code">C</code>
+                </td><td>
+                  <code class="code">c</code>
+                </td></tr><tr><td>double precision real</td><td>
+                  <code class="code">D</code>
+                </td><td>
+                  <code class="code">d</code>
+                </td></tr><tr><td>double precision complex</td><td>
+                  <code class="code">Z</code>
+                </td><td>
+                  <code class="code">z</code>
+                </td></tr></tbody></table></div></div><br class="table-break"></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="id281569"></a>5.3.2.2. Elementwise Functions</h4></div></div></div><p>Element-wise expression tags use a slightly different
+        format:</p><pre class="screen">EVALUATOR DIM EXPR SIZE</pre><p>The EVALUATOR indicates which VSIPL++ evaluator was dispatched
+        to compute the expression.</p><p>DIM indicates the dimensionality of the expression.</p><p>EXPR is mnemonic of the expression shown using prefix notation,
+        i.e. </p><pre class="screen">operator(operand, ...)</pre><p> Each operand may be the
+        result of another computation, so expressions are nested, the
+        parenthesis determining the order of evaluation.</p><p>SIZE is expressed by giving the number of elements in each
+        dimension.</p><p>At this time, these evaluators are profiled: </p><table class="simplelist" border="0" summary="Simple list"><tr><td><code class="code">Expr_Loop</code> - generic loop-fusion
+            evaluator.</td></tr><tr><td><code class="code">Expr_SIMD_Loop</code> - SIMD loop-fusion
+            evaluator.</td></tr><tr><td><code class="code">Expr_Copy</code> - optimized data-copy
+            evaluator.</td></tr><tr><td><code class="code">Expr_Trans</code> - optimized matrix transpose
+            evaluator.</td></tr><tr><td><code class="code">Expr_Dense</code> - evaluator for dense, multi-
+            dimensional expressions. Converts them into corresponding 1-dim
+            expressions that are re-dispatched.</td></tr><tr><td><code class="code">Expr_SAL_*</code> - evaluators for dispatch to the
+            SAL vendor math library.</td></tr><tr><td><code class="code">Expr_IPP_*</code> - evaluators for dispatch to the
+            SAL vendor math library.</td></tr><tr><td><code class="code">Expr_SIMD_*</code> - evaluators for dispatch to the
+            builtin SIMD routines (with the exception of Expr_SIMD_Loop, see
+            above).</td></tr></table><p> For SAL, IPP and SIMD, the asterisk (*) denotes the
+        specific function invoked.</p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch05s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="profiling.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="chap-benchmarking.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">5.2. Using the Profiler </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 6. Benchmarking</td></tr></table></div></body></html>

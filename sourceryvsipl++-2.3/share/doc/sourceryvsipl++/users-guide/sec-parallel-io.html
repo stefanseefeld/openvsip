@@ -1,0 +1,240 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>8.3. Performing I/O</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="chap-parallel.html" title="Chapter 8. Parallel Fast Convolution"><link rel="prev" href="ch08s02.html" title="8.2. Improving Parallel Temporal Locality"><link rel="next" href="apb.html" title="Appendix B. Benchmark Options"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">8.3. Performing I/O</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s02.html">Prev</a> </td><th width="60%" align="center">Chapter 8. Parallel Fast Convolution</th><td width="20%" align="right"> <a accesskey="n" href="apb.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="sec-parallel-io"></a>8.3. Performing I/O</h2></div></div></div><p>The previous sections have ignored the acquisition of actual sensor
+    data by setting the input data to zero. This section shows how to extend
+    the I/O techniques introduced in the previous chapter to initialize
+    <code class="code">data</code> before performing the fast convolution.</p><p>Let's assume that all of the input data arrives at a single
+    processor via DMA. This data must be distributed to the other processors
+    to perform the fast convolution. So, the input processor is special, and
+    is not involved in the computation proper.</p><p>To describe this situation in Sourcery VSIPL++, you need two maps:
+    one for the input processor (<code class="varname">map_in</code>), and one for the
+    compute processors (<code class="varname">map</code>). These two maps will be used
+    to define views that can be used to move the data from the input processor
+    to the compute processors. Let's assume that the input processor is
+    processor zero. Then, create <code class="varname">map_in</code> as follows, mapping
+    all data to the single input processor:</p><pre class="programlisting"> typedef Map&lt;&gt; map_type;
+ Vector&lt;processor_type&gt; pvec_in(1);
+ pvec_in(0) = 0;
+ map_type map_in(pvec_in, 1, 1);</pre><p>In contrast, <code class="varname">map</code> distributes rows across all of
+    the compute processors:</p><pre class="programlisting"> // Distribute computation across all processors:
+ map_type
+    map (num_processors(), 1);</pre><p>Because the data will be arriving via DMA, you must explicitly
+    manage the memory used by Sourcery VSIPL++. Because VSIPL++ uses the SPMD
+    model, each processor must allocate the memory for its local portion the
+    input block, even though all processors except the actual input processor
+    will allocate zero bytes. The code required to set up the views is:</p><pre class="programlisting"> block_type data_in_block(npulse, nrange, 0, map_in);
+ view_type data_in(data_in_block);
+ view_type data (npulse, nrange, map);
+ size_t size = subblock_domain(data_in).size();
+ std::vector&lt;value_type&gt; buffer(size);
+ data_in.block()-&gt;rebind(&amp;buffer.front());</pre><p>Now, you can perform the actual I/O. The I/O (including any calls to
+    low-level DMA routines) should only be performed on the input processor.
+    The <code class="function">subblock</code> function is used to ensure that I/O is
+    only performed on the appropriate processors:</p><pre class="programlisting"> if (subblock(data_in) != no_subblock)
+ {
+    data_in.block().release(false);
+    // ... perform IO into data_in ...
+    data_in.block().admit(true);
+ }</pre><p>Once the I/O completes, you can move the data from
+    <code class="code">data_in</code> to <code class="code">data</code> for processing. In the VSIPL++
+    API, ordinary assignment (using the <code class="code">=</code> operator) will perform
+    all communication necessary to distribute the data. So, performing the
+    "scatter" operation is just:</p><pre class="programlisting"> data = data_in;</pre><p>The complete program is:</p><pre class="programlisting">
+      /***********************************************************************
+  Included Files
+***********************************************************************/
+
+#include &lt;vsip/initfin.hpp&gt;
+#include &lt;vsip/support.hpp&gt;
+#include &lt;vsip/signal.hpp&gt;
+#include &lt;vsip/math.hpp&gt;
+#include &lt;vsip/map.hpp&gt;
+#include &lt;vsip/parallel.hpp&gt;
+
+using namespace vsip;
+
+
+
+/***********************************************************************
+  Main Program
+***********************************************************************/
+
+template &lt;typename       ViewT,
+	  dimension_type Dim&gt;
+ViewT
+create_view_wstorage(
+  Domain&lt;Dim&gt; const&amp;                          dom,
+  typename ViewT::block_type::map_type const&amp; map)
+{
+  typedef typename ViewT::block_type block_type;
+  typedef typename ViewT::value_type value_type;
+
+  block_type* block = new block_type(dom, (value_type*)0, map);
+  ViewT view(*block);
+  block-&gt;decrement_count();
+
+  if (subblock(view) != no_subblock)
+  {
+    size_t size = subblock_domain(view).size();
+    value_type* buffer = vsip::impl::alloc_align&lt;value_type&gt;(128, size);
+    block-&gt;rebind(buffer);
+  }
+
+  block-&gt;admit(false);
+
+  return view;
+}
+
+
+
+template &lt;typename ViewT&gt;
+void
+cleanup_view_wstorage(ViewT view)
+{
+  typedef typename ViewT::value_type value_type;
+  value_type* ptr;
+
+  view.block().release(false, ptr);
+  view.block().rebind((value_type*)0);
+
+  if (ptr) vsip::impl::free_align((void*)ptr);
+}
+
+
+
+template &lt;typename ViewT&gt;
+ViewT
+create_view_wstorage(
+  length_type                                 rows,
+  length_type                                 cols,
+  typename ViewT::block_type::map_type const&amp; map)
+{
+  return create_view_wstorage&lt;ViewT&gt;(Domain&lt;2&gt;(rows, cols), map);
+}
+
+
+
+template &lt;typename ViewT&gt;
+ViewT
+create_view_wstorage(
+  length_type                                 size,
+  typename ViewT::block_type::map_type const&amp; map)
+{
+  return create_view_wstorage&lt;ViewT&gt;(Domain&lt;1&gt;(size), map);
+}
+
+
+
+
+int
+main(int argc, char** argv)
+{
+  // Initialize the library.
+  vsipl vpp(argc, argv);
+
+  typedef complex&lt;float&gt; value_type;
+
+  typedef Map&lt;Block_dist, Block_dist&gt;               map_type;
+  typedef Dense&lt;2, value_type, row2_type, map_type&gt; block_type;
+  typedef Matrix&lt;value_type, block_type&gt;            view_type;
+
+  typedef Dense&lt;1, value_type, row1_type, Replicated_map&lt;1&gt; &gt;
+                                                    replica_block_type;
+  typedef Vector&lt;value_type, replica_block_type&gt;    replica_view_type;
+
+  typedef Dense&lt;1, value_type, row1_type, Map&lt;&gt; &gt;   replica_io_block_type;
+  typedef Vector&lt;value_type, replica_io_block_type&gt; replica_io_view_type;
+
+  // Parameters.
+  length_type npulse = 64;	// number of pulses
+  length_type nrange = 256;	// number of range cells
+
+  length_type np = num_processors();
+
+  // Processor sets.
+  Vector&lt;processor_type&gt; pvec_in(1);  pvec_in(0)  = 0;
+  Vector&lt;processor_type&gt; pvec_out(1); pvec_out(0) = np-1;
+
+  // Maps.
+  map_type          map_in (pvec_in,  1, 1);
+  map_type          map_out(pvec_out, 1, 1);
+  map_type          map_row(np, 1);
+  Replicated_map&lt;1&gt; replica_map;
+
+  // Views.
+  view_type data(npulse, nrange, map_row);
+  view_type tmp (npulse, nrange, map_row);
+  view_type data_in (create_view_wstorage&lt;view_type&gt;(npulse, nrange, map_in));
+  view_type data_out(create_view_wstorage&lt;view_type&gt;(npulse, nrange, map_out));
+  replica_view_type    replica(nrange);
+  replica_io_view_type replica_in(
+    create_view_wstorage&lt;replica_io_view_type&gt;(nrange, map_in));
+
+  // A forward Fft for computing the frequency-domain version of
+  // the replica.
+  typedef Fft&lt;const_Vector, value_type, value_type, fft_fwd, by_reference&gt;
+		for_fft_type;
+  for_fft_type  for_fft (Domain&lt;1&gt;(nrange), 1.0);
+
+  // A forward Fftm for converting the time-domain data matrix to the
+  // frequency domain.
+  typedef Fftm&lt;value_type, value_type, row, fft_fwd, by_reference&gt;
+	  	for_fftm_type;
+  for_fftm_type for_fftm(Domain&lt;2&gt;(npulse, nrange), 1.0);
+
+  // An inverse Fftm for converting the frequency-domain data back to
+  // the time-domain.
+  typedef Fftm&lt;value_type, value_type, row, fft_inv, by_reference&gt;
+	  	inv_fftm_type;
+  inv_fftm_type inv_fftm(Domain&lt;2&gt;(npulse, nrange), 1.0/(nrange));
+
+  // Perform input IO
+  if (subblock(data_in) != no_subblock)
+  {
+    data_in.block().release(false);
+    // ... perform IO ...
+    data_in.block().admit(true);
+
+    replica_in.block().release(false);
+    // ... perform IO ...
+    replica_in.block().admit(true);
+
+    data_in    = value_type();
+    replica_in = value_type();
+
+    // Before fast convolution, convert the replica into the
+    // frequency domain
+    for_fft(replica_in.local());
+  }
+
+  // Scatter data
+  data    = data_in;
+  replica = replica_in;
+
+  // Perform fast convolution.
+  for_fftm(data, tmp);		// Convert to the frequency domain.
+  tmp = vmmul&lt;0&gt;(replica, tmp); // Perform element-wise multiply.
+  inv_fftm(tmp, data);		// Convert back to the time domain.
+
+  // Gather data
+  data_out = data;
+
+  // Perform output IO
+  if (subblock(data_out) != no_subblock)
+  {
+    data_out.block().release(true);
+    // ... perform IO ...
+    data_out.block().admit(false);
+  }
+
+  // Cleanup
+  cleanup_view_wstorage(data_in);
+  cleanup_view_wstorage(data_out);
+  cleanup_view_wstorage(replica_in);
+}
+
+    </pre><p>The technique demonstrated in this section extends easily to the
+    situation in which the sensor data is arriving at multiple processors
+    simultaneously. To distribute the I/O across multiple processors, just add
+    them to <code class="code">map_in</code>'s processor set <code class="code">pvec_in</code>:</p><pre class="programlisting"> Vector&lt;processor_type&gt; pvec_in(num_io_proc);
+ pvec_in(0) = 0;
+ ...
+ pvec_in(num_io_proc-1) = ...;</pre></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-parallel.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apb.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">8.2. Improving Parallel Temporal Locality </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Appendix B. Benchmark Options</td></tr></table></div></body></html>

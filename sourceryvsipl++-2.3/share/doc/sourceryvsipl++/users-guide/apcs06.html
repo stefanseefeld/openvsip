@@ -1,0 +1,48 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>C.6. CUDA Benchmark Usage</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery VSIPL++"><link rel="up" href="apc.html" title="Appendix C. Benchmark Usage"><link rel="prev" href="apcs05.html" title="C.5. corr"><link rel="next" href="apcs07.html" title="C.7. CVSIP Benchmark Usage"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">C.6. CUDA Benchmark Usage</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="apcs05.html">Prev</a> </td><th width="60%" align="center">Appendix C. Benchmark Usage</th><td width="20%" align="right"> <a accesskey="n" href="apcs07.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="id286026"></a>C.6. CUDA Benchmark Usage</h2></div></div></div><p> This appendix presents the displays from the CUDA benchmarks.
+    </p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286035"></a>C.6.1. copy</h3></div></div></div><p>
+        </p><pre class="screen">CUDA copy -- fixed rows\n" -1 -- host to device copy\n" -2 --
+        device to host copy\n" -3 -- host-&gt;device-&gt;host copy (A = B)\n"
+        -4 -- device to shared copy\n" -5 -- device to device copy\n" -6 --
+        device fill with zeroes\n" CUDA copy -- fixed columns\n" -11 -- host
+        to device copy\n" -12 -- device to host copy\n" -13 --
+        host-&gt;device-&gt;host copy (A = B)\n" -14 -- device to shared
+        copy\n" -15 -- device to device copy\n" -16 -- device fill with
+        zeroes\n" Parameters: -p:rows ROWS (default 64) -p:size SIZE (default
+        2048) </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286058"></a>C.6.2. fastconv</h3></div></div></div><p>
+        </p><pre class="screen">fastconv -- fast convolution benchmark Sweeping pulse size: -1
+        -- Out-of-place, phased -2 -- On-device, phased -3 -- On-device,
+        interleaved Parameters (for sweeping convolution size, cases 1 through
+        10) -p:rows ROWS -- set number of pulses (default 64) Sweeping number
+        of pulses: -11 -- Out-of-place, phased -12 -- On-device, phased -13 --
+        On-device, interleaved Parameters (for sweeping number of
+        convolutions, cases 11 through 20) -p:size SIZE -- size of pulse
+        (default 2048) </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286078"></a>C.6.3. fftm</h3></div></div></div><p>
+        </p><pre class="screen">fftm -- FFT/FFTM benchmark using CUDA Fixed rows, sweeping FFT
+        size: -1 -- op : out-of-place CC fwd fft -2 -- ip : In-place CC fwd
+        fft -3 -- dev : On-device CC fwd fft Parameters (for sweeping FFT
+        size, cases 1 through 6) -p:rows ROWS -- set number of pulses (default
+        64) Fixed FFT size, sweeping number of FFTs: -11 -- op : out-of-place
+        CC fwd fft -12 -- ip : In-place CC fwd fft -13 -- dev : On-device CC
+        fwd fft Parameters (for sweeping number of FFTs, cases 11 through 16)
+        -p:size SIZE -- size of pulse (default 2048) </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286098"></a>C.6.4. transpose</h3></div></div></div><p>
+        </p><pre class="screen">CUDA transpose (direct - memory moves not timed) Sweeping
+        column size: -1 -- Out-of-place, complex Sweeping row size: -11 --
+        Out-of-place, complex CUDA transpose (normal - memory moves are timed)
+        Sweeping column size: -21 -- Out-of-place, complex Sweeping row size:
+        -31 -- Out-of-place, complex Parameters (for sweeping number of
+        columns, cases 1, 21) -p:rows ROWS -- set number of rows (default 64)
+        Parameters (for sweeping number of columns, cases 11, 31) -p:cols COLS
+        -- set number of columns (default 2048) </pre><p>
+      </p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="id286119"></a>C.6.5. vmmul</h3></div></div></div><p>
+        </p><pre class="screen">CUDA vmmul -- vector-matrix multiply Sweeping column size,
+        vmmul&lt;row&gt;: -1 -- Out-of-place, complex Sweeping row size,
+        vmmul&lt;row&gt;: -11 -- Out-of-place, complex Sweeping column size,
+        vmmul&lt;col&gt;: -21 -- Out-of-place, complex Sweeping row size,
+        vmmul&lt;col&gt;: -31 -- Out-of-place, complex Parameters (for
+        sweeping number of columns, cases 1, 21) -p:rows ROWS -- set number of
+        rows (default 64) Parameters (for sweeping number of columns, cases
+        11, 31) -p:cols COLS -- set number of columns (default 2048) </pre><p>
+      </p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs05.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="apcs07.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">C.5. corr </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> C.7. CVSIP Benchmark Usage</td></tr></table></div></body></html>
