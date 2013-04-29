@@ -1,0 +1,23 @@
+#! /bin/sh
+
+# Check result of single-precision run
+
+TDIR=test-48
+
+NRANGE=2048
+NPULSE=512
+NTAPS=48
+NFRAME=4
+PREC=s
+
+# DAT2XV=/home/jules/csl/src/apps/SarSim/work/source/c/dat2xv
+DAT2XV=./dat2xv
+
+$DAT2XV -nrange $NRANGE -npulse $NPULSE			\
+	-i   $TDIR/hh-$PREC-$NTAPS-$NFRAME.bin		\
+	-o   $TDIR/hh-temp.xv
+
+rawtopgm -headerskip 28 $NPULSE $NPULSE $TDIR/hh-temp.xv	\
+	> $TDIR/hh-$PREC-$NTAPS-$NFRAME.pgm
+
+rm $TDIR/hh-temp.xv

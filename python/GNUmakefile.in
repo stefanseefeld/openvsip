@@ -1,0 +1,131 @@
+######################################################### -*-Makefile-*-
+#
+# Contents: Makefile for Sourcery VSIPL++ Python bindings
+#
+########################################################################
+
+########################################################################
+# Configuration Variables
+########################################################################
+
+# Order matters for the various directory variables, as autoconf makes some
+# of the variables depend on the values of others.
+srcdir := @srcdir@
+top_srcdir := @top_srcdir@
+
+
+prefix := @prefix@
+exec_prefix := @exec_prefix@
+datarootdir := @datarootdir@
+datadir := @datadir@
+includedir := @includedir@
+libdir := @libdir@
+builtin_libdir := @builtin_libdir@
+sbindir := @sbindir@
+bindir := @bindir@
+
+CXX     := @CXX@
+# The dependency generator.
+CCDEP := @CCDEP@
+# The dependency generator.
+CXXDEP := @CXXDEP@
+# The DSO linker.
+LDSHARED:= @LDSHARED@
+# The strip executable.
+STRIP:= @STRIP@
+CPPFLAGS := -I ../src -I $(srcdir) -I $(top_srcdir)/src 
+CPPFLAGS += @CPPFLAGS@ @BOOST_CPPFLAGS@ @PYTHON_CPP@
+CXXFLAGS := @CXXFLAGS@ @CXXFLAGS_LIB@
+LDFLAGS := -L../lib @BOOST_LDFLAGS@ @LDFLAGS@
+LIBS := -Llib -lvsip_csl -lsvpp -lboost_python @PYTHON_LIBS@ @LIBS@
+# The extension for object files.
+OBJEXT := @OBJEXT@
+PYTHON	:= @PYTHON@
+PYTHON_EXT := @PYTHON_EXT@
+
+have_cuda := @VSIP_IMPL_HAVE_CUDA@
+
+########################################################################
+# Build instructions
+########################################################################
+
+define make_dep
+@echo generating dependencies for $(@D)/$(<F)
+mkdir -p $(@D)
+$(SHELL) -ec '$(CXXDEP) $(CPPFLAGS) $(CXXFLAGS) $< \
+	      | sed "s|$(*F)\\.o[ :]*|$(*F)\\.$(OBJEXT) : |g" \
+	      | sed "s|$(*F)\\.$(OBJEXT)[ :]*|$*\\.d $*\\.$(OBJEXT) : |g" > $@'
+endef
+
+define compile
+@echo compiling $(@D)/$(@F)
+$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
+endef
+
+ifneq (,$(findstring -g,$(LDFLAGS)))
+  define link_dso
+  @echo linking $@
+  $(LDSHARED) $(LDFLAGS) -o $@ $^ -lvsip_csl -lsvpp $(LIBS)
+  endef
+else
+  define link_dso
+  @echo linking $@
+  $(LDSHARED) $(LDFLAGS) -o $@ $^ -lvsip_csl -lsvpp $(LIBS)
+  $(STRIP) --strip-unneeded $@
+  endef
+endif
+
+########################################################################
+# Internal Variables
+########################################################################
+
+python_dir := ../lib/python
+subdirs := math signal selgen
+ifeq ($(have_cuda),1)
+ subdirs += cuda
+endif
+
+mod	:= $(foreach dir, . $(subdirs), $(wildcard $(srcdir)/$(dir)/*.py))
+ext	:= $(foreach dir, . $(subdirs), $(wildcard $(srcdir)/$(dir)/*.cpp))
+targets := $(patsubst $(srcdir)/%, $(python_dir)/vsip/%, $(mod))
+targets += $(patsubst $(srcdir)/%.cpp, $(python_dir)/vsip/%$(PYTHON_EXT), $(ext))
+deps    := $(patsubst $(srcdir)/%.cpp, %.d, $(ext))
+
+vpath %.cpp $(srcdir)
+vpath %.py $(srcdir)
+
+########################################################################
+# Rules
+########################################################################
+
+all: $(targets)
+
+clean:
+	rm -f *.o
+
+depend: $(deps)
+
+
+########################################################################
+# Implicit Rules
+########################################################################
+
+%.$(OBJEXT): %.cpp
+	$(compile)
+
+$(python_dir)/vsip/%.py: %.py
+	@echo copying $^
+	mkdir -p $(@D)
+	cp $< $@
+
+$(python_dir)/vsip/%$(PYTHON_EXT): %.$(OBJEXT)
+	mkdir -p $(@D)
+	$(link_dso)
+
+%.d: %.cpp
+	$(make_dep)
+
+# Include automatically generated dependency files.
+ifeq (,$(filter $(MAKECMDGOALS), depend doc mostlyclean clean))
+include $(deps)
+endif

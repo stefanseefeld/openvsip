@@ -1,0 +1,854 @@
+#########################################################################
+# char.db -- characterization database
+#
+# Format for a "set" entry:
+# 
+#   set: <set name>
+#     pgm:       <executable name: vmul>
+#     cases:     <list of cases: 1 2 5 11>
+#     fastcases: <list of "fast" cases: 1 2>
+#     hpeccases: <list of "HPEC datasheet" cases: 1 3 5>
+#     sheetcases: <list of "datasheet" cases: 1 2>
+#     nps:       <list of supported number of processors: default is "1">
+#     spes:      <list of supported number of SPEs: default is "0 1 8 16">
+#     req:       <required features: sal, ipp, fftw3.  default is none>
+#     suffix:    <...>
+#     extra:     <extra command line parameters: -param 2048>
+#
+# Format for a "macro" entry:
+#
+#     macro: <macro name> <list of sets or macros>
+#
+# Requirements
+# 
+#   While anything can be listed in a req requirement field (and
+#   anything can be given to char.pl in the '-have' option), the
+#   following requriements are "standard":
+#     - fftw     - require FFTW
+#     - ipp      - require IPP
+#     - sal      - require SAL
+#     - patience - require patience on the part of the user,
+#                  used for extremely long running benchmarks, such
+#                  as FFT in patient or exhaustive planning mode.
+
+#########################################################################
+# Core characterization
+#########################################################################
+
+macro: core expr-vmul expr-svmul vendor-vmul expr-vma vmin fft-est fft-measure vendor-fft maxval sumval copy fastconv conv vthresh vgt_ite vendor-vthresh vsmss
+
+macro: mcore expr-vmul expr-svmul vmin vthresh vgt_ite vendor-vmul vendor-vthresh
+
+
+macro: cellcore core fir prod
+
+#
+## When you use the option -sheet, the special macro 'sheet' overrides
+## any other sets or macros you may specify.  It contains the items
+## that appear in the datasheet.
+# 
+macro: sheet conv copy corr dot expr-svmul expr-vma expr-vmul fastconv-fc-4096 fft-measure fft-op fftm-fixed-len fftw3-fft-core fftm1024 fftw3-fftm fir maxval mcopy prod sumval vmmul-4096c
+
+
+#
+## option -hpec
+##
+## Produces benchmarks relevant to our HPEC '10 presentation
+## The items in these sets correspond to the special datasheet 'hpec_ds'
+#
+macro: hpec  dot conv fir prod mcopy expr-vmul expr-vma hpecfc hpecvmmul hpecfft
+
+macro: hpecfc     fastconv-fr-1024 fastconv-fc-1024
+macro: hpecvmmul  vmmul-64r vmmul-1024r
+macro: hpecfft    fft-est fft-measure fftm1024
+
+
+
+#########################################################################
+# Vector Multiply
+#########################################################################
+
+set: expr-vmul
+  pgm:       expr/vmul
+  cases:     1 2 5 31 51 52 102
+  fastcases: 1 2
+  sheetcases: 1 2 31
+  hpeccases: 1 2
+
+set: vmul-cvsip
+  pgm:       cvsip/vmul
+  cases:     1 2 5 31 51 52 102
+  fastcases: 1 2
+  sheetcases: 2
+
+set: expr-vmul_c
+  pgm:   expr/vmul_c
+  cases: 1 2
+
+set: expr-svmul
+  pgm:       expr/svmul
+  cases:     1 2 3
+  fastcases: 1 2
+
+set: sal-vmul
+  pgm:   sal/vmul
+  cases: 1 2 3 31 32
+  req:   sal
+
+set: sal-svmul
+  pgm:   sal/vmul
+  cases: 11 13 14
+  req:   sal
+
+set: ipp-vmul
+  pgm:   ipp/vmul
+  cases: 1 2 12 22
+  req:   ipp
+
+macro: vendor-vmul sal-vmul sal-svmul ipp-vmul
+
+
+
+
+#########################################################################
+# Vector Multiply-Add
+#########################################################################
+
+set: expr-vma
+  pgm:   expr/vma
+  cases: 1 2 3 11 12 13 21 22 31 32
+  sheetcases: 1 2 3 11 12 13
+  hpeccases: 1 2 3 11 12 13
+
+set: sal-vma
+  pgm:   sal/vma
+  cases: 1 11 12 13
+  req:   sal
+
+
+
+#########################################################################
+# Vector-Matrix Multiply
+#########################################################################
+
+set: vmmul-64r
+  pgm:    vmmul
+  suffix: -64r
+  cases:  1 2 3 4 21 22 23 24
+  extra: -p:rows 64 -stop 16
+  hpeccases: 1 21
+
+set: vmmul-1r
+  pgm:    vmmul
+  suffix: -1r
+  cases:  1 2 3 4 21 22 23 24
+  extra:  -p:rows 1 -stop 16
+
+set: vmmul-2048c
+  pgm:    vmmul
+  suffix: -2048c
+  cases:  11 31
+  extra:  -p:cols 2048 -start 0 -stop 12
+
+set: vmmul-1024r
+  pgm:    vmmul
+  suffix: -1024r
+  cases:  1 21
+  extra:  -p:rows 1024 -start 5 -stop 16
+  hpeccases: 1 21
+
+set: vmmul-4096c
+  pgm:    vmmul
+  suffix: -4096c
+  cases:  11 31
+  extra:  -p:cols 4096 -start 0 -stop 12
+
+
+#########################################################################
+# Elementwise Vector Operations
+#########################################################################
+
+# magsq - magnitude squared
+set: expr-vmagsq
+  pgm: expr/vmagsq
+  cases: 1 2
+
+set: vthresh
+  pgm: vthresh
+  cases: 1 2 3 5 11
+
+set: vmin
+  pgm: vmin
+  cases: 1
+
+set: vgt_ite
+  pgm: vgt_ite
+  cases: 1 2 5
+
+set: sal-vthresh
+  pgm: sal/vthresh
+  cases: 1 2 11
+  req:   sal
+
+set: sal-lvgt
+  pgm: sal/lvgt
+  cases: 1 2 11 12
+  req:   sal
+
+macro: vendor-vthresh sal-vthresh sal-lvgt
+
+
+#########################################################################
+# Reductions
+#########################################################################
+
+set: maxval
+  pgm: maxval
+  cases: 1 2 3
+  sheetcases: 1
+
+set: sumval
+  pgm: sumval
+  cases: 1 21
+
+set: sumval_simd
+  pgm: sumval_simd
+  cases: 1 2 101 102
+
+
+
+#########################################################################
+# Memory Bandwidth
+#########################################################################
+
+set: memread_simd
+  pgm: memread_simd
+  cases: 1 2
+
+set: memwrite
+  pgm: memwrite
+  cases: 1 2
+
+set: memwrite_simd
+  pgm: memwrite_simd
+  cases: 1 2
+
+set: sal-memwrite
+  pgm: sal/memwrite
+  req: sal
+  cases: 1
+
+
+
+#########################################################################
+# Data Transfer
+#########################################################################
+
+set: copy
+  pgm: copy
+  cases: 1 2 5
+  extra: -stop 20
+
+set: copy-p2p-core
+  pgm: copy
+  nps: 2
+  cases: 14 24
+  extra: -stop 20 -param 1
+
+set: copy-p2p-pas
+  req: pas
+  pgm: copy
+  nps: 2
+  cases: 204 214 224 254 264 274
+  extra: -stop 20 -param 1
+
+# -ns -- no pre-sync
+set: copy-p2p-core-ns
+  pgm: copy
+  suffix: -ns
+  nps: 2
+  cases: 14 24
+  extra: -stop 20 -param 0
+
+# -ns -- no pre-sync
+set: copy-p2p-pas-ns
+  req: pas
+  pgm: copy
+  suffix: -ns
+  nps: 2
+  cases: 204 214 224 254 264 274
+  extra: -stop 20 -param 0
+
+macro: copy-p2p copy-p2p-core copy-p2p-pas copy-p2p-core-ns copy-p2p-pas-ns
+
+set: copy-scatter
+  pgm: copy
+  nps: 2 3 5 9
+  cases: 15 25 205 215 225 255 265 275
+  extra: -stop 20
+
+set: mcopy-r
+  pgm: mcopy
+  cases: 1 2 3 4
+  extra: -stop 12
+
+set: mcopy-c
+  pgm: mcopy
+  cases: 5 6 7 8
+  extra: -stop 11
+
+macro: mcopy mcopy-r mcopy-c
+
+
+
+#########################################################################
+# VSIPL++ FFT
+#########################################################################
+
+# FFT single (with number_of_time => estimate mode for FFTW)
+set: fft-est
+  pgm: fft
+  cases: 1 2 3 5 6 7
+  hpeccases: 1 2
+  extra: -stop 20
+
+# FFT single (with number_of_time => measure mode for FFTW)
+set: fft-measure
+  pgm: fft
+  cases: 11 12 13 15 16 17
+  hpeccases: 11
+  extra: -stop 20
+
+# FFT single (with number_of_time => patient mode for FFTW)
+# This takes a long time to run.
+set: fft-patient
+  pgm: fft
+  cases: 21 22 23 25 26 27
+  req:   patience
+  extra: -stop 20
+
+macro: fft fft-est fft-measure fft-patient
+
+# FFT CC out-of-place cross-section of fft-est, fft-measure, fft-patient
+set: fft-op
+  pgm: fft
+  cases: 1 11
+  sheetcases: 1 21
+  extra: -stop 14
+
+set: fft-op-cvsip
+  pgm: cvsip/fft
+  cases: 1 11
+  sheetcases: 1 21
+  extra: -stop 14
+
+
+# FFT double (with number_of_time => estimate mode for FFTW)
+set: fftd-est
+  pgm: fft
+  cases: 101 102 103 105 106 107
+  extra: -stop 20
+
+# FFT double (with number_of_time => measure mode for FFTW)
+set: fftd-measure
+  pgm: fft
+  cases: 111 112 113 115 116 117
+  extra: -stop 20
+
+# FFT double (with number_of_time => patient mode for FFTW)
+set: fftd-patient
+  pgm: fft
+  cases: 121 122 123 125 126 127
+  req:   patience
+  extra: -stop 20
+
+macro: fftd fftd-est fftd-measure fftd-patient
+
+
+
+#########################################################################
+# Vendor FFT
+#########################################################################
+
+set: ipp-fft
+  pgm: ipp/fft
+  cases: 1
+  extra: -stop 20
+  req: ipp
+
+set: sal-fft
+  pgm: sal/fft
+  cases: 1 2 5 6 11 12 15 16
+  extra: -stop 20
+  req: sal
+
+
+# Single-precision FFTW3 ------------------------------------------------
+
+set: fftw3-fft-core
+  pgm: fftw3/fft
+  cases: 1 11 12 51 61 62
+  sheetcases: 51
+  extra: -stop 18
+  req: fftw3
+
+set: fftw3-fft-patient
+  pgm: fftw3/fft
+  cases: 21 71
+  extra: -stop 13
+  req: fftw3 patience
+
+set: fftw3-fft-exhaustive
+  pgm: fftw3/fft
+  cases: 31 81
+  extra: -stop 10
+  req: fftw3 patience
+
+macro: fftw3-fft fftw3-fft-core fftw3-fft-patient
+
+
+# Double-precision FFTW3 ------------------------------------------------
+
+set: fftw3-fft-core_d
+  pgm: fftw3/fft
+  cases: 101 111
+  extra: -stop 18
+  req: fftw3
+
+set: fftw3-fft-patient_d
+  pgm: fftw3/fft
+  cases: 121
+  extra: -stop 13
+  req: fftw3 patience
+
+macro: fftw3-fft_d fftw3-fft-core_d fftw3-fft-patient_d
+
+macro: vendor-fft ipp-fft sal-fft fftw3-fft
+
+
+
+#########################################################################
+# VSIPL++ FFTM
+#########################################################################
+
+set: fftm1024r
+  pgm: fftm
+  suffix: -1024r
+  fastcases: 1 2 3
+  sheetcases: 1 2
+  hpeccases: 1 2
+  cases: 1 2 3 4 5 6
+  extra: -p:rows 1024 -stop 16
+
+set: fftm1024c
+  pgm: fftm
+  suffix: -1024c
+  sheetcases: 11
+  hpeccases: 11
+  cases: 11 12 13 14 15 16
+  extra: -p:size 1024 -stop 16
+
+macro: fftm1024 fftm1024r fftm1024c
+
+set: fftm64
+  pgm: fftm
+  suffix: -64r
+  fastcases: 1 2 3
+  cases: 1 2 3 4 5 6
+  extra: -p:rows 64 -stop 16
+
+set: fftm32
+  pgm: fftm
+  suffix: -32r
+  fastcases: 1 2 3
+  cases: 1 2 3 4 5 6
+  extra: -p:rows 32 -stop 16
+
+set: fftm16
+  pgm: fftm
+  suffix: -16r
+  fastcases: 1 2 3
+  cases: 1 2 3 4 5 6
+  extra: -p:rows 16 -stop 16
+
+set: fftm8
+  pgm: fftm
+  suffix: -8r
+  fastcases: 1 2 3
+  cases: 1 2 3 4 5 6
+  extra: -p:rows 8 -stop 16
+
+set: fftm4
+  pgm: fftm
+  suffix: -4r
+  fastcases: 1 2 3
+  cases: 1 2 3 4 5 6
+  extra: -p:rows 4 -stop 16
+
+set: fftm2
+  pgm: fftm
+  suffix: -2r
+  fastcases: 1 2 3
+  cases: 1 2 3 4 5 6
+  extra: -p:rows 2 -stop 16
+
+set: fftm1
+  pgm: fftm
+  suffix: -1r
+  fastcases: 1 2 3
+  cases: 1 2 3 4 5 6
+  extra: -p:rows 1 -stop 16
+
+set: fftm-fixed-len
+  pgm: fftm
+  suffix: -4096c
+  fastcases: 11
+  cases: 11
+  extra: -p:size 4096 -stop 13
+
+set: fftm-fixed-len-cvsip
+  pgm: cvsip/fftm
+  suffix: -4096c
+  fastcases: 11
+  cases: 11
+  extra: -p:size 4096 -stop 13
+
+
+
+#########################################################################
+# Vendor FFTM
+#########################################################################
+
+set: fftw3-fftm
+  pgm: fftw3/fftm
+  cases: 1 101 111
+  sheetcases: 1 101
+  extra: -stop 14
+  req: fftw3
+
+
+
+#########################################################################
+# Fast Convolution
+#########################################################################
+
+# fast convolution cases that can only be run in serial.
+# (64 pulses, sweep pulse size)
+set: fastconv-ser
+  pgm: fastconv
+  cases: 2
+  extra: -loop_start 1 -stop 16
+
+# fast convolution cases that can be run in parallel.
+# (64 pulses, sweep pulse size)
+set: fastconv-par
+  pgm: fastconv
+  cases: 1 5 6 8 9
+  nps: all
+  extra: -loop_start 1 -stop 16
+
+macro: fastconv fastconv-ser fastconv-par
+
+
+# fast convolution with fixed number of pulses (fr = fixed-row)
+set: fastconv-fr-1024
+  pgm: fastconv
+  suffix: -1024r
+  cases: 1
+  hpeccases: 1 9
+  extra: -loop_start 1 -start 5 -stop 16 -p:rows 1024
+
+# fast convolution with fixed pulse size (fc = fixed-column)
+# (pulse size 2048, sweep number of pulses from 2^0=1 to 2^12=4096)
+set: fastconv-fc-2048
+  pgm: fastconv
+  suffix: -2048c
+  cases: 15 16 19
+  extra: -loop_start 1 -start 0 -stop 12 -p:size 2048
+
+set: fastconv-fc-1024
+  pgm: fastconv
+  suffix: -1024c
+  cases: 15 16 19
+  sheetcases: 19
+  hpeccases: 11 19
+  extra: -loop_start 1 -start 5 -stop 16 -p:size 1024
+
+set: fastconv-fc-4096
+  pgm: fastconv
+  suffix: -4096c
+  cases: 15 16 19
+  sheetcases: 19
+  extra: -loop_start 1 -start 0 -stop 12 -p:size 4096
+
+# fast convolution with fixed pulse size (fc = fixed-column)
+# (pulse size 2048, sweep number of pulses from 2^0=1 to 2^12=4096)
+set: fastconv-fc-par
+  pgm: fastconv
+  nps: 1 2 4 8 16 32
+  cases: 15 16 19
+  extra: -loop_start 1 -start 0 -stop 12 -param 2048
+
+
+# SAL fast convolution
+set: sal-fastconv-fc
+  pgm: sal/fastconv
+  cases: 116 16
+  extra: -loop_start 1 -start 0 -stop 12 -param 2048
+  req: sal
+
+
+
+#########################################################################
+# QR 
+#########################################################################
+
+set: qrd
+  pgm: qrd
+  cases: 11 12 13 1 2 3
+  sheetcases: 1
+  extra: -stop 10
+
+
+
+#########################################################################
+# Convolution 
+#########################################################################
+
+set: conv1d
+  pgm: conv
+  cases: 1 2 3 4 5 6
+  hpeccases: 1 4
+
+set: conv2d-3x3
+  pgm: conv2d
+  suffix: -3x3
+  cases: 3
+  hpeccases: 1
+  extra: -p:rows 256 -p:mn 3 -stop 16
+
+set: conv2d-5x5
+  pgm: conv2d
+  suffix: -5x5
+  cases: 3
+  hpeccases: 1
+  extra: -p:rows 256 -p:mn 5 -stop 16
+
+macro: conv conv1d conv2d-3x3 conv2d-5x5
+
+
+
+#########################################################################
+# Correlation 
+#########################################################################
+
+set: corr1d-real
+  pgm: corr
+  cases: 1 2 3 4 5 6
+  sheetcases: 3 6
+
+set: corr1d-complex
+  pgm: corr
+  cases: 7 8 9 10 11 12
+  sheetcases: 9 12
+
+macro: corr corr1d-real corr1d-complex
+
+
+
+#########################################################################
+# FIR 
+#########################################################################
+
+set: fir
+  pgm: fir
+  cases: 1 2 11 12
+  hpeccases: 1 2 11 12
+
+set: fir-cvsip
+  pgm: cvsip/fir
+  cases: 1 2 11 12
+  extra: -stop 12
+
+
+
+#########################################################################
+# VSIPL++ linear algebra products
+#########################################################################
+
+set: prod
+  pgm: prod
+  cases: 1 2 11 12 13
+  sheetcases: 1 2
+  hpeccases: 1 2
+  extra: -stop 11
+
+set: dot
+  pgm: dot
+  cases: 1 2 3 4
+  sheetcases: 1 2
+  hpeccases: 1 2
+
+set: dot-blas
+  pgm: dot
+  req: blas
+  cases: 5 6
+
+set: dot-cuda
+  pgm: dot
+  req: cuda
+  cases: 7 8
+
+
+
+#########################################################################
+# Cell Specials 
+#########################################################################
+
+set: cell-fft
+  pgm: fft
+  cases: 11 12
+  extra: -start 5 -stop 12
+  req:   cell
+
+set: cell-fftm
+  pgm: fftm
+  spes: 0 1 8 16
+  cases: 11
+  extra: -p:rows 1024 -p:size 4096 -stop 12
+  req:   cell
+
+
+# Bandwidth measurements
+
+set: cell-bw-1-8
+  pgm: cell/bw
+  suffix: -n8
+  spes: 1
+  cases: 21 22 23 31 32 33
+  extra: -p:num 8 -start 0 -stop 12
+  req:   cell
+
+set: cell-bw-1-64
+  pgm: cell/bw
+  suffix: -n64
+  spes: 1
+  cases: 21 22 23 31 32 33
+  extra: -p:num 64 -start 0 -stop 12
+  req:   cell
+
+set: cell-bw-1-512
+  pgm: cell/bw
+  suffix: -n512
+  spes: 1
+  cases: 21 22 23 31 32 33
+  extra: -p:num 512 -start 0 -stop 12
+  req:   cell
+
+set: cell-bw-8-8
+  pgm: cell/bw
+  suffix: -n8
+  spes: 8
+  cases: 21 22 23 31 32 33
+  extra: -p:num 64 -start 0 -stop 12
+  req:   cell
+
+set: cell-bw-8-64
+  pgm: cell/bw
+  suffix: -n64
+  spes: 8
+  cases: 21 22 23 31 32 33
+  extra: -p:num 512 -start 0 -stop 12
+  req:   cell
+
+set: cell-bw-8-512
+  pgm: cell/bw
+  suffix: -n512
+  spes: 8
+  cases: 21 22 23 31 32 33
+  extra: -p:num 4096 -start 0 -stop 12
+  req:   cell
+
+set: cell-bw-16-8
+  pgm: cell/bw
+  suffix: -n8
+  spes: 16
+  cases: 21 22 23 31 32 33
+  extra: -p:num 128 -start 0 -stop 12
+  req:   cell
+
+set: cell-bw-16-64
+  pgm: cell/bw
+  suffix: -n64
+  spes: 16
+  cases: 21 22 23 31 32 33
+  extra: -p:num 1024 -start 0 -stop 12
+  req:   cell
+
+set: cell-bw-16-512
+  pgm: cell/bw
+  suffix: -n512
+  spes: 16
+  cases: 21 22 23 31 32 33
+  extra: -p:num 8192 -start 0 -stop 12
+  req:   cell
+
+macro: cell-bw cell-bw-1-8 cell-bw-1-64 cell-bw-1-512 cell-bw-8-8 cell-bw-8-64 cell-bw-8-512 cell-bw-16-8 cell-bw-16-64 cell-bw-16-512
+
+
+#########################################################################
+# Cell Fastconv Specials 
+#########################################################################
+
+set: cell-fc-s1
+  pgm:   cell/fastconv
+  spes:  8
+  cases: 1 2
+  req:   cell
+  extra: -param 2048 -stop 13
+
+set: cell-fc-s8
+  pgm:   cell/fastconv
+  spes:  8
+  cases: 1 2
+  req:   cell
+  extra: -param 2048 -stop 13
+
+set: cell-fc-s16
+  pgm:   cell/fastconv
+  spes:  16
+  cases: 1 2
+  req:   cell
+  extra: -param 2048 -stop 13
+
+set: fastconv-s1
+  pgm:   fastconv
+  spes:  1
+  cases: 19
+  req:   cell
+  extra: -p:size 2048 -stop 13
+
+set: fastconv-s8
+  pgm:   fastconv
+  spes:  8
+  cases: 19
+  req:   cell
+  extra: -p:size 2048 -stop 13
+
+set: fastconv-s16
+  pgm:   fastconv
+  spes:  16
+  cases: 19
+  req:   cell
+  extra: -p:size 2048 -stop 13
+
+macro: cell-fc cell-fc-s1 cell-fc-s8 cell-fc-s16 fastconv-s1 fastconv-s8 fastconv-s16
+
+
+#########################################################################
+# ASUB application specific u-benchmarks 
+#########################################################################
+
+set: vsmss
+  pgm:       vsmss
+  cases:     1 11

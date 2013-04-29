@@ -1,0 +1,65 @@
+######################################################### -*-Makefile-*-
+#
+# Contents: Makefile fragment for SPU code.
+#
+########################################################################
+
+########################################################################
+# Variables
+########################################################################
+
+plugin_ld_script := $(top_srcdir)/src/vsip/opt/cbe/spu/plugins/ld.script
+
+CBE_SDK_SYSROOT := @cbe_sdk_sysroot@
+CC_SPU := @CC_SPU@
+CXX_SPU := @CXX_SPU@
+EMBED_SPU := @EMBED_SPU@
+OBJDUMP_SPU := @OBJDUMP_SPU@
+LD_SPU := @LD_SPU@
+AR_SPU := @AR_SPU@
+CPP_FLAGS_SPU := @CPP_FLAGS_SPU@
+CPP_FLAGS_SPU += -I$(top_builddir)/src -I$(top_srcdir)/src
+CPP_FLAGS_SPU += -I$(CBE_SDK_SYSROOT)/usr/spu/include
+CPP_FLAGS_SPU += -I$(CBE_SDK_SYSROOT)/opt/cell/sdk/usr/spu/include
+LD_FLAGS_SPU := @LD_FLAGS_SPU@
+LD_FLAGS_SPU += -L$(top_builddir)/lib/spu
+CREATE_PLUGIN := $(top_srcdir)/bin/create_plugin
+
+cbe_accel_src := $(wildcard $(srcdir)/cbe/accel/*.cpp)
+cbe_accel_obj := $(patsubst $(srcdir)/%.cpp, %.o, $(cbe_accel_src))
+cbe_accel_exe := $(patsubst $(srcdir)/%.cpp, %, $(cbe_accel_src))
+cbe_accel_plg := cinterp.plg zinterp.plg
+
+src += $(cbe_accel_src)
+hdr += $(wildcard $(srcdir)/cbe/accel/*.hpp)
+
+########################################################################
+# Rules
+########################################################################
+
+$(cbe_accel_obj): %.o: %.cpp
+	@echo compiling $@
+	$(CC_SPU) -c -fpic -fno-zero-initialized-in-bss \
+          $(CPP_FLAGS_SPU) $(CFLAGS_SPU) -o $@ $<
+
+$(cbe_accel_exe): %: %.o
+	@echo linking $@
+	$(CC_SPU) -nostartfiles -Wl,-T,$(plugin_ld_script) $< \
+          $(LD_FLAGS_SPU) -lsvpp -lcml_spu -lsimdmath -lm -o $@
+
+$(cbe_accel_plg): %.plg: cbe/accel/%
+	$(CREATE_PLUGIN) -o $@ $<
+
+
+########################################################################
+# Targets
+########################################################################
+
+ssar: | $(cbe_accel_plg)
+
+clean: clean_accel
+
+clean_accel:
+	rm -f $(cbe_accel_plg)
+	rm -f $(cbe_accel_exe)
+	rm -f $(cbe_accel_obj)

@@ -1,0 +1,52 @@
+Sourcery VSIPL++ is available under three separate licenses:
+
+1) Commercial Optimized Implementation
+
+  The entire library is available under the terms of a commercial
+  license.  Please contact CodeSourcery (1-888-776-0262 or
+  sales@codesourcery.com) for details on obtaining rights to use the
+  library under this license.
+
+2) GPL Optimized Implementation
+
+  The entire library is available under the terms of the GNU General Public 
+  License, contained in the file LICENSE.GPL.
+
+3) BSD Reference Implementation
+
+  The core parts of the library (listed below) are available under the BSD 
+  license, contained in the file LICENSE.BSD.
+
+  When the BSD licensed files are configured with "--enable-ref-impl", the 
+  result is the VSIPL++ reference implementation.
+
+  The core library parts available under the BSD license are:
+
+    - autogen.sh
+    - configure
+    - configure.ac
+    - GNUmakefile.in
+    - install.sh
+    - vsipl++-pc.in
+    - src/vsip/*        All files in the src/vsip directory
+    - src/vsip/core/    All files in the src/vsip/core hierarchy
+    - tests/ref-impl/*  All files in the tests/ref-impl directory
+
+  All remaining files are only available under a commercial license from 
+  CodeSourcery or under the GPL.
+
+  For example, and without limitation, the following files are not available 
+  under the BSD license and cannot be used with the library when configured 
+  as the reference implementation:
+
+    - synopsys.py.in
+    - apps              All files in the apps hierarchy.
+    - benchmarks        All files in the benchmarks hierarchy.
+    - scripts           All files in the scripts hierarchy.
+    - scripting         All files in the scripting hierarchy.
+    - src/vsip/opt      All files in the src/vsip/opt hierarchy.
+    - src/vsip_csl      All files in the src/vsip_csl hierarchy.
+    - tests             All files in the tests hierarchy,
+                        excluding those in tests/ref-impl.
+    - vendor            All files in the vendor hierarchy.
+

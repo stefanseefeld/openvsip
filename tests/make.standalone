@@ -1,0 +1,130 @@
+########################################################################
+#
+# File:   tests/make.standalone
+# Author: Jules Bergmann
+# Date:   2006-01-19
+#
+# Contents: Standalone Makefile for VSIPL++ tests
+#
+# Useful for running tests on a library that has been installed.
+# Prints PASS or FAIL for each test run.
+#
+########################################################################
+
+# EXAMPLES:
+#
+# To test a library that has been installed and whose .pc files are
+# visible in PKG_CONFIG_PATH:
+#
+#   make -f make.standalone
+#
+# To test a library that has been installed into a non-standard
+# prefix, or whose .pc files are not in PKG_CONFIG_PATH:
+#
+#   make -f make.standalone PREFIX=/path/to/library
+#
+
+
+
+########################################################################
+# Configuration Variables
+########################################################################
+
+# Variables in this section can be set by the user on the command line.
+
+# Prefix of installed library.  Not necessary if your .pc files are in
+# PKG_CONFIG_PATH and if they have the correct prefix.
+PREFIX   = 
+
+# Package to use.  For binary packages, this should either be 'vsipl++'
+# to use the release version of the library, or 'vsipl++-debug' to
+# use the debug version of the library.  For source packages, this
+# should most likely be 'vsipl++', unless a suffix was given during
+# installation.
+PKG      = vsipl++
+
+
+
+########################################################################
+# Internal Variables
+########################################################################
+
+# Variables in this section should not be modified.
+
+# Logic to call pkg-config with PREFIX, if specified.
+ifneq ($(PREFIX),)
+   PC    = env PKG_CONFIG_PATH=$(PREFIX)/lib/pkgconfig \
+	   pkg-config --define-variable=prefix=$(PREFIX) $(PKG)
+else
+   PC    = pkg-config $(PKG)
+endif
+
+LOCAL_CXXFLAGS = -I.
+
+CXX      = $(shell $(PC) --variable=cxx )
+CXXFLAGS = $(shell $(PC) --cflags       ) \
+	   $(shell $(PC) --variable=cxxflags ) \
+	   $(LOCAL_CXXFLAGS)
+LIBS     = $(shell $(PC) --libs         )
+
+REMOTE   =
+
+
+sources := $(wildcard *.cpp)
+tests   := $(patsubst %.cpp, %.test, $(sources))
+
+smalltests :=				\
+	check_config.test		\
+	convolution.test		\
+	coverage_binary.test		\
+	dense.test			\
+	domain.test			\
+	fft_be.test			\
+	fftm.test			\
+	fir.test			\
+	matrix-transpose.test		\
+	matrix.test			\
+	matvec.test			\
+	reductions.test			\
+	solver-qr.test			\
+	vector.test			\
+	vmmul.test			\
+	parallel/corner-turn.test	\
+	parallel/expr.test		\
+	parallel/fftm.test
+
+
+
+########################################################################
+# Targets
+########################################################################
+
+all: $(tests)
+
+check: $(tests)
+
+smallcheck: $(smalltests)
+
+vars:
+	@echo "CXX     : " $(CXX)
+	@echo "CXXFLAGS: " $(CXXFLAGS)
+	@echo "LIBS    : " $(LIBS)
+
+clean:
+	rm -rf *.exe *.o
+
+
+
+
+########################################################################
+# Implicit Rules
+########################################################################
+
+%.test: %.exe
+	@ ($(REMOTE) ./$< && echo "PASS: $<") || echo "FAIL: $<"
+
+%.exe: %.o
+	@ $(CXX) $(CXXFLAGS) -o $@ $< $(LIBS) || rm -f $@
+
+%.o: %.cpp
+	@ $(CXX) -c $(CXXFLAGS) -o $@ $< || rm -f $@

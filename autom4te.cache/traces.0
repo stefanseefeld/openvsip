@@ -1,0 +1,2518 @@
+m4trace:/usr/local/tools/hpc-2.0/share/aclocal/pkg.m4:26: -1- AC_DEFUN([PKG_PROG_PKG_CONFIG], [m4_pattern_forbid([^_?PKG_[A-Z_]+$])
+m4_pattern_allow([^PKG_CONFIG(_PATH)?$])
+AC_ARG_VAR([PKG_CONFIG], [path to pkg-config utility])dnl
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	AC_PATH_TOOL([PKG_CONFIG], [pkg-config])
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=m4_default([$1], [0.9.0])
+	AC_MSG_CHECKING([pkg-config is at least version $_pkg_min_version])
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		AC_MSG_RESULT([yes])
+	else
+		AC_MSG_RESULT([no])
+		PKG_CONFIG=""
+	fi
+		
+fi[]dnl
+])
+m4trace:/usr/local/tools/hpc-2.0/share/aclocal/pkg.m4:56: -1- AC_DEFUN([PKG_CHECK_EXISTS], [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
+if test -n "$PKG_CONFIG" && \
+    AC_RUN_LOG([$PKG_CONFIG --exists --print-errors "$1"]); then
+  m4_ifval([$2], [$2], [:])
+m4_ifvaln([$3], [else
+  $3])dnl
+fi])
+m4trace:/usr/local/tools/hpc-2.0/share/aclocal/pkg.m4:82: -1- AC_DEFUN([_PKG_SHORT_ERRORS_SUPPORTED], [AC_REQUIRE([PKG_PROG_PKG_CONFIG])
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi[]dnl
+])
+m4trace:/usr/local/tools/hpc-2.0/share/aclocal/pkg.m4:102: -1- AC_DEFUN([PKG_CHECK_MODULES], [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
+AC_ARG_VAR([$1][_CFLAGS], [C compiler flags for $1, overriding pkg-config])dnl
+AC_ARG_VAR([$1][_LIBS], [linker flags for $1, overriding pkg-config])dnl
+
+pkg_failed=no
+AC_MSG_CHECKING([for $1])
+
+_PKG_CONFIG([$1][_CFLAGS], [cflags], [$2])
+_PKG_CONFIG([$1][_LIBS], [libs], [$2])
+
+m4_define([_PKG_TEXT], [Alternatively, you may set the environment variables $1[]_CFLAGS
+and $1[]_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.])
+
+if test $pkg_failed = yes; then
+        _PKG_SHORT_ERRORS_SUPPORTED
+        if test $_pkg_short_errors_supported = yes; then
+	        $1[]_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "$2" 2>&1`
+        else 
+	        $1[]_PKG_ERRORS=`$PKG_CONFIG --print-errors "$2" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$$1[]_PKG_ERRORS" >&AS_MESSAGE_LOG_FD
+
+	ifelse([$4], , [AC_MSG_ERROR(dnl
+[Package requirements ($2) were not met:
+
+$$1_PKG_ERRORS
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+_PKG_TEXT
+])],
+		[AC_MSG_RESULT([no])
+                $4])
+elif test $pkg_failed = untried; then
+	ifelse([$4], , [AC_MSG_FAILURE(dnl
+[The pkg-config script could not be found or is too old.  Make sure it
+is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+
+_PKG_TEXT
+
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.])],
+		[$4])
+else
+	$1[]_CFLAGS=$pkg_cv_[]$1[]_CFLAGS
+	$1[]_LIBS=$pkg_cv_[]$1[]_LIBS
+        AC_MSG_RESULT([yes])
+	ifelse([$3], , :, [$3])
+fi[]dnl
+])
+m4trace:m4/cbe.m4:10: -1- AC_DEFUN([SVXX_CHECK_CBE], [
+AC_ARG_ENABLE([cbe_sdk],,  
+  AC_MSG_ERROR([The option --enable-cbe-sdk is obsolete; use 
+    --with-cbe-sdk instead.  (Run 'configure --help' for details)]),)
+
+AC_ARG_WITH([cbe_sdk],
+  AS_HELP_STRING([--with-cbe-sdk],
+                 [Use CBE SDK.]),,
+  [with_cbe_sdk="no"])
+AC_ARG_WITH(cbe_sdk_sysroot,
+  AS_HELP_STRING([--with-cbe-sdk-sysroot=PATH],
+                 [Specify the installation sysroot of the CBE SDK.]),
+  [if test "$with_cbe_sdk" == "no"; then
+     with_cbe_sdk="yes"
+   fi],  [with_cbe_sdk_sysroot=])
+AC_ARG_WITH(cbe_default_num_spes,
+  AS_HELP_STRING([--with-cbe-default-num-spes=NUMBER],
+  [Specify the default number of SPEs.]),
+  [],
+  [with_cbe_default_num_spes=8])
+
+AC_ARG_WITH(cml_prefix,
+  AS_HELP_STRING([--with-cml-prefix=PATH],
+                 [Specify the installation path of CML.  Only valid
+		  when using the CBE SDK.]))
+
+AC_ARG_WITH(cml_libdir,
+  AS_HELP_STRING([--with-cml-libdir=PATH],
+                 [Specify the directory containing CML libraries.
+		  Only valid when using the CBE SDK.]))
+
+AC_ARG_WITH(cml_include,
+  AS_HELP_STRING([--with-cml-include=PATH],
+                 [Specify the directory containing CML header files.
+		  Only valid when using the CBE SDK.]))
+
+
+if test "$with_cbe_sdk" != "no"; then
+
+  cbe_sdk_version=300
+
+  AC_DEFINE_UNQUOTED(VSIP_IMPL_CBE_SDK, 1,
+        [Set to 1 to support Cell Broadband Engine (requires CML).])
+  AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_CML, 1,
+        [Set to 1 if CML is available (requires SDK).])
+  AC_DEFINE_UNQUOTED(VSIP_IMPL_CBE_NUM_SPES, $with_cbe_default_num_spes,
+        [Define default number of SPEs.])
+  AC_SUBST(VSIP_IMPL_HAVE_CBE_SDK, 1)
+
+  CPPFLAGS="$CPPFLAGS -I$with_cbe_sdk_sysroot/opt/cell/sdk/usr/include"
+  if test -n "`echo $LDFLAGS | sed -n '/-m64/p'`" -o \
+          -n "`echo $LDFLAGS | sed -n '/-q64/p'`"; then
+    LDFLAGS="$LDFLAGS -L$with_cbe_sdk_sysroot/opt/cell/sdk/usr/lib64"
+  else
+    LDFLAGS="$LDFLAGS -L$with_cbe_sdk_sysroot/opt/cell/sdk/usr/lib"
+  fi
+  if test -n "$with_cbe_sdk_sysroot"; then
+    CPPFLAGS="$CPPFLAGS --sysroot=$with_cbe_sdk_sysroot"
+    LDFLAGS="$LDFLAGS --sysroot=$with_cbe_sdk_sysroot"
+  fi
+
+  CPP_FLAGS_SPU="$CPP_FLAGS_SPU -I$extra_include/spu"
+  LD_FLAGS_SPU="$LD_FLAGS_SPU -L$extra_libdir/spu"
+  LIBS="-lcml -lcsl_alf -lalf -lspe2 -ldl $LIBS"
+
+  if test "$with_cml_include" != ""; then
+    cml_incdir="$with_cml_include"
+  elif test "$with_cml_prefix" != ""; then
+    cml_incdir="$with_cml_prefix/include"
+  else
+    cml_incdir=""
+  fi
+
+  if test "$with_cml_libdir" != ""; then
+    cml_libdirs="$with_cml_libdir"
+  elif test "$with_cml_prefix" != ""; then
+    cml_libdirs="$with_cml_prefix/lib $with_cml_prefix/lib64"
+  else
+    cml_libdirs=""
+  fi
+
+  if test -n "$cml_incdir" -o -n "$cml_libdirs"; then
+    CPPFLAGS="-I$cml_incdir -I$cml_incdir/cml/ppu $CPPFLAGS"
+    CPP_FLAGS_SPU="-I$cml_incdir/spu -I$cml_incdir/cml/spu $CPP_FLAGS_SPU"
+
+    orig_LDFLAGS=$LDFLAGS
+    orig_LD_FLAGS_SPU=$LD_FLAGS_SPU
+
+    cml_libdir_found=no
+
+    for trylibdir in $cml_libdirs; do
+      AC_MSG_CHECKING([for CML libdir: $trylibdir])
+
+      LDFLAGS="-L$trylibdir $orig_LDFLAGS"
+      LD_FLAGS_SPU="-L$trylibdir/spu $orig_LD_FLAGS_SPU"
+
+      AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM(
+	  [[#include <cml.h>]],
+	  [[cml_init(); cml_fini();]]
+          )],
+        [cml_libdir_found=$trylibdir
+         AC_MSG_RESULT([found])
+         break],
+        [AC_MSG_RESULT([not found]) ])
+
+    done
+
+    if test "$cml_libdir_found" = "no"; then
+      AC_MSG_ERROR([Cannot find CML libdir])
+    fi
+
+  fi
+
+  if test "$neutral_acconfig" = 'y'; then
+    CPPFLAGS="$CPPFLAGS -DVSIP_CBE_SDK_VERSION=$cbe_sdk_version"
+    CPP_FLAGS_SPU="$CPP_FLAGS_SPU -DVSIP_CBE_SDK_VERSION=$cbe_sdk_version"
+  else
+    AC_DEFINE_UNQUOTED(VSIP_CBE_SDK_VERSION, $cbe_sdk_version,
+          [Cell SDK version.])
+  fi
+
+  if test "x$CXXFLAGS_SPU" == "x"; then
+    CXXFLAGS_SPU="-O3 -fno-threadsafe-statics -fno-rtti -fno-exceptions"
+  fi
+
+  if test "x$CFLAGS_SPU" == "x"; then
+    CFLAGS_SPU="-O3"
+  fi
+
+  AC_SUBST(CPP_FLAGS_SPU, $CPP_FLAGS_SPU)
+  AC_SUBST(LD_FLAGS_SPU, $LD_FLAGS_SPU)
+else
+  AC_SUBST(VSIP_IMPL_HAVE_CBE_SDK, "")
+  cbe_sdk_version="none"
+fi
+
+AC_SUBST(CXXFLAGS_SPU)
+AC_SUBST(CFLAGS_SPU)
+
+AC_SUBST(cbe_sdk_sysroot, $with_cbe_sdk_sysroot)
+AC_SUBST(cbe_sdk_version, $cbe_sdk_version)
+
+])
+m4trace:m4/cuda.m4:10: -1- AC_DEFUN([SVXX_CHECK_CUDA], [
+  AC_ARG_WITH(cuda_prefix,
+    AS_HELP_STRING([--with-cuda-prefix=PATH],
+                   [Specify the installation prefix of the CUDA libraries.  Headers
+                    must be in PATH/include; libraries in PATH/lib64 or PATH/lib.]))
+
+  # There are two cuda libraries supported: CUBLAS and CUFFT.  They are
+  # configured using --with-cuda and --enable-fft=cuda.  Use of the FFT
+  # library requires use of the --with-cuda option.
+
+
+  # CUBLAS
+  if test "$with_cuda" != "no"; then
+
+    # Chose reasonable default if no prefix provided.
+    if test -z "$with_cuda_prefix"; then
+      with_cuda_prefix="/usr/local/cuda"
+    fi
+
+    CUDA_CPPFLAGS="-I$with_cuda_prefix/include"
+
+    save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS $CUDA_CPPFLAGS"
+  
+    # Find cuda.h.
+    AC_CHECK_HEADER([cuda.h],, [AC_MSG_ERROR([CUDA enabled, but cuda.h not found.])])
+
+    # Find more CUDA headers.
+    AC_CHECK_HEADERS([cublas.h cufft.h],,
+      [AC_MSG_ERROR([CUDA enabled, but headers are not found.])])
+
+    # Set the library path depending on whether this is a 64-bit build or
+    # not.  The libcuda.so file has various other shared-library dependencies
+    # that may or may not be in the linker's search path, so we also set 
+    # -Wl,--allow-shlib-undefined to avoid trying to resolve them.
+    if test "$ac_cv_sizeof_int_p" -eq 8 ; then
+      CUDA_LDFLAGS="-L$with_cuda_prefix/lib64 -Wl,--allow-shlib-undefined"
+    else
+      CUDA_LDFLAGS="-L$with_cuda_prefix/lib32 -L$with_cuda_prefix/lib -Wl,--allow-shlib-undefined"
+    fi
+
+    # Find the library.
+    save_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$CUDA_LDFLAGS $LDFLAGS"
+    LIBS="$LIBS -lcuda -lcudart"
+    AC_SEARCH_LIBS(cublasGetError, [cublas],
+      [cublas_lib=$ac_lib cuda_found="yes"],
+      [AC_MSG_ERROR([CUDA BLAS library not found])])
+
+    # Declare it as found.	
+    AC_SUBST(VSIP_IMPL_HAVE_CUDA, 1)
+    if test "$neutral_acconfig" = 'y'; then
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_CUDA=1"
+    else
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_CUDA, 1,
+        [Define to set whether or not to use NVIDIA's CUDA libraries.])
+    fi
+
+    # CUFFT
+    if test $enable_cuda_fft != "no"; then
+
+      # Find the library file
+      AC_SEARCH_LIBS(cufftPlan1d, [cufft],
+                     [cufft_lib=$ac_lib
+  		        cuda_fft_found="yes"],
+  		       [cuda_fft_found="no"])
+
+      if test "$cuda_fft_found" = "no"; then
+        AC_MSG_ERROR([CUDA FFT library not found])
+      else
+
+        # Declare it as found.
+  	  provide_fft_float=1
+        AC_SUBST(VSIP_IMPL_CUDA_FFT, 1)
+        if test "$neutral_acconfig" = 'y'; then
+          CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_CUDA_FFT=1"
+        else
+          AC_DEFINE_UNQUOTED(VSIP_IMPL_CUDA_FFT, 1,
+            [Define to set whether or not to use NVIDIA's CUDA FFT library.])
+        fi
+      fi
+    fi
+
+    # Make sure the appropriate flags are passed down to nvcc.
+    if test -n "`echo $CFLAGS | sed -n '/-m32/p'`"; then
+      NVCCFLAGS="-m32"
+    elif test -n "`echo $CFLAGS | sed -n '/-m64/p'`"; then
+      NVCCFLAGS="-m64"
+    fi
+    AC_SUBST(NVCCFLAGS)
+  fi
+])
+m4trace:m4/cvsip.m4:10: -1- AC_DEFUN([SVXX_CHECK_CVSIP], [
+#
+# Find the C-VSIPL library, if enabled.
+#
+
+if test "$with_cvsip" != "no"; then
+  if test -n "$with_cvsip_prefix"; then
+    CVSIP_CPPFLAGS="-I$with_cvsip_prefix/include"
+    CVSIP_LDFLAGS="-L$with_cvsip_prefix/lib"
+  fi
+  CPPFLAGS="$CPPFLAGS $CVSIP_CPPFLAGS"
+  AC_CHECK_HEADER([vsip.h])
+  LDFLAGS="$LDFLAGS $CVSIP_LDFLAGS"
+  AC_CHECK_LIB(vsip, vsip_vcreate_bl,[ cvsip_have_bool=1])
+  AC_CHECK_LIB(vsip, vsip_vcreate_i,[ cvsip_have_int=1])
+  AC_CHECK_LIB(vsip, vsip_ccfftop_create_f,[ cvsip_have_float=1])
+  AC_CHECK_LIB(vsip, vsip_ccfftop_create_d,[ cvsip_have_double=1])
+  if test -n "$cvsip_have_float" -o -n "$cvsip_have_double"; then
+    LIBS="-lvsip $LIBS"
+    AC_CHECK_FUNCS([vsip_conv1d_create_f vsip_conv1d_create_d\
+                    vsip_conv2d_create_f vsip_conv2d_create_d\
+                    vsip_corr1d_create_f vsip_corr1d_create_d\
+                    vsip_corr2d_create_f vsip_corr2d_create_d],,,
+      [#include <vsip.h>])
+    AC_CHECK_TYPES([vsip_fir_attr],[],[],[[#include <vsip.h>]])
+    AC_SUBST(VSIP_IMPL_CVSIP_HAVE_BOOL, $cvsip_have_bool)
+    AC_SUBST(VSIP_IMPL_CVSIP_HAVE_INT, $cvsip_have_int)
+    AC_SUBST(VSIP_IMPL_CVSIP_HAVE_FLOAT, $cvsip_have_float)
+    AC_SUBST(VSIP_IMPL_CVSIP_HAVE_DOUBLE, $cvsip_have_double)
+    AC_SUBST(VSIP_IMPL_HAVE_CVSIP, 1)
+    if test "$neutral_acconfig" = 'y'; then
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_CVSIP=1"
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_CVSIP_HAVE_BOOL=$cvsip_have_bool"
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_CVSIP_HAVE_INT=$cvsip_have_int"
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_CVSIP_HAVE_FLOAT=$cvsip_have_float"
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_CVSIP_HAVE_DOUBLE=$cvsip_have_double"
+    else
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_CVSIP, 1,
+        [Define to use C-VSIPL library.])
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_CVSIP_HAVE_BOOL, $cvsip_have_bool,
+        [Define if C-VSIPL supports bool views.])
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_CVSIP_HAVE_INT, $cvsip_have_int,
+        [Define if C-VSIPL supports int views.])
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_CVSIP_HAVE_FLOAT, $cvsip_have_float,
+        [Define if C-VSIPL supports float operations.])
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_CVSIP_HAVE_DOUBLE, $cvsip_have_double,
+        [Define if C-VSIPL supports double operations.])
+    fi
+  fi
+  if test "$enable_cvsip_fft" != "no"; then 
+    if test "$cvsip_have_float" = "1"; then
+      provide_fft_float=1
+    fi
+    if test "$cvsip_have_double" = "1"; then
+      provide_fft_double=1
+    fi
+    AC_SUBST(VSIP_IMPL_CVSIP_FFT, 1)
+    if test "$neutral_acconfig" = 'y'; then
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_CVSIP_FFT=1"
+    else
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_CVSIP_FFT, 1,
+            [Define to use the C-VSIPL library to perform FFTs.])
+    fi
+  fi
+fi
+
+])
+m4trace:m4/fft.m4:10: -1- AC_DEFUN([SVXX_CHECK_FFT], [
+AC_ARG_ENABLE(fft,
+  AS_HELP_STRING([--enable-fft],
+                 [Specify list of FFT engines. Available engines are:
+                  fftw3, ipp, sal, cvsip, cbe_sdk, cuda, builtin, dft, or no_fft [[builtin]].]),,
+  [enable_fft=builtin])
+  
+AC_ARG_WITH(fftw3_prefix,
+  AS_HELP_STRING([--with-fftw3-prefix=PATH],
+                 [Specify the installation prefix of the fftw3 library.
+                  Headers must be in PATH/include; libraries in PATH/lib.]))
+
+AC_ARG_ENABLE([fft-float],
+  AS_HELP_STRING([--disable-fft-float],
+                 [Omit support for FFT applied to float elements.]),,
+  [enable_fft_float=yes])
+
+AC_ARG_ENABLE([fft-double],
+  AS_HELP_STRING([--disable-fft-double],
+                 [Omit support for FFT applied to double elements.]),,
+  [enable_fft_double=yes])
+
+AC_ARG_ENABLE([fft-long-double],
+  AS_HELP_STRING([--disable-fft-long-double],
+                 [Omit support for FFT applied to long double elements.]),,
+  [enable_fft_long_double=yes])
+
+
+AC_ARG_WITH(fftw3_cflags,
+  AS_HELP_STRING([--with-fftw3-cflags=CFLAGS],
+                 [Specify CFLAGS to use when building built-in FFTW3.
+		  Only used if --enable-fft=builtin.]))
+
+AC_ARG_WITH(fftw3_cfg_opts,
+  AS_HELP_STRING([--with-fftw3-cfg-opts=OPTS],
+                 [Specify additional options to use when configuring built-in
+                  FFTW3. Only used if --enable-fft=builtin.]))
+
+AC_ARG_ENABLE(fftw3_simd,
+  AS_HELP_STRING([--disable-fftw3-simd],
+                 [Disable use of SIMD instructions by FFTW3.  Useful
+		  when cross-compiling for a host that does not have
+		  SIMD ISA]),,
+  [enable_fftw3_simd=yes])
+
+#
+# Find the FFT backends.
+# At present, SAL, IPP, and FFTW3 are supported.
+#
+if test "$enable_fft_float" = yes; then
+  vsip_impl_fft_use_float=1
+fi
+if test "$enable_fft_double" = yes; then
+  vsip_impl_fft_use_double=1
+fi
+if test "$enable_fft_long_double" = yes; then
+  vsip_impl_fft_use_long_double=1
+fi
+
+if test "$only_ref_impl" = "1"; then
+  enable_fft="cvsip"
+fi
+
+
+fft_backends=`echo "${enable_fft}" | \
+                sed -e 's/[[ 	,]][[ 	,]]*/ /g' -e 's/,$//'`
+
+enable_fftw3="no"
+enable_ipp_fft="no"
+enable_sal_fft="no"
+enable_cvsip_fft="no"
+enable_cbe_sdk_fft="no"
+enable_cuda_fft="no"
+enable_builtin_fft="no"
+
+if test "$enable_fft_float" = yes -o \
+        "$enable_fft_double" = yes -o \
+        "$enable_fft_long_double" = yes ; then
+
+  for fft_be in ${fft_backends} ; do
+    case ${fft_be} in
+      sal) enable_sal_fft="yes";;
+      ipp) enable_ipp_fft="yes";;
+      cvsip) enable_cvsip_fft="yes";;
+      fftw3) enable_fftw3="yes";;
+      builtin) enable_builtin_fft="yes";;
+      cbe_sdk)
+        if test "with_cbe_sdk" == "no" ; then
+          AC_MSG_ERROR([The cbe_sdk FFT backend requires --with-cbe-sdk.])
+        fi
+        AC_SUBST(VSIP_IMPL_CBE_SDK_FFT, 1)
+        AC_DEFINE_UNQUOTED(VSIP_IMPL_CBE_SDK_FFT, 1,
+          [Define to enable Cell/B.E. SDK FFT backend.])
+        ;;
+      cuda) 
+        enable_cuda_fft="yes"
+        if test "$with_cuda" != "yes"; then
+	  AC_MSG_ERROR([The cuda FFT backend requires --with-cuda.])
+        fi
+        ;;
+      dft)
+        AC_SUBST(VSIP_IMPL_DFT_FFT, 1)
+        AC_DEFINE_UNQUOTED(VSIP_IMPL_DFT_FFT, 1,
+          [Define to enable DFT FFT backend.])
+        ;;
+      no_fft)
+        AC_SUBST(VSIP_IMPL_NO_FFT, 1)
+        AC_DEFINE_UNQUOTED(VSIP_IMPL_NO_FFT, 1,
+          [Define to enable dummy FFT backend.])
+        ;;
+      *) AC_MSG_ERROR([Unknown fft engine ${fft_be}.]);;
+    esac
+  done
+  if test "x$with_fftw3_prefix" != x; then
+    enable_fftw3="yes"
+  fi
+  if test "$enable_fftw3" != "no" -a "$enable_builtin_fft" != "no" ; then
+    AC_MSG_ERROR([Cannot use both external as well as builtin fftw3 libraries.])
+  fi
+  if test "$enable_fftw3" != "no" -o "$enable_builtin_fft" != "no" ; then
+    AC_SUBST(VSIP_IMPL_FFTW3, 1)
+    if test "$neutral_acconfig" = 'y'; then
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_FFTW3=1"
+    else
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_FFTW3, 1, [Define to build using FFTW3 headers.])
+    fi
+  fi
+fi
+
+dnl
+dnl fftw3 needs some special care, so we will do some extra checks here.
+dnl
+if test "$enable_fftw3" != "no"; then
+
+  if test -n "$with_fftw3_prefix"; then
+    CPPFLAGS="-I$with_fftw3_prefix/include $CPPFLAGS"
+    LIBS="-L$with_fftw3_prefix/lib $LIBS"
+  fi
+  AC_CHECK_HEADERS([fftw3.h], [],
+    [ AC_MSG_ERROR([FFTW3 enabled but no fftw3.h found.])],
+    [// no prerequisites])
+
+  if test "$enable_fft_float" = yes ; then
+    keep_LIBS="$LIBS"
+    LIBS="$LIBS -lfftw3f"
+    syms="const char* fftwf_version;"
+
+    AC_MSG_CHECKING([if external FFTW3 library supports float])
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([#include <fftw3.h>], [$syms])],
+      [AC_MSG_RESULT([yes.])
+       fftw_has_float=1],
+      [AC_MSG_RESULT([no.])
+       LIBS=$keep_LIBS])
+  fi
+  if test "$enable_fft_double" = yes ; then
+    keep_LIBS="$LIBS"
+    LIBS="$LIBS -lfftw3"
+    syms="const char* fftw_version;"
+
+    AC_MSG_CHECKING([if external FFTW3 library supports double])
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([#include <fftw3.h>], [$syms])],
+      [AC_MSG_RESULT([yes.])
+       fftw_has_double=1],
+      [AC_MSG_RESULT([no.])
+       LIBS=$keep_LIBS])
+  fi
+  if test "$enable_fft_long_double" = yes; then
+    keep_LIBS="$LIBS"
+    LIBS="$LIBS -lfftw3l"
+    syms="const char* fftwl_version;"
+
+    AC_MSG_CHECKING([if external FFTW3 library supports long double])
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([#include <fftw3.h>], [$syms])],
+      [AC_MSG_RESULT([yes.])
+       fftw_has_long_double=1],
+      [AC_MSG_RESULT([no.])
+       LIBS=$keep_LIBS])
+  fi
+fi
+if test "$enable_builtin_fft" != "no"; then
+
+  AC_MSG_NOTICE([Using built-in FFTW3 support.])
+
+  # Build and use builtin fftw3.
+  AC_MSG_CHECKING([for built-in FFTW3 library source])
+  libs=
+  fftw3_configure="$srcdir/vendor/fftw/configure"
+  if test -e "$fftw3_configure"; then
+    AC_MSG_RESULT([found])
+
+    # assert(NOT CROSS-COMPILING)
+
+    # Determine whether long double is supported.
+    AC_CHECK_SIZEOF(double)
+    AC_CHECK_SIZEOF(long double)
+    if test "$enable_fft_long_double" = yes; then
+      AC_MSG_CHECKING([for long double support])
+      if test $ac_cv_sizeof_long_double = 0; then
+        AC_MSG_RESULT([not a supported type.])
+        AC_MSG_NOTICE([Disabling FFT support (--disable-fft-long-double).])
+        enable_fft_long_double=no 
+      elif test $ac_cv_sizeof_long_double = $ac_cv_sizeof_double; then
+        AC_MSG_RESULT([same size as double.])
+        AC_MSG_NOTICE([Disabling FFT support (--disable-fft-long-double).])
+        enable_fft_long_double=no 
+      else
+        AC_MSG_RESULT([supported.])
+      fi
+    fi
+
+    # if $srcdir is relative, correct for chdir into vendor/fftw3*.
+    fftw3_configure="`(cd $srcdir/vendor/fftw; echo \"$PWD\")`"/configure
+
+    fftw3_opts="--disable-dependency-tracking --silent"
+    fftw3_opts="$fftw3_opts --disable-fortran"
+    if test "x$host" != "x"; then
+      fftw3_opts="$fftw3_opts --host=$host"
+    fi
+    if test "x$build" != "x"; then
+      fftw3_opts="$fftw3_opts --build=$build"
+    fi
+    if test "x$target" != "x"; then
+      fftw3_opts="$fftw3_opts --target=$target"
+    fi
+    if test "x$BUILD_SHARED_LIBS" != "x"; then
+      fftw3_opts="$fftw3_opts --enable-shared"
+    fi
+
+    fftw3_f_simd=
+    fftw3_d_simd=
+    fftw3_l_simd=
+    if test "$enable_fftw3_simd" = "yes"; then
+      case "$host_cpu" in
+        ia32|i686|x86_64) fftw3_f_simd="--enable-sse"
+	                  fftw3_d_simd="--enable-sse2" 
+	                  ;;
+        ppc*)             fftw3_f_simd="--enable-altivec" ;;
+        powerpc*)         fftw3_f_simd="--enable-altivec" ;;
+      esac
+    fi
+    AC_MSG_NOTICE([fftw3 config options: $fftw3_opts $fftw3_simd.])
+
+    # We don't export CFLAGS to FFTW configure because this overrides its
+    # choice of optimization flags (unless the --with-fftw3-cflags options
+    # is given).  Because of this, we need to pass -m32/-m64 as part of CC.
+    if expr "$CFLAGS" : ".*-m32" > /dev/null; then
+      fftw_CC="$CC -m32"
+    elif expr "$CFLAGS" : ".*-m64" > /dev/null; then
+      fftw_CC="$CC -m64"
+    else
+      fftw_CC="$CC"
+    fi
+
+    # Add to keep abi flags in all modules consistent, regardless of
+    # whether they actually contain altivec code or not.
+    case "$host_cpu" in
+      ppc*)             fftw_CC="$fftw_CC -mabi=altivec" ;;
+      powerpc*)         fftw_CC="$fftw_CC -mabi=altivec" ;;
+    esac
+
+    keep_CFLAGS="$CFLAGS"
+
+    if test "x$with_fftw3_cflags" != "x"; then
+      export CFLAGS="$with_fftw3_cflags"
+    else
+      unset CFLAGS
+    fi
+
+    echo "==============================================================="
+
+    if test "$enable_fft_float" = yes; then
+      fftw_has_float=1
+      mkdir -p vendor/fftw3f
+      AC_MSG_NOTICE([Configuring fftw3f (float).])
+      AC_MSG_NOTICE([extra config options: '$fftw3_f_simd'.])
+      (cd vendor/fftw3f; $fftw3_configure CC="$fftw_CC" $fftw3_f_simd $fftw3_opts $with_fftw3_cfg_opts --enable-float)
+      libs="$libs -lfftw3f"
+    fi
+    if test "$enable_fft_double" = yes; then
+      fftw_has_double=1
+      mkdir -p vendor/fftw3
+      AC_MSG_NOTICE([Configuring fftw3 (double).])
+      AC_MSG_NOTICE([extra config options: '$fftw3_d_simd'.])
+      (cd vendor/fftw3; $fftw3_configure CC="$fftw_CC" $fftw3_d_simd $fftw3_opts $with_fftw3_cfg_opts )
+      libs="$libs -lfftw3"
+    fi
+    if test "$enable_fft_long_double" = yes; then
+      fftw_has_long_double=1
+      # fftw3l config doesn't get SIMD option
+      mkdir -p vendor/fftw3l
+      AC_MSG_NOTICE([Configuring fftw3l (long double).])
+      AC_MSG_NOTICE([extra config options: '$fftw3_l_simd'.])
+      (cd vendor/fftw3l; $fftw3_configure CC="$fftw_CC" $fftw3_l_simd $fftw3_opts $with_fftw3_cfg_opts --enable-long-double)
+      libs="$libs -lfftw3l"
+    fi
+
+    echo "==============================================================="
+
+    export CFLAGS="$keep_CFLAGS"
+
+    # these don't refer to anything yet.
+    if test "$enable_fft_float" = yes; then
+      AC_SUBST(USE_BUILTIN_FFTW_FLOAT, 1)
+    fi
+    if test "$enable_fft_double" = yes; then
+      AC_SUBST(USE_BUILTIN_FFTW_DOUBLE, 1)
+    fi
+    if test "$enable_fft_long_double" = yes; then
+      AC_SUBST(USE_BUILTIN_FFTW_LONG_DOUBLE, 1)
+    fi
+    mkdir -p src
+    cp $srcdir/vendor/fftw/api/fftw3.h src/fftw3.h
+  else
+    AC_MSG_RESULT([not found])
+  fi
+
+   
+  if test \( "$enable_fft_float" != yes -o -f "vendor/fftw3f/Makefile" \) -a \
+          \( "$enable_fft_double" != yes -o -f "vendor/fftw3/Makefile" \) -a \
+          \( "$enable_fft_long_double" != yes -o -f "vendor/fftw3l/Makefile" \)
+  then
+    AC_MSG_RESULT([Built-in FFTW3 configures successful.])
+  else
+    AC_MSG_ERROR([Built-in FFTW3 configures FAILED, see config.log
+                  and vendor/fftw3*/config.log.])
+  fi
+
+  curdir=`pwd`
+  if test "`echo $srcdir | sed -n '/^\//p'`" != ""; then
+    my_abs_top_srcdir="$srcdir"
+  else
+    my_abs_top_srcdir="$curdir/$srcdir"
+  fi
+
+  FFTW3_LIBS="$libs"
+  AC_MSG_NOTICE([Will link with $FFTW3_LIBS.])
+
+  AC_SUBST(USE_BUILTIN_FFTW, 1)
+
+  # These libraries have not been built yet so we have to wait before
+  # adding them to LIBS (otherwise subsequent AC_LINK_IFELSE's will
+  # fail).  Instead we add them to LATE_LIBS, which gets added to
+  # LIBS just before AC_OUTPUT.
+
+  LATE_LIBS="$FFTW3_LIBS $LATE_LIBS"
+  CPPFLAGS="-I$includedir/fftw3 $CPPFLAGS"
+
+fi
+
+if test "x$provide_fft_float" = "x"
+then provide_fft_float=$fftw_has_float
+fi
+if test "x$provide_fft_double" = "x"
+then provide_fft_double=$fftw_has_double
+fi
+if test "x$provide_fft_long_double" = "x"
+then provide_fft_long_double=$fftw_has_long_double
+fi
+
+if test "$neutral_acconfig" = 'y'; then
+  if test "$fftw_has_float" = 1; then
+    CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_FFTW3_HAVE_FLOAT"
+  fi
+  if test "$fftw_has_double" = 1; then
+    CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_FFTW3_HAVE_DOUBLE"
+  fi
+  if test "$fftw_has_long_double" = 1; then
+    CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_FFTW3_HAVE_LONG_DOUBLE"
+  fi
+else
+  if test "$fftw_has_float" = 1; then
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_FFTW3_HAVE_FLOAT, $fftw_has_float,
+      [Define to 1 if -lfftw3f was found.])
+  fi
+  if test "$fftw_has_double" = 1; then
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_FFTW3_HAVE_DOUBLE, $fftw_has_double, 
+      [Define to 1 if -lfftw3d was found.])
+  fi
+  if test "$fftw_has_long_double" = 1; then
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_FFTW3_HAVE_LONG_DOUBLE, $fftw_has_long_double,
+      [Define to 1 if -lfftw3l was found.])
+  fi
+fi
+
+])
+m4trace:m4/ipp.m4:10: -1- AC_DEFUN([SVXX_CHECK_IPP], [
+# If the user specified an IPP prefix, they definitely want IPP.
+# However, we need to avoid overwriting the value of $with_ipp
+# if the user set it (i.e. '--enable-ipp=win').
+
+if test -n "$with_ipp_prefix" -o -n "$with_ipp_suffix"; then
+  if test $with_ipp != "win"; then
+    with_ipp="yes"
+  fi
+fi
+
+
+if test "$enable_ipp_fft" == "yes"; then
+  if test "$with_ipp" == "no"; then
+    AC_MSG_ERROR([IPP FFT requires IPP])
+  fi 
+fi
+
+#
+# Find the IPP library, if enabled.
+#
+
+if test "$with_ipp" = "win"; then
+  AC_MSG_RESULT([Using IPP for Windows.])
+  if test -n "$with_ipp_prefix"; then
+    IPP_CPPFLAGS="-I$with_ipp_prefix/include"
+    IPP_LDFLAGS="-L$with_ipp_prefix/sharedlib"
+  fi
+
+  # Check for headers ipps.h.
+  vsipl_ipps_h_name="not found"
+  AC_CHECK_HEADER([ipps.h], [vsipl_ipps_h_name='<ipps.h>'],, [// no prerequisites])
+  if test "$vsipl_ipps_h_name" == "not found"; then
+    AC_MSG_ERROR([IPP for windows enabled, but no ipps.h detected])
+  fi
+
+  LIBS="$LIBS ipps.lib ippi.lib ippm.lib"
+
+  AC_MSG_CHECKING([for ippsMul_32f])
+  AC_LINK_IFELSE(
+    [AC_LANG_PROGRAM([[#include <ipps.h>]],
+		     [[Ipp32f const* A; Ipp32f const* B; Ipp32f* Z; int len;
+                       ippsMul_32f(A, B, Z, len);]])],
+    [AC_MSG_RESULT(yes)],
+    [AC_MSG_ERROR(not found.)] )
+
+  if test "$enable_ipp_fft" != "no"; then 
+    provide_fft_float=1
+    provide_fft_double=1
+    AC_SUBST(VSIP_IMPL_IPP_FFT, 1)
+    if test "$neutral_acconfig" = 'y'; then
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_IPP_FFT=1"
+    else
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_IPP_FFT, 1,
+	      [Define to use Intel's IPP library to perform FFTs.])
+    fi
+  fi
+
+elif test "$with_ipp" != "no"; then
+
+  if test -n "$with_ipp_prefix"; then
+    IPP_CPPFLAGS="-I$with_ipp_prefix/include"
+    IPP_LDFLAGS="-L$with_ipp_prefix/sharedlib"
+  fi
+  save_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS $IPP_CPPFLAGS"
+
+  # Find ipps.h.
+  vsipl_ipps_h_name="not found"
+  AC_CHECK_HEADER([ipps.h], [vsipl_ipps_h_name='<ipps.h>'],, [// no prerequisites])
+  if test "$vsipl_ipps_h_name" == "not found"; then
+    if test "$with_ipp" != "probe" -o "$enable_ipp_fft" == "yes"; then
+      AC_MSG_ERROR([IPP enabled, but no ipps.h detected])
+    else
+      CPPFLAGS="$save_CPPFLAGS"
+    fi
+  else
+
+    if test "${with_ipp_suffix-unset}" == "unset"; then
+      ippcore_search="ippcore ippcoreem64t ippcore64"
+      ipps_search="ipps ippsem64t ipps64"
+      ippi_search="ippi ippiem64t ippi64"
+      ippm_search="ippm ippmem64t ippm64"
+    else
+      # Use of suffix not consistent:
+      #  - for em64t, ipp 5.0 has libippcoreem64t.so
+      #  - for ia32,  ipp 5.1 has libippcore.so
+      ippcore_search="ippcore ippcore$with_ipp_suffix"
+      ipps_search="ipps$with_ipp_suffix"
+      ippi_search="ippi$with_ipp_suffix"
+      ippm_search="ippm$with_ipp_suffix"
+    fi
+    # Find the library.
+    save_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$LDFLAGS $IPP_LDFLAGS"
+    LIBS="-lpthread $LIBS"
+    AC_SEARCH_LIBS(ippGetLibVersion, [$ippcore_search],,
+      [LD_FLAGS="$save_LDFLAGS"])
+    
+    save_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$LDFLAGS $IPP_LDFLAGS"
+    AC_SEARCH_LIBS(ippsMul_32f, [$ipps_search],
+      [
+        AC_SUBST(VSIP_IMPL_HAVE_IPP, 1)
+        if test "$neutral_acconfig" = 'y'; then
+          CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_IPP=1"
+        else
+          AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_IPP, 1,
+            [Define to set whether or not to use Intel's IPP library.])
+        fi
+      ],
+      [LD_FLAGS="$save_LDFLAGS"])
+
+    AC_MSG_CHECKING([for std::complex-compatible IPP-types.])
+    AC_COMPILE_IFELSE([
+#include <ippdefs.h>
+
+template <bool V> struct static_assert;
+template <> struct static_assert<true>
+{
+  static bool const value = true;
+};
+
+int main(int, char **)
+{
+  bool value;
+  value = static_assert<sizeof(Ipp32fc) == 2*sizeof(float)>::value;
+  value = static_assert<sizeof(Ipp64fc) == 2*sizeof(double)>::value;
+}
+      ],
+      [AC_MSG_RESULT(yes)],
+      [AC_MSG_ERROR([std::complex-incompatible IPP-types detected!])])
+
+    save_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$LDFLAGS $IPP_FFT_LDFLAGS"
+
+    AC_SEARCH_LIBS(
+	[ippiFFTFwd_CToC_32fc_C1R], [$ippi_search],
+	[have_ippi="yes"],
+	[have_ippi="no"
+         LD_FLAGS="$save_LDFLAGS"])
+
+    AC_SEARCH_LIBS(
+	[ippmCopy_ma_32f_SS], [$ippm_search],
+	[have_ippm="yes"],
+	[have_ippm="no"
+         LD_FLAGS="$save_LDFLAGS"])
+
+    if test "$enable_ipp_fft" != "no"; then 
+      provide_fft_float=1
+      provide_fft_double=1
+      AC_SUBST(VSIP_IMPL_IPP_FFT, 1)
+      if test "$neutral_acconfig" = 'y'; then
+        CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_IPP_FFT=1"
+      else
+        AC_DEFINE_UNQUOTED(VSIP_IMPL_IPP_FFT, 1,
+	      [Define to use Intel's IPP library to perform FFTs.])
+      fi
+    fi
+  fi
+fi
+
+])
+m4trace:m4/lapack.m4:10: -1- AC_DEFUN([SVXX_CHECK_LAPACK], [
+AC_ARG_WITH(f2c-abi,
+  AS_HELP_STRING([--with-f2c-abi],
+                 [Specify that the F77 F2C calling conventions 
+                  should be used when interfacing fortran code.]),
+            [use_f2c_abi=$withval])
+
+
+# This option allows the user to OVERRIDE the default CFLAGS for CLAPACK.
+# It is up to the user to try specifying his own set of CFLAGS. If this option
+# is not used, CLAPACK_CLFAGS defaults to CFLAGS. .in files will find this
+# value in CLAPACK_CFLAGS
+AC_ARG_WITH(clapack-cflags,
+  AS_HELP_STRING([--with-clapack-cflags=CLAPACK_CFLAGS],
+                 [Specify CFLAGS to use when building builtin clapack.
+		  Only used if --with-lapack=builtin.]),
+            [CLAPACK_CFLAGS=$withval],
+            [CLAPACK_CFLAGS=no])
+
+AC_ARG_ENABLE([lapack],,  
+  AC_MSG_ERROR([The option --enable-lapack is not correct; use 
+    --with-lapack instead.  (Run 'configure --help' for details)]),)
+
+AC_ARG_WITH([lapack],
+  AS_HELP_STRING([--with-lapack\[=PKG\]],
+                 [Select one or more LAPACK libraries to search for.
+                  The default is to probe for atlas, generic, and builtin,
+	          using the first one found.  Sourcery VSIPL++ understands the
+		  following LAPACK library selections: mkl (Intel Math Kernel
+		  Library), acml (AMD Core Math Library), atlas (system
+		  ATLAS/LAPACK installation), generic (system generic
+		  LAPACK installation), and builtin (Sourcery VSIPL++'s
+		  builtin C-LAPACK). 
+		  Specifying 'no' disables the search for a LAPACK library.]),,
+  [with_lapack=probe])
+
+AC_ARG_WITH(atlas_prefix,
+  AS_HELP_STRING([--with-atlas-prefix=PATH],
+                 [Specify the installation prefix of the ATLAS library.
+	          Headers must be in PATH/include; libraries in PATH/lib.
+	          (Enables LAPACK).]))
+
+AC_ARG_WITH(atlas_libdir,
+  AS_HELP_STRING([--with-atlas-libdir=PATH],
+                 [Specify the directory containing ATLAS libraries.
+	          (Enables LAPACK).]))
+
+AC_ARG_WITH(atlas_include,
+  AS_HELP_STRING([--with-atlas-include=PATH],
+                 [Specify the directory containing ATLAS header files.
+	          (Enables LAPACK).]))
+
+AC_ARG_WITH(acml_prefix,
+  AS_HELP_STRING([--with-acml-prefix=PATH],
+                 [Specify the installation prefix of the ACML library.  Headers
+                  must be in PATH/include; libraries in PATH/lib
+	          (Enables LAPACK).]))
+
+AC_ARG_ENABLE([cblas],,  
+  AC_MSG_ERROR([The option --disable-cblas is obsolete; use 
+    --without-cblas instead.  (Run 'configure --help' for details)]),)
+
+AC_ARG_WITH([cblas],
+  AS_HELP_STRING([--without-cblas],
+                 [Disable C BLAS API (default is to use it if possible)]),,
+  [with_cblas=yes])
+
+# assign cflags to CLAPACK_CFLAGS if the user didn't use --with-clapack-cflags
+if test "$CLAPACK_CFLAGS" == "no"; then
+  CLAPACK_CFLAGS=$CFLAGS
+fi
+# let's not forget AC_SUBST!
+AC_SUBST(CLAPACK_CFLAGS)
+
+# Disable lapack if building ref-impl
+if test "$only_ref_impl" = "1"; then
+  if test "$with_lapack" == "probe"; then
+    with_lapack="no"
+  fi
+  if test "$with_lapack" != "no"; then
+    AC_MSG_ERROR([Cannot use LAPACK with reference implementation.])
+  fi
+fi
+#
+# Check to see if any options have implied with_lapack
+#
+if test "$with_lapack" == "probe"; then
+  already_prefix=0
+  if test "$with_atlas_prefix" != "" -o "$with_atlas_libdir" != "" -o "$with_atlas_include" != ""; then
+    AC_MSG_RESULT([ATLAS prefixes specified, assume --with-lapack=atlas])
+    with_lapack="atlas"
+    already_prefix=1
+  fi
+  if test "$with_acml_prefix" != ""; then
+    if test "$already_prefix" = "1"; then
+      AC_MSG_ERROR([Multiple prefixes given for LAPACk libraries (i.e.
+		    MKL, ACML, and/or ATLAS])
+    fi
+    AC_MSG_RESULT([ACML prefixes specified, assume --with-lapack=acml])
+    with_lapack="acml"
+    already_prefix=1
+  fi
+fi
+
+#
+# Find the lapack library, if enabled.
+#
+if test "$with_lapack" != "no"; then
+  keep_CPPFLAGS=$CPPFLAGS
+  keep_LDFLAGS=$LDFLAGS
+  keep_LIBS=$LIBS
+  cblas_style="0"
+
+  case $with_lapack in
+    mkl)
+      if test "$with_mkl" = "no" ; then
+        AC_MSG_ERROR([The MKL lapack backend requires --with-mkl.])
+      fi
+      lapack_packages="mkl"
+    ;;
+    yes | probe)
+      lapack_packages="atlas atlas_blas_v3 generic_wo_blas generic_with_blas generic_v3_wo_blas generic_v3_with_blas builtin"
+    ;;
+    generic)
+      lapack_packages="generic_wo_blas generic_with_blas generic_v3_wo_blas generic_v3_with_blas"
+    ;;
+    *)
+      lapack_packages="$with_lapack"
+    ;;
+  esac
+  AC_MSG_RESULT([Searching for LAPACK packages: $lapack_packages])
+
+  lapack_found="no"
+  for trypkg in $lapack_packages; do
+    case $trypkg in
+      mkl)
+        AC_MSG_CHECKING([for LAPACK/MKL library])
+        LIBS="-lmkl_lapack $keep_LIBS"
+        cblas_style="2"	# use mkl_cblas.h
+        lapack_use_ilaenv=0
+      ;;
+      mkl_win)
+        AC_MSG_CHECKING([for LAPACK/MKL 8.x library for Windows])
+        LIBS="mkl_lapack.lib $keep_LIBS"
+        cblas_style="2"	# use mkl_cblas.h
+        lapack_use_ilaenv=0
+      ;;
+      mkl_win_nocheck)
+        AC_MSG_RESULT([Using LAPACK/MKL 8.x library for Windows (without check)])
+        LIBS="mkl_lapack.lib $keep_LIBS"
+        cblas_style="2"	# use mkl_cblas.h
+        lapack_use_ilaenv=0
+        lapack_found="mkl_nocheck"
+        break
+      ;;
+      acml)
+        AC_MSG_CHECKING([for LAPACK/ACML library])
+
+        dnl We don't use the ACML header files:
+        dnl CPPFLAGS="$keep_CPPFLAGS -I$with_acml_prefix/include"
+        LDFLAGS="$keep_LDFLAGS -L$with_acml_prefix/lib"
+        LIBS="$keep_LIBS -lacml"
+        cblas_style="3"	# use acml_cblas.h
+
+        lapack_use_ilaenv=0
+      ;;
+      atlas)
+        AC_MSG_CHECKING([for LAPACK/ATLAS library ($trypkg w/CBLAS)])
+
+        if test "$with_atlas_libdir" != ""; then
+	  atlas_libdir=" -L$with_atlas_libdir"
+        elif test "$with_atlas_prefix" != ""; then
+	  atlas_libdir=" -L$with_atlas_prefix/lib"
+        else
+	  atlas_libdir=""
+        fi
+
+        if test "$with_atlas_include" != ""; then
+	  atlas_incdir=" -I$with_atlas_include"
+        elif test "$with_atlas_prefix" != ""; then
+	  atlas_incdir=" -I$with_atlas_prefix/include"
+        else
+	  atlas_incdir=""
+        fi
+
+        LDFLAGS="$keep_LDFLAGS$atlas_libdir"
+        CPPFLAGS="$keep_CPPFLAGS$atlas_incdir"
+        LIBS="$keep_LIBS -llapack -lcblas -lf77blas -latlas"
+        cblas_style="1"	# use cblas.h
+
+        lapack_use_ilaenv=0
+      ;;
+      atlas_blas_v3)
+	# 080130: This configuration exists on Ubuntu 7.04 (ubuntu) 
+        AC_MSG_CHECKING([for LAPACK/ATLAS v3 library ($trypkg w/BLAS)])
+
+        if test "$with_atlas_libdir" != ""; then
+	  atlas_libdir=" -L$with_atlas_libdir"
+        elif test "$with_atlas_prefix" != ""; then
+	  atlas_libdir=" -L$with_atlas_prefix/lib"
+        else
+	  atlas_libdir=""
+        fi
+
+        if test "$with_atlas_include" != ""; then
+	  atlas_incdir=" -I$with_atlas_include"
+        elif test "$with_atlas_prefix" != ""; then
+	  atlas_incdir=" -I$with_atlas_prefix/include"
+        else
+	  atlas_incdir=""
+        fi
+
+        LDFLAGS="$keep_LDFLAGS$atlas_libdir"
+        CPPFLAGS="$keep_CPPFLAGS$atlas_incdir"
+        LIBS="$keep_LIBS -llapack-3 -lblas-3 -latlas"
+
+        cblas_style="1"	# use cblas.h
+
+        lapack_use_ilaenv=0
+      ;;
+      atlas_no_cblas)
+        AC_MSG_CHECKING([for LAPACK/ATLAS library (w/o CBLAS)])
+
+        if test "$with_atlas_libdir" != ""; then
+	  atlas_libdir=" -L$with_atlas_libdir"
+        elif test "$with_atlas_prefix" != ""; then
+	  atlas_libdir=" -L$with_atlas_prefix/lib"
+        else
+	  atlas_libdir=""
+        fi
+
+        if test "$with_atlas_include" != ""; then
+	  atlas_incdir=" -I$with_atlas_include"
+        elif test "$with_atlas_prefix" != ""; then
+	  atlas_incdir=" -I$with_atlas_prefix/include"
+        else
+	  atlas_incdir=""
+        fi
+
+        LDFLAGS="$keep_LDFLAGS$atlas_libdir"
+        CPPFLAGS="$keep_CPPFLAGS$atlas_incdir"
+        LIBS="$keep_LIBS -llapack -lf77blas -latlas"
+        cblas_style="0"	# no cblas.h
+
+        lapack_use_ilaenv=0
+      ;;
+      generic_wo_blas)
+        AC_MSG_CHECKING([for LAPACK/Generic library (w/o blas)])
+        LIBS="$keep_LIBS -llapack"
+        cblas_style="0"	# no cblas.h
+        lapack_use_ilaenv=0
+      ;;
+      generic_with_blas)
+        AC_MSG_CHECKING([for LAPACK/Generic library (w/blas)])
+        LIBS="$keep_LIBS -llapack -lblas"
+        cblas_style="0"	# no cblas.h
+        lapack_use_ilaenv=0
+      ;;
+      generic_v3_wo_blas)
+        AC_MSG_CHECKING([for LAPACK/Generic v3 library (w/o blas)])
+        LIBS="$keep_LIBS -llapack-3"
+        cblas_style="0"	# no cblas.h
+        lapack_use_ilaenv=0
+      ;;
+      generic_v3_with_blas)
+        # This configuration is found on ubuntu 7.04 (Zelda)
+
+        AC_MSG_CHECKING([for LAPACK/Generic v3 library (w/blas)])
+        LIBS="$keep_LIBS -llapack-3 -lblas-3"
+        cblas_style="0"	# no cblas.h
+        lapack_use_ilaenv=0
+      ;;
+      builtin_atlas | builtin)
+      
+	if test "$use_f2c_abi" = "no"; then
+	  AC_MSG_ERROR([The builtin lapack option requires the F2C ABI to be used.])
+	fi
+	use_f2c_abi="yes"
+        if test "$trypkg" = "builtin_atlas"; then
+          if test "$with_atlas_libdir" != ""; then
+  	    atlas_libdir=" -L$with_atlas_libdir"
+          elif test "$with_atlas_prefix" != ""; then
+	    atlas_libdir=" -L$with_atlas_prefix/lib"
+          else
+	    atlas_libdir=""
+          fi
+
+          if test "$with_atlas_include" != ""; then
+  	    atlas_incdir=" -I$with_atlas_include"
+          elif test "$with_atlas_prefix" != ""; then
+	    atlas_incdir=" -I$with_atlas_prefix/include"
+          else
+	    atlas_incdir=""
+          fi
+
+          LDFLAGS="$keep_LDFLAGS$atlas_libdir"
+          CPPFLAGS="$keep_CPPFLAGS$atlas_incdir"
+	  # The builtin_atlas option uses the ATLAS cblas, and combines
+	  # ATLAS' own lapack archive with the builtin version.
+          LATE_LIBS="$LATE_LIBS -latlas_lapack -llapack -lcblas -latlas -lF77"
+
+          cblas_style="1"	# use cblas.h
+        else
+          CPPFLAGS="$keep_CPPFLAGS"
+          LDFLAGS="$keep_LDFLAGS"
+          LATE_LIBS="$LATE_LIBS -llapack -lblas -lF77"
+
+          AC_SUBST(USE_BUILTIN_BLAS, 1)   # Build blas from vendor/clapack
+        fi
+     
+        AC_SUBST(USE_BUILTIN_LAPACK, 1)   # Build lapack from vendor/clapack
+        mkdir -p src
+        cp $srcdir/vendor/clapack/SRC/cblas.h src/cblas.h
+
+        # Determine flags for CLAPACK_NOOPT, used for compiling with no
+        # optimization
+        if expr "$CFLAGS" : ".*-m32" > /dev/null; then
+          CLAPACK_NOOPT="-m32"
+        elif expr "$CFLAGS" : ".*-m64" > /dev/null; then
+          CLAPACK_NOOPT="-m64"
+        else
+          CLAPACK_NOOPT=""
+        fi
+        if expr "$CFLAGS" : ".*-fPIC" > /dev/null; then
+          CLAPACK_NOOPT="$CLAPACK_NOOPT -fPIC"
+        fi
+        AC_SUBST(CLAPACK_NOOPT)
+ 
+        lapack_use_ilaenv=0
+        lapack_found="builtin"
+        break
+      ;;
+      *)
+        AC_MSG_ERROR([Unknown lapack trypkg: $trypkg])
+      ;;
+    esac
+
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM(
+	[[ extern "C" { void sgeqrf_(int*, int*, float*, int*, float*,
+	                             float*, int*, int*);
+                        void strsm_ (char*, char*, char*, char*,
+				     int*, int*, float*, float*, int*,
+				     float*, int*); };]],
+	[[int    m, n, lda, ldb, lwork, info;
+	  float *a, *b, *tau, *work, alpha;
+	  sgeqrf_(&m, &n, a, &lda, tau, work, &lwork, &info);
+	  char  side, uplo, transa, diag;
+	  strsm_(&side, &uplo, &transa, &diag,
+	         &m, &n, &alpha, a, &lda, b, &ldb);
+        ]]
+        )],
+      [lapack_found=$trypkg
+       AC_MSG_RESULT([found])
+       break],
+      [lapack_found="no"
+       AC_MSG_RESULT([not found]) ])
+  done
+
+  if test "$lapack_found" == "no"; then
+    if test "$with_lapack" != "probe"; then
+      AC_MSG_ERROR([LAPACK enabled but no library found])
+    fi
+    AC_MSG_RESULT([No LAPACK library found])
+    CPPFLAGS=$keep_CPPFLAGS
+    LDFLAGS=$keep_LDFLAGS
+    LIBS=$keep_LIBS
+  else
+    AC_MSG_RESULT([Using $lapack_found for LAPACK])
+    AC_SUBST(VSIP_IMPL_HAVE_BLAS, 1)
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_BLAS, 1,
+      [Define to set whether or not BLAS is present.])
+    AC_SUBST(VSIP_IMPL_HAVE_LAPACK, 1)
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_LAPACK, 1,
+      [Define to set whether or not LAPACK is present.])
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_USE_LAPACK_ILAENV, $lapack_use_ilaenv,
+      [Use LAPACK ILAENV (0 == do not use, 1 = use).])
+    if test $with_cblas == "yes"; then
+      with_cblas=$cblas_style
+    else
+      with_cblas="0"
+    fi
+
+    # g77 by default uses the F2C ABI, as does the builtin clapack interface,
+    # while gfortran does not.
+    if test "$use_f2c_abi" = yes; then
+      if test "$neutral_acconfig" = 'y'; then
+        CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_USE_F2C_ABI"
+      else
+        AC_DEFINE_UNQUOTED(VSIP_IMPL_USE_F2C_ABI, 1,
+          [Define to 1 if f2c ABI is to be used to interface with Fortran code.])
+      fi
+    fi
+    if test "$neutral_acconfig" = 'y'; then
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_USE_CBLAS=$with_cblas"
+    else
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_USE_CBLAS, $with_cblas,
+        [CBLAS style (0 == no CBLAS, 1 = ATLAS CBLAS, 2 = MKL CBLAS).])
+    fi
+  fi
+fi
+
+if test "x$lapack_found" = "x"; then
+  lapack_found="no"
+fi
+
+
+
+])
+m4trace:m4/mkl.m4:6: -1- AC_DEFUN([SVXX_CHECK_MKL], [
+AC_ARG_WITH([mkl], AS_HELP_STRING([--with-mkl], [Use MKL]),, [with_mkl=no])
+
+AC_ARG_WITH([mkl_prefix],
+  AS_HELP_STRING([--with-mkl-prefix=PATH],
+                 [Specify the installation prefix of the MKL library.  Headers
+                  must be in PATH/include; libraries in PATH/lib/ARCH (where
+		  ARCH is either deduced or set by the --with-mkl-arch option).
+	          (Enables LAPACK).]))
+
+AC_ARG_WITH([intel_omp_prefix],
+  AS_HELP_STRING([--with-intel-omp-prefix=PATH],
+                 [Specify the installation prefix of the Intel OMP library.
+                  This may be required for multi-threaded MKL & IPP configurations.]))
+
+AC_ARG_WITH([mkl_arch],
+  AS_HELP_STRING([--with-mkl-arch=ARCH],
+                 [Specify the MKL library architecture directory.  MKL
+		  libraries from PATH/lib/ARCH will be used, where
+		  PATH is specified with '--with-mkl-prefix' option.
+		  (Default is to probe arch based on host cpu type).]),,
+  [with_mkl_arch=probe])
+
+AC_ARG_ENABLE([mkl_omp],
+  AS_HELP_STRING([--disable-mkl-omp],
+                 [Use a single-threaded MKL backend.]),
+  ,
+  [enable_mkl_omp="yes"])
+
+if test "$with_mkl" != "no"; then
+
+  if test "$with_mkl_arch" == "probe"; then
+    if test "$host_cpu" == "x86_64"; then
+      with_mkl_arch="em64t"
+    elif test "$host_cpu" == "ia64"; then
+      with_mkl_arch="64"
+    else
+      with_mkl_arch="32"
+    fi
+  fi
+
+  keep_CPPFLAGS=$CPPFLAGS
+  keep_LDFLAGS=$LDFLAGS
+  keep_LIBS=$LIBS
+
+  if test "$with_mkl" != yes; then
+    mkl_versions="$with_mkl"
+  else
+    mkl_versions="mkl10 mkl7 mkl5"
+  fi
+
+  mkl_found=no
+  mkl_vml=no
+  # Despite the names, these checks don't actually check MKL versions.
+  # Rather, they attempt various settings that are known to work with
+  # these particular MKL versions.
+  for mkl_version in $mkl_versions; do
+    case $mkl_version in
+      mkl5)
+        CPPFLAGS="$keep_CPPFLAGS -I$with_mkl_prefix/include"
+        LDFLAGS="$keep_LDFLAGS -L$with_mkl_prefix/lib/$with_mkl_arch"
+        LIBS="$keep_LIBS -lmkl -lpthread"
+        AC_CHECK_FUNC([MKLGetVersion], [mkl_found=yes])
+      ;;
+      mkl7)
+        CPPFLAGS="$keep_CPPFLAGS -I$with_mkl_prefix/include -pthread"
+        LDFLAGS="$keep_LDFLAGS -L$with_mkl_prefix/lib/$with_mkl_arch"
+        LIBS="$keep_LIBS -lmkl -lguide -lpthread"
+        AC_CHECK_FUNC([MKLGetVersion], [mkl_found=yes])
+      ;;
+      mkl10)
+        CPPFLAGS="$keep_CPPFLAGS -I$with_mkl_prefix/include -pthread"
+        LDFLAGS="$keep_LDFLAGS -L$with_mkl_prefix/lib/$with_mkl_arch"
+        if test "$with_mkl_arch" = "em64t"; then
+          if test "$enable_mkl_omp" = "yes" -a "$with_intel_omp_prefix" != ""; then
+            LDFLAGS="$LDFLAGS -L$with_intel_omp_prefix/lib/intel64"
+	    LIBS="$keep_LIBS -lmkl_core -lmkl_intel_lp64"
+          fi
+        else
+          if test "$enable_mkl_omp" = "yes" -a "$with_intel_omp_prefix" != ""; then
+            LDFLAGS="$LDFLAGS -L$with_intel_omp_prefix/lib/ia32"
+	    LIBS="$keep_LIBS -lmkl_core -lmkl_intel"
+          fi
+        fi
+        if test "$enable_mkl_omp" = "yes"; then
+          LIBS="$LIBS -lmkl_intel_thread -liomp5 -lpthread"
+        else
+          LIBS="$LIBS -lmkl_sequential"
+        fi
+        # MKL 10 introduces a number of elementwise vector functions.
+        # We use this as a version indicator (lacking other means to discover that).
+        AC_CHECK_FUNC([vsAdd], 
+          [mkl_found=yes
+           mkl_vml=yes
+          ])
+      ;;
+      win)
+        # This is based on MKL 8, the only version we tried on Windows.
+        if test -n "$with_mkl_prefix"; then
+          CPPFLAGS="$keep_CPPFLAGS -I$with_mkl_prefix/include"
+          LDFLAGS="$keep_LDFLAGS -L$with_mkl_prefix/$with_mkl_arch/lib"
+        fi
+        LIBS="$keep_LIBS mkl_c.lib libguide.lib"
+        AC_CHECK_FUNC([MKLGetVersion], [mkl_found=yes])
+      ;;
+      win_nocheck)
+        if test -n "$with_mkl_prefix"; then
+          CPPFLAGS="$keep_CPPFLAGS -I$with_mkl_prefix/include"
+          LDFLAGS="$keep_LDFLAGS -L$with_mkl_prefix/$with_mkl_arch/lib"
+        fi
+        LIBS="$keep_LIBS mkl_c.lib -lguide "
+        mkl_found="mkl_nocheck"
+      ;;
+    esac
+    if test "$mkl_found" != no; then
+      break
+    fi
+  done
+  if test "$mkl_found" = no; then 
+    AC_MSG_ERROR([MKL could not be found.])
+  fi
+
+  if test "$mkl_vml" = yes; then
+    if test "$neutral_acconfig" = 'y'; then
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_MKL_VML"
+    else
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_MKL_VML, 1,
+        [Define to 1 if MKL vector math library is available.])
+    fi
+    AC_SUBST(VSIP_IMPL_HAVE_MKL_VML, 1)
+  fi
+  
+fi
+])
+m4trace:m4/parallel.m4:10: -1- AC_DEFUN([SVXX_CHECK_PARALLEL], [
+
+# By default we will probe for MPI and use it if it exists.  If it
+# does not exist, and no explicit MPI or PAS service is requested, 
+# we will configure a serial VSIPL++ library.
+#
+# If the user specifies a parallel service either by an explicit
+# --enable-parallel[=<service>] or by specifying the prefix to 
+# MPI or PAS, then we search for MPI / PAS and issue an error if 
+# it does not exist.
+#
+# If the user specifies that no parallel service should be used 
+# (with --disable-parallel), then we do not search for it and 
+# configure a serial VSIPL++ library.
+
+AC_ARG_ENABLE([parallel],
+  AS_HELP_STRING([--enable-parallel],
+                 [Use Parallel service. Available backends are:
+                  lam, mpich2, intelmpi, mpipro, and pas.
+                  In addition, the value 'probe' causes configure to try.]),,
+  [enable_parallel=probe])
+
+AC_ARG_WITH(mpi_prefix,
+  AS_HELP_STRING([--with-mpi-prefix=PATH],
+                 [Specify the installation prefix of the MPI library.  Headers
+                  must be in PATH/include; libraries in PATH/lib.]),
+  dnl If the user specified --with-mpi-prefix, they mean to use MPI for sure.
+  [
+    if test -z $enable_parallel
+    then enable_parallel=yes
+    fi
+  ])
+
+AC_ARG_WITH(mpi_prefix64,
+  AS_HELP_STRING([--with-mpi-prefix64=PATH],
+                 [Specify the installation prefix of the MPI library.  Headers
+                  must be in PATH/include64; libraries in PATH/lib64.]),
+  dnl If the user specified --with-mpi-prefix64, they mean to use MPI for sure.
+  [
+    if test -z $enable_parallel
+    then enable_parallel=yes
+    fi
+  ])
+
+AC_ARG_WITH(mpi_cxxflags,
+  AS_HELP_STRING([--with-mpi-cxxflags=FLAGS],
+                 [Specify the C++ compiler flags used to compile with MPI.]))
+
+AC_ARG_WITH(mpi_libs,
+  AS_HELP_STRING([--with-mpi-libs=LIBS],
+                 [Specify the linker library flags used to compile with MPI.]))
+
+### Mercury PAS
+
+AC_ARG_WITH(pas_include,
+  AS_HELP_STRING([--with-pas-include=PATH],
+                 [Specify the path to the PAS include directory.]),
+  dnl If the user specified --with-pas-include, they mean to use PAS for sure.
+  [enable_parallel=pas])
+
+AC_ARG_WITH(pas_lib,
+  AS_HELP_STRING([--with-pas-lib=PATH],
+                 [Specify the installation path of the PAS library.]),
+  dnl If the user specified --with-pas-lib, they mean to use PAS for sure.
+  [enable_parallel=pas])
+
+AC_ARG_ENABLE([pas_heap_size],
+  AS_HELP_STRING([--enable-pas-heap-size=SIZE],
+                 [Set PAS heap size.  Default is 0x100000]),,
+  [enable_pas_heap_size=0x100000])
+
+AC_ARG_ENABLE([pas_share_dynamic_xfer],
+  AS_HELP_STRING([--enable-pas-share-dynamice-xfer],
+                 [Share a PAS dynamic xfer object. Default is not to.]),,
+  [enable_pas_share_dynamic_xfer=no])
+
+# If the user specified an MPI prefix, they definitely want MPI.
+# However, we need to avoid overwriting the value of $enable_mpi
+# if the user set it (i.e. '--enable-mpi=mpipro').
+
+if test -n "$with_mpi_prefix" -o -n "$with_mpi_prefix64"
+then
+  if test "$enable_parallel" == "no"
+  then AC_MSG_RESULT([MPI disabled, but MPI prefix given.])
+  elif test "$enable_parallel" == "probe"
+  then enable_parallel="yes"
+  fi
+fi
+
+MPI_CPPFLAGS=
+MPI_LDFLAGS=
+MPI_LIBS=
+PAR_SERVICE=none
+vsip_impl_avoid_posix_memalign=
+
+if test "$enable_parallel" != "no"
+then
+
+  ############################################################################
+  # First step: Find any required compiler flags (CPPFLAGS, LDFLAGS, LIBS).
+  #             For some backends that means asking mpicc, for other 
+  #             pkg-config, yet others assume default paths to be correct.
+  ############################################################################
+  if test -n "$with_mpi_cxxflags" -a -n "$with_mpi_libs"
+  then
+    MPI_CPPFLAGS="$with_mpi_cxxflags"
+    MPI_LIBS="$with_mpi_libs"
+    PAR_SERVICE=$enable_parallel
+    
+  else
+    case "$enable_parallel" in
+      # If the user wants one of these we look for mpicc to provide
+      # compiler flags:
+      openmpi | lam | mpich2 | intelmpi | probe | yes)
+
+        if test -n "$with_mpi_prefix"
+        then mpi_path="$with_mpi_prefix/bin"
+        elif test -n "$with_mpi_prefix64"
+        then mpi_path="$with_mpi_prefix64/bin"
+        else mpi_path="$PATH"
+        fi
+
+        AC_PATH_PROGS(MPICC, mpicc hcc mpcc mpcc_r mpxlc, none, $mpi_path)
+        AC_PATH_PROGS(MPICXX, mpic++ mpicxx mpiCC mpCC hcp, none, $mpi_path)
+
+        if test ! "$MPICC" = "none" -a ! "${MPICXX}" = "none"
+        then
+          #
+          # open-mpi and lam both support 'mpicc -showme'
+          #
+          if $MPICXX -showme > /dev/null 2>&1
+          then
+            MPI_CPPFLAGS="`$MPICXX -showme:compile`"
+            MPI_LIBS="`$MPICXX -showme:link`"
+
+            # This may be open-mpi or lam
+            save_CPPFLAGS="$CPPFLAGS"
+            CPPFLAGS="$CPPFLAGS $MPI_CPPFLAGS"
+            AC_CHECK_DECL([OPEN_MPI], [PAR_SERVICE=openmpi],,[#include <mpi.h>])
+            CPPFLAGS="$save_CPPFLAGS"
+            if test "$PAR_SERVICE" = "openmpi"
+            then
+              # Unfortunately, only open-mpi allows us to reliably use the MPI C API.
+              MPI_CPPFLAGS="-DOMPI_SKIP_MPICXX `$MPICC -showme:compile`"
+              MPI_LIBS="`$MPICC -showme:link`"
+            fi
+          #
+          # mpich2 and intelmpi both support 'mpicc -show'
+          #
+          elif $MPICXX -show > /dev/null 2>&1
+          then
+            # Intel MPI looks like MPICH, except that 'mpicxx -show' emits an
+            # extra command to check that the compiler is setup properly, which
+            # confuses our option extraction below.  We use '-nocompchk' to
+            # disable this command.
+            if test "$enable_parallel" = "intelmpi"
+            then 
+              command="$MPICXX -nocompchk -show -c | cut -d' ' -f2- | sed -e 's/ -c / /'"
+              compile_options="`eval $command`"
+              command="$MPICXX -nocompchk -show | cut -d' ' -f2-"
+              link_options="`eval $command`"
+            else 
+              command="$MPICXX -show -c | cut -d' ' -f2- | sed -e 's/ -c / /'"
+              compile_options="`eval $command`"
+              command="$MPICXX -show | cut -d' ' -f2-"
+              link_options="`eval $command`"
+            fi
+            # We need to do some dance to filter out the CPPFLAGS and LIBS.
+            MPI_CPPFLAGS="$compile_options"
+            # Just filter out the options we know aren't used during linking.
+            # @<:@ and @:>@ are quadrigraphs representing [ and ] respectively.
+            command="echo ' ' $link_options | \
+                       sed -e 's/ -@<:@DUI@:>@@<:@ \t@:>@*@<:@^ \t@:>@*//'"
+            MPI_LIBS="`eval $command`"
+          else
+            AC_MSG_WARN([Unable to invoke ${MPICXX}])
+          fi
+        else
+          AC_MSG_RESULT([No MPICC found])
+        fi
+
+        save_CPPFLAGS="$CPPFLAGS"
+        CPPFLAGS="$CPPFLAGS $MPI_CPPFLAGS"
+        save_LIBS="$LIBS"
+        LIBS="$LIBS $MPI_LIBS"
+
+        # If this is open-mpi, we already know (see above).
+        # Now test whether it is lam
+        if test "$PAR_SERVICE" = "none"; then
+          AC_CHECK_DECL([LAM_MPI],
+                        [PAR_SERVICE=lam
+                         vsip_impl_avoid_posix_memalign=yes],,
+                        [#include <mpi.h>])
+        fi
+        # Now test whether it is mpich2 or intelmpi (both define the same macros)
+        if test "$PAR_SERVICE" = "none";
+        then 
+          AC_CHECK_DECL([MPICH2], [PAR_SERVICE=mpich2],,[#include <mpi.h>])
+          if test "$enable_parallel" = "intelmpi" -a "$PAR_SERVICE" = "mpich2"
+          then PAR_SERVICE=intelmpi
+          fi
+        fi
+        # Make sure we found what we were looking for:
+        if test "$enable_parallel" != "probe" -a "$enable_parallel" != "yes" -a \
+                "$enable_parallel" != "$PAR_SERVICE";
+        then AC_MSG_ERROR([$enable_parallel requested, but $PAR_SERVICE found.])
+        fi
+
+        if test "$PAR_SERVICE" != "none"
+        then
+          # Now link the following to see whether the MPI_INIT() can be resolved.
+          # (We may not be able to run it without first starting an mpi demon, so only link.)
+          AC_MSG_CHECKING([for MPI libs])
+          AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM([#include <mpi.h>],[MPI_Init(0, 0);])],
+            [AC_MSG_RESULT(found)],
+            [AC_MSG_ERROR([Unable to compile / link test MPI application.])])
+        fi
+        CPPFLAGS="$save_CPPFLAGS"
+        LIBS="$save_LIBS"
+      ;;
+
+      # For PAS the user may have provide --with-pas-include et al.
+      # Alternatively, we search for a pkg-config descriptor
+      pas)
+        save_CPPFLAGS="$CPPFLAGS"
+        save_LDFLAGS="$LDFLAGS"
+        save_LIBS="$LIBS"
+
+        pas_found="no"
+        try_pas="direct pkgconfig"
+
+        for try in $try_pas
+          do
+          if test $try = "direct"
+          then
+            AC_MSG_CHECKING([for PAS (direct)])
+            if test -n "$with_pas_include"
+            then CPPFLAGS="$save_CPPFLAGS -I$with_pas_include"
+            fi
+            if test -n "$with_pas_lib"
+            then LDFLAGS="$save_LDFLAGS -L$with_pas_lib"
+            fi
+            LIBS="$save_LIBS -lpas"
+          elif test $try = "pkgconfig"
+          then
+            AC_MSG_CHECKING([for PAS (with pkg-config)])
+            PKG_CHECK_MODULES(PAS, pas)
+            CPPFLAGS="$save_CPPFLAGS $PAS_CFLAGS"
+            LIBS="$save_LIBS $PAS_LIBS"
+          else
+            AC_MSG_ERROR([Unknown PAS try $try])
+          fi
+
+          AC_LINK_IFELSE(
+          [
+            AC_LANG_PROGRAM
+            (
+              [[#include <pas.h>]],
+              [[PAS_id pset;pas_pset_close(pset, 0);]]
+            )
+          ],
+          [pas_found=$try;AC_MSG_RESULT([found]);break],
+          [pas_found="no";AC_MSG_RESULT([not found]) ]
+          )
+        done
+
+        if test "$pas_found" == "no"
+        then
+          if test "$with_pas" != "probe"
+          then AC_MSG_ERROR([PAS enabled but no library found])
+          fi
+          AC_MSG_RESULT([No PAS library found])
+          CPPFLAGS=$save_CPPFLAGS
+          LDFLAGS=$save_LDFLAGS
+          LIBS=$save_LIBS
+        else
+          AC_MSG_RESULT([Using $pas_found for PAS])
+          PAR_SERVICE=pas
+
+          # These values are not used if PAS is not enabled (i.e. if PAR_SERVICE != 2).
+          # They are always defined for binary packaging convenience.  This allows
+          # the same acconfig.hpp to be used with/without PAS.
+
+          AC_DEFINE_UNQUOTED(VSIP_IMPL_PAS_HEAP_SIZE, $enable_pas_heap_size,
+            [Define the heap size used inside the PAS backend.])
+
+          if test $enable_pas_share_dynamic_xfer = "yes"
+          then enable_pas_share_dynamic_xfer=1
+          else enable_pas_share_dynamic_xfer=0
+          fi
+
+          AC_DEFINE_UNQUOTED(VSIP_IMPL_PAS_SHARE_DYNAMIC_XFER,
+            $enable_pas_share_dynamic_xfer,
+            [Define to 1 to share a dynamic_xfer object, 0 otherwise.])
+        fi
+      ;;
+      mpipro)
+        # MPI/Pro does not have any identifying macros.
+        # Require user to specify --enable-mpi=mpipro
+        PAR_SERVICE=mpipro
+        MPI_CPPFLAGS=""
+        MPI_LIBS="-lmpipro"
+        PAR_SERVICE="mpipro"
+      ;;
+      *)
+        AC_MSG_ERROR([Unknown MPI library $enable_parallel])
+      ;;
+    esac
+  fi
+  ############################################################################
+  # Second step: Test the found compiler flags and set output variables.
+  ############################################################################
+
+  # Find the applet names to boot / halt the parallel service.
+  case "$PAR_SERVICE" in
+    lam)
+      AC_PATH_PROGS(PAR_BOOT, lamboot,, $mpi_path)
+      AC_PATH_PROGS(PAR_HALT, lamhalt lamwipe wipe,, $mpi_path)
+    ;;
+    mpich2)
+      AC_PATH_PROGS(PAR_BOOT, mpdboot,, $mpi_path)
+      AC_PATH_PROGS(PAR_HALT, mpdcleanup,, $mpi_path)
+    ;;
+  esac
+  AC_SUBST(PAR_BOOT)
+  AC_SUBST(PAR_HALT)
+
+  if test "$PAR_SERVICE" = "none"
+  then vsipl_par_service=0
+  elif test "$PAR_SERVICE" = "pas"
+  then
+    vsipl_par_service=2
+    AC_SUBST(VSIP_IMPL_HAVE_PAS, 1)
+  else
+    # must be MPI
+    vsipl_par_service=1
+    AC_SUBST(VSIP_IMPL_HAVE_MPI, 1)
+  fi
+
+  if test "$neutral_acconfig" = 'y'
+  then CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_PAR_SERVICE=$vsipl_par_service"
+  else
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_PAR_SERVICE, $vsipl_par_service,
+      [Define to parallel service provided (0 == no service, 1 = MPI, 2 = PAS).])
+  fi
+
+  CPPFLAGS="$CPPFLAGS $MPI_CPPFLAGS"
+  LIBS="$LIBS $MPI_LIBS"
+  AC_SUBST(PAR_SERVICE)
+
+  if test -n "$vsip_impl_avoid_posix_memalign"
+  then if test "$neutral_acconfig" = 'y'
+  then CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_AVOID_POSIX_MEMALIGN=1"
+  else AC_DEFINE_UNQUOTED(VSIP_IMPL_AVOID_POSIX_MEMALIGN, 1,
+  [Set to 1 to avoid using posix_memalign (LAM defines its own malloc,
+  including memalign but not posix_memalign).])
+  fi; AC_MSG_NOTICE(
+  [Avoiding posix_memalign, may not be compatible with LAM-MPI malloc])
+  fi
+fi
+
+if test "$enable_parallel" = "probe" -o "$enable_parallel" = "yes"
+then
+  if test "$PAR_SERVICE" = "none"
+  then par_service="probe -- not found"
+  else par_service="probe -- found ($PAR_SERVICE)"
+  fi
+else
+  par_service=$enable_parallel
+fi
+
+])
+m4trace:m4/profile.m4:10: -1- AC_DEFUN([SVXX_CHECK_PROFILE], [
+#
+# Configure profile timer
+#
+case $enable_timer in
+  none | no)
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_PROFILE_TIMER, 0,
+      [Profile timer (0: None, 1: Posix, 2: ia32 TSC, 3: x86_64 TSC, 4: MCOE TMR, 5: Power TB).])
+  ;;
+  posix)
+    AC_MSG_CHECKING([if Posix monotonic clock_gettime() available.])
+    AC_SEARCH_LIBS([clock_gettime], [rt],
+      [AC_MSG_RESULT(yes)],
+      [AC_MSG_ERROR(Posix monotonic clock_gettime() not found.)] )
+
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_PROFILE_TIMER, 1,
+      [Profile timer (0: None, 1: Posix, 2: ia32 TSC, 3: x86_64 TSC, 4: MCOE TMR, 5: Power TB).])
+  ;;
+  pentiumtsc)
+    AC_MSG_CHECKING([if Pentium ia32 TSC assembly syntax supported.])
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([],
+	               [[long long time;
+                         __asm__ __volatile__("rdtsc": "=A" (time));]])],
+      [AC_MSG_RESULT(yes)],
+      [AC_MSG_ERROR(GNU in-line assembly for Pentium ia32 rdtsc not supported.)] )
+
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_PROFILE_TIMER, 2,
+      [Profile timer (0: None, 1: Posix, 2: ia32 TSC, 3: x86_64 TSC, 4: MCOE TMR, 5: Power TB).])
+  ;;
+  x86_64_tsc)
+    AC_MSG_CHECKING([if x86_64 TSC assembly syntax supported.])
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([],
+	               [[typedef unsigned long long stamp_type;
+		         stamp_type time; unsigned a, d;
+                         __asm__ __volatile__("rdtsc": "=a" (a), "=d" (d));
+                         time = ((stamp_type)a) | (((stamp_type)d) << 32);]])],
+      [AC_MSG_RESULT(yes)],
+      [AC_MSG_ERROR(GNU in-line assembly for x86_64 rdtsc not supported.)] )
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_PROFILE_TIMER, 3,
+      [Profile timer (0: None, 1: Posix, 2: ia32 TSC, 3: x86_64 TSC, 4: MCOE TMR, 5: Power TB).])
+  ;;
+  mcoe_tmr)
+    AC_MSG_CHECKING([if MCOE TMR timer is available.])
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([[#include <mcos.h>]],
+	 	       [[TMR_ts ts;
+                         tmr_timestamp(&ts);]])],
+      [AC_MSG_RESULT(yes)],
+      [AC_MSG_ERROR(MCOE TMR timer not found.)] )
+
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_PROFILE_TIMER, 4,
+      [Profile timer (0: None, 1: Posix, 2: ia32 TSC, 3: x86_64 TSC, 4: MCOE TMR, 5: Power TB).])
+  ;;
+  power_tb)
+    AC_MSG_CHECKING([if PowerPC timebase assembly syntax supported.])
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([],
+	  	       [[
+       unsigned int tbl, tbu0, tbu1;
+
+       do {
+	    __asm__ __volatile__ ("mftbu %0" : "=r"(tbu0));
+	    __asm__ __volatile__ ("mftb %0" : "=r"(tbl));
+	    __asm__ __volatile__ ("mftbu %0" : "=r"(tbu1));
+       } while (tbu0 != tbu1);
+	 	       ]])],
+      [AC_MSG_RESULT(yes)],
+      [AC_MSG_ERROR(GNU in-line assembly for PowerPC timebase not supported.)] )
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_PROFILE_TIMER, 5,
+      [Profile timer (0: None, 1: Posix, 2: ia32 TSC, 3: x86_64 TSC, 4: MCOE TMR, 5: Power TB).])
+  ;;
+  *)
+    AC_MSG_ERROR([Invalid timer choosen --enable-timer=$enable_timer.])
+esac
+
+if test "$enable_cpu_mhz" != "none"; then
+  AC_DEFINE_UNQUOTED(VSIP_IMPL_PROFILE_HARDCODE_CPU_SPEED, $enable_cpu_mhz,
+    [Hardcoded CPU Speed (in MHz).])
+fi
+
+])
+m4trace:m4/python.m4:10: -1- AC_DEFUN([SVXX_CHECK_PYTHON], [
+AC_SUBST(enable_python_bindings)
+if test "$enable_python_bindings" == "yes"; then
+  if test -n "$PYTHON" -a "$PYTHON" != yes; then
+    AC_PATH_PROG(PYTHON, python2 python, python)
+  fi
+  PYTHON_INCLUDE=`$PYTHON -c "from distutils import sysconfig; print sysconfig.get_python_inc()"`
+  PYTHON_EXT=`$PYTHON -c "from distutils import sysconfig; print sysconfig.get_config_var('SO')"`
+
+  case $build in
+  CYGWIN*)
+    if test `$PYTHON -c "import os; print os.name"` = posix; then
+      PYTHON_PREFIX=`$PYTHON -c "import sys; print sys.prefix"`
+      PYTHON_VERSION=`$PYTHON -c "import sys; print '%d.%d'%(sys.version_info[[0]],sys.version_info[[1]])"`
+      PYTHON_LIBS="-L $PYTHON_PREFIX/lib/python$PYTHON_VERSION/config -lpython$PYTHON_VERSION"
+dnl Cygwin doesn't have an -lutil, but some versions of distutils tell us to use it anyway.
+dnl It would be better to check for each library it tells us to use with AC_CHECK_LIB, but
+dnl to do that, we need the name of a function in each one, so we'll just hack -lutil out 
+dnl of the list.
+      PYTHON_DEP_LIBS=`$PYTHON -c "from distutils import sysconfig; import re; print re.sub(r'\\s*-lutil', '', sysconfig.get_config_var('LIBS') or '')"`
+    else dnl this is 'nt'
+      if test "$CXX" = "g++"; then
+        CFLAGS="-mno-cygwin $CFLAGS"
+        CXXFLAGS="-mno-cygwin $CXXFLAGS"
+        LDFLAGS="-mno-cygwin $LDFLAGS"
+        PYTHON_PREFIX=`$PYTHON -c "import sys; print sys.prefix"`
+        PYTHON_VERSION=`$PYTHON -c "import sys; print '%d%d'%(sys.version_info[[0]],sys.version_info[[1]])"`
+        PYTHON_LIBS="-L `cygpath -a $PYTHON_PREFIX`/Libs -lpython$PYTHON_VERSION"
+      fi
+      PYTHON_INCLUDE=`cygpath -a $PYTHON_INCLUDE`
+      PYTHON_DEP_LIBS=`$PYTHON -c "from distutils import sysconfig; print sysconfig.get_config_var('LIBS') or ''"`
+    fi
+    PYTHON_LIBS="$PYTHON_LIBS $PYTHON_DEP_LIBS"
+    ;;
+  esac
+
+  PYTHON_LIBS="$PYTHON_LIBS $PYTHON_DEP_LIBS"
+
+  PYTHON_INCLUDE=`$PYTHON -c "from distutils import sysconfig; print sysconfig.get_python_inc()"`
+  AC_MSG_CHECKING([for numpy])
+  if $PYTHON -c "import numpy" > /dev/null; then
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR([The Sourcery VSIPL++ Python interface requires numpy to be installed.])
+  fi
+
+  NUMPY_TEST="from imp import find_module"
+  NUMPY_TEST="${NUMPY_TEST};from os.path import join"
+  NUMPY_TEST="${NUMPY_TEST};file, path, descr = find_module('numpy')"
+  NUMPY_TEST="${NUMPY_TEST};print join(path, 'core', 'include')"
+  NUMPY_INCLUDE=`$PYTHON -c "$NUMPY_TEST"`
+  AC_SUBST(PYTHON)
+  AC_SUBST(PYTHON_CPP, "-I $PYTHON_INCLUDE -I $NUMPY_INCLUDE")
+  AC_SUBST(PYTHON_LIBS)
+  AC_SUBST(PYTHON_EXT)
+
+  AC_LANG(C++)
+  if test -n "$with_boost_prefix"; then
+    BOOST_CPPFLAGS="-I$with_boost_prefix/include"
+    BOOST_LDFLAGS="-L$with_boost_prefix/lib"
+  fi
+  save_CPPFLAGS=$CPPFLAGS
+  CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS $PYTHON_CPP"
+  AC_CHECK_HEADER([boost/python.hpp], [], 
+    [AC_MSG_ERROR([boost.python could not be found])])
+  CPPFLAGS="$save_CPPFLAGS"
+
+  AC_SUBST(BOOST_CPPFLAGS)
+  AC_SUBST(BOOST_LDFLAGS)
+fi
+])
+m4trace:m4/release.m4:10: -1- AC_DEFUN([SVXX_RELEASE], [
+
+AC_ARG_WITH(version-string,
+  AS_HELP_STRING([--with-version-string=VERSION],
+		 [The version string, with just the version number.]),
+  [case "$withval" in
+    yes) AC_MSG_ERROR([version-string not specified]) ;;
+    no) ;;
+    *) version_string="$withval" 
+       major_version_string="${withval%-*}"
+       ;;
+  esac])
+AC_SUBST(version_string)
+AC_DEFINE_UNQUOTED([VSIP_IMPL_VERSION_STRING],["$version_string"], [Version string.])
+AC_SUBST(major_version_string)
+AC_DEFINE_UNQUOTED([VSIP_IMPL_MAJOR_VERSION_STRING],["$major_version_string"], [Major version string.])
+
+AC_ARG_WITH(pkgversion,
+  AS_HELP_STRING([--with-pkgversion=VERSION],
+		 [The version string, including package prefixes.]),
+  [case "$withval" in
+     yes | no) AC_MSG_ERROR([pkgversion not specified]) ;;
+     *) pkgversion="$withval" ;;
+   esac],
+  [pkgversion="Sourcery VSIPL++"])
+AC_SUBST(pkgversion)
+
+])
+m4trace:m4/sal.m4:10: -1- AC_DEFUN([SVXX_CHECK_SAL], [
+#
+# Find the Mercury SAL library, if enabled.
+#
+if test "$enable_sal_fft" == "yes"; then
+  if test "$with_sal" == "no"; then
+    AC_MSG_ERROR([SAL FFT requires SAL])
+  else
+    with_sal="yes"
+  fi 
+fi
+
+if test "$with_sal" != "no"; then
+
+  if test -n "$with_sal_include"; then
+    SAL_CPPFLAGS="-I$with_sal_include"
+  fi
+  save_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="$CPPFLAGS $SAL_CPPFLAGS"
+  
+  # Find sal.h.
+  vsipl_sal_h_name="not found"
+  AC_CHECK_HEADER([sal.h], [vsipl_sal_h_name='<sal.h>'],, [// no prerequisites])
+  if test "$vsipl_sal_h_name" == "not found"; then
+    if test "$with_sal" = "yes"
+    then AC_MSG_ERROR([SAL enabled, but no sal.h detected])
+    else CPPFLAGS="$save_CPPFLAGS"
+    fi
+  else
+
+    # Find the library.
+
+    save_LDFLAGS="$LDFLAGS"
+    if test -n "$with_sal_lib"; then
+      LDFLAGS="$LDFLAGS -L$with_sal_lib"
+    fi
+    AC_SEARCH_LIBS(vaddx, [sal csal],
+	           [sal_lib=$ac_lib
+		    sal_found="yes"],
+ 		   [sal_found="no"])
+
+    AC_MSG_CHECKING([for std::complex-compatible SAL-types.])
+    AC_COMPILE_IFELSE([
+#include <sal.h>
+
+template <bool V> struct static_assert;
+template <> struct static_assert<true>
+{
+  static bool const value = true;
+};
+
+int main(int, char **)
+{
+  bool value;
+  value = static_assert<sizeof(COMPLEX_SPLIT) == 
+			2*sizeof(float *)>::value;
+  value = static_assert<sizeof(DOUBLE_COMPLEX_SPLIT) == 
+			2*sizeof(double *)>::value;
+}
+],
+[AC_MSG_RESULT(yes)],
+[AC_MSG_ERROR([std::complex-incompatible SAL-types detected!])])
+
+  fi     
+
+  if test "$sal_found" == "no"; then
+    AC_MSG_ERROR([No SAL library found])
+    CPPFLAGS=$save_CPPFLAGS
+    LDFLAGS=$save_LDFLAGS
+  else
+    AC_MSG_RESULT([SAL Library found: $sal_lib])
+
+    # On MCOE, -lsal is implicit, which breaks AC_CHECK_LIB.
+    # If sal_found == yes, but sal_lib == "", then assume -lsal
+    if test "x$sal_lib" == "x"; then
+      sal_lib="sal"
+    fi
+
+    # General test for float and double support.
+
+    AC_CHECK_LIB($sal_lib, vsmulx,  [sal_have_float=1], [sal_have_float=0])
+    AC_CHECK_LIB($sal_lib, vsmuldx, [sal_have_double=1], [sal_have_double=0])
+
+    # Check specific SAL signatures
+
+    AC_MSG_CHECKING([for vconvert_s8_f32x signature.])
+    AC_COMPILE_IFELSE([
+#include <sal.h>
+
+int main(int, char **)
+{
+  signed char *input;
+  float *output;
+  vconvert_s8_f32x(input, 1, output, 1, 0, 0, 1, 0, 0);
+}
+],
+[
+  vconvert_s8_f32x_is_signed=1
+  AC_MSG_RESULT([signed char *])
+],
+[
+  vconvert_s8_f32x_is_signed=0
+  AC_MSG_RESULT([char *])
+])
+
+    AC_SUBST(VSIP_IMPL_HAVE_SAL, 1)
+    if test "$neutral_acconfig" = 'y'; then
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_SAL=1"
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_SAL_FLOAT=$sal_have_float"
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_SAL_DOUBLE=$sal_have_double"
+      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_SAL_USES_SIGNED=$vconvert_s8_f32x_is_signed"
+    else
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SAL, 1,
+        [Define to set whether or not to use Mercury's SAL library.])
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SAL_FLOAT, $sal_have_float,
+        [Define if Mercury's SAL library provides float support.])
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SAL_DOUBLE, $sal_have_double,
+        [Define if Mercury's SAL library provides double support.])
+      AC_DEFINE_UNQUOTED(VSIP_IMPL_SAL_USES_SIGNED, $vconvert_s8_f32x_is_signed,
+        [Define if Mercury's SAL uses signed char *.])
+    fi
+
+
+    # Specific function tests.
+
+    AC_CHECK_LIB($sal_lib, vsdivix, [sal_have_vsdivix=1], [sal_have_vsdivix=0])
+    AC_CHECK_LIB($sal_lib, vthrx,  [sal_have_vthrx=1], [sal_have_vthrx=0])
+
+
+    # Don't worry about keeping these neutral for now.
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SAL_VSDIVIX, 1,
+        [Define if Mercury's SAL library has vsdivix.])
+    AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SAL_VTHRX, $sal_have_vthrx,
+        [Define if Mercury's SAL library provides vthrx.])
+
+    if test "$enable_sal_fft" != "no"; then 
+      provide_fft_float=1
+      provide_fft_double=1
+      AC_SUBST(VSIP_IMPL_SAL_FFT, 1)
+      if test "$neutral_acconfig" = 'y'; then
+        CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_SAL_FFT=1"
+      else
+        AC_DEFINE_UNQUOTED(VSIP_IMPL_SAL_FFT, 1,
+	    [Define to use Mercury's SAL library to perform FFTs.])
+      fi
+    fi
+  fi
+fi
+
+])
+m4trace:configure.ac:14: -1- m4_pattern_forbid([^_?A[CHUM]_])
+m4trace:configure.ac:14: -1- m4_pattern_forbid([_AC_])
+m4trace:configure.ac:14: -1- m4_pattern_forbid([^LIBOBJS$], [do not use LIBOBJS directly, use AC_LIBOBJ (see section `AC_LIBOBJ vs LIBOBJS'])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^AS_FLAGS$])
+m4trace:configure.ac:14: -1- m4_pattern_forbid([^_?m4_])
+m4trace:configure.ac:14: -1- m4_pattern_forbid([^dnl$])
+m4trace:configure.ac:14: -1- m4_pattern_forbid([^_?AS_])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^SHELL$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^PATH_SEPARATOR$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^PACKAGE_NAME$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^PACKAGE_TARNAME$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^PACKAGE_VERSION$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^PACKAGE_STRING$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^PACKAGE_BUGREPORT$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^exec_prefix$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^prefix$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^program_transform_name$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^bindir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^sbindir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^libexecdir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^datarootdir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^datadir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^sysconfdir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^sharedstatedir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^localstatedir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^includedir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^oldincludedir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^docdir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^infodir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^htmldir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^dvidir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^pdfdir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^psdir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^libdir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^localedir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^mandir$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^PACKAGE_NAME$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^PACKAGE_TARNAME$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^PACKAGE_VERSION$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^PACKAGE_STRING$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^PACKAGE_BUGREPORT$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^DEFS$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^ECHO_C$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^ECHO_N$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^ECHO_T$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^LIBS$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^build_alias$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^host_alias$])
+m4trace:configure.ac:14: -1- m4_pattern_allow([^target_alias$])
+m4trace:configure.ac:35: -1- SVXX_RELEASE
+m4trace:configure.ac:35: -1- m4_pattern_allow([^version_string$])
+m4trace:configure.ac:35: -1- m4_pattern_allow([^VSIP_IMPL_VERSION_STRING$])
+m4trace:configure.ac:35: -1- m4_pattern_allow([^major_version_string$])
+m4trace:configure.ac:35: -1- m4_pattern_allow([^VSIP_IMPL_MAJOR_VERSION_STRING$])
+m4trace:configure.ac:35: -1- m4_pattern_allow([^pkgversion$])
+m4trace:configure.ac:65: -1- m4_pattern_allow([^suffix$])
+m4trace:configure.ac:74: -1- m4_pattern_allow([^builtin_libdir$])
+m4trace:configure.ac:130: -1- m4_pattern_allow([^VSIP_IMPL_REF_IMPL$])
+m4trace:configure.ac:132: -1- m4_pattern_allow([^VSIP_IMPL_REF_IMPL$])
+m4trace:configure.ac:133: -1- m4_pattern_allow([^VSIP_CSL_LIB$])
+m4trace:configure.ac:135: -1- m4_pattern_allow([^VSIP_CSL_LIB$])
+m4trace:configure.ac:150: -1- m4_pattern_allow([^VSIP_IMPL_ENABLE_THREADING$])
+m4trace:configure.ac:153: -1- m4_pattern_allow([^VSIP_IMPL_ENABLE_THREADING$])
+m4trace:configure.ac:204: -1- SVXX_CHECK_CBE
+m4trace:configure.ac:204: -1- m4_pattern_allow([^VSIP_IMPL_CBE_SDK$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_CML$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^VSIP_IMPL_CBE_NUM_SPES$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_CBE_SDK$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^CFLAGS$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^LDFLAGS$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^LIBS$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^ac_ct_CC$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^EXEEXT$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^OBJEXT$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^VSIP_CBE_SDK_VERSION$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^CPP_FLAGS_SPU$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^LD_FLAGS_SPU$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_CBE_SDK$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^CXXFLAGS_SPU$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^CFLAGS_SPU$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^cbe_sdk_sysroot$])
+m4trace:configure.ac:204: -1- m4_pattern_allow([^cbe_sdk_version$])
+m4trace:configure.ac:291: -1- m4_pattern_allow([^VSIP_IMPL_ENABLE_EVAL_DENSE_EXPR$])
+m4trace:configure.ac:300: -1- m4_pattern_allow([^enable_all_tests$])
+m4trace:configure.ac:304: -1- m4_pattern_allow([^QMTEST$])
+m4trace:configure.ac:309: -1- m4_pattern_allow([^QMTEST_TARGET$])
+m4trace:configure.ac:311: -1- m4_pattern_allow([^QMTEST_TARGET$])
+m4trace:configure.ac:346: -1- m4_pattern_allow([^enable_cvsip_bindings$])
+m4trace:configure.ac:379: -1- m4_pattern_allow([^build$])
+m4trace:configure.ac:379: -1- m4_pattern_allow([^build_cpu$])
+m4trace:configure.ac:379: -1- m4_pattern_allow([^build_vendor$])
+m4trace:configure.ac:379: -1- m4_pattern_allow([^build_os$])
+m4trace:configure.ac:379: -1- m4_pattern_allow([^host$])
+m4trace:configure.ac:379: -1- m4_pattern_allow([^host_cpu$])
+m4trace:configure.ac:379: -1- m4_pattern_allow([^host_vendor$])
+m4trace:configure.ac:379: -1- m4_pattern_allow([^host_os$])
+m4trace:configure.ac:398: -1- m4_pattern_allow([^CC_SPU$])
+m4trace:configure.ac:399: -1- m4_pattern_allow([^CXX_SPU$])
+m4trace:configure.ac:400: -1- m4_pattern_allow([^EMBED_SPU$])
+m4trace:configure.ac:401: -1- m4_pattern_allow([^OBJDUMP_SPU$])
+m4trace:configure.ac:402: -1- m4_pattern_allow([^LD_SPU$])
+m4trace:configure.ac:403: -1- m4_pattern_allow([^AR_SPU$])
+m4trace:configure.ac:419: -1- m4_pattern_allow([^CXX$])
+m4trace:configure.ac:419: -1- m4_pattern_allow([^CXXFLAGS$])
+m4trace:configure.ac:419: -1- m4_pattern_allow([^LDFLAGS$])
+m4trace:configure.ac:419: -1- m4_pattern_allow([^LIBS$])
+m4trace:configure.ac:419: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.ac:419: -1- m4_pattern_allow([^CXX$])
+m4trace:configure.ac:419: -1- m4_pattern_allow([^ac_ct_CXX$])
+m4trace:configure.ac:420: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:420: -1- m4_pattern_allow([^CFLAGS$])
+m4trace:configure.ac:420: -1- m4_pattern_allow([^LDFLAGS$])
+m4trace:configure.ac:420: -1- m4_pattern_allow([^LIBS$])
+m4trace:configure.ac:420: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.ac:420: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:420: -1- m4_pattern_allow([^ac_ct_CC$])
+m4trace:configure.ac:422: -1- m4_pattern_allow([^F77$])
+m4trace:configure.ac:422: -1- m4_pattern_allow([^FFLAGS$])
+m4trace:configure.ac:422: -1- m4_pattern_allow([^LDFLAGS$])
+m4trace:configure.ac:422: -1- m4_pattern_allow([^LIBS$])
+m4trace:configure.ac:422: -1- m4_pattern_allow([^F77$])
+m4trace:configure.ac:422: -1- m4_pattern_allow([^ac_ct_F77$])
+m4trace:configure.ac:423: -1- m4_pattern_allow([^STRIP$])
+m4trace:configure.ac:456: -1- m4_pattern_allow([^CCDEP$])
+m4trace:configure.ac:457: -1- m4_pattern_allow([^CXXDEP$])
+m4trace:configure.ac:458: -1- m4_pattern_allow([^LDSHARED$])
+m4trace:configure.ac:459: -1- m4_pattern_allow([^INTEL_WIN$])
+m4trace:configure.ac:460: -1- m4_pattern_allow([^cygwin_mount$])
+m4trace:configure.ac:473: -1- m4_pattern_allow([^CXXFLAGS_LIB$])
+m4trace:configure.ac:474: -1- m4_pattern_allow([^CFLAGS_LIB$])
+m4trace:configure.ac:475: -1- m4_pattern_allow([^NVCCFLAGS_LIB$])
+m4trace:configure.ac:476: -1- m4_pattern_allow([^BUILD_SHARED_LIBS$])
+m4trace:configure.ac:492: -1- m4_pattern_allow([^CPP$])
+m4trace:configure.ac:492: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.ac:492: -1- m4_pattern_allow([^CPP$])
+m4trace:configure.ac:492: -1- m4_pattern_allow([^GREP$])
+m4trace:configure.ac:492: -1- m4_pattern_allow([^EGREP$])
+m4trace:configure.ac:492: -1- m4_pattern_allow([^STDC_HEADERS$])
+m4trace:configure.ac:494: -1- m4_pattern_allow([^VSIP_IMPL_NUMA$])
+m4trace:configure.ac:495: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_NUMA$])
+m4trace:configure.ac:498: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_NUMA$])
+m4trace:configure.ac:530: -1- m4_pattern_allow([^LIBEXT$])
+m4trace:configure.ac:533: -1- m4_pattern_allow([^SIZEOF_INT_P$])
+m4trace:configure.ac:534: -1- m4_pattern_allow([^SIZEOF_SHORT$])
+m4trace:configure.ac:535: -1- m4_pattern_allow([^SIZEOF_INT$])
+m4trace:configure.ac:536: -1- m4_pattern_allow([^SIZEOF_LONG$])
+m4trace:configure.ac:537: -1- m4_pattern_allow([^SIZEOF_LONG_LONG$])
+m4trace:configure.ac:550: -1- m4_pattern_allow([^AR$])
+m4trace:configure.ac:588: -1- m4_pattern_allow([^VSIP_HAS_EXCEPTIONS$])
+m4trace:configure.ac:666: -1- m4_pattern_allow([^VSIP_IMPL_FIX_MISSING_ABS$])
+m4trace:configure.ac:678: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_COMPLEX_LONG_DOUBLE$])
+m4trace:configure.ac:700: -1- m4_pattern_allow([^HAVE_DECL_EXP10$])
+m4trace:configure.ac:700: -1- m4_pattern_allow([^HAVE_DECL_EXP10$])
+m4trace:configure.ac:700: -1- m4_pattern_allow([^HAVE_DECL_EXP10F$])
+m4trace:configure.ac:700: -1- m4_pattern_allow([^HAVE_DECL_EXP10F$])
+m4trace:configure.ac:700: -1- m4_pattern_allow([^HAVE_DECL_EXP10L$])
+m4trace:configure.ac:700: -1- m4_pattern_allow([^HAVE_DECL_EXP10L$])
+m4trace:configure.ac:712: -1- m4_pattern_allow([^HAVE_DECL_HYPOTF$])
+m4trace:configure.ac:712: -1- m4_pattern_allow([^HAVE_DECL_HYPOTF$])
+m4trace:configure.ac:712: -1- m4_pattern_allow([^HAVE_DECL_HYPOT$])
+m4trace:configure.ac:712: -1- m4_pattern_allow([^HAVE_DECL_HYPOT$])
+m4trace:configure.ac:738: -1- m4_pattern_allow([^HAVE_STD_ISFINITE$])
+m4trace:configure.ac:738: -1- m4_pattern_allow([^HAVE_STD_ISNAN$])
+m4trace:configure.ac:738: -1- m4_pattern_allow([^HAVE_STD_ISNORMAL$])
+m4trace:configure.ac:768: -1- m4_pattern_allow([^HAVE_DECL_POSIX_MEMALIGN$])
+m4trace:configure.ac:768: -1- m4_pattern_allow([^HAVE_DECL_POSIX_MEMALIGN$])
+m4trace:configure.ac:768: -1- m4_pattern_allow([^HAVE_DECL_MEMALIGN$])
+m4trace:configure.ac:768: -1- m4_pattern_allow([^HAVE_DECL_MEMALIGN$])
+m4trace:configure.ac:780: -1- m4_pattern_allow([^CXXCPP$])
+m4trace:configure.ac:780: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.ac:780: -1- m4_pattern_allow([^CXXCPP$])
+m4trace:configure.ac:780: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_PNG$])
+m4trace:configure.ac:795: -1- SVXX_CHECK_FFT
+m4trace:configure.ac:795: -1- m4_pattern_allow([^VSIP_IMPL_CBE_SDK_FFT$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^VSIP_IMPL_CBE_SDK_FFT$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^VSIP_IMPL_DFT_FFT$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^VSIP_IMPL_DFT_FFT$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^VSIP_IMPL_NO_FFT$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^VSIP_IMPL_NO_FFT$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^VSIP_IMPL_FFTW3$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^VSIP_IMPL_FFTW3$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^SIZEOF_DOUBLE$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^SIZEOF_LONG_DOUBLE$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^USE_BUILTIN_FFTW_FLOAT$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^USE_BUILTIN_FFTW_DOUBLE$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^USE_BUILTIN_FFTW_LONG_DOUBLE$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^USE_BUILTIN_FFTW$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^VSIP_IMPL_FFTW3_HAVE_FLOAT$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^VSIP_IMPL_FFTW3_HAVE_DOUBLE$])
+m4trace:configure.ac:795: -1- m4_pattern_allow([^VSIP_IMPL_FFTW3_HAVE_LONG_DOUBLE$])
+m4trace:configure.ac:796: -1- SVXX_CHECK_PARALLEL
+m4trace:configure.ac:796: -1- m4_pattern_allow([^MPICC$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^MPICXX$])
+m4trace:configure.ac:796: -1- PKG_CHECK_MODULES([PAS], [pas])
+m4trace:configure.ac:796: -1- PKG_PROG_PKG_CONFIG
+m4trace:configure.ac:796: -1- m4_pattern_forbid([^_?PKG_[A-Z_]+$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^PKG_CONFIG(_PATH)?$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^PKG_CONFIG$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^PKG_CONFIG$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^PAS_CFLAGS$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^PAS_LIBS$])
+m4trace:configure.ac:796: -1- PKG_CHECK_EXISTS([pas], [pkg_cv_[]PAS_CFLAGS=`$PKG_CONFIG --[]cflags "pas" 2>/dev/null`], [pkg_failed=yes])
+m4trace:configure.ac:796: -1- PKG_CHECK_EXISTS([pas], [pkg_cv_[]PAS_LIBS=`$PKG_CONFIG --[]libs "pas" 2>/dev/null`], [pkg_failed=yes])
+m4trace:configure.ac:796: -1- _PKG_SHORT_ERRORS_SUPPORTED
+m4trace:configure.ac:796: -1- m4_pattern_allow([^VSIP_IMPL_PAS_HEAP_SIZE$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^VSIP_IMPL_PAS_SHARE_DYNAMIC_XFER$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^PAR_BOOT$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^PAR_HALT$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^PAR_BOOT$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^PAR_HALT$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^PAR_BOOT$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^PAR_HALT$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_PAS$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_MPI$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^VSIP_IMPL_PAR_SERVICE$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^PAR_SERVICE$])
+m4trace:configure.ac:796: -1- m4_pattern_allow([^VSIP_IMPL_AVOID_POSIX_MEMALIGN$])
+m4trace:configure.ac:797: -1- SVXX_CHECK_CUDA
+m4trace:configure.ac:797: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_CUDA$])
+m4trace:configure.ac:797: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_CUDA$])
+m4trace:configure.ac:797: -1- m4_pattern_allow([^VSIP_IMPL_CUDA_FFT$])
+m4trace:configure.ac:797: -1- m4_pattern_allow([^VSIP_IMPL_CUDA_FFT$])
+m4trace:configure.ac:797: -1- m4_pattern_allow([^NVCCFLAGS$])
+m4trace:configure.ac:798: -1- SVXX_CHECK_SAL
+m4trace:configure.ac:798: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SAL$])
+m4trace:configure.ac:798: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SAL$])
+m4trace:configure.ac:798: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SAL_FLOAT$])
+m4trace:configure.ac:798: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SAL_DOUBLE$])
+m4trace:configure.ac:798: -1- m4_pattern_allow([^VSIP_IMPL_SAL_USES_SIGNED$])
+m4trace:configure.ac:798: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SAL_VSDIVIX$])
+m4trace:configure.ac:798: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SAL_VTHRX$])
+m4trace:configure.ac:798: -1- m4_pattern_allow([^VSIP_IMPL_SAL_FFT$])
+m4trace:configure.ac:798: -1- m4_pattern_allow([^VSIP_IMPL_SAL_FFT$])
+m4trace:configure.ac:799: -1- SVXX_CHECK_MKL
+m4trace:configure.ac:799: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_MKL_VML$])
+m4trace:configure.ac:799: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_MKL_VML$])
+m4trace:configure.ac:800: -1- SVXX_CHECK_IPP
+m4trace:configure.ac:800: -1- m4_pattern_allow([^VSIP_IMPL_IPP_FFT$])
+m4trace:configure.ac:800: -1- m4_pattern_allow([^VSIP_IMPL_IPP_FFT$])
+m4trace:configure.ac:800: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_IPP$])
+m4trace:configure.ac:800: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_IPP$])
+m4trace:configure.ac:800: -1- m4_pattern_allow([^VSIP_IMPL_IPP_FFT$])
+m4trace:configure.ac:800: -1- m4_pattern_allow([^VSIP_IMPL_IPP_FFT$])
+m4trace:configure.ac:811: -1- SVXX_CHECK_CVSIP
+m4trace:configure.ac:811: -1- m4_pattern_allow([^HAVE_VSIP_FIR_ATTR$])
+m4trace:configure.ac:811: -1- m4_pattern_allow([^VSIP_IMPL_CVSIP_HAVE_BOOL$])
+m4trace:configure.ac:811: -1- m4_pattern_allow([^VSIP_IMPL_CVSIP_HAVE_INT$])
+m4trace:configure.ac:811: -1- m4_pattern_allow([^VSIP_IMPL_CVSIP_HAVE_FLOAT$])
+m4trace:configure.ac:811: -1- m4_pattern_allow([^VSIP_IMPL_CVSIP_HAVE_DOUBLE$])
+m4trace:configure.ac:811: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_CVSIP$])
+m4trace:configure.ac:811: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_CVSIP$])
+m4trace:configure.ac:811: -1- m4_pattern_allow([^VSIP_IMPL_CVSIP_HAVE_BOOL$])
+m4trace:configure.ac:811: -1- m4_pattern_allow([^VSIP_IMPL_CVSIP_HAVE_INT$])
+m4trace:configure.ac:811: -1- m4_pattern_allow([^VSIP_IMPL_CVSIP_HAVE_FLOAT$])
+m4trace:configure.ac:811: -1- m4_pattern_allow([^VSIP_IMPL_CVSIP_HAVE_DOUBLE$])
+m4trace:configure.ac:811: -1- m4_pattern_allow([^VSIP_IMPL_CVSIP_FFT$])
+m4trace:configure.ac:811: -1- m4_pattern_allow([^VSIP_IMPL_CVSIP_FFT$])
+m4trace:configure.ac:820: -1- m4_pattern_allow([^SVSIP_LIB$])
+m4trace:configure.ac:835: -1- m4_pattern_allow([^VSIP_IMPL_FFT_USE_FLOAT$])
+m4trace:configure.ac:839: -1- m4_pattern_allow([^VSIP_IMPL_FFT_USE_DOUBLE$])
+m4trace:configure.ac:843: -1- m4_pattern_allow([^VSIP_IMPL_FFT_USE_LONG_DOUBLE$])
+m4trace:configure.ac:861: -1- m4_pattern_allow([^VSIP_IMPL_PROVIDE_FFT_FLOAT$])
+m4trace:configure.ac:865: -1- m4_pattern_allow([^VSIP_IMPL_PROVIDE_FFT_DOUBLE$])
+m4trace:configure.ac:869: -1- m4_pattern_allow([^VSIP_IMPL_PROVIDE_FFT_LONG_DOUBLE$])
+m4trace:configure.ac:874: -1- SVXX_CHECK_LAPACK
+m4trace:configure.ac:874: -1- m4_pattern_allow([^CLAPACK_CFLAGS$])
+m4trace:configure.ac:874: -1- m4_pattern_allow([^USE_BUILTIN_BLAS$])
+m4trace:configure.ac:874: -1- m4_pattern_allow([^USE_BUILTIN_LAPACK$])
+m4trace:configure.ac:874: -1- m4_pattern_allow([^CLAPACK_NOOPT$])
+m4trace:configure.ac:874: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_BLAS$])
+m4trace:configure.ac:874: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_BLAS$])
+m4trace:configure.ac:874: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_LAPACK$])
+m4trace:configure.ac:874: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_LAPACK$])
+m4trace:configure.ac:874: -1- m4_pattern_allow([^VSIP_IMPL_USE_LAPACK_ILAENV$])
+m4trace:configure.ac:874: -1- m4_pattern_allow([^VSIP_IMPL_USE_F2C_ABI$])
+m4trace:configure.ac:874: -1- m4_pattern_allow([^VSIP_IMPL_USE_CBLAS$])
+m4trace:configure.ac:880: -1- m4_pattern_allow([^VSIP_IMPL_PREFER_SPLIT_COMPLEX$])
+m4trace:configure.ac:882: -1- m4_pattern_allow([^VSIP_IMPL_PREFER_SPLIT_COMPLEX$])
+m4trace:configure.ac:891: -1- m4_pattern_allow([^VSIP_IMPL_ALLOC_ALIGNMENT$])
+m4trace:configure.ac:898: -1- m4_pattern_allow([^VSIP_IMPL_PROFILE_NESTING$])
+m4trace:configure.ac:902: -1- SVXX_CHECK_PROFILE
+m4trace:configure.ac:902: -1- m4_pattern_allow([^VSIP_IMPL_PROFILE_TIMER$])
+m4trace:configure.ac:902: -1- m4_pattern_allow([^VSIP_IMPL_PROFILE_TIMER$])
+m4trace:configure.ac:902: -1- m4_pattern_allow([^VSIP_IMPL_PROFILE_TIMER$])
+m4trace:configure.ac:902: -1- m4_pattern_allow([^VSIP_IMPL_PROFILE_TIMER$])
+m4trace:configure.ac:902: -1- m4_pattern_allow([^VSIP_IMPL_PROFILE_TIMER$])
+m4trace:configure.ac:902: -1- m4_pattern_allow([^VSIP_IMPL_PROFILE_TIMER$])
+m4trace:configure.ac:902: -1- m4_pattern_allow([^VSIP_IMPL_PROFILE_HARDCODE_CPU_SPEED$])
+m4trace:configure.ac:912: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SIMD_LOOP_FUSION$])
+m4trace:configure.ac:917: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SIMD_UNALIGNED_LOOP_FUSION$])
+m4trace:configure.ac:936: -1- m4_pattern_allow([^USE_SIMD_3DNOWEXT_32$])
+m4trace:configure.ac:937: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SIMD_3DNOWEXT$])
+m4trace:configure.ac:943: -1- m4_pattern_allow([^USE_SIMD_3DNOWEXT_64$])
+m4trace:configure.ac:944: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SIMD_3DNOWEXT$])
+m4trace:configure.ac:950: -1- m4_pattern_allow([^USE_SIMD_SSE2_32$])
+m4trace:configure.ac:951: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SIMD_SSE2$])
+m4trace:configure.ac:957: -1- m4_pattern_allow([^USE_SIMD_SSE2_64$])
+m4trace:configure.ac:958: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SIMD_SSE2$])
+m4trace:configure.ac:964: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_SIMD_GENERIC$])
+m4trace:configure.ac:978: -1- m4_pattern_allow([^VSIP_IMPL_SIMD_TAG_LIST$])
+m4trace:configure.ac:984: -1- m4_pattern_allow([^VSIP_IMPL_TEST_LEVEL$])
+m4trace:configure.ac:991: -1- m4_pattern_allow([^VSIP_IMPL_SOURCERY_VPP$])
+m4trace:configure.ac:999: -1- m4_pattern_allow([^VSIP_IMPL_ENABLE_HUGE_PAGE_POOL$])
+m4trace:configure.ac:1001: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_HUGE_PAGE_POOL$])
+m4trace:configure.ac:1003: -1- m4_pattern_allow([^VSIP_IMPL_HAVE_HUGE_PAGE_POOL$])
+m4trace:configure.ac:1012: -1- m4_pattern_allow([^ARFLAGS$])
+m4trace:configure.ac:1013: -1- m4_pattern_allow([^RANLIB$])
+m4trace:configure.ac:1018: -1- m4_pattern_allow([^SYNOPSIS$])
+m4trace:configure.ac:1019: -1- m4_pattern_allow([^XSLTPROC$])
+m4trace:configure.ac:1020: -1- m4_pattern_allow([^XEP$])
+m4trace:configure.ac:1025: -1- m4_pattern_allow([^INSTALL_PROGRAM$])
+m4trace:configure.ac:1025: -1- m4_pattern_allow([^INSTALL_SCRIPT$])
+m4trace:configure.ac:1025: -1- m4_pattern_allow([^INSTALL_DATA$])
+m4trace:configure.ac:1031: -1- SVXX_CHECK_PYTHON
+m4trace:configure.ac:1031: -1- m4_pattern_allow([^enable_python_bindings$])
+m4trace:configure.ac:1031: -1- m4_pattern_allow([^PYTHON$])
+m4trace:configure.ac:1031: -1- m4_pattern_allow([^PYTHON$])
+m4trace:configure.ac:1031: -1- m4_pattern_allow([^PYTHON_CPP$])
+m4trace:configure.ac:1031: -1- m4_pattern_allow([^PYTHON_LIBS$])
+m4trace:configure.ac:1031: -1- m4_pattern_allow([^PYTHON_EXT$])
+m4trace:configure.ac:1031: -1- m4_pattern_allow([^BOOST_CPPFLAGS$])
+m4trace:configure.ac:1031: -1- m4_pattern_allow([^BOOST_LDFLAGS$])
+m4trace:configure.ac:1116: -1- m4_pattern_allow([^LIB@&t@OBJS$])
+m4trace:configure.ac:1116: -1- m4_pattern_allow([^LTLIBOBJS$])

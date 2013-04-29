@@ -1,0 +1,354 @@
+<!-- This file contains a series of release note fragments processed
+     by gnu-notes.  To add a note to it, use "gnu-notes -a
+     $release_config vpp_source".  The TARGET line should contain a
+     list of shell glob patterns for target names to which the note is
+     relevant; it may be removed if it is relevant to all targets.
+ -->
+
+      <!-- UUID: 31513e1d-a0de-40f1-b429-8c3d37b69b84 -->
+      <!-- TARGET: i686-pc-linux-gnu -->
+      <formalpara>
+        <title>Binary packages compiled with Sourcery G++ 4.3.</title>
+        <para>
+	  The binary packages of &csl_svxx; for &csl_target_name; are now
+	  compiled with version 4.3 of the Sourcery G++ compiler.  The
+	  compiled library files are compatible with most GCC 4.3 system
+	  compilers.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 084c4969-37fa-421d-b770-c7a751ff5d4b -->
+      <!-- TARGET: i686-pc-linux-gnu -->
+      <formalpara>
+        <title>Use of <function>clock_gettime</function> timer for profiling.</title>
+        <para>
+	  The binary packages of &csl_svxx; for &csl_target_name; are now
+	  configured to use the Posix <function>clock_gettime</function> 
+	  timer for profiling, rather than querying the Pentium Time Stamp
+	  Counter directly.  This provides more reliable timing on multicore
+	  and frequency-scaling processors.  If you are re-compiling &csl_svxx; from
+	  source, you can enable this timer by using the
+	  <option>--enable-timer=posix</option> configure option.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 57028c82-8130-4a8f-9e4a-472df81594a7 -->
+      <!-- TARGET: i686-pc-linux-gnu -->
+      <formalpara>
+        <title>Replacement of LAM MPI backend with OpenMPI.</title>
+        <para>
+	  The binary packages of &csl_svxx; for &csl_target_name; are now
+	  linked against the OpenMPI MPI library rather than the LAM MPI
+	  library.  You must have OpenMPI installed on your development
+	  and runtime systems in order to use the "parallel" library variants.
+        </para>
+      </formalpara>
+
+      <!-- UUID: bd18c78c-e53a-4a62-ac04-f05375fe140d -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title><type>Ext_data</type> extension replaced with
+	 <type>dda::Data</type>.</title>
+        <para>
+          The <type>vsip_csl::dda::Ext_data</type> API has been 
+	  replaced with the proposed standard <type>vsip::dda::Data</type>
+	  API, which provides a revised version of the same functionality.
+	  See <olink targetdoc="UsersGuide" targetptr="dda"/> in the 
+	  <citetitle>Users Guide</citetitle> for
+	  a detailed description of the new API.
+	  Due to subtle incompatibilities between the two APIs, it
+	  is not possible to provide both, and you must translate
+	  programs that use the <type>Ext_data</type> API
+	  to use the <type>dda::Data</type> API instead.
+	  Detailed instructions are provided in a CodeSourcery Knowledge
+	  Base entry on the Support Portal, at
+  	  <ulink url="https://support.codesourcery.com/VSIPLXX/kbentry6"></ulink>.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 98b85e3e-57d9-4e7e-97a7-f9636fcf5d7e -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>Improved performance of expression evaluation using SIMD instructions.</title>
+        <para>
+	  A performance regression with compound elementwise expressions 
+	  has been corrected.  These are now evaluated using SIMD instructions 
+	  where possible.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 063aacdd-ff8c-40de-8bcc-bd7f959b0b5e -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>Target-specific installation directories.</title>
+        <para>
+          &csl_svxx; packages now install into a target-specific directory
+	  by default.  This enables packages for multiple targets to be
+	  installed in their default directories on the same system without
+	  conflicts.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 26cdc2a7-a97c-418b-b384-bd6242440de7 -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>Optimization for Matrix and Tensor reductions.</title>
+        <para>
+          Reductions on 2- and 3-D dense views are now re-dispatched as Vector 
+	  reductions.  This brings a performance increase on all platforms.
+	  On Cell and x86/CUDA, the increase is significant as this enables
+	  the use of accelerator hardware where it wasn't previously being 
+	  used.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 4d46af1e-5734-448c-9ca9-fde2b8bd5ccc -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>Profiling of data copies.</title>
+        <para>
+          The &csl_svxx; profiling mechanism has been extended to record
+	  instances of implicit and explicit data copies in accumulation
+	  mode.  This can be enabled using the new <option>-DVSIP_PROFILE_COPY</option>
+	  compile option, as well as with the <option>-DVSIP_PROFILE_ALL</option>
+	  option.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 2667c3b6-da82-4e78-8ccd-e4ca6c03fa6f -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>SIMD vector optimization of scalar-vector multiplications.</title>
+        <para>
+          The SIMD vector backend has been extended to provide optimizations
+	  for scalar-vector multiplications.  This also provides performance
+	  improvements on column-wise vector-matrix multiplications.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 018af5f1-fdb6-47d3-be4b-633183f515ef -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>Avoidance of <command>autoconf</command> macro collisions.</title>
+        <para>
+          The &csl_svxx; library no longer exports the <code>PACKAGE_BUGREPORT</code>
+	  and related macros that are defined by the <command>autoconf</command>
+	  standard configuration headers, thus avoiding macro collisions when
+	  &csl_svxx; is used in applications configured with 
+	  <command>autoconf</command>.
+        </para>
+      </formalpara>
+
+      <!-- UUID: a1634150-d515-468d-98a5-1dc4868f41aa -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title><type>Plain_block</type> block type removed.</title>
+        <para>
+          The undocumented <type>Plain_block</type> block type has been removed.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 7ee7bb6c-7582-4311-8001-6bd5f4dea92d -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>SIMD vector optimization of binary expressions.</title>
+        <para>
+          An error has been fixed which prevented some binary expressions from
+	  being optimized with the SIMD vector backend.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 480a7355-2759-46cf-a4ab-d7745a043322 -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>New example files.</title>
+        <para>
+          New example files have been added.  The <filename>signal/iir.cpp</filename>
+	  example illustrates the computation of IIR filters.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 4ebdee23-d36e-4cdf-946c-497fab7fb786 -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>New <function>unwrap</function> function.</title>
+        <para>
+          An <function>unwrap</function> function has been added in the 
+	  <type>vsip_csl</type> namespace.  This function 
+	  provides a phase-unwrapping functionality, similar to the
+	  Matlab <function>unwrap</function> function.
+        </para>
+      </formalpara>
+
+      <!-- UUID: acb7902a-1dd8-4bb8-b902-da0f4650cce9 -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>Removal of warnings when compiling with <option>-Wextra</option>.</title>
+        <para>
+          A number of warnings that were produced when compiling with
+	  the <option>-Wextra</option> have been suppressed.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 99c7f0fa-ed0d-40fe-8f95-bb680e6f1a40 -->
+      <!-- TARGET: power* -->
+      <formalpara>
+        <title>All FFTW object files compiled with <option>-mabi=altivec</option>.</title>
+        <para>
+          All object files in the FFTW libraries are now compiled with
+	  the <option>-mabi=altivec</option> option, in order to avoid
+	  linker warnings.
+        </para>
+      </formalpara>
+
+      <!-- UUID: b2a78ccb-7106-49d9-aaf9-43f9c7648823 -->
+      <!-- TARGET: i686-pc-linux-gnu powerpc-linux-gnu powerpc-cell-linux-gnu -->
+      <formalpara>
+        <title>Performance fixes in linear-algebra operations.</title>
+        <para>
+          A number of linear-algebra operations were not using the
+	  optimized implementations in the ATLAS BLAS backend libraries,
+	  resulting in performance degradations in the ATLAS-based
+	  library variants.  This has been corrected.
+        </para>
+      </formalpara>
+
+      <!-- UUID: aa13754d-e795-44f2-875a-6dee9cc4a427 -->
+      <!-- TARGET: * -->
+      <formalpara components="cvsipl">
+        <title>Support for VSIPL 1.3 standard.</title>
+        <para>
+          Additional selection functions, logical operations, and type
+	  conversion functions have been added as required by the VSIPL
+	  1.3 standard.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 2fd916e0-2a1f-4b59-8c91-87bce1b879fb -->
+      <!-- TARGET: * -->
+      <formalpara components="cvsipl">
+        <title>Fixes in C-VSIPL SVD operator.</title>
+        <para>
+          Several bugs in the C-VSIPL SVD implementation have been fixed.
+        </para>
+      </formalpara>
+
+      <!-- UUID: c4b7e25c-d017-4855-900d-5967add5982e -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>Rearrangement of utility scripts.</title>
+        <para>
+          The host-side utility scripts in the <filename>scripts</filename>
+	  directory have been moved to the <filename>bin</filename> and
+	  <filename>sbin</filename> directories.
+        </para>
+      </formalpara>
+
+      <!-- UUID: f1019081-fc64-41a5-8c4a-fe8f84c9827d -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>NULL second pointer in user storage constructor.</title>
+        <para>
+          The two-pointer form of the block user-storage constructor
+	  now accepts a NULL pointer as the second pointer argument, and
+	  interprets this as a flag indicating that the user data is
+	  in interleaved-complex format (at the location indicated by
+	  the first pointer argument), rather than in split-complex
+	  format.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 0f82ac36-4157-4b05-a0bd-5cab1f91bc05 -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>Experimental Parallel Iterator API.</title>
+        <para>
+          An experimental Parallel Iterator API has been added, in the
+	  <filename>vsip_csl/pi.hpp</filename> header.  This API
+	  remains under development, and may change in future releases.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 8bb861b1-5da0-4fed-8aaf-3f9190f9bacf -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>User-dispatch mechanisms for FFT computations.</title>
+        <para>
+          The user-dispatch mechanisms have been extended to allow for
+	  user dispatch of FFT computations.  See the 
+	  <filename>eval/fft_expression.cpp</filename> example file and
+	  the Users Guide chapter on user dispatch for details.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 5efb561c-95b6-4cb6-bcf6-25d8ca83614c -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>New <command>vsip-create-workspace</command> script.</title>
+        <para>
+          A <command>vsip-create-workspace</command> script has been added
+	  to the <filename>bin</filename> directory, to assist in setting up
+	  a build tree for the &csl_svxx; example files.
+        </para>
+      </formalpara>
+
+      <!-- UUID: cdcd6dae-12f1-4e3d-abb9-dd1ee0c3983b -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>New example files.</title>
+        <para>
+          New example files have been added.  The <filename>signal/fft2d.cpp</filename>
+	  example illustrates the computation of two-dimensional FFTs.  The new
+	  <filename>solvers</filename> example directory contains examples
+	  illustrating the computation and use of LU, QR, and singular-value (SVD)
+	  decompositions, along with covariance and linear least squares
+	  solvers.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 60af57df-9406-4fca-a12a-5c0579f715b4 -->
+      <!-- TARGET: powerpc-cell-* -->
+      <formalpara>
+        <title>Mixed complex/real vector-matrix multiply optimization.</title>
+        <para>
+          Vector-matrix <function>vmmul</function> operations with
+	  complex vectors and real matrices are now accelerated using
+	  the Cell/B.E. SPEs.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 50db4b8f-1ed6-4ce9-9934-e6c7d1b8ebc9 -->
+      <!-- TARGET: * -->
+      <formalpara components="cvsipl">
+        <title>New <filename>dda.c</filename> example for C-VSIPL.</title>
+        <para>
+          A new example, <filename>dda.c</filename>, has been added to
+	  illustrate the use of direct data accesses with the C-VSIPL
+	  interface.
+        </para>
+      </formalpara>
+
+      <!-- UUID: 9ed151ec-7ba4-4636-8998-5f4d7fbb4422 -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>New <type>Strided</type> block type.</title>
+        <para>
+          The existing <type>Fast_block</type> block type has been
+	  superceded by the <type>Strided</type> block type, which
+	  contains data stored with arbitrary element and row strides.
+        </para>
+      </formalpara>
+
+      <!-- UUID: d64a5588-3cf2-4f9a-9bae-3de959a29588 -->
+      <!-- TARGET: * -->
+      <formalpara>
+        <title>Linking with PNG library is now optional.</title>
+        <para>
+	  Linking of Sourcery VSIPL++ applications with <option>-lpng</option>
+	  is now optional.  The <option>-lpng</option> option must be included
+	  manually when linking applications that use the PNG-file
+	  functionality in the <filename>vsip_csl/png.hpp</filename> header.
+        </para>
+      </formalpara>
+
+<!-- Release notes end here.  -->

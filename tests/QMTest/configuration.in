@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<extension class="database.Database" kind="database">
+  <argument name="srcdir"><text>@cygwin_mount@@abs_top_srcdir@/tests</text></argument>
+  <argument name="no_exclusions"><enumeral>@enable_all_tests@</enumeral></argument>
+  <argument name="flags">
+    <dict>
+      <item><text>VSIP_IMPL_HAVE_CUDA</text><text>@VSIP_IMPL_HAVE_CUDA@</text></item>
+      <item><text>VSIP_IMPL_HAVE_CBE_SDK</text><text>@VSIP_IMPL_HAVE_CBE_SDK@</text></item>
+      <item><text>VSIP_IMPL_ENABLE_THREADING</text><text>@VSIP_IMPL_ENABLE_THREADING@</text></item>
+      <item><text>enable_cvsip_bindings</text><text>@enable_cvsip_bindings@</text></item>
+      <item><text>enable_python_bindings</text><text>@enable_python_bindings@</text></item>
+    </dict>
+  </argument>
+</extension>

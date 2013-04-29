@@ -1,0 +1,80 @@
+########################################################################
+#
+# Contents: Common Makefile harness for utils.
+#
+########################################################################
+
+########################################################################
+# Configuration Variables
+########################################################################
+
+CXX := @CXX@
+CPPFLAGS := @CPPFLAGS@ -I$(top_builddir)/src -I$(top_srcdir)/src -I$(srcdir)
+CXXFLAGS:= @CXXFLAGS@
+LIBS    := -lvsip_csl -lsvpp @LIBS@
+LDFLAGS := -L$(top_builddir)/lib @LDFLAGS@
+
+### Installation ###
+
+INSTALL := @INSTALL@
+INSTALL_DATA := @INSTALL_DATA@
+INSTALL_SCRIPT := @INSTALL_SCRIPT@
+INSTALL_PROGRAM := @INSTALL_PROGRAM@
+
+# Order matters for the various directory variables, as autoconf makes some
+# of the variables depend on the values of others.
+prefix := @prefix@
+exec_prefix := @exec_prefix@
+datarootdir := @datarootdir@
+datadir := @datadir@
+includedir := @includedir@
+libdir := @libdir@
+builtin_libdir := @builtin_libdir@
+sbindir := @sbindir@
+bindir := @bindir@
+variant_bindir := $(bindir)
+
+vpath %.cpp $(srcdir)
+vpath %.hpp $(srcdir)
+
+########################################################################
+# Build instructions
+########################################################################
+
+define make_dep
+@echo generating dependencies for $(@D)/$(<F)
+$(SHELL) -ec '$(CXX) -M $(CPPFLAGS) $< | \
+  sed "s|$(*F)\\.o[ :]*|$*\\.d $*\\.o : |g" > $@' \
+  || rm -f $@
+endef
+
+define link
+@echo linking $@
+$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS)
+endef
+
+define compile
+@echo compiling $(@D)/$(@F)
+$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
+endef
+
+########################################################################
+# Common rules
+########################################################################
+
+all: $(targets)
+
+clean: 
+	rm -f *.o $(targets)
+
+install: $(targets)
+	$(INSTALL) -d $(DESTDIR)$(variant_bindir)
+	for file in $(targets); do \
+	  $(INSTALL) $$file $(DESTDIR)$(variant_bindir)/; \
+	done
+
+
+ifeq (,$(filter $(MAKECMDGOALS), clean))
+include $(deps)
+endif
+

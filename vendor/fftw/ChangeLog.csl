@@ -1,0 +1,32 @@
+2009-03-25  Stefan Seefeld  <stefan@codesourcery.com>
+
+	Merge in vendor/3.2.
+
+2008-02-05  Jules Bergmann  <jules@codesourcery.com>
+
+	Fix compile errors with ppu-gcc 4.1.2.
+	* simd/simd-altivec.h: Include altivec.h.  Fix VLIT macro.  Move
+ 	  literal constants into functions.
+	* simd/altivec.c: Remove literal constants.
+
+2007-04-20  Jules Bergmann  <jules@codesourcery.com>
+
+	* configure: Tone down warning if best CFLAGS aren't known.
+
+2007-04-19  Jules Bergmann  <jules@codesourcery.com>
+
+	* configure: Fix broken test when only one of $target or $build
+	  is defined.
+
+2007-04-18  Jules Bergmann  <jules@codesourcery.com>
+
+	* kernel/cycle.h (getticks): Add tick counter for GreenHills/PowerPC
+	  combination.
+	* libbench2/timer.c: Add clock_gettime fallback.
+	* simd/sse2.c: Enable using SSE/SSE2 on x86-64.
+	* simd/sse.c: Likewise.
+	* libbench2/Makefile.in: Make $OBJEXT correct.
+	* tools/Makefile.in: Likewise.
+	* tests/Makefile.in: Likewise.
+
+

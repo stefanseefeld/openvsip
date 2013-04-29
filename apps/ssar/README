@@ -1,0 +1,75 @@
+=============================================================================
+Scalable SAR (SSAR) Application Benchmark
+Copyright (c) 2006 by CodeSourcery.  All rights reserved.
+
+This file is available for license from CodeSourcery, Inc. under the terms
+of a commercial license and under the GPL.  It is not part of the VSIPL++
+reference implementation and is not available under the BSD license.
+=============================================================================
+
+This directory contains the Sourcery VSIPL++ implementation of the
+application benchmark defined as part of the High Performance Embedded 
+Computing (HPEC) "Challenge Benchmark Suite" from MIT's Lincoln Laboratory.
+
+  http://www.ll.mit.edu/HPECchallenge/sar.html
+
+This benchmark is also part of the High Productivity Computing 
+Systems (HPCS) Scalable Synthetic Compact Application #3 (SSCA #3).
+
+  http://www.highproductivity.org/SSCABmks.htm
+
+
+In brief, the application showcases several computationally-intensive 
+operations typically found in radar data processing applications.  At 
+present, this application focus on the first stage - image formation 
+from raw radar signal returns.  Later stages deal with image storage and 
+retrieval as well as target detection through image differencing.
+
+
+Run the benchmark or execute other functions by specifying the any one of 
+the following commands:
+
+  make		Build the benchmark
+
+  make show	Show which VSIPL++ package is selected, along with the
+                values of CXX, CXXFLAGS and LIBS.
+
+  make clean	Remove temporary files.
+
+  make check	Run the benchmark, comparing output to a known reference
+		(produced by the HPCS version that runs under Matlab).
+		The default uses data from the data3/ subdirectory (for
+		which the scale factor is 3).
+
+  make profileN	Use the built-in profiling capabilities of the library
+		to investigate application timing.  N defines the scale
+		factor and the dataN/ sub-directory contains the data files.
+
+		
+Notes
+
+  The makefile is set up to automatically determine the location
+  of the installed Sourcery VSIPL++ using 'pkg-config'.  Depending
+  on the method of installation, this may just work, or you may
+  need to set the value of 'suffix', either in the makefile or
+  on the command line, in order to select the desired version
+  of the library.  Refer to the makefile and to the Quickstart
+  guide for details.
+
+  The application may perform computations using either single or double-
+  precision floating point.  Use 'precision=double' in the makefile
+  (or command line) as desired.
+
+  All data read from or written to disk is single-precision, regardless
+  of the computational mode.
+
+  The validation step uses a utility called 'diffview' (provided) that
+  is used to compare the generated output to the reference output.  It
+  also converts the data to a greyscale using 'viewtoraw' (also 
+  provided) and then to a viewable image using 'rawtopgm' (part of
+  the Netpbm package).  
+
+  Creating the viewable images is not necessary to validate the images, 
+  but it is helpful.  The synthesized data is of a field of rectangularly
+  spaced corner reflectors that appear as bright spots within an 
+  otherwise dark background.

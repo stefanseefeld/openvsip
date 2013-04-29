@@ -1,0 +1,33 @@
+######################################################### -*-Makefile-*-
+#
+# Contents: Makefile fragment for utils.
+#
+########################################################################
+
+HAVE_CUDA := @VSIP_IMPL_HAVE_CUDA@
+
+utils_subdirs := #matlab
+
+ifdef HAVE_CUDA
+utils_subdirs += cuda
+endif
+
+# function utils_make
+#   arguments: target
+# Description: Run $(MAKE) recursively in each subdirectory with the
+#              given target.
+define utils_make
+for dir in $(patsubst %, utils/%, $(utils_subdirs)); do \
+  echo making $(1) in $$dir;\
+  $(MAKE) -C $$dir $(1);\
+done
+endef
+
+utils::
+	$(call utils_make,all)
+
+install-svxx::
+	$(call utils_make,install)
+
+clean::
+	$(call utils_make,clean)

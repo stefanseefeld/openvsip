@@ -1,0 +1,12 @@
+######################################################### -*-Makefile-*-
+#
+# Contents: Makefile for VSIPL++ example I/O programs.
+#
+########################################################################
+
+targets := png
+check_targets :=
+
+include ../common.mk
+
+png: override LIBS += -lpng

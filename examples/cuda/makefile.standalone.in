@@ -1,0 +1,17 @@
+######################################################### -*-Makefile-*-
+#
+# Contents: Makefile for VSIPL++ example programs using CUDA.
+#
+########################################################################
+
+targets := simple_udk custom
+
+include ../common.mk
+
+# a CUDA Kernel may be linked right into the application.
+simple_udk: simple_udk_cuda.o
+
+custom: custom_kernel.o
+
+%.o : %.cu
+	nvcc -DUNIX -O3 -o $@ -c $<

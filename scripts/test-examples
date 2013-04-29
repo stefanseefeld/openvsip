@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+
+########################################################################
+#
+# Contents:
+#   Test installed examples
+#
+########################################################################
+
+########################################################################
+# Notes
+########################################################################
+
+# SYNOPSIS
+#   test-examples [--prefix=PREFIX] [--variant=VARIANT]
+#     [--target=TARGET] [--norun] [--silent] DESTINATION
+#                 
+#   test-examples --help
+#
+# DESCRIPTION
+#   This script test-compiles examples from a Sourcery VSIPL++ binary 
+#   package (in PREFIX).
+#
+
+# All errors are fatal.
+set -e
+
+usage()
+{
+  cat <<EOF
+Usage: test-examples [options] DESTINATION
+Options:
+ --help             Display this information
+ --prefix=PREFIX    Specify the prefix of the installation to test.
+ --variant=VARIANT  Define the default variant to be VARIANT.
+ --target=TARGET    Specify the test to run. (All, by default.)
+ --norun            Do not run compiled binaries.
+ --silent           Run 'make' with -s, i.e. in 'silent' mode.
+ --define-variable=NAME=VALUE  Define .pc-file variable NAME as VALUE.
+
+Test installed Sourcery VSIPL++ examples.
+EOF
+}
+
+prefix=
+variant=
+target=
+silent=
+variables=()
+actions=(all check)
+args=()
+for option in "$@"; do
+  case "$option" in
+    (-h|--help)
+      usage
+      exit 0
+      ;;
+    (-p|--prefix=*)
+      prefix="${option#--prefix=}"
+      ;;
+    (-v|--variant=*)
+      variant="${option#--variant=}"
+      ;;
+    (-t|--target=*)
+      target="${option#--target=}"
+      ;;
+    (--norun)
+      actions=(all)
+      ;;
+    (-s|--silent)
+      silent='-s'
+      ;;
+    (--define-variable=*)
+      variables=("${variables[@]}" "--define=${option#--define-variable=}")
+      ;;
+    (*)
+      args=("${args[@]}" "$option")
+      ;;
+  esac
+done
+
+destination=$args
+
+if test -z "$prefix"; then
+  echo "$0: Error: missing prefix"
+  usage
+  exit -1
+fi
+
+if test -z "$destination"; then
+  echo "$0: Error: missing destination"
+  usage
+  exit -1
+fi
+
+$prefix/bin/vsip-create-workspace "--variant=$variant" "--prefix=$prefix" \
+  "${variables[@]}" "$destination"
+
+if test -n "$target"; then
+  dir=$destination/$(dirname $target)
+  app=$(basename $target)
+  (make $silent -C "$dir" "${actions[@]}" targets="$app" &&\
+   echo "PASS: $dir (make directory)") || echo "FAIL: $dir (make directory)"
+else
+  for makefile in $(find $destination -name Makefile); do
+    dir=$(dirname $makefile)
+    (make $silent -C "$dir" "${actions[@]}" &&\
+     echo "PASS: $dir (make directory)") || echo "FAIL: $dir (make directory)"
+  done
+fi

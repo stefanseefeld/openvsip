@@ -1,0 +1,33 @@
+#! /bin/sh
+
+# file to run double precision C simulator for four frames, all polarizations
+#   and with 8-tap filter.
+
+DIR="."
+
+NRANGE=256
+NPULSE=64
+NFRAME=4
+
+$DIR/mit-sarsim				\
+    $*					\
+    -single				\
+    -nrange $NRANGE			\
+    -npulse $NPULSE			\
+    -nframe $NFRAME			\
+    -niq 8				\
+    -itype 0				\
+    -hhon 1				\
+    -hvon 1				\
+    -vhon 1				\
+    -vvon 1				\
+    -i   test-8/data/radar-tb-8.bin	\
+    -iqe test-8/data/iqe-8.bin		\
+    -iqo test-8/data/iqo-8.bin		\
+    -krn test-8/data/krn-8.bin		\
+    -eq  test-8/data/equ-8.bin		\
+    -rcs test-8/data/rcs-8.bin		\
+    -ohh test-8/hh-s-8-4.bin		\
+    -ohv test-8/hv-s-8-4.bin		\
+    -ovh test-8/vh-s-8-4.bin		\
+    -ovv test-8/vv-s-8-4.bin

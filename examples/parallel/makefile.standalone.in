@@ -1,0 +1,9 @@
+######################################################### -*-Makefile-*-
+#
+# Contents: Makefile for VSIPL++ example programs.
+#
+########################################################################
+
+targets := vadd task
+
+include ../common.mk
