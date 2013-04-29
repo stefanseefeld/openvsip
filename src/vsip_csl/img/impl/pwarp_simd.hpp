@@ -740,7 +740,7 @@ template <typename C,
 	  unsigned N,
 	  vsip::alg_hint_type A>
 struct Evaluator<op::pwarp<C, T, img::interp_linear, D, N, A>,
-		 be::simd_builtin>
+		 be::simd>
 {
   static bool const ct_valid = img::impl::simd::Pwarp_impl_simd<C, T>::is_avail;
   typedef img::impl::simd::Pwarp<C, T, D> backend_type;

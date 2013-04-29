@@ -16,8 +16,6 @@
 
 #if VSIP_IMPL_PAR_SERVICE == 1
 #  include <vsip/core/mpi/services.hpp>
-#elif VSIP_IMPL_PAR_SERVICE == 2
-#  include <vsip/opt/pas/services.hpp>
 #else
 #  include <vsip/core/parallel/services_none.hpp>
 #endif

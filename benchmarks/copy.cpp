@@ -436,10 +436,6 @@ test(Loop1P& loop, int what)
 #if VSIP_IMPL_PAR_SERVICE == 1
   typedef vsip::impl::Chained_assign  Ca;
   typedef vsip::impl::Blkvec_assign   Bva;
-#elif VSIP_IMPL_PAR_SERVICE == 2
-  typedef vsip::impl::Pas_assign        Pa;
-  typedef vsip::impl::Pas_assign_eb     Pa_eb;
-  typedef vsip::impl::Direct_pas_assign Pa_d;
 #endif
 
   // typedef fors pre-sync barrier policy.
@@ -452,8 +448,6 @@ test(Loop1P& loop, int what)
   case  3: loop(t_vcopy_root<float, Impl_sa>()); break;
 #if VSIP_IMPL_PAR_SERVICE == 1
   case  4: loop(t_vcopy_root<float, Impl_pa<Ca> >()); break;
-#elif VSIP_IMPL_PAR_SERVICE == 2
-  case  4: loop(t_vcopy_root<float, Impl_pa<Pa> >()); break;
 #endif
   case  5: loop(t_vcopy_local<float, Impl_memcpy>()); break;
 
@@ -504,50 +498,6 @@ test(Loop1P& loop, int what)
   case 163: loop(t_vcopy_redist<F, Impl_pa_na<Bva> >('a', 'a', ps)); break;
   case 164: loop(t_vcopy_redist<F, Impl_pa_na<Bva> >('1', '2', ps)); break;
   case 165: loop(t_vcopy_redist<F, Impl_pa_na<Bva> >('1', 'b', ps)); break;
-
-#elif VSIP_IMPL_PAR_SERVICE == 2
-
-  case 200: loop(t_vcopy_redist<F, Impl_pa<Pa> >('1', '1', ps)); break;
-  case 201: loop(t_vcopy_redist<F, Impl_pa<Pa> >('1', 'a', ps)); break;
-  case 202: loop(t_vcopy_redist<F, Impl_pa<Pa> >('a', '1', ps)); break;
-  case 203: loop(t_vcopy_redist<F, Impl_pa<Pa> >('a', 'a', ps)); break;
-  case 204: loop(t_vcopy_redist<F, Impl_pa<Pa> >('1', '2', ps)); break;
-  case 205: loop(t_vcopy_redist<F, Impl_pa<Pa> >('1', 'b', ps)); break;
-
-  case 210: loop(t_vcopy_redist<F, Impl_pa<Pa_eb> >('1', '1', ps)); break;
-  case 211: loop(t_vcopy_redist<F, Impl_pa<Pa_eb> >('1', 'a', ps)); break;
-  case 212: loop(t_vcopy_redist<F, Impl_pa<Pa_eb> >('a', '1', ps)); break;
-  case 213: loop(t_vcopy_redist<F, Impl_pa<Pa_eb> >('a', 'a', ps)); break;
-  case 214: loop(t_vcopy_redist<F, Impl_pa<Pa_eb> >('1', '2', ps)); break;
-  case 215: loop(t_vcopy_redist<F, Impl_pa<Pa_eb> >('1', 'b', ps)); break;
-
-  case 220: loop(t_vcopy_redist<F, Impl_pa<Pa_d> >('1', '1', ps)); break;
-  case 221: loop(t_vcopy_redist<F, Impl_pa<Pa_d> >('1', 'a', ps)); break;
-  case 222: loop(t_vcopy_redist<F, Impl_pa<Pa_d> >('a', '1', ps)); break;
-  case 223: loop(t_vcopy_redist<F, Impl_pa<Pa_d> >('a', 'a', ps)); break;
-  case 224: loop(t_vcopy_redist<F, Impl_pa<Pa_d> >('1', '2', ps)); break;
-  case 225: loop(t_vcopy_redist<F, Impl_pa<Pa_d> >('1', 'b', ps)); break;
-
-  case 250: loop(t_vcopy_redist<F, Impl_pa_na<Pa> >('1', '1', ps)); break;
-  case 251: loop(t_vcopy_redist<F, Impl_pa_na<Pa> >('1', 'a', ps)); break;
-  case 252: loop(t_vcopy_redist<F, Impl_pa_na<Pa> >('a', '1', ps)); break;
-  case 253: loop(t_vcopy_redist<F, Impl_pa_na<Pa> >('a', 'a', ps)); break;
-  case 254: loop(t_vcopy_redist<F, Impl_pa_na<Pa> >('1', '2', ps)); break;
-  case 255: loop(t_vcopy_redist<F, Impl_pa_na<Pa> >('1', 'b', ps)); break;
-
-  case 260: loop(t_vcopy_redist<F, Impl_pa_na<Pa_eb> >('1', '1', ps)); break;
-  case 261: loop(t_vcopy_redist<F, Impl_pa_na<Pa_eb> >('1', 'a', ps)); break;
-  case 262: loop(t_vcopy_redist<F, Impl_pa_na<Pa_eb> >('a', '1', ps)); break;
-  case 263: loop(t_vcopy_redist<F, Impl_pa_na<Pa_eb> >('a', 'a', ps)); break;
-  case 264: loop(t_vcopy_redist<F, Impl_pa_na<Pa_eb> >('1', '2', ps)); break;
-  case 265: loop(t_vcopy_redist<F, Impl_pa_na<Pa_eb> >('1', 'b', ps)); break;
-
-  case 270: loop(t_vcopy_redist<F, Impl_pa_na<Pa_d> >('1', '1', ps)); break;
-  case 271: loop(t_vcopy_redist<F, Impl_pa_na<Pa_d> >('1', 'a', ps)); break;
-  case 272: loop(t_vcopy_redist<F, Impl_pa_na<Pa_d> >('a', '1', ps)); break;
-  case 273: loop(t_vcopy_redist<F, Impl_pa_na<Pa_d> >('a', 'a', ps)); break;
-  case 274: loop(t_vcopy_redist<F, Impl_pa_na<Pa_d> >('1', '2', ps)); break;
-  case 275: loop(t_vcopy_redist<F, Impl_pa_na<Pa_d> >('1', 'b', ps)); break;
 #endif
 
 
@@ -575,13 +525,6 @@ test(Loop1P& loop, int what)
       << "  -110-115 -- Blkvec_assign\n"
       << "  -150-155 -- Chained_assign (non-amortized setup)\n"
       << "  -160-165 -- Blkvec_assign (non-amortized setup)\n"
-      << "\n PAS low-level Par_assign directly:\n"
-      << "  -200-205 -- Pas_assign\n"
-      << "  -210-215 -- Pas_assign_eb\n"
-      << "  -220-225 -- Direct_pas_assign\n"
-      << "  -250-255 -- Pas_assign (non-amortized setup)\n"
-      << "  -260-265 -- Pas_assign_eb (non-amortized setup)\n"
-      << "  -270-275 -- Direct_pas_assign (non-amortized setup)\n"
       ;
 
   default:

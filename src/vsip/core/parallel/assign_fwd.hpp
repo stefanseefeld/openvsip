@@ -30,9 +30,6 @@ namespace impl
 
 struct Chained_assign;
 struct Blkvec_assign;
-struct Pas_assign;
-struct Pas_assign_eb;
-struct Direct_pas_assign;
 
 // Parallel assignment.
 template <dimension_type Dim,

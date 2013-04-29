@@ -32,7 +32,6 @@ namespace impl
 
 // Only valid if Block1 and Block2 are simple distributed blocks.
 
-#if VSIP_IMPL_PAR_SERVICE == 0 || VSIP_IMPL_PAR_SERVICE == 1
 // MPI
 template <dimension_type Dim,
 	  typename       Block1,
@@ -49,23 +48,6 @@ struct Choose_par_assign_impl
 
   typedef typename conditional<is_blkvec, Blkvec_assign, Chained_assign>::type type;
 };
-#else
-// PAS
-template <dimension_type Dim,
-	  typename       Block1,
-	  typename       Block2,
-	  bool           EarlyBinding>
-struct Choose_par_assign_impl
-{
-  static int const  is_pas_assign = Is_pas_block<Block1>::value &&
-                                    Is_pas_block<Block2>::value;
-
-  typedef typename
-  conditional<is_pas_assign, 
-	      typename conditional<EarlyBinding, Pas_assign_eb, Pas_assign>::type,
-	      Direct_pas_assign>::type type;
-};
-#endif
 
 } // namespace vsip::impl
 } // namespace vsip

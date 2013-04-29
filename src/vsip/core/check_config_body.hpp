@@ -14,10 +14,8 @@
   cfg << "  VSIP_IMPL_PAR_SERVICE             - 0 (Serial)\n";
 #elif VSIP_IMPL_PAR_SERVICE == 1
   cfg << "  VSIP_IMPL_PAR_SERVICE             - 1 (MPI)\n";
-#elif VSIP_IMPL_PAR_SERVICE == 2
-  cfg << "  VSIP_IMPL_PAR_SERVICE             - 2 (PAS)\n";
 #else
-  cfg << "  VSIP_IMPL_HAVE_SIMD_LOOP_FUSION   - Unknown\n";
+  cfg << "  VSIP_IMPL_PAR_SERVICE             - Unknown\n";
 #endif
 
 #if VSIP_IMPL_HAVE_IPP
@@ -36,18 +34,6 @@
   cfg << "  VSIP_IMPL_CBE_SDK                 - 1\n";
 #else
   cfg << "  VSIP_IMPL_CBE_SDK                 - 0\n";
-#endif
-
-#if VSIP_IMPL_HAVE_SIMD_LOOP_FUSION
-  cfg << "  VSIP_IMPL_HAVE_SIMD_LOOP_FUSION   - 1\n";
-#else
-  cfg << "  VSIP_IMPL_HAVE_SIMD_LOOP_FUSION   - 0\n";
-#endif
-
-#if VSIP_IMPL_HAVE_SIMD_GENERIC
-  cfg << "  VSIP_IMPL_HAVE_SIMD_GENERIC       - 1\n";
-#else
-  cfg << "  VSIP_IMPL_HAVE_SIMD_GENERIC       - 0\n";
 #endif
 
 #if VSIP_IMPL_PREFER_SPLIT_COMPLEX

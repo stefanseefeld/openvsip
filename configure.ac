@@ -253,22 +253,6 @@ AC_ARG_ENABLE([cpu_mhz],
                  [Set CPU speed in MHz.  Only necessary for TSC and if /proc/cpuinfo does not exist or is wrong.]),,
   [enable_cpu_mhz=none])
 
-AC_ARG_ENABLE([simd_loop_fusion],
-  AS_HELP_STRING([--enable-simd-loop-fusion],
-                 [Enable SIMD loop-fusion (Disable by default).]),,
-  [enable_simd_loop_fusion=no])
-
-AC_ARG_ENABLE([simd_unaligned_loop_fusion],
-  AS_HELP_STRING([--enable-simd-unaligned-loop-fusion],
-                 [Enable SIMD loop-fusion for unaligned expressions
-                  (Follows --enable-simd-loop-fusion by default).]),,
-  [enable_simd_unaligned_loop_fusion=default])
-
-AC_ARG_WITH([builtin_simd_routines],
-  AS_HELP_STRING([--with-builtin-simd-routines=WHAT],
-                 [Use builtin SIMD routines.]),,
-  [with_builtin_simd_routines=none])
-
 AC_ARG_WITH([test_level],
   AS_HELP_STRING([--with-test-level=WHAT],
                  [Set effort level for test-suite.  0 for low-level
@@ -894,83 +878,6 @@ if test "$enable_profile_nesting" = "yes"; then
 fi 
 
 SVXX_CHECK_PROFILE
-
-#
-# Configure use of SIMD loop-fusion
-#
-if test "$enable_simd_unaligned_loop_fusion" = "default"; then
-  enable_simd_unaligned_loop_fusion=$enable_simd_loop_fusion
-fi
-
-if test "$enable_simd_loop_fusion" = "yes"; then
-  AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SIMD_LOOP_FUSION, 1,
-    [Define whether to use SIMD loop-fusion in expr dispatch.])
-fi
-
-if test "$enable_simd_unaligned_loop_fusion" = "yes"; then
-  AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SIMD_UNALIGNED_LOOP_FUSION, 1,
-    [Define whether to use SIMD unaligned loop-fusion in expr dispatch.])
-fi
-
-
-
-#
-# Configure use of builtin SIMD routines
-#
-if test "$with_builtin_simd_routines" != "none"; then
-  keep_IFS=$IFS
-  IFS=","
-
-  taglist=""
-
-  for simd_type in $with_builtin_simd_routines; do
-    AC_MSG_CHECKING([SIMD Tag $simd_type])
-    if test "$simd_type" == "3dnowext-32"; then
-      taglist="${taglist}Simd_3dnowext_tag,"
-      AC_SUBST(USE_SIMD_3DNOWEXT_32, 1)
-      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SIMD_3DNOWEXT, 1,
-          [Define whether to use 3DNow!-ext ISA routines in expr dispatch.])
-      AC_MSG_RESULT([ok])
-
-    elif test "$simd_type" == "3dnowext-64"; then
-      taglist="${taglist}Simd_3dnowext_tag,"
-      AC_SUBST(USE_SIMD_3DNOWEXT_64, 1)
-      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SIMD_3DNOWEXT, 1,
-          [Define whether to use 3DNow!-ext ISA routines in expr dispatch.])
-      AC_MSG_RESULT([ok])
-
-    elif test "$simd_type" == "sse2-32"; then
-      taglist="${taglist}Simd_sse2_tag,"
-      AC_SUBST(USE_SIMD_SSE2_32, 1)
-      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SIMD_SSE2, 1,
-          [Define whether to use SSE2 ISA routines in expr dispatch.])
-      AC_MSG_RESULT([ok])
-
-    elif test "$simd_type" == "sse2-64"; then
-      taglist="${taglist}Simd_sse2_tag,"
-      AC_SUBST(USE_SIMD_SSE2_64, 1)
-      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SIMD_SSE2, 1,
-          [Define whether to use SSE2 ISA routines in expr dispatch.])
-      AC_MSG_RESULT([ok])
-
-    elif test "$simd_type" == "generic"; then
-      taglist="${taglist}be::simd_builtin,"
-      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SIMD_GENERIC, 1,
-          [Define whether to use Generic SIMD routines in expr dispatch.])
-      AC_MSG_RESULT([ok])
-
-    else
-      AC_MSG_ERROR([Invalid tag to --with-simd=SIMD: $simd_type.])
-    fi
-  done
-
-  IFS=$keep_IFS
-else
-  taglist=""
-fi
-
-AC_DEFINE_UNQUOTED(VSIP_IMPL_SIMD_TAG_LIST, $taglist,
-          [Define to the taglist used for SIMD loop fusion dispatching.])
 
 #
 # Define VSIP_IMPL_TEST_LEVEL

@@ -575,26 +575,6 @@ apply_combine(
 }
 #endif
 
-
-
-template <dimension_type Dim,
-	  typename       T,
-	  typename       OrderT>
-struct Is_pas_block<Dense<Dim, T, OrderT, Local_map> >
-{
-  static bool const value = false;
-};
-
-template <dimension_type D,
-	  typename       T,
-	  typename       O,
-	  typename       M>
-struct Is_pas_block<Dense<D, T, O, M> >
-  : Is_pas_block<Strided<D, T, Layout<D, O, dense, dense_complex_format>, M> >
-{};
-
-
-
 template <dimension_type Dim,
 	  typename       T,
 	  typename       OrderT,

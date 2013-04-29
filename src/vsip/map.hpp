@@ -466,24 +466,7 @@ Map<Dist0, Dist1, Dist2>::impl_apply(Domain<Dim> const& dom)
   dom_ = impl::construct_domain<VSIP_MAX_DIMENSION>(arr);
 
   impl_pvec_type const& pvec = this->impl_pvec();
-  if (VSIP_IMPL_USE_PAS_SEGMENT_SIZE)
-  {
-    // Create the applied pset, which excludes processors with empty subblocks.
-    impl_pvec_type real_pvec;
-    real_pvec.reserve(pvec.size() + 1);
-
-    for (index_type i=0; i<pvec.size(); ++i)
-    {
-      processor_type pr = pvec[i];
-      index_type     sb = this->subblock(pr);
-      if (this->template impl_subblock_domain<Dim>(sb).size() > 0)
-	real_pvec.push_back(pr);
-    }
-
-    impl::create_ll_pset(real_pvec, applied_pset_);
-  }
-  else
-    impl::create_ll_pset(pvec, applied_pset_);
+  impl::create_ll_pset(pvec, applied_pset_);
 }
 
 

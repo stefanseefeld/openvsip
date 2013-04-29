@@ -297,17 +297,6 @@ public:
 };
 
 template <dimension_type D, typename T, typename L, typename M>
-struct Is_pas_block<Strided<D, T, L, M> >
-  : Is_pas_block<Distributed_block<Strided<D, T, L>, M> >
-{};
-
-template <dimension_type D, typename T, typename L>
-struct Is_pas_block<Strided<D, T, L> >
-{
-  static bool const value = false;
-};
-
-template <dimension_type D, typename T, typename L, typename M>
 struct is_modifiable_block<Strided<D, T, L, M> >
 {
   static bool const value = true;

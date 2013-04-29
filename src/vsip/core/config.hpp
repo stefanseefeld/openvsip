@@ -63,18 +63,6 @@
 ///  3: any and all dimensions of data may be block-cyclic distributed.
 #  define VSIP_DIST_LEVEL                3
 
-/// VSIP_IMPL_USE_PAS_SEGMENT_SIZE indicates whether PAS or VSIPL++
-/// algorithm for choosing segment sizes should be used.  When using
-/// PAS, this must be 1 so that VSIPL++ and PAS agree on how data
-/// is distributed.  When using MPI, this can be either 0 or 1, but
-/// the PAS algorithm results in empty blocks in some cases.
-#  define VSIP_IMPL_USE_PAS_SEGMENT_SIZE 0
-
-#elif VSIP_IMPL_PAR_SERVICE == 2
-// PAS
-#  define VSIP_DIST_LEVEL                2
-#  define VSIP_IMPL_USE_PAS_SEGMENT_SIZE 1
-
 #else
 // Other (serial)
 
@@ -83,8 +71,6 @@
 // functionality, it allows parallel programs to be compiled and run
 // unchanged in serial.
 #  define VSIP_DIST_LEVEL                3
-
-#  define VSIP_IMPL_USE_PAS_SEGMENT_SIZE 0
 
 #endif
 

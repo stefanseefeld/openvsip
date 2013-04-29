@@ -29,16 +29,14 @@ struct mercury_sal;
 struct cbe_sdk;
 /// IBM Cell Math Library
 struct cml;
-/// Builtin SIMD routines (non loop fusion)
-struct simd_builtin;
 /// Dense multi-dim expr reduction
 struct dense_expr;
 /// Optimized Copy
 struct copy;
 /// Special expr handling (vmmul, etc)
 struct op_expr;
-/// SIMD Loop Fusion.
-struct simd_loop_fusion;
+/// SIMD.
+struct simd;
 struct simd_unaligned_loop_fusion;
 /// Fused Fastconv RBO evaluator.
 struct fc_expr;

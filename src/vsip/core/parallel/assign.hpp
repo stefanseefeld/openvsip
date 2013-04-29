@@ -18,16 +18,7 @@
 #include <vsip/core/config.hpp>
 #include <vsip/core/parallel/assign_fwd.hpp>
 #include <vsip/core/parallel/choose_assign_impl.hpp>
-
-#if VSIP_IMPL_PAR_SERVICE == 0 || VSIP_IMPL_PAR_SERVICE == 1
-#  include <vsip/core/parallel/assign_chain.hpp>
-#  include <vsip/core/parallel/assign_block_vector.hpp>
-#elif VSIP_IMPL_PAR_SERVICE == 2
-#  include <vsip/opt/pas/assign.hpp>
-#  include <vsip/opt/pas/assign_eb.hpp>
-#  include <vsip/opt/pas/assign_direct.hpp>
-#endif
-
-
+#include <vsip/core/parallel/assign_chain.hpp>
+#include <vsip/core/parallel/assign_block_vector.hpp>
 
 #endif // VSIP_IMPL_PAR_ASSIGN_HPP

@@ -46,22 +46,12 @@ namespace vsip_csl
 
 // Run tests for double precision
 #ifndef VSIP_IMPL_TEST_DOUBLE
-  // PAS doesn't support double
-#  if VSIP_IMPL_PAR_SERVICE == 2
-#    define VSIP_IMPL_TEST_DOUBLE 0
-#  else
-#    define VSIP_IMPL_TEST_DOUBLE 1
-#  endif
+# define VSIP_IMPL_TEST_DOUBLE 1
 #endif
 
 // Run tests for long-double precision
 #ifndef VSIP_IMPL_TEST_LONG_DOUBLE
-// PAS doesn't support long-double
-#  if VSIP_IMPL_PAR_SERVICE == 2
-#    define VSIP_IMPL_TEST_LONG_DOUBLE 0
-#  else
-#    define VSIP_IMPL_TEST_LONG_DOUBLE 1
-#  endif
+# define VSIP_IMPL_TEST_LONG_DOUBLE 1
 #endif
 
 

@@ -37,15 +37,8 @@
 #ifdef VSIP_IMPL_HAVE_CUDA
 #  include <vsip/opt/cuda/assign.hpp>
 #endif
-#ifdef VSIP_IMPL_HAVE_SIMD_LOOP_FUSION
-#  include <vsip/opt/simd/expr_evaluator.hpp>
-#endif
-#ifdef VSIP_IMPL_HAVE_SIMD_UNALIGNED_LOOP_FUSION
-#  include <vsip/opt/simd/eval_unaligned.hpp>
-#endif
-#ifdef VSIP_IMPL_HAVE_SIMD_GENERIC
-#  include <vsip/opt/simd/eval_generic.hpp>
-#endif
+#include <vsip/opt/simd/expr_evaluator.hpp>
+#include <vsip/opt/simd/eval_unaligned.hpp>
 
 namespace vsip
 {

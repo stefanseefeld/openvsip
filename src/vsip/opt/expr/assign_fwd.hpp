@@ -48,13 +48,12 @@ struct List<op::assign<D> >
 			 be::transpose,
 			 be::mercury_sal,
 			 be::cbe_sdk,
-			 VSIP_IMPL_SIMD_TAG_LIST
 #if VSIP_IMPL_ENABLE_EVAL_DENSE_EXPR
 			 be::dense_expr,
 #endif
 			 be::copy,
 			 be::op_expr,
-			 be::simd_loop_fusion,
+			 be::simd,
 			 be::simd_unaligned_loop_fusion,
 			 be::fc_expr,
 			 be::rbo_expr,

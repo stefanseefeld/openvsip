@@ -4,21 +4,13 @@
 #define vsip_core_parallel_distributed_block_hpp_
 
 #include <vsip/support.hpp>
-#if VSIP_IMPL_PAR_SERVICE == 2
-# include <vsip/opt/pas/block.hpp>
-#else
-# include <vsip/core/mpi/distributed_block.hpp>
-#endif
+#include <vsip/core/mpi/distributed_block.hpp>
 
 namespace vsip
 {
 namespace impl
 {
-#if VSIP_IMPL_PAR_SERVICE == 2
-using pas::Distributed_block;
-#else
 using mpi::Distributed_block;
-#endif
 
 template <typename B, typename M>
 struct Distributed_local_block<Distributed_block<B, M> >

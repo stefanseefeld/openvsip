@@ -45,20 +45,7 @@ namespace impl
 inline length_type
 segment_size(length_type size, length_type num, index_type pos)
 {
-#if VSIP_IMPL_USE_PAS_SEGMENT_SIZE
-  length_type segment = size / num;
-  if (size % num == 0)
-    return segment;
-  else if (size < num)
-    return (pos < size) ? 1 : 0;
-  // else if (pos < num-1) return segment + 1;
-  else if ((pos+1)*(segment+1) < size)
-    return segment + 1;
-  else
-    return (size < pos*(segment+1)) ? 0 : size - pos*(segment+1);
-#else
   return (size / num) + (pos < size % num ? 1 : 0);
-#endif
 }
 
 
@@ -205,14 +192,7 @@ segment_start(
   length_type num,
   index_type  pos)
 {
-#if VSIP_IMPL_USE_PAS_SEGMENT_SIZE
-  if (size % num == 0)
-    return pos * (size / num);
-  else
-    return pos * ((size / num) + 1);
-#else
   return pos * (size / num) + std::min(pos, size % num);
-#endif
 }
 
 } // namespace impl
@@ -522,12 +502,6 @@ inline index_type
 Block_dist::impl_subblock_from_index(Domain<1> const& dom, index_type i)
   const VSIP_NOTHROW
 {
-#if VSIP_IMPL_USE_PAS_SEGMENT_SIZE
-  length_type nominal_block_size = dom.length() / num_subblocks_
-    + (dom.length() % num_subblocks_ == 0 ? 0 : 1);
-
-  return i / nominal_block_size;
-#else
   length_type nominal_block_size = dom.length() / num_subblocks_;
   length_type spill_over         = dom.length() % num_subblocks_;
 
@@ -535,7 +509,6 @@ Block_dist::impl_subblock_from_index(Domain<1> const& dom, index_type i)
     return i / (nominal_block_size+1);
   else
     return (i - spill_over) / nominal_block_size;
-#endif
 }
 
 
@@ -544,16 +517,6 @@ inline index_type
 Block_dist::impl_local_from_global_index(Domain<1> const& dom, index_type i)
   const VSIP_NOTHROW
 {
-#if VSIP_IMPL_USE_PAS_SEGMENT_SIZE
-  length_type nominal_block_size = dom.length() / num_subblocks_;
-
-  if (dom.length() % num_subblocks_ == 0)
-    // all blocks are same size
-    return i % (nominal_block_size);
-  else
-    // all blocks are same size, except last one
-    return i % (nominal_block_size+1);
-#else
   length_type nominal_block_size = dom.length() / num_subblocks_;
   length_type spill_over         = dom.length() % num_subblocks_;
 
@@ -561,7 +524,6 @@ Block_dist::impl_local_from_global_index(Domain<1> const& dom, index_type i)
     return i % (nominal_block_size+1);
   else
     return (i - spill_over) % nominal_block_size;
-#endif
 }
 
 
@@ -581,20 +543,12 @@ Block_dist::impl_global_from_local_index(
   index_type       i)
 const VSIP_NOTHROW
 {
-#if VSIP_IMPL_USE_PAS_SEGMENT_SIZE
-  length_type nominal_block_size = dom.length() / num_subblocks_;
-  if (dom.length() % num_subblocks_ == 0)
-    return sb * nominal_block_size + i;
-  else
-    return sb * (nominal_block_size+1) + i;
-#else
   length_type nominal_block_size = dom.length() / num_subblocks_;
   length_type spill_over         = dom.length() % num_subblocks_;
 
   return sb * nominal_block_size  +
          std::min(sb, spill_over) +
          i;
-#endif
 }
 
 

@@ -30,7 +30,7 @@ namespace dispatcher
 
 /// SIMD Loop Fusion evaluator for aligned expressions.
 template <typename LHS, typename RHS>
-struct Evaluator<op::assign<1>, be::simd_loop_fusion, void(LHS &, RHS const &)>
+struct Evaluator<op::assign<1>, be::simd, void(LHS &, RHS const &)>
 {
   typedef typename impl::adjust_layout_dim<
     1, typename get_block_layout<LHS>::type>::type

@@ -38,7 +38,7 @@ struct List<op::pwarp<C, T, I, D, N, A> >
   typedef Make_type_list<be::user,
 			 be::cbe_sdk,
 			 be::mercury_sal,
-			 be::simd_builtin,
+			 be::simd,
 			 be::generic>::type type;
 };
 

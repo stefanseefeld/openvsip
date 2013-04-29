@@ -377,19 +377,6 @@ struct Lvalue_factory_type
   };
 };
 
-
-
-/// Traits class to determine if a block has a valid PAS distribution
-/// handle (which allows collective assignment to be used).  Blocks
-/// without a valid PAS distribution must use the low-level direct
-/// assignment.
-template <typename BlockT>
-struct Is_pas_block
-{
-  static bool const value = false;
-};
-
-
 namespace detail
 {
 

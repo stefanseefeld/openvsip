@@ -11,12 +11,12 @@ AC_DEFUN([SVXX_CHECK_PARALLEL],
 [
 
 # By default we will probe for MPI and use it if it exists.  If it
-# does not exist, and no explicit MPI or PAS service is requested, 
+# does not exist, and no explicit MPI service is requested, 
 # we will configure a serial VSIPL++ library.
 #
 # If the user specifies a parallel service either by an explicit
 # --enable-parallel[=<service>] or by specifying the prefix to 
-# MPI or PAS, then we search for MPI / PAS and issue an error if 
+# MPI, then we search for MPI and issue an error if 
 # it does not exist.
 #
 # If the user specifies that no parallel service should be used 
@@ -26,7 +26,7 @@ AC_DEFUN([SVXX_CHECK_PARALLEL],
 AC_ARG_ENABLE([parallel],
   AS_HELP_STRING([--enable-parallel],
                  [Use Parallel service. Available backends are:
-                  lam, mpich2, intelmpi, mpipro, and pas.
+                  lam, mpich2, intelmpi, and mpipro.
                   In addition, the value 'probe' causes configure to try.]),,
   [enable_parallel=probe])
 
@@ -59,30 +59,6 @@ AC_ARG_WITH(mpi_cxxflags,
 AC_ARG_WITH(mpi_libs,
   AS_HELP_STRING([--with-mpi-libs=LIBS],
                  [Specify the linker library flags used to compile with MPI.]))
-
-### Mercury PAS
-
-AC_ARG_WITH(pas_include,
-  AS_HELP_STRING([--with-pas-include=PATH],
-                 [Specify the path to the PAS include directory.]),
-  dnl If the user specified --with-pas-include, they mean to use PAS for sure.
-  [enable_parallel=pas])
-
-AC_ARG_WITH(pas_lib,
-  AS_HELP_STRING([--with-pas-lib=PATH],
-                 [Specify the installation path of the PAS library.]),
-  dnl If the user specified --with-pas-lib, they mean to use PAS for sure.
-  [enable_parallel=pas])
-
-AC_ARG_ENABLE([pas_heap_size],
-  AS_HELP_STRING([--enable-pas-heap-size=SIZE],
-                 [Set PAS heap size.  Default is 0x100000]),,
-  [enable_pas_heap_size=0x100000])
-
-AC_ARG_ENABLE([pas_share_dynamic_xfer],
-  AS_HELP_STRING([--enable-pas-share-dynamice-xfer],
-                 [Share a PAS dynamic xfer object. Default is not to.]),,
-  [enable_pas_share_dynamic_xfer=no])
 
 # If the user specified an MPI prefix, they definitely want MPI.
 # However, we need to avoid overwriting the value of $enable_mpi
@@ -229,82 +205,6 @@ then
         CPPFLAGS="$save_CPPFLAGS"
         LIBS="$save_LIBS"
       ;;
-
-      # For PAS the user may have provide --with-pas-include et al.
-      # Alternatively, we search for a pkg-config descriptor
-      pas)
-        save_CPPFLAGS="$CPPFLAGS"
-        save_LDFLAGS="$LDFLAGS"
-        save_LIBS="$LIBS"
-
-        pas_found="no"
-        try_pas="direct pkgconfig"
-
-        for try in $try_pas
-          do
-          if test $try = "direct"
-          then
-            AC_MSG_CHECKING([for PAS (direct)])
-            if test -n "$with_pas_include"
-            then CPPFLAGS="$save_CPPFLAGS -I$with_pas_include"
-            fi
-            if test -n "$with_pas_lib"
-            then LDFLAGS="$save_LDFLAGS -L$with_pas_lib"
-            fi
-            LIBS="$save_LIBS -lpas"
-          elif test $try = "pkgconfig"
-          then
-            AC_MSG_CHECKING([for PAS (with pkg-config)])
-            PKG_CHECK_MODULES(PAS, pas)
-            CPPFLAGS="$save_CPPFLAGS $PAS_CFLAGS"
-            LIBS="$save_LIBS $PAS_LIBS"
-          else
-            AC_MSG_ERROR([Unknown PAS try $try])
-          fi
-
-          AC_LINK_IFELSE(
-          [
-            AC_LANG_PROGRAM
-            (
-              [[#include <pas.h>]],
-              [[PAS_id pset;pas_pset_close(pset, 0);]]
-            )
-          ],
-          [pas_found=$try;AC_MSG_RESULT([found]);break],
-          [pas_found="no";AC_MSG_RESULT([not found]) ]
-          )
-        done
-
-        if test "$pas_found" == "no"
-        then
-          if test "$with_pas" != "probe"
-          then AC_MSG_ERROR([PAS enabled but no library found])
-          fi
-          AC_MSG_RESULT([No PAS library found])
-          CPPFLAGS=$save_CPPFLAGS
-          LDFLAGS=$save_LDFLAGS
-          LIBS=$save_LIBS
-        else
-          AC_MSG_RESULT([Using $pas_found for PAS])
-          PAR_SERVICE=pas
-
-          # These values are not used if PAS is not enabled (i.e. if PAR_SERVICE != 2).
-          # They are always defined for binary packaging convenience.  This allows
-          # the same acconfig.hpp to be used with/without PAS.
-
-          AC_DEFINE_UNQUOTED(VSIP_IMPL_PAS_HEAP_SIZE, $enable_pas_heap_size,
-            [Define the heap size used inside the PAS backend.])
-
-          if test $enable_pas_share_dynamic_xfer = "yes"
-          then enable_pas_share_dynamic_xfer=1
-          else enable_pas_share_dynamic_xfer=0
-          fi
-
-          AC_DEFINE_UNQUOTED(VSIP_IMPL_PAS_SHARE_DYNAMIC_XFER,
-            $enable_pas_share_dynamic_xfer,
-            [Define to 1 to share a dynamic_xfer object, 0 otherwise.])
-        fi
-      ;;
       mpipro)
         # MPI/Pro does not have any identifying macros.
         # Require user to specify --enable-mpi=mpipro
@@ -338,10 +238,6 @@ then
 
   if test "$PAR_SERVICE" = "none"
   then vsipl_par_service=0
-  elif test "$PAR_SERVICE" = "pas"
-  then
-    vsipl_par_service=2
-    AC_SUBST(VSIP_IMPL_HAVE_PAS, 1)
   else
     # must be MPI
     vsipl_par_service=1
@@ -352,7 +248,7 @@ then
   then CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_PAR_SERVICE=$vsipl_par_service"
   else
     AC_DEFINE_UNQUOTED(VSIP_IMPL_PAR_SERVICE, $vsipl_par_service,
-      [Define to parallel service provided (0 == no service, 1 = MPI, 2 = PAS).])
+      [Define to parallel service provided (0 == no service, 1 = MPI).])
   fi
 
   CPPFLAGS="$CPPFLAGS $MPI_CPPFLAGS"

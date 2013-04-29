@@ -21,8 +21,6 @@ ifdef VSIP_IMPL_HAVE_MPI
 src_vsip_cxx_sources += $(srcdir)/src/vsip/core/mpi/group.cpp
 src_vsip_cxx_sources += $(srcdir)/src/vsip/core/mpi/communicator.cpp
 src_vsip_cxx_sources += $(srcdir)/src/vsip/core/mpi/services.cpp
-else ifdef VSIP_IMPL_HAVE_PAS
-src_vsip_cxx_sources += $(srcdir)/src/vsip/opt/pas/services.cpp
 else
 src_vsip_cxx_sources += $(srcdir)/src/vsip/core/parallel/services_none.cpp
 endif
@@ -81,14 +79,6 @@ endif
 ifdef VSIP_IMPL_CBE_SDK_FFT
 src_vsip_cxx_sources += $(srcdir)/src/vsip/opt/cbe/ppu/fft.cpp
 endif
-src_vsip_cxx_sources += $(srcdir)/src/vsip/opt/simd/vmul.cpp \
-			$(srcdir)/src/vsip/opt/simd/svmul.cpp \
-			$(srcdir)/src/vsip/opt/simd/vadd.cpp \
-			$(srcdir)/src/vsip/opt/simd/vgt.cpp \
-			$(srcdir)/src/vsip/opt/simd/vlogic.cpp \
-			$(srcdir)/src/vsip/opt/simd/threshold.cpp \
-			$(srcdir)/src/vsip/opt/simd/vaxpy.cpp \
-			$(srcdir)/src/vsip/opt/simd/vma_ip_csc.cpp
 ifndef VSIP_IMPL_HAVE_HUGE_PAGE_POOL
 src_vsip_cxx_sources := $(filter-out %/huge_page_pool.cpp, $(src_vsip_cxx_sources))
 
@@ -169,7 +159,6 @@ endif
 	$(call install_headers,vsip/opt/ipp)
 	$(call install_headers,vsip/opt/lapack)
 	$(call install_headers,vsip/opt/parallel)
-	$(call install_headers,vsip/opt/pas)
 	$(call install_headers,vsip/opt/reductions)
 	$(call install_headers,vsip/opt/sal)
 	$(call install_headers,vsip/opt/signal)
