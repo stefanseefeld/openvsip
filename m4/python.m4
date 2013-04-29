@@ -6,10 +6,10 @@ dnl
 dnl This file is part of OpenVSIP. It is made available under the
 dnl license contained in the accompanying LICENSE.BSD file.
 
-AC_DEFUN([SVXX_CHECK_PYTHON],
+AC_DEFUN([OVXX_CHECK_PYTHON],
 [
 AC_SUBST(enable_python_bindings)
-if test "$enable_python_bindings" == "yes"; then
+if test "$enable_python_bindings" == "1"; then
   if test -n "$PYTHON" -a "$PYTHON" != yes; then
     AC_PATH_PROG(PYTHON, python2 python, python)
   fi

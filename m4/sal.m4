@@ -6,7 +6,7 @@ dnl
 dnl This file is part of OpenVSIP. It is made available under the
 dnl license contained in the accompanying LICENSE.BSD file.
 
-AC_DEFUN([SVXX_CHECK_SAL],
+AC_DEFUN([OVXX_CHECK_SAL],
 [
 #
 # Find the Mercury SAL library, if enabled.
@@ -49,11 +49,11 @@ if test "$with_sal" != "no"; then
  		   [sal_found="no"])
 
     AC_MSG_CHECKING([for std::complex-compatible SAL-types.])
-    AC_COMPILE_IFELSE([
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #include <sal.h>
 
-template <bool V> struct static_assert;
-template <> struct static_assert<true>
+template <bool V> struct Static_assert;
+template <> struct Static_assert<true>
 {
   static bool const value = true;
 };
@@ -61,12 +61,13 @@ template <> struct static_assert<true>
 int main(int, char **)
 {
   bool value;
-  value = static_assert<sizeof(COMPLEX_SPLIT) == 
+  value = Static_assert<sizeof(COMPLEX_SPLIT) == 
 			2*sizeof(float *)>::value;
-  value = static_assert<sizeof(DOUBLE_COMPLEX_SPLIT) == 
+  value = Static_assert<sizeof(DOUBLE_COMPLEX_SPLIT) == 
 			2*sizeof(double *)>::value;
+  (void)value;
 }
-],
+])],
 [AC_MSG_RESULT(yes)],
 [AC_MSG_ERROR([std::complex-incompatible SAL-types detected!])])
 
@@ -79,12 +80,6 @@ int main(int, char **)
   else
     AC_MSG_RESULT([SAL Library found: $sal_lib])
 
-    # On MCOE, -lsal is implicit, which breaks AC_CHECK_LIB.
-    # If sal_found == yes, but sal_lib == "", then assume -lsal
-    if test "x$sal_lib" == "x"; then
-      sal_lib="sal"
-    fi
-
     # General test for float and double support.
 
     AC_CHECK_LIB($sal_lib, vsmulx,  [sal_have_float=1], [sal_have_float=0])
@@ -93,16 +88,16 @@ int main(int, char **)
     # Check specific SAL signatures
 
     AC_MSG_CHECKING([for vconvert_s8_f32x signature.])
-    AC_COMPILE_IFELSE([
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #include <sal.h>
 
 int main(int, char **)
 {
-  signed char *input;
-  float *output;
-  vconvert_s8_f32x(input, 1, output, 1, 0, 0, 1, 0, 0);
+  signed char input;
+  float output;
+  vconvert_s8_f32x(&input, 1, &output, 1, 0, 0, 1, 0, 0);
 }
-],
+])],
 [
   vconvert_s8_f32x_is_signed=1
   AC_MSG_RESULT([signed char *])
@@ -112,23 +107,15 @@ int main(int, char **)
   AC_MSG_RESULT([char *])
 ])
 
-    AC_SUBST(VSIP_IMPL_HAVE_SAL, 1)
-    if test "$neutral_acconfig" = 'y'; then
-      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_SAL=1"
-      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_SAL_FLOAT=$sal_have_float"
-      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_SAL_DOUBLE=$sal_have_double"
-      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_SAL_USES_SIGNED=$vconvert_s8_f32x_is_signed"
-    else
-      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SAL, 1,
-        [Define to set whether or not to use Mercury's SAL library.])
-      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SAL_FLOAT, $sal_have_float,
-        [Define if Mercury's SAL library provides float support.])
-      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SAL_DOUBLE, $sal_have_double,
-        [Define if Mercury's SAL library provides double support.])
-      AC_DEFINE_UNQUOTED(VSIP_IMPL_SAL_USES_SIGNED, $vconvert_s8_f32x_is_signed,
-        [Define if Mercury's SAL uses signed char *.])
-    fi
-
+    AC_SUBST(OVXX_HAVE_SAL, 1)
+    AC_DEFINE_UNQUOTED(OVXX_HAVE_SAL, 1,
+      [Define to set whether or not to use Mercury's SAL library.])
+    AC_DEFINE_UNQUOTED(OVXX_HAVE_SAL_FLOAT, $sal_have_float,
+      [Define if Mercury's SAL library provides float support.])
+    AC_DEFINE_UNQUOTED(OVXX_HAVE_SAL_DOUBLE, $sal_have_double,
+      [Define if Mercury's SAL library provides double support.])
+    AC_DEFINE_UNQUOTED(OVXX_SAL_USES_SIGNED, $vconvert_s8_f32x_is_signed,
+      [Define if Mercury's SAL uses signed char *.])
 
     # Specific function tests.
 
@@ -136,21 +123,26 @@ int main(int, char **)
     AC_CHECK_LIB($sal_lib, vthrx,  [sal_have_vthrx=1], [sal_have_vthrx=0])
 
 
-    # Don't worry about keeping these neutral for now.
-    AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SAL_VSDIVIX, 1,
+    AC_DEFINE_UNQUOTED(OVXX_HAVE_SAL_VSDIVIX, 1,
         [Define if Mercury's SAL library has vsdivix.])
-    AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_SAL_VTHRX, $sal_have_vthrx,
+    AC_DEFINE_UNQUOTED(OVXX_HAVE_SAL_VTHRX, $sal_have_vthrx,
         [Define if Mercury's SAL library provides vthrx.])
 
     if test "$enable_sal_fft" != "no"; then 
       provide_fft_float=1
       provide_fft_double=1
-      AC_SUBST(VSIP_IMPL_SAL_FFT, 1)
-      if test "$neutral_acconfig" = 'y'; then
-        CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_SAL_FFT=1"
+      AC_SUBST(OVXX_SAL_FFT, 1)
+      AC_DEFINE_UNQUOTED(OVXX_SAL_FFT, 1,
+        [Define to use Mercury's SAL library to perform FFTs.])
+    fi
+
+    if test "$enable_multicore_sal" != "no"; then
+      if test "$with_sal" == "no"; then
+        AC_MSG_ERROR([MultiCore option requires SAL])
       else
-        AC_DEFINE_UNQUOTED(VSIP_IMPL_SAL_FFT, 1,
-	    [Define to use Mercury's SAL library to perform FFTs.])
+        AC_SUBST(SAL_ENABLE_MULTICORE)
+        AC_DEFINE_UNQUOTED(SAL_ENABLE_MULTICORE,,
+          [Define if Mercury's MultiCore SAL is enabled.])
       fi
     fi
   fi

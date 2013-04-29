@@ -1,0 +1,17 @@
+CompilerTable.languages=c cplusplus
+CompilerTable.c_kind=GCC
+CompilerTable.c_path=@CC_@
+CompilerTable.cplusplus_kind=GCC
+CompilerTable.cplusplus_path=@CXX_@
+CompilerTable.cplusplus_options= -I@abs_top_srcdir_@/support @CPPFLAGS_@ @CXXFLAGS_@
+CompilerTable.cplusplus_ldflags= @LIBS_@
+
+CompilationTest.target=@QMTEST_TARGET_@
+ExecutableTest.host=@QMTEST_TARGET_@
+CompilerTest.execution_timeout=600
+
+par_service.boot=@MPI_BOOT_@
+par_service.halt=@MPI_HALT_@
+
+cvsip.c_options= -I@abs_top_srcdir@/support @CPPFLAGS_@ @CFLAGS_@
+cvsip.c_ldflags= @LIBS_@ -lstdc++ -lm

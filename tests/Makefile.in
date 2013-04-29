@@ -1,0 +1,84 @@
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+
+srcdir := @srcdir@
+abs_srcdir := @abs_srcdir@
+abs_top_builddir := @abs_top_builddir@
+
+# config variables
+include ../config.mk
+# build instructions
+include ../rules.mk
+
+pkgconfig := PKG_CONFIG_PATH=$(libdir)/pkgconfig pkg-config vsipl++ \
+               --define-variable=prefix=$(prefix) \
+               --define-variable=libdir=$(libdir)
+
+qmtest_harness := QMTest/database.py \
+                  QMTest/remote_host.py \
+                  QMTest/classes.qmc
+
+qmtest_context := context
+# Specify the level of parallelism
+parallelism := 1
+# Specify the test(s) to run
+ids :=
+# Provide an id to annotate the test run (for later report generation)
+run_id :=
+output :=results.qmr
+tmp_cygwin_mount :=$(subst \,\\\\,$(cygwin_mount))
+
+# Annotate the test run, if run_id is given.
+ifdef run_id
+run_ident :=-a run_id=$(run_id)
+endif
+
+# The number of processors to use for parallel tests.
+mpi_num_processors := 1
+
+define make_context_installed
+@echo generating context-installed
+	cat $(srcdir)/../support/context-installed.pre | \
+          sed -e "s|@CC_@|`$(tests_pkgconfig) --variable=cc`|" | \
+          sed -e "s|@CXX_@|`$(tests_pkgconfig) --variable=cxx`|" | \
+	  sed -e "s|@CPPFLAGS_@|`$(tests_pkgconfig) --variable=cppflags`|" | \
+          sed -e "s|@CFLAGS_@|`$(tests_pkgconfig) --variable=cflags`|" | \
+          sed -e "s|@CXXFLAGS_@|`$(tests_pkgconfig) --variable=cxxflags`|" | \
+          sed -e "s|@LIBS_@|`$(tests_pkgconfig) --libs`|" | \
+          sed -e "s|@QMTEST_TARGET_@|`$(tests_pkgconfig) --variable=qmtest_target`|" | \
+          sed -e "s|@MPI_BOOT_@|`$(tests_pkgconfig) --variable=mpi_boot`|" | \
+          sed -e "s|@MPI_HALT_@|`$(tests_pkgconfig) --variable=mpi_halt`|" | \
+          sed -e "s|@MPI_RUN_@|`$(tests_pkgconfig) --variable=mpi_run`|" | \
+          sed -e "s|@MPI_NUM_PROCS_@|$(mpi_num_processors)|" \
+          > context-installed
+endef
+
+all: check
+
+# For the 'check' target we really want to use our own libraries
+check recheck: export LD_LIBRARY_PATH:= $(abs_top_builddir)/lib:$(LD_LIBRARY_PATH)
+
+check:	$(qmtest_harness) $(qmtest_context)
+	$(QMTEST) run -j $(parallelism) -o $(output) -C $(qmtest_context) \
+          $(run_ident) $(ids); \
+          result=$$?; test $$tmp=0 || $$tmp=2
+
+recheck: $(qmtest_harness) $(qmtest_context)
+	$(QMTEST) run --rerun $(output) -j $(parallelism) -o $(output) -C $(qmtest_context) \
+          $(run_ident) $(ids); \
+          result=$$?; test $$tmp=0 || $$tmp=2
+
+installcheck: $(qmtest_harness)
+	$(make_context_installed)
+	$(QMTEST) run -j $(parallelism) -C context-installed $(run_ident) -o $(output) $(ids); \
+          result=$$?; test $$tmp=0 || $$tmp=2
+
+QMTest/%: $(srcdir)/../support/QMTest/%
+	mkdir -p QMTest/
+	cp $< $@
+context: ../support/context
+	cp $< $@

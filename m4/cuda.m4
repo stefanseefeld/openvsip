@@ -6,7 +6,7 @@ dnl
 dnl This file is part of OpenVSIP. It is made available under the
 dnl license contained in the accompanying LICENSE.BSD file.
 
-AC_DEFUN([SVXX_CHECK_CUDA],
+AC_DEFUN([OVXX_CHECK_CUDA],
 [
   AC_ARG_WITH(cuda_prefix,
     AS_HELP_STRING([--with-cuda-prefix=PATH],
@@ -57,13 +57,9 @@ AC_DEFUN([SVXX_CHECK_CUDA],
       [AC_MSG_ERROR([CUDA BLAS library not found])])
 
     # Declare it as found.	
-    AC_SUBST(VSIP_IMPL_HAVE_CUDA, 1)
-    if test "$neutral_acconfig" = 'y'; then
-      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_CUDA=1"
-    else
-      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_CUDA, 1,
-        [Define to set whether or not to use NVIDIA's CUDA libraries.])
-    fi
+    AC_SUBST(OVXX_HAVE_CUDA, 1)
+    AC_DEFINE_UNQUOTED(OVXX_HAVE_CUDA, 1,
+      [Define to set whether or not to use NVIDIA's CUDA libraries.])
 
     # CUFFT
     if test $enable_cuda_fft != "no"; then
@@ -80,22 +76,18 @@ AC_DEFUN([SVXX_CHECK_CUDA],
 
         # Declare it as found.
   	  provide_fft_float=1
-        AC_SUBST(VSIP_IMPL_CUDA_FFT, 1)
-        if test "$neutral_acconfig" = 'y'; then
-          CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_CUDA_FFT=1"
-        else
-          AC_DEFINE_UNQUOTED(VSIP_IMPL_CUDA_FFT, 1,
-            [Define to set whether or not to use NVIDIA's CUDA FFT library.])
-        fi
+        AC_SUBST(OVXX_CUDA_FFT, 1)
+        AC_DEFINE_UNQUOTED(OVXX_CUDA_FFT, 1,
+          [Define to set whether or not to use NVIDIA's CUDA FFT library.])
       fi
     fi
 
     # Make sure the appropriate flags are passed down to nvcc.
     if test -n "`echo $CFLAGS | sed -n '/-m32/p'`"; then
-      NVCCFLAGS="-m32"
+      NVCFLAGS="-m32"
     elif test -n "`echo $CFLAGS | sed -n '/-m64/p'`"; then
-      NVCCFLAGS="-m64"
+      NVCFLAGS="-m64"
     fi
-    AC_SUBST(NVCCFLAGS)
+    AC_SUBST(NVCFLAGS)
   fi
 ])

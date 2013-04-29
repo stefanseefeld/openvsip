@@ -1,8 +1,14 @@
 #!/bin/sh
 #
+# Copyright (c) 2005 CodeSourcery
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
 
 aclocal -I m4
-# Generate 'src/vsip/impl/acconfig.hpp.in' by inspecting 'configure.ac'
+# Generate 'src/ovxx/detail/config.hpp.in' by inspecting 'configure.ac'
 autoheader
 # Generate 'configure' from 'configure.ac'
 autoconf
@@ -13,10 +19,3 @@ cat configure | sed -e "s,\*.xcoff,\*.xcoff | *.dla | *.dnm | *.dbo | *.map," > 
 mv configure.tmp configure
 chmod +x configure
 
-if test -f "vendor/fftw/configure.ac"; then
-  cd vendor/fftw
-  aclocal -I m4
-  autoheader
-  autoconf
-  cd ../..
-fi

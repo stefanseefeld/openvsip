@@ -1,0 +1,112 @@
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+
+srcdir := @srcdir@
+top_srcdir:=@top_srcdir@
+
+# config variables
+include ../../config.mk
+CPPFLAGS += -I.. -I$(top_srcdir)/src
+CXXFLAGS := $(CXXFLAGS_LIB)
+# build instructions
+include ../../rules.mk
+
+define install_archs
+@echo installing archives
+$(INSTALL) -d $(DESTDIR)$(libdir)
+$(INSTALL_DATA) ../../lib/lib$(OVXXLIB).$(LIBEXT) $(DESTDIR)$(libdir)/lib$(OVXXLIB).$(LIBEXT)
+endef
+
+define install_dsos
+@echo installing shared libs
+$(INSTALL) -d $(DESTDIR)$(libdir)
+$(INSTALL_PROGRAM) ../../lib/lib$(OVXXLIB).so $(DESTDIR)$(libdir)/lib$(OVXXLIB).so
+endef
+
+define install_headers
+@echo installing ovxx/$(1) headers
+$(INSTALL) -d $(DESTDIR)$(includedir)/ovxx/$(1)
+for header in $(wildcard $(srcdir)/$(1)/*.hpp); do \
+  $(INSTALL_DATA) $$header $(DESTDIR)$(includedir)/ovxx/$(1); \
+done
+endef
+
+define install_acconfig
+cat detail/$(acconfig) | sed -e "s/^#define PACKAGE_.*//g" \
+  > detail/$(acconfig).tmp
+$(INSTALL_DATA) detail/$(acconfig).tmp \
+  $(DESTDIR)$(includedir)/ovxx/detail/$(acconfig)
+endef
+
+src := $(wildcard $(srcdir)/*.cpp)
+src += $(wildcard $(srcdir)/c++11/*.cpp)
+src += $(wildcard $(srcdir)/signal/*.cpp)
+ifndef have_huge_page_allocator
+src := $(filter-out %/huge_page_allocator.cpp, $(src))
+endif
+
+obj := $(patsubst $(srcdir)/%.cpp, %.$(OBJEXT), $(src))
+deps:= $(patsubst $(srcdir)/%.cpp, %.d, $(src))
+
+libs := ../../lib/lib$(OVXXLIB).$(LIBEXT)
+ifdef enable_shared_libs
+libs += ../../lib/lib$(OVXXLIB).so
+endif
+
+vpath %.cpp $(srcdir)
+vpath %.hpp $(srcdir)
+
+.FORCE:
+
+all: $(libs)
+
+clean:
+	rm -f $(obj) $(libs)
+
+install: $(libs)
+	$(call install_archs)
+ifdef enable_shared_libs
+	$(call install_dsos)
+endif
+	$(call install_headers,)
+	$(call install_headers,detail)
+	$(call install_headers,c++11)
+	$(call install_headers,storage)
+	$(call install_headers,dda)
+	$(call install_headers,dispatcher)
+	$(call install_headers,assign)
+	$(call install_headers,expr)
+	$(call install_headers,view)
+	$(call install_headers,reductions)
+	$(call install_headers,signal)
+	$(call install_headers,signal/fft)
+	$(call install_headers,solver)
+	$(install_acconfig)
+
+depend: $(deps)
+
+../../lib/lib$(OVXXLIB).$(LIBEXT): $(obj)
+	$(archive)
+
+../../lib/lib$(OVXXLIB).so: $(obj)
+	$(link_lib_dso)
+
+%.$(OBJEXT): %.cpp
+	$(compile)
+
+%.d: %.cpp
+	$(make_dep)
+
+# Always remake dependencies when asked to.
+ifneq (,$(findstring depend, $(MAKECMDGOALS)))
+$(deps): %.d:	.FORCE
+endif
+
+# Include automatically generated dependency files.
+ifeq (,$(filter $(MAKECMDGOALS), depend clean))
+-include $(deps)
+endif

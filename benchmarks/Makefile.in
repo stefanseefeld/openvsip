@@ -1,0 +1,104 @@
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+
+srcdir := @srcdir@
+top_srcdir := @top_srcdir@
+
+# config variables
+include ../config.mk
+CPPFLAGS += -I. -I$(srcdir) -I../src -I$(top_srcdir)/src
+LIBS := -L../lib -lovxx $(OVXX_PAR_LIB) $(LIBS)
+# build instructions
+include ../rules.mk
+
+qmtest_context := context
+
+qmtest_harness := QMTest/benchmark.py \
+                  QMTest/database.py \
+                  QMTest/benchmark_database.py \
+                  QMTest/remote_host.py \
+                  QMTest/classes.qmc \
+                  $(qmtest_context)
+
+# Specify the benchmark(s) to run
+ids :=
+# Provide an id to annotate the test run (for later report generation)
+run_id :=
+results :=results.qmr
+
+# Annotate the test run, if benchmarks_run_id is given.
+ifdef run_id
+run_ident :=-a run_id=$(run_id)
+endif
+
+src := $(wildcard $(srcdir)/*.cpp)
+src += $(wildcard $(srcdir)/expr/*.cpp)
+src += $(wildcard $(srcdir)/solvers/*.cpp)
+ifdef have_sal
+src += $(wildcard $(srcdir)/sal/*.cpp) 
+endif
+ifdef have_fftw
+src += $(wildcard $(srcdir)/fftw/*.cpp) 
+endif
+ifdef have_mpi
+src += $(wildcard $(srcdir)/mpi/*.cpp) 
+endif
+ifdef have_cuda
+src += $(wildcard $(srcdir)/cuda/*.cpp) 
+endif
+
+obj := $(patsubst $(srcdir)/%.cpp, %.$(OBJEXT), $(src))
+exe := $(patsubst $(srcdir)/%.cpp, %$(EXEEXT), $(src))
+deps:= $(patsubst $(srcdir)/%.cpp, %.d, $(src))
+targets := $(filter-out main$(EXEEXT), $(exe)) 
+
+define link
+@echo linking $@
+$(CXX) $(LDFLAGS) -o $@ $< main.$(OBJEXT) $(LIBS) $(PAR_LIBS)
+endef
+
+.FORCE:
+
+%.$(OBJEXT): %.cpp
+	$(compile)
+
+%.d: %.cpp
+	$(make_dep)
+
+all: $(targets)
+
+run: $(qmtest_harness)
+	$(QMTEST) run -o $(results) -C $(qmtest_context) $(run_ident) $(ids); \
+          result=$$?; test $$tmp=0 || $$tmp=2
+
+report: run
+	hpc-benchmark-report -o report $(results)
+
+clean:
+	rm -f $(obj)
+	rm -f $(targets)
+
+depend: $(deps)
+
+$(targets): %$(EXEEXT) : %.$(OBJEXT) main.$(OBJEXT)
+	$(link)
+
+QMTest/%: $(srcdir)/../support/QMTest/%
+	mkdir -p QMTest/
+	cp $< $@
+context: ../support/context
+	cp $< $@
+
+# Always remake dependencies when asked to.
+ifneq (,$(findstring depend, $(MAKECMDGOALS)))
+$(deps): %.d:	.FORCE
+endif
+
+# Include automatically generated dependency files.
+ifeq (,$(filter $(MAKECMDGOALS), depend mostlyclean clean))
+include $(deps)
+endif

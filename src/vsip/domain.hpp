@@ -6,26 +6,22 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_DOMAIN_HPP
-#define VSIP_DOMAIN_HPP
+#ifndef vsip_domain_hpp_
+#define vsip_domain_hpp_
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
-
-#include <vsip/support.hpp>
-#include <vsip/core/vertex.hpp>
+#include <ovxx/support.hpp>
+#include <ovxx/vertex.hpp>
 
 namespace vsip
 {
 
 template <dimension_type D> struct Index;
 
-template <> class Index<1> : public Vertex<index_type, 1>
+template <> class Index<1> : public ovxx::Vertex<index_type, 1>
 {
 public:
   Index() VSIP_NOTHROW {}
-  Index(index_type x) VSIP_NOTHROW : Vertex<index_type, 1>(x) {}
+  Index(index_type x) VSIP_NOTHROW : ovxx::Vertex<index_type, 1>(x) {}
 };
 
 // mathematical operations for Index
@@ -96,13 +92,9 @@ template <> class Index<3> : public Vertex<index_type, 3>
 {
 public:
   Index() VSIP_NOTHROW {}
-  Index(index_type x, index_type y, index_type z) VSIP_NOTHROW 
+  Index(index_type x, index_type y, index_type z) VSIP_NOTHROW
   : Vertex<index_type, 3>(x, y, z) {}
 };
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
 
 /// A Domain is a non-empty set of non-negative indexes.
 //
@@ -126,10 +118,10 @@ public:
     : index_(0), stride_(1), length_(len) { assert(this->impl_is_valid()); }
   Domain(Domain const& d) VSIP_NOTHROW
     : index_(d.index_), stride_(d.stride_), length_(d.length_) { }
-  Domain<1> const& operator[](dimension_type d ATTRIBUTE_UNUSED) const VSIP_NOTHROW
+  Domain<1> const& operator[](dimension_type d OVXX_UNUSED) const VSIP_NOTHROW
     { assert(d == 0); return *this; } 
 
-  Domain<1>& impl_at(dimension_type d ATTRIBUTE_UNUSED) VSIP_NOTHROW
+  Domain<1>& impl_at(dimension_type d OVXX_UNUSED) VSIP_NOTHROW
     { assert(d == 0); return *this; } 
 
   // these are defined explicitly just so we can paste on VSIP_NOTHROW.
@@ -204,20 +196,20 @@ Domain<1>::impl_is_valid() const VSIP_NOTHROW
 	     static_cast<stride_type>(this->impl_last()) >= 0));
 }
 
-#define VSIP_IMPL_DEF_DOM1_MEMBER(Mem,Arg,Datum,Assign_op) \
-  inline void \
-  Domain<1>::Mem(Arg const a) VSIP_NOTHROW \
-  { \
-    this->Datum Assign_op a; \
-    assert(this->impl_is_valid()); \
-  }
+#define OVXX_DEF_DOM1_MEMBER(Mem,Arg,Datum,Assign_op) \
+inline void					      \
+Domain<1>::Mem(Arg const a) VSIP_NOTHROW	      \
+{						      \
+  this->Datum Assign_op a;			      \
+  assert(this->impl_is_valid());		      \
+}
 
-VSIP_IMPL_DEF_DOM1_MEMBER(impl_add_in, index_difference_type, index_, +=)
-VSIP_IMPL_DEF_DOM1_MEMBER(impl_sub_out, index_difference_type, index_, -=)
-VSIP_IMPL_DEF_DOM1_MEMBER(impl_mul_by, stride_scalar_type, stride_, *=)
-VSIP_IMPL_DEF_DOM1_MEMBER(impl_div_by, stride_scalar_type, stride_, /=)
+OVXX_DEF_DOM1_MEMBER(impl_add_in, index_difference_type, index_, +=)
+OVXX_DEF_DOM1_MEMBER(impl_sub_out, index_difference_type, index_, -=)
+OVXX_DEF_DOM1_MEMBER(impl_mul_by, stride_scalar_type, stride_, *=)
+OVXX_DEF_DOM1_MEMBER(impl_div_by, stride_scalar_type, stride_, /=)
 
-#undef VSIP_IMPL_DEF_DOM1_MEMBER
+#undef OVXX_DEF_DOM1_MEMBER
 
 
 inline bool 
@@ -238,19 +230,19 @@ namespace impl
 {
 
 // definitions of Op types to pass to Vec_mem_op_scalar
-#define VSIP_IMPL_DEF_OP_OBJ(Tag, Op, Arg) \
-  struct Tag \
-  { \
-    static void apply(Domain<1>& dom, const Arg u) VSIP_NOTHROW \
-      { dom.Op(u); } \
-  }
+#define OVXX_DEF_OP_OBJ(Tag, Op, Arg)				\
+struct Tag							\
+{								\
+  static void apply(Domain<1>& dom, const Arg u) VSIP_NOTHROW	\
+  { dom.Op(u); }						\
+}
 
-VSIP_IMPL_DEF_OP_OBJ(Add_in,  impl_add_in, index_difference_type);
-VSIP_IMPL_DEF_OP_OBJ(Sub_out, impl_sub_out, index_difference_type);
-VSIP_IMPL_DEF_OP_OBJ(Mul_by,  impl_mul_by, stride_scalar_type);
-VSIP_IMPL_DEF_OP_OBJ(Div_by,  impl_div_by, stride_scalar_type);
+OVXX_DEF_OP_OBJ(Add_in,  impl_add_in, index_difference_type);
+OVXX_DEF_OP_OBJ(Sub_out, impl_sub_out, index_difference_type);
+OVXX_DEF_OP_OBJ(Mul_by,  impl_mul_by, stride_scalar_type);
+OVXX_DEF_OP_OBJ(Div_by,  impl_div_by, stride_scalar_type);
 
-#undef VSIP_IMPL_DEF_OP_OBJ
+#undef OVXX_DEF_OP_OBJ
 
 ////////////////////////////////////////////////////////////////
 // Vec_mem_op_scalar: recursively apply a modifying operation and 
@@ -265,12 +257,10 @@ struct Vec_mem_op_scalar
 };
 
 template <typename Op, typename Arg1, typename Arg2>
-  struct Vec_mem_op_scalar<Op,Arg1,Arg2,0>
+struct Vec_mem_op_scalar<Op,Arg1,Arg2,0>
 { 
   static void apply(Arg1*, Arg2) VSIP_NOTHROW { }
 };
-
-////////////////////////////////////////////////////////////////
 
 struct Equal
 {
@@ -289,11 +279,11 @@ struct Conforms
 //   elements of vectors, short-circuiting the result.
 
 template <typename Pred, typename Arg, dimension_type D>
-  struct Vec_mem_pred
+struct Vec_mem_pred
 {
   static bool apply(Arg* const a, Arg* const b) VSIP_NOTHROW
-    { return Pred::apply(*a, *b) &&
-        Vec_mem_pred<Pred,Arg,D-1>::apply(a + 1, b + 1); }
+  { return Pred::apply(*a, *b) &&
+      Vec_mem_pred<Pred,Arg,D-1>::apply(a + 1, b + 1); }
 };
 
 template <typename Pred, typename Arg>
@@ -376,18 +366,18 @@ struct Domain_base
   void operator=(Domain_base<D> const& d) VSIP_NOTHROW
     { Vec_copy<Domain1n,D>::apply(this->domains_, d.domains_); }
 
-  #define VSIP_IMPL_DEF_UPDATE(Op,Arg,Op_type) \
+  #define OVXX_DEF_UPDATE(Op,Arg,Op_type) \
   inline void Op(Arg const d) VSIP_NOTHROW \
     { Vec_mem_op_scalar<Op_type,Domain1n,const Arg,D>::apply( \
         this->domains_, d); }
 
   // These are used to implement [domains.arithmetic].
-  VSIP_IMPL_DEF_UPDATE(impl_add_in, index_difference_type, Add_in)
-  VSIP_IMPL_DEF_UPDATE(impl_sub_out, index_difference_type, Sub_out)
-  VSIP_IMPL_DEF_UPDATE(impl_mul_by, stride_scalar_type, Mul_by)
-  VSIP_IMPL_DEF_UPDATE(impl_div_by, stride_scalar_type, Div_by)
+  OVXX_DEF_UPDATE(impl_add_in, index_difference_type, Add_in)
+  OVXX_DEF_UPDATE(impl_sub_out, index_difference_type, Sub_out)
+  OVXX_DEF_UPDATE(impl_mul_by, stride_scalar_type, Mul_by)
+  OVXX_DEF_UPDATE(impl_div_by, stride_scalar_type, Div_by)
 
-  #undef VSIP_IMPL_DEF_UPDATE
+  #undef OVXX_DEF_UPDATE
 
   Domain1n domains_[dim];
 };
@@ -494,7 +484,7 @@ inline bool
 operator!=(Domain<D> const& d0, Domain<D> const& d1) VSIP_NOTHROW
 { return !operator==(d0, d1); }
 
-#define VSIP_IMPL_DEF_DOMAIN_OP(Op,Arg,Mem) \
+#define OVXX_DEF_DOMAIN_OP(Op,Arg,Mem) \
   template <dimension_type D> \
   inline const Domain<D> \
   operator Op(Domain<D> const& dom, const Arg a) VSIP_NOTHROW \
@@ -503,12 +493,12 @@ operator!=(Domain<D> const& d0, Domain<D> const& d1) VSIP_NOTHROW
     retn.Mem(a); \
     return retn;   \
   }
-VSIP_IMPL_DEF_DOMAIN_OP(+, index_difference_type, impl_add_in)
-VSIP_IMPL_DEF_DOMAIN_OP(-, index_difference_type, impl_sub_out)
-VSIP_IMPL_DEF_DOMAIN_OP(*, stride_scalar_type, impl_mul_by)
-VSIP_IMPL_DEF_DOMAIN_OP(/, stride_scalar_type, impl_div_by)
+OVXX_DEF_DOMAIN_OP(+, index_difference_type, impl_add_in)
+OVXX_DEF_DOMAIN_OP(-, index_difference_type, impl_sub_out)
+OVXX_DEF_DOMAIN_OP(*, stride_scalar_type, impl_mul_by)
+OVXX_DEF_DOMAIN_OP(/, stride_scalar_type, impl_div_by)
 
-#undef VSIP_IMPL_DEF_DOMAIN_OP
+#undef OVXX_DEF_DOMAIN_OP
 
 template <dimension_type D>
 inline const Domain<D>
@@ -520,13 +510,6 @@ inline const Domain<D>
 operator*(stride_scalar_type s, Domain<D> const& dom) VSIP_NOTHROW
 { return dom * s; }
 
-} // namespace vsip
+} // namespace ovxx
 
-namespace vsip_csl
-{
-using vsip::Index;
-using vsip::Vertex;
-using vsip::Domain;
-};
-
-#endif // VSIP_DOMAIN_HPP
+#endif

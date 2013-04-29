@@ -1,0 +1,26 @@
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+
+srcdir := @srcdir@
+top_srcdir:=@top_srcdir@
+
+include ../config.mk
+
+define install_dir
+@echo installing $(1)
+$(INSTALL) -d $(DESTDIR)$(pkgdatadir)/$(1)
+for f in $(wildcard $(srcdir)/$(1)/*); do \
+  $(INSTALL_DATA) $$f $(DESTDIR)$(pkgdatadir)/$(1); \
+done
+endef
+
+
+all:
+
+install:
+
+clean:

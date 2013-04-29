@@ -4,8 +4,7 @@
   <argument name="no_exclusions"><enumeral>@enable_all_tests@</enumeral></argument>
   <argument name="flags">
     <dict>
-      <item><text>VSIP_IMPL_HAVE_CUDA</text><text>@VSIP_IMPL_HAVE_CUDA@</text></item>
-      <item><text>VSIP_IMPL_HAVE_CBE_SDK</text><text>@VSIP_IMPL_HAVE_CBE_SDK@</text></item>
+      <item><text>have_cuda</text><text>@OVXX_HAVE_CUDA@</text></item>
       <item><text>enable_cvsip_bindings</text><text>@enable_cvsip_bindings@</text></item>
       <item><text>enable_python_bindings</text><text>@enable_python_bindings@</text></item>
     </dict>

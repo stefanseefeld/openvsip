@@ -1,0 +1,126 @@
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+#
+# Common variables used throughout the build system
+
+host:=@host@
+
+### Installation ###
+
+PACKAGE_TARNAME := @PACKAGE_TARNAME@
+INSTALL := @INSTALL@
+INSTALL_DATA := @INSTALL_DATA@
+INSTALL_SCRIPT := @INSTALL_SCRIPT@
+INSTALL_PROGRAM := @INSTALL_PROGRAM@
+distname:= $(PACKAGE_TARNAME)
+distfiles:= $(wildcard $(srcdir)/*)
+variant := @variant@
+
+# Order matters for the various directory variables, as autoconf makes some
+# of the variables depend on the values of others.
+prefix := @prefix@
+exec_prefix := @exec_prefix@
+datarootdir := @datarootdir@
+datadir := @datadir@
+includedir := @includedir@
+libdir := @libdir@
+sbindir := @sbindir@
+bindir := @bindir@
+docdir := @docdir@
+htmldir := @htmldir@
+pdfdir := @pdfdir@
+# The directory for putting build-variant-specific executables.
+variant_bindir := $(bindir)
+# The directory for putting data that is specific to this package.
+# This is not a standard variable name.
+pkgdatadir := $(datadir)/$(PACKAGE_TARNAME)
+cygwin_mount :=@cygwin_mount@
+
+### Compilation ###
+
+# Are we using the intel-win toolchain ?
+INTEL_WIN := @INTEL_WIN@
+# Are we using the ti-cl6x toolchain ?
+TI_CL6X := @TI_CL6X@
+# The path to the archiver. 
+AR := @AR@
+# The path to the C compiler.
+CC := @CC@
+# The path to the C++ compiler.
+CXX := @CXX@
+# The dependency generator.
+CCDEP := @CCDEP@
+# The dependency generator.
+CXXDEP := @CXXDEP@
+# The DSO linker.
+LDSHARED:= @LDSHARED@
+# The strip executable.
+STRIP:= @STRIP@
+# Preprocessor flags.
+CPPFLAGS := @CPPFLAGS@ @MPI_CPPFLAGS@
+# C compilation flags.
+CFLAGS := @CFLAGS@
+# C compilation flags for library files.
+CFLAGS_LIB := @CFLAGS@ @CFLAGS_LIB@
+# C++ compilation flags.
+CXXFLAGS := @CXXFLAGS@
+# C++ compilation flags for library files.
+CXXFLAGS_LIB := @CXXFLAGS@ @CXXFLAGS_LIB@
+# The extension for executable programs.
+EXEEXT := @EXEEXT@
+# Linker flags.
+LDFLAGS := @LDFLAGS@
+# Libraries to link to.
+LIBS := @LIBS@
+# Libraries to link to for parallel API.
+MPI_LIBS := @MPI_LIBS@
+# The extension for object files.
+OBJEXT := @OBJEXT@
+# The extension for archives.
+LIBEXT := @LIBEXT@
+# The QMTest command to use for testing.
+QMTEST := @QMTEST@
+# OVXX library name
+OVXXLIB := @OVXXLIB@
+
+enable_shared_libs := @enable_shared_libs@
+enable_cvsip_bindings  := @enable_cvsip_bindings@
+enable_python_bindings  := @enable_python_bindings@
+
+### Third-party package availability ###
+
+have_cuda := @OVXX_HAVE_CUDA@
+have_mkl_vml := @OVXX_HAVE_MKL_VML@
+have_ipp := @OVXX_HAVE_IPP@
+have_sal := @OVXX_HAVE_SAL@
+have_blas := @OVXX_HAVE_BLAS@
+have_lapack := @OVXX_HAVE_LAPACK@
+have_mpi := @OVXX_HAVE_MPI@
+have_cvsip := @OVXX_HAVE_CVSIP@
+have_huge_page_pool := @OVXX_HAVE_HUGE_PAGE_POOL@
+sal_fft := @OVXX_SAL_FFT@
+ipp_fft := @OVXX_IPP_FFT@
+fftw := @OVXX_FFTW@
+cvsip_fft := @OVXX_CVSIP_FFT@
+cuda_fft := @OVXX_CUDA_FFT@
+have_png := @OVXX_HAVE_PNG@
+enable_threading := @OVXX_ENABLE_THREADING@
+
+ifdef have_mpi
+enable_parallel := 1
+endif
+
+ifdef variant
+acconfig := config-$(variant).hpp
+variant_def := -DOVXX_VARIANT=$(variant)
+pkgconfig := ovxx-$(variant).pc
+else
+acconfig := config.hpp
+variant_def :=
+pkgconfig := ovxx.pc
+endif
+

@@ -9,27 +9,15 @@
 #include <iostream>
 
 #include <vsip/initfin.hpp>
-#include <vsip/support.hpp>
-#include <vsip/core/check_config.hpp>
+#include <ovxx/support.hpp>
+#include <ovxx/check_config.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
+using namespace ovxx;
 
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
-  vsipl init(argc, argv);
-
-  cout << vsip::impl::library_config();
-
-  test_assert(vsip::impl::app_config() == vsip::impl::library_config());
-
-  return 0;
+  vsip::vsipl init(argc, argv);
+  std::cout << library_config();
+  test_assert(app_config() == library_config());
 }

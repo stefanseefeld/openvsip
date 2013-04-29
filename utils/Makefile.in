@@ -1,0 +1,32 @@
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+
+srcdir := @srcdir@
+top_srcdir:=@top_srcdir@
+
+include ../config.mk
+
+subdirs :=
+ifdef have_cuda
+subdirs += cuda
+endif
+
+define make
+for dir in $(subdirs); do \
+  echo making $(1) in $$dir;\
+  $(MAKE) -C $$dir $(1);\
+done
+endef
+
+all:
+	$(call make,all)
+
+install:
+	$(call make,install)
+
+clean:
+	$(call make,clean)

@@ -1,0 +1,32 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+cc=@CC@
+cxx=@CXX@
+mpi_cppflags=@MPI_CPPFLAGS@
+cppflags=-I${includedir} @CPPFLAGS@ ${mpi_cppflags}
+cflags=@CFLAGS@
+cxxflags=@CXXFLAGS@
+ldflags=@LDFLAGS@ -L${libdir}
+mpi_libs=@MPI_LIBS@
+libs=-l@OVXXLIB@ @LIBS@ ${mpi_libs}
+mpi_boot=@MPI_BOOT@
+mpi_halt=@MPI_HALT@
+mpi_run=@MPI_RUN@
+qmtest_target=@QMTEST_TARGET@
+
+have_mkl_vml=@OVXX_HAVE_MKL_VML@
+have_ipp=@OVXX_HAVE_IPP@
+have_sal=@OVXX_HAVE_SAL@
+have_blas=@OVXX_HAVE_BLAS@
+have_lapack=@OVXX_HAVE_LAPACK@
+have_mpi=@OVXX_HAVE_MPI@
+have_cvsip=@OVXX_HAVE_CVSIP@
+have_cuda=@OVXX_HAVE_CUDA@
+
+Name: @pkg_name@
+Description: @pkg_desc@
+Version: @version_string@
+Libs: ${ldflags} ${libs}
+Cflags: ${cppflags}

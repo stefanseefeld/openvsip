@@ -13,7 +13,7 @@
 #define vsip_layout_hpp_
 
 #include <vsip/support.hpp>
-#include <vsip/core/complex_decl.hpp>
+#include <vsip/impl/complex_decl.hpp>
 #include <vsip/domain.hpp>
 
 namespace vsip
@@ -44,8 +44,8 @@ template <pack_type>
 struct is_packing_unit_stride { static bool const value = false;};
 
 #define VSIP_IMPL_UNIT_STRIDE(P)            \
-template <>                       \
-struct is_packing_unit_stride<P>  \
+template <>				    \
+struct is_packing_unit_stride<P>	    \
 { static bool const value = true;};
 
 VSIP_IMPL_UNIT_STRIDE(unit_stride)

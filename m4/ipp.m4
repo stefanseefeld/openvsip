@@ -6,8 +6,37 @@ dnl
 dnl This file is part of OpenVSIP. It is made available under the
 dnl license contained in the accompanying LICENSE.BSD file.
 
-AC_DEFUN([SVXX_CHECK_IPP],
+AC_DEFUN([OVXX_CHECK_IPP],
 [
+AC_ARG_ENABLE([ipp],,  
+  AC_MSG_ERROR([The option --enable-ipp is obsolete; use 
+    --with-ipp instead.  (Run 'configure --help' for details)]),)
+
+AC_ARG_WITH([ipp],
+  AS_HELP_STRING([--with-ipp],
+                 [Use IPP if found (default is to not search for it).]),,
+  [with_ipp=no])
+AC_ARG_WITH(ipp_prefix,
+  AS_HELP_STRING([--with-ipp-prefix=PATH],
+                 [Specify the installation prefix of the IPP library.  Headers
+                  must be in PATH/include; libraries in PATH/lib.]),
+  )
+AC_ARG_WITH(ipp_suffix,
+  AS_HELP_STRING([--with-ipp-suffix=TARGET],
+                 [Specify the optimization target of IPP libraries, such as
+		  a6, em64t, i7, m7, mx, px, t7, w7.  E.g. a6 => -lippsa6.
+                  TARGET may be the empty string.]),
+  )
+AC_ARG_WITH([ipp_arch],
+  AS_HELP_STRING([--with-ipp-arch=ARCH],
+                 [Specify the IPP library architecture directory.  IPP
+		  libraries from PATH/lib/ARCH will be used, where
+		  PATH is specified with '--with-ipp-prefix' option.
+		  E.g. ARCH can be 'intel64' or 'ia32'.
+		  (Required only for IPP version 7 and up).]),
+  )
+
+
 # If the user specified an IPP prefix, they definitely want IPP.
 # However, we need to avoid overwriting the value of $with_ipp
 # if the user set it (i.e. '--enable-ipp=win').
@@ -25,10 +54,23 @@ if test "$enable_ipp_fft" == "yes"; then
   fi 
 fi
 
+# LDFLAGS notes:
+# Version 7 uses a common prefix and requires an option to specify
+# the architecture (--with-ipp-arch).  The prefix includes everything
+# up to ipp/ in the example below:
 #
-# Find the IPP library, if enabled.
+#   {/path/to/}ipp/lib/{intel64|ia32}
+#
+# Version 5 and 6.1 used unique prefixes and kept shared libs in
+# a separate location.  The prefix included the architecture,
+# so --with-ipp-arch is not needed. E.g.:
+#
+#   {/path/to/}ipp/{em64t|ia32}/lib
+#   {/path/to/}ipp/{em64t|ia32}/sharedlib
 #
 
+# Find the IPP library, if enabled.
+#
 if test "$with_ipp" = "win"; then
   AC_MSG_RESULT([Using IPP for Windows.])
   if test -n "$with_ipp_prefix"; then
@@ -56,20 +98,23 @@ if test "$with_ipp" = "win"; then
   if test "$enable_ipp_fft" != "no"; then 
     provide_fft_float=1
     provide_fft_double=1
-    AC_SUBST(VSIP_IMPL_IPP_FFT, 1)
-    if test "$neutral_acconfig" = 'y'; then
-      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_IPP_FFT=1"
-    else
-      AC_DEFINE_UNQUOTED(VSIP_IMPL_IPP_FFT, 1,
-	      [Define to use Intel's IPP library to perform FFTs.])
-    fi
+    AC_SUBST(OVXX_IPP_FFT, 1)
+    AC_DEFINE_UNQUOTED(OVXX_IPP_FFT, 1,
+      [Define to use Intel's IPP library to perform FFTs.])
   fi
 
 elif test "$with_ipp" != "no"; then
 
   if test -n "$with_ipp_prefix"; then
     IPP_CPPFLAGS="-I$with_ipp_prefix/include"
-    IPP_LDFLAGS="-L$with_ipp_prefix/sharedlib"
+    if test -n "$with_ipp_arch"; then
+      IPP_LDFLAGS="-L$with_ipp_prefix/lib/$with_ipp_arch"
+      if test "$with_intel_omp_prefix" != ""; then
+        IPP_LDFLAGS="$IPP_LDFLAGS -L$with_intel_omp_prefix/lib/$with_ipp_arch"
+      fi
+    else
+      IPP_LDFLAGS="-L$with_ipp_prefix/sharedlib"
+    fi
   fi
   save_CPPFLAGS="$CPPFLAGS"
   CPPFLAGS="$CPPFLAGS $IPP_CPPFLAGS"
@@ -99,33 +144,29 @@ elif test "$with_ipp" != "no"; then
       ippi_search="ippi$with_ipp_suffix"
       ippm_search="ippm$with_ipp_suffix"
     fi
+
     # Find the library.
     save_LDFLAGS="$LDFLAGS"
     LDFLAGS="$LDFLAGS $IPP_LDFLAGS"
-    LIBS="-lpthread $LIBS"
+    LIBS="-liomp5 -lpthread $LIBS"
+
     AC_SEARCH_LIBS(ippGetLibVersion, [$ippcore_search],,
-      [LD_FLAGS="$save_LDFLAGS"])
+      [AC_MSG_ERROR([IPP library not found])])
     
-    save_LDFLAGS="$LDFLAGS"
-    LDFLAGS="$LDFLAGS $IPP_LDFLAGS"
     AC_SEARCH_LIBS(ippsMul_32f, [$ipps_search],
       [
-        AC_SUBST(VSIP_IMPL_HAVE_IPP, 1)
-        if test "$neutral_acconfig" = 'y'; then
-          CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_IPP=1"
-        else
-          AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_IPP, 1,
-            [Define to set whether or not to use Intel's IPP library.])
-        fi
+        AC_SUBST(OVXX_HAVE_IPP, 1)
+        AC_DEFINE_UNQUOTED(OVXX_HAVE_IPP, 1,
+          [Define to set whether or not to use Intel's IPP library.])
       ],
-      [LD_FLAGS="$save_LDFLAGS"])
+      [AC_MSG_ERROR([IPP library not found])])
 
     AC_MSG_CHECKING([for std::complex-compatible IPP-types.])
-    AC_COMPILE_IFELSE([
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #include <ippdefs.h>
 
-template <bool V> struct static_assert;
-template <> struct static_assert<true>
+template <bool V> struct Static_assert;
+template <> struct Static_assert<true>
 {
   static bool const value = true;
 };
@@ -133,10 +174,11 @@ template <> struct static_assert<true>
 int main(int, char **)
 {
   bool value;
-  value = static_assert<sizeof(Ipp32fc) == 2*sizeof(float)>::value;
-  value = static_assert<sizeof(Ipp64fc) == 2*sizeof(double)>::value;
+  value = Static_assert<sizeof(Ipp32fc) == 2*sizeof(float)>::value;
+  value = Static_assert<sizeof(Ipp64fc) == 2*sizeof(double)>::value;
+  (void)value;
 }
-      ],
+      ])],
       [AC_MSG_RESULT(yes)],
       [AC_MSG_ERROR([std::complex-incompatible IPP-types detected!])])
 
@@ -144,27 +186,19 @@ int main(int, char **)
     LDFLAGS="$LDFLAGS $IPP_FFT_LDFLAGS"
 
     AC_SEARCH_LIBS(
-	[ippiFFTFwd_CToC_32fc_C1R], [$ippi_search],
-	[have_ippi="yes"],
-	[have_ippi="no"
-         LD_FLAGS="$save_LDFLAGS"])
+	[ippiFFTFwd_CToC_32fc_C1R], [$ippi_search],,
+	[AC_MSG_ERROR([IPP library not found])])
 
     AC_SEARCH_LIBS(
-	[ippmCopy_ma_32f_SS], [$ippm_search],
-	[have_ippm="yes"],
-	[have_ippm="no"
-         LD_FLAGS="$save_LDFLAGS"])
+	[ippmCopy_ma_32f_SS], [$ippm_search],,
+	[AC_MSG_ERROR([IPP library not found])])
 
     if test "$enable_ipp_fft" != "no"; then 
       provide_fft_float=1
       provide_fft_double=1
-      AC_SUBST(VSIP_IMPL_IPP_FFT, 1)
-      if test "$neutral_acconfig" = 'y'; then
-        CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_IPP_FFT=1"
-      else
-        AC_DEFINE_UNQUOTED(VSIP_IMPL_IPP_FFT, 1,
-	      [Define to use Intel's IPP library to perform FFTs.])
-      fi
+      AC_SUBST(OVXX_IPP_FFT, 1)
+      AC_DEFINE_UNQUOTED(OVXX_IPP_FFT, 1,
+        [Define to use Intel's IPP library to perform FFTs.])
     fi
   fi
 fi

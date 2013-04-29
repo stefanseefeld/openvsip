@@ -1,14 +1,12 @@
 OpenVSIP is available under two separate licenses:
 
-1) Test and Benchmark files are made available under the terms
-   of the GNU General Public License, contained in the file LICENSE.GPL.
+1) Some of the test and benchmark logic is made available under the terms
+   of the GNU General Public License, contained in the file LICENSE.GPL, i.e.
+   some of the files under:
 
-   The files available under the GPL license are:
-
-     - src/ovxx/test/*   All files in the src/ovxx/test/ hierarchy.
-     - tests/            All files in the tests/ hierarchy, excluding
-                         those in tests/ref-impl.
-     - benchmarks/       All files in the benchmarks/ hierarchy.
+     - support/
+     - tests/
+     - benchmarks/
 
 2) The library itself, including all files not specified above, are 
    made available under the terms of the BSD license, contained in the 

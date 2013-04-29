@@ -6,7 +6,7 @@ dnl
 dnl This file is part of OpenVSIP. It is made available under the
 dnl license contained in the accompanying LICENSE.BSD file.
 
-AC_DEFUN([SVXX_CHECK_MKL],
+AC_DEFUN([OVXX_CHECK_MKL],
 [
 AC_ARG_WITH([mkl], AS_HELP_STRING([--with-mkl], [Use MKL]),, [with_mkl=no])
 
@@ -130,13 +130,9 @@ if test "$with_mkl" != "no"; then
   fi
 
   if test "$mkl_vml" = yes; then
-    if test "$neutral_acconfig" = 'y'; then
-      CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_HAVE_MKL_VML"
-    else
-      AC_DEFINE_UNQUOTED(VSIP_IMPL_HAVE_MKL_VML, 1,
-        [Define to 1 if MKL vector math library is available.])
-    fi
-    AC_SUBST(VSIP_IMPL_HAVE_MKL_VML, 1)
+    AC_DEFINE_UNQUOTED(OVXX_HAVE_MKL_VML, 1,
+      [Define to 1 if MKL vector math library is available.])
+    AC_SUBST(OVXX_HAVE_MKL_VML, 1)
   fi
   
 fi

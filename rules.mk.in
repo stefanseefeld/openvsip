@@ -1,0 +1,62 @@
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+#
+# Common rules used throughout the build system
+
+vpath %.cpp $(srcdir)
+vpath %.hpp $(srcdir)
+
+# Generate dependencies (This recipe is modified from the GNU Make manual.)
+#  - The first sed converts .o files to .$(OBJEXT).  This is a work
+#    around for MCOE/GreenHills which uses .o for dependencies but
+#    .oppc for actual files.  It is a no-op if OBJEXT == .o .
+define make_cvsip_dep
+@echo generating dependencies for $(@D)/$(<F)
+$(SHELL) -ec '$(CXXDEP) $(CPPFLAGS) -Icvsip $(CXXFLAGS) $< \
+	      | sed "s|$(*F)\\.o[ :]*|$*\\.$(OBJEXT) : |g" \
+	      | sed "s|$(*F)\\.$(OBJEXT)[ :]*|$*\\.d $*\\.$(OBJEXT) : |g" > $@'
+endef
+
+define make_dep
+@echo generating dependencies for $(@D)/$(<F)
+mkdir -p $(@D)
+$(SHELL) -ec '$(CXXDEP) $(CPPFLAGS) $(CXXFLAGS) $< \
+	      | sed "s|$(*F)\\.o[ :]*|$(*F)\\.$(OBJEXT) : |g" \
+	      | sed "s|$(*F)\\.$(OBJEXT)[ :]*|$*\\.d $*\\.$(OBJEXT) : |g" > $@'
+endef
+
+define ccompile
+@echo compiling $(@D)/$(@F)
+$(CC) -c $(CFLAGS) -o $@ $<
+endef
+
+define compile
+@echo compiling $(@D)/$(@F)
+$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
+endef
+
+define archive
+@echo archiving $@
+$(AR) rc $@ $^ || rm -f $@
+endef
+
+# Used for linking a shared libraries.
+#
+# -Llib goes before LDFLAGS.  This avoids accidentally using
+# previously installed version of the library.
+ifneq (,$(findstring -g,$(LDFLAGS)))
+define link_lib_dso
+@echo linking $@
+$(LDSHARED) -Llib $(LDFLAGS) -o $@ $^ $(LIBS)
+endef
+else
+define link_lib_dso
+@echo linking $@
+$(LDSHARED) -Llib $(LDFLAGS) -o $@ $^ $(LIBS)
+  $(STRIP) --strip-unneeded $@
+endef
+endif

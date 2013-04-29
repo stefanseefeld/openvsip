@@ -1,8 +1,0 @@
-<?xml version="1.0" ?>
-<!DOCTYPE class-directory
-  PUBLIC '-//QM/2.2/Class-Directory//EN'
-  'http://www.codesourcery.com/qm/dtds/2.2/-//qm/2.2/class-directory//en.dtd'>
-<class-directory>
- <class kind="database" name="database.Database"/>
- <class kind="host" name="remote_host.RemoteHost"/>
-</class-directory>

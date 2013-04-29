@@ -1,0 +1,145 @@
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+
+srcdir := @srcdir@
+abs_srcdir := @abs_srcdir@
+
+# config variables
+include config.mk
+# build instructions
+include rules.mk
+
+ifdef enable_parallel
+
+define install_pkgconfig
+@echo installing pkgconfig file
+$(INSTALL) -d $(DESTDIR)$(libdir)/pkgconfig
+$(INSTALL_DATA) $(pkgconfig) $(DESTDIR)$(libdir)/pkgconfig/$(pkgconfig)
+endef
+
+else
+
+define install_pkgconfig
+@echo installing pkgconfig file
+$(INSTALL) -d $(DESTDIR)$(libdir)/pkgconfig
+cat $(pkgconfig) | sed -e "s|^par_cppflags=.*|par_cppflags=|" \
+  -e "s|^par_libs=.*|par_libs=|" \
+  -e "s|^par_service=.*|par_service=|" > $(pkgconfig).tmp
+$(INSTALL_DATA) $(pkgconfig).tmp $(DESTDIR)$(libdir)/pkgconfig/$(pkgconfig)
+endef
+
+endif
+
+.PHONY: benchmarks
+
+all:
+	$(MAKE) -C src/ovxx
+	$(MAKE) -C utils
+ifdef enable_python_bindings
+	$(MAKE) -C python
+endif
+
+clean:
+	$(MAKE) -C src/ovxx clean
+	$(MAKE) -C utils clean
+ifdef enable_python_bindings
+	$(MAKE) -C python clean
+endif
+	$(MAKE) -C doc clean
+
+check:
+	$(MAKE) -C tests
+
+# convenience to rerun previously failed tests
+recheck:
+	$(MAKE) -C tests recheck
+
+benchmarks:
+	$(MAKE) -C benchmarks run
+
+install:
+	$(MAKE) -C src/ovxx install
+	$(MAKE) -C src/vsip install
+ifdef enable_python_bindings
+	$(MAKE) -C python install
+endif
+	$(MAKE) -C utils install
+	$(MAKE) -C share install
+	$(install_pkgconfig)
+	$(INSTALL) -d $(DESTDIR)$(bindir)
+	$(INSTALL_SCRIPT) bin/ovxx-create-workspace $(DESTDIR)$(bindir)
+
+dist: sdist
+
+depend:
+	$(MAKE) -C src/ovxx depend
+ifdef enable_python_bindings
+	$(MAKE) -C python depend
+endif
+	$(MAKE) -C benchmarks depend
+	$(MAKE) -C doc depend
+
+ifeq (,$(findstring mingw32,$(host)))
+sdist: $(distname).tar.bz2
+bdist: $(distname)-$(host).tar.bz2
+else
+# Generate Windows packages.
+sdist: $(distname).zip
+bdist: $(distname)-win-ia32.zip
+endif
+
+.PRECIOUS: Makefile
+Makefile: $(srcdir)/Makefile.in config.status
+	@case '$?' in \
+	  *config.status*) ./config.status;; \
+	  *) ./config.status --file=$@;; \
+	esac;
+
+config.status: $(srcdir)/configure
+	./config.status --recheck
+
+
+$(distname).tar.bz2:
+	-rm -rf $(distname)
+	mkdir $(distname)
+	cp -pr $(distfiles) $(distname)
+	-chmod -R a+r $(distname)
+	tar cjf $@ --owner=0 --group=0\
+          --exclude .git \
+          --exclude autom4te.cache \
+          --exclude '*~' \
+          --exclude '.#*' \
+          $(distname)
+	-rm -rf $(distname)
+
+$(distname).zip:
+	-rm -rf $(distname)
+	mkdir $(distname)
+	cp -pr $(distfiles) $(distname)
+	-chmod -R a+r $(distname)
+	find $(distname) \
+          -name .git -prune -o\
+          -name autom4te.cache  -prune -o\
+          -name '*~'  -prune -o\
+          -name '.#*'  -prune -o\
+          -name '*' -print | zip $@ -@
+	-rm -rf $(distname)
+
+$(distname)$(packagesuffix)-$(host).tar.bz2:
+ifndef DESTDIR
+	@echo "Please set DESTDIR while building binary packages."
+else
+	tar cjhf $@  --owner=0 --group=0 -C $(DESTDIR) `ls $(DESTDIR)`
+endif
+
+$(distname)-win-ia32.zip:
+ifndef DESTDIR
+	@echo "Please set DESTDIR while building binary packages."
+else
+	cd $(DESTDIR) && zip -r $@ *
+endif
+
