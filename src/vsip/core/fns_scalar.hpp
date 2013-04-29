@@ -62,7 +62,7 @@ using std::cosh;
 ///   The complex number corresponding to the angle of a unit vector in the
 ///   complex plane, i.e., exp(j * x) for argument x .
 template <typename T>
-inline std::complex<T>
+inline complex<T>
 euler (T x) VSIP_NOTHROW { return std::polar(T (1), x);}
 
 using std::log;
@@ -169,9 +169,9 @@ struct Fp_traits
 };
 
 template <typename T>
- struct Fp_traits<std::complex<T> >
+ struct Fp_traits<complex<T> >
 {
-  static bool is_finite(std::complex<T> const& val)
+  static bool is_finite(complex<T> const& val)
   {
 #ifdef  _MSC_VER
     return _isfinite(val.real()) && _isfinite(val.imag()); 
@@ -180,7 +180,7 @@ template <typename T>
 #endif
   }
 
-  static bool is_nan(std::complex<T> const& val)    
+  static bool is_nan(complex<T> const& val)    
   {
 #ifdef  _MSC_VER
     return _isnan(val.real()) || _isnan(val.imag()); 
@@ -189,7 +189,7 @@ template <typename T>
 #endif
   }
 
-  static bool is_normal(std::complex<T> const& val) 
+  static bool is_normal(complex<T> const& val) 
   { return isnormal(val.real()) && isnormal(val.imag()); }
 };
 
@@ -242,6 +242,10 @@ using std::abs;
 } // namespace abs_detail
 
 template <typename T>
+inline T 
+sq(T t) VSIP_NOTHROW { return t*t;}
+
+template <typename T>
 inline typename impl::scalar_of<T>::type 
 mag(T t) VSIP_NOTHROW { return abs_detail::abs(t);}
 
@@ -255,9 +259,9 @@ struct Magsq_impl_base
 };
 
 template <typename T, typename R>
-struct Magsq_impl_base<std::complex<T>, R>
+struct Magsq_impl_base<complex<T>, R>
 {
-  static R exec(std::complex<T> const& val)
+  static R exec(complex<T> const& val)
   { return sq(val.real()) + sq(val.imag()); }
 };
 
@@ -265,9 +269,9 @@ template <typename T>
 struct Magsq_impl : public Magsq_impl_base<T,T> {};
 
 template <typename T>
-struct Magsq_impl<std::complex<T> >
+struct Magsq_impl<complex<T> >
 {
-  static T exec(std::complex<T> const& val)
+  static T exec(complex<T> const& val)
   { return sq(val.real()) + sq(val.imag()); }
 };
 
@@ -310,10 +314,6 @@ rsqrt(T t) VSIP_NOTHROW { return T(1)/sqrt(t);}
 
 using std::sin;
 using std::sinh;
-
-template <typename T>
-inline T 
-sq(T t) VSIP_NOTHROW { return t*t;}
 
 using std::sqrt;
 using std::tan;
@@ -375,10 +375,11 @@ template <typename T1, typename T2>
 inline bool
 lxor(T1 t1, T2 t2) VSIP_NOTHROW { return (t1 && !t2) || (!t1 && t2);}
 
-inline cscalar_f
-jmul(cscalar_f t1, cscalar_f t2) VSIP_NOTHROW 
+template <typename T1, typename T2>
+inline typename Promotion<complex<T1>, complex<T2> >::type
+jmul(complex<T1> t1, complex<T2> t2) VSIP_NOTHROW 
 {
-  cscalar_f retn(t1);
+  typename Promotion<complex<T1>, complex<T2> >::type retn(t1);
   t1 *= conj(t2);
   return t1;
 }
@@ -398,7 +399,7 @@ inline typename Promotion<T1, T2>::type
 impl_max(T1 t1, T2 t2) VSIP_NOTHROW { return t1 > t2 ? t1 : t2; }
 
 template <typename T1, typename T2>
-inline typename Promotion<T1, T2>::type
+inline typename impl::scalar_of<typename Promotion<T1, T2>::type>::type
 maxmg(T1 t1, T2 t2) VSIP_NOTHROW { return impl_max(mag(t1), mag(t2));}
 
 template <typename T1, typename T2>
@@ -412,7 +413,7 @@ inline typename Promotion<T1, T2>::type
 impl_min(T1 t1, T2 t2) VSIP_NOTHROW { return t1 < t2 ? t1 : t2; }
 
 template <typename T1, typename T2>
-inline typename Promotion<T1, T2>::type
+inline typename impl::scalar_of<typename Promotion<T1, T2>::type>::type
 minmg(T1 t1, T2 t2) VSIP_NOTHROW { return impl_min(mag(t1), mag(t2));}
 
 template <typename T1, typename T2>
@@ -420,6 +421,14 @@ inline typename impl::scalar_of<typename Promotion<T1, T2>::type>::type
 minmgsq(T1 t1, T2 t2) VSIP_NOTHROW { return impl_min(fn::magsq(t1), fn::magsq(t2));}
 
 using std::pow;
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+// in C++11, std::pow<float, int> returns double... (see DR 550)
+// As this isn't compatible with the VSIPL++ spec, we need to provide
+// our own version.
+inline complex<float> pow(complex<float> const &x, int y)
+{ return complex<float>(std::pow(x, y));}
+#endif
 
 template <typename T1, typename T2>
 inline typename Promotion<T1, T2>::type
@@ -470,11 +479,11 @@ struct Impl_complex_class
 };
 
 template <typename T>
-struct Impl_complex_class<std::complex<T> >
+struct Impl_complex_class<complex<T> >
 {
-  static std::complex<T> conj(std::complex<T> val) { return std::conj(val); }
-  static T real(std::complex<T> val) { return val.real(); }
-  static T imag(std::complex<T> val) { return val.imag(); }
+  static complex<T> conj(complex<T> val) { return std::conj(val); }
+  static T real(complex<T> val) { return val.real(); }
+  static T imag(complex<T> val) { return val.imag(); }
 };
 
 template <typename T>

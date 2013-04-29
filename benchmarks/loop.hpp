@@ -620,13 +620,4 @@ Loop1P::operator()(
     this->sweep(fcn);
 }
 
-extern void marker1_start();
-extern void marker1_stop();
-extern void marker2_start();
-extern void marker2_stop();
-extern void marker3_start();
-extern void marker3_stop();
-extern void marker4_start();
-extern void marker4_stop();
-
 #endif

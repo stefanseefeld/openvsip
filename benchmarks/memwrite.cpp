@@ -36,12 +36,10 @@ struct t_memwrite1 : Benchmark_base
     
     vsip_csl::profile::Timer t1;
     
-    marker1_start();
     t1.start();
     for (index_type l=0; l<loop; ++l)
       view = val;
     t1.stop();
-    marker1_stop();
 
     for(index_type i=0; i<size; ++i)
       test_assert(equal(view.get(i), val));

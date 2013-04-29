@@ -126,10 +126,10 @@ prod_check(
       for (index_type k=0; k<a.size(1); ++k)
       {
 	tmp   += a.get(i, k) * b.get(k, j);
-	guage += mag(a.get(i, k)) * mag(b.get(k, j));
+	guage += vsip::mag(a.get(i, k)) * vsip::mag(b.get(k, j));
       }
 
-      float err_ij = mag(tmp - c(i, j)) / 
+      float err_ij = vsip::mag(tmp - c(i, j)) / 
         vsip_csl::Precision_traits<scalar_type>::eps;
       if (guage > scalar_type())
 	err_ij = err_ij/guage;

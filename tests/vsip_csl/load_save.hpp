@@ -18,7 +18,7 @@
 #include <vsip_csl/save_view.hpp>
 
 #include "util.hpp"
-
+#include "test_common.hpp"
 
 /***********************************************************************
   Definitions

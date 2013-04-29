@@ -30,8 +30,8 @@ namespace impl
 {
 void decoder_read(png_structp png_ptr, png_bytep image, png_size_t length) 
 {
-  std::streambuf *input = static_cast<std::streambuf *>(png_ptr->io_ptr);
-  input->sgetn((char *)image, (size_t)length);
+  std::streambuf *input = static_cast<std::streambuf *>(png_get_io_ptr(png_ptr));
+  input->sgetn((char *)image, (std::size_t)length);
 }
 
 void decoder_warning(png_structp, png_const_charp msg)
@@ -46,13 +46,13 @@ void decoder_error(png_structp, png_const_charp msg)
 
 void encoder_write(png_structp png_ptr, png_bytep image, png_size_t length) 
 {
-  std::streambuf *sbuf = static_cast<std::streambuf *>(png_ptr->io_ptr);
-  sbuf->sputn((char*)image, (size_t)length);
+  std::streambuf *sbuf = static_cast<std::streambuf *>(png_get_io_ptr(png_ptr));
+  sbuf->sputn((char*)image, (std::size_t)length);
 }
 
 void encoder_flush(png_structp png_ptr) 
 {
-  std::streambuf *sbuf = static_cast<std::streambuf *>(png_ptr->io_ptr);
+  std::streambuf *sbuf = static_cast<std::streambuf *>(png_get_io_ptr(png_ptr));
   sbuf->pubsync();
 }
 
@@ -100,7 +100,7 @@ struct info
 
 class decoder 
 {
-  static size_t const magic_ = 8;
+  static std::size_t const magic_ = 8;
 public:
   decoder(std::streambuf *, info &);
   ~decoder();
@@ -108,7 +108,7 @@ public:
 
 private:
   std::streambuf *input_;
-  png_struct     *png_;
+  png_structp     png_;
   png_info       *info_;
   png_info       *end_;
 };
@@ -122,7 +122,7 @@ public:
 
 private:
   std::streambuf *output_;
-  png_struct     *png_;
+  png_structp     png_;
   png_info       *info_; 
 };
 

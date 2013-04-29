@@ -165,7 +165,7 @@ public:
     for (dimension_type d=0; d<dim; ++d)
       assert(out.size(d) == this->output_size()[d].size());
 
-    convolve(in.impl_view(), out.impl_view());
+    this->convolve(in.impl_view(), out.impl_view());
 
     return out;
   }
@@ -186,7 +186,7 @@ public:
     for (dimension_type d=0; d<dim; ++d)
       assert(out.size(d) == this->output_size()[d].size());
 
-    convolve(in, out);
+    this->convolve(in, out);
 
     return out;
   }
@@ -207,7 +207,7 @@ public:
     for (dimension_type d=0; d<dim; ++d)
       assert(out.size(d) == this->output_size()[d].size());
 
-    convolve(in, out);
+    this->convolve(in, out);
 
     return out;
   }

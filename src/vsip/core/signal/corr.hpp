@@ -144,7 +144,7 @@ public:
       assert(out.size(d) == this->output_size()[d].size());
     }
 
-    impl_correlate(bias, ref, in, out);
+    this->impl_correlate(bias, ref, in, out);
 
     return out;
   }
@@ -169,7 +169,7 @@ public:
       assert(out.size(d) == this->output_size()[d].size());
     }
 
-    impl_correlate(bias, ref, in, out);
+    this->impl_correlate(bias, ref, in, out);
 
     return out;
   }

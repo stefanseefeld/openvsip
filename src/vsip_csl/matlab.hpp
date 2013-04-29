@@ -13,13 +13,14 @@
 #include <vsip/core/length.hpp>
 #include <vsip/core/domain_utils.hpp>
 #include <vsip/core/inttypes.hpp>
+#include <vsip_csl/endian.hpp>
 #include <iostream>
 
 namespace vsip_csl
 {
-
 namespace matlab
 {
+ 
   struct data_element
   {
     vsip::impl::int32_type type;
@@ -65,88 +66,6 @@ namespace matlab
     static imagview_type imag(ViewT v) { return v; }
   };
 
-  template <typename T = char,
-	    bool to_swap_or_not_to_swap = false,
-            size_t type_size = sizeof(T),
-            bool IsComplex = vsip::impl::is_complex<T>::value>
-  struct Swap_value 
-  { 
-    static void swap(T *d) {d=d;} 
-  };
-
-  template <typename T>
-  struct Swap_value<T,true,2,false>
-  {
-    static void swap(T* d)
-    {
-      char *p = reinterpret_cast<char*>(d);
-      std::swap(p[0],p[1]);
-    }
-  };
-
-  template <typename T>
-  struct Swap_value<T,true,4,false>
-  {
-    static void swap(T* d)
-    {
-      char *p = reinterpret_cast<char*>(d);
-      std::swap(p[0],p[3]);
-      std::swap(p[1],p[2]);
-    }
-  };
-
-  template <typename T>
-  struct Swap_value<T,true,8,false>
-  {
-    static void swap(T* d)
-    {
-      char *p = reinterpret_cast<char*>(d);
-      std::swap(p[0],p[7]);
-      std::swap(p[1],p[6]);
-      std::swap(p[2],p[5]);
-      std::swap(p[3],p[4]);
-    }
-  };
-
-  template <typename T>
-  struct Swap_value<T,true,8,true>   // complex
-  {
-    static void swap(T* d)
-    {
-      char *p = reinterpret_cast<char*>(d);
-      std::swap(p[0],p[3]);
-      std::swap(p[1],p[2]);
-      std::swap(p[4],p[7]);
-      std::swap(p[5],p[6]);
-    }
-  };
-
-  template <typename T>
-  struct Swap_value<T,true,16,true>  // complex
-  {
-    static void swap(T* d)
-    {
-      char *p = reinterpret_cast<char*>(d);
-      std::swap(p[0],p[7]);
-      std::swap(p[1],p[6]);
-      std::swap(p[2],p[5]);
-      std::swap(p[3],p[4]);
-      std::swap(p[8],p[15]);
-      std::swap(p[9],p[14]);
-      std::swap(p[10],p[13]);
-      std::swap(p[11],p[12]);
-    }
-  };
-
-
-  // a swap wrapper function
-  template <typename T>
-  void swap(T *data, bool swap_bytes)
-  {
-    if(swap_bytes)
-      Swap_value<T,true>::swap(data);
-  }
-
   // swaps the header of a view
   template <vsip::dimension_type dim>
   void swap_header(view_header<dim> &header, bool swap_bytes)
@@ -156,20 +75,20 @@ namespace matlab
       typedef vsip::impl::int32_type int32_type;
       typedef vsip::impl::uint32_type uint32_type;
       // swap all fields
-      Swap_value<int32_type,true>::swap(&(header.header.type));
-      Swap_value<uint32_type,true>::swap(&(header.header.size));
-      Swap_value<int32_type,true>::swap(&(header.array_flags_header.type));
-      Swap_value<uint32_type,true>::swap(&(header.array_flags_header.size));
-      Swap_value<int32_type,true>::swap(&(header.dim_header.type));
-      Swap_value<uint32_type,true>::swap(&(header.dim_header.size));
-      Swap_value<int32_type,true>::swap(&(header.array_name_header.type));
-      Swap_value<uint32_type,true>::swap(&(header.array_name_header.size));
+      bswap(header.header.type);
+      bswap(header.header.size);
+      bswap(header.array_flags_header.type);
+      bswap(header.array_flags_header.size);
+      bswap(header.dim_header.type);
+      bswap(header.dim_header.size);
+      bswap(header.array_name_header.type);
+      bswap(header.array_name_header.size);
       for(vsip::index_type i=0;i<dim;i++)
-        Swap_value<uint32_type,true>::swap(&(header.dim[i]));
+        bswap(header.dim[i]);
       if (dim==1)
-        Swap_value<uint32_type,true>::swap(&(header.dim[1]));
+        bswap(header.dim[1]);
       for(vsip::index_type i=0;i<2;i++)
-        Swap_value<uint32_type,true>::swap(&(header.array_flags[i]));
+        bswap(header.array_flags[i]);
     }
   }
 
@@ -193,7 +112,7 @@ namespace matlab
     // read all the points
     for(vsip::index_type i=0;i<num_points;i++) {
       is.read(reinterpret_cast<char*>(&data),sizeof(data));
-      swap(&data,swap_bytes);
+      bswap(data, swap_bytes);
       put(v,my_index,scalar_type(data));
 
       // increment index
@@ -204,7 +123,8 @@ namespace matlab
     // Matlab data blocks must be padded to a multiple of 8 bytes.
     if (sizeof(data) < 8)
     {
-      for(vsip::index_type i = 0; i < (num_points % 8/sizeof(data)); i++) {
+      vsip::index_type fill = 8 / sizeof(data);
+      for(vsip::index_type i = 0; i < (fill - num_points) % fill; i++) {
         is.read(reinterpret_cast<char*>(&data),sizeof(data));
       }
     }
@@ -235,7 +155,8 @@ namespace matlab
     // Matlab data blocks must be padded to a multiple of 8 bytes.
     if (sizeof(data) < 8)
     {
-      for(vsip::index_type i = 0; i < (num_points % 8/sizeof(data)); i++) {
+      vsip::index_type fill = 8 / sizeof(data);
+      for(vsip::index_type i = 0; i < (fill - num_points) % fill; i++) {
         os.write(reinterpret_cast<char*>(&data),sizeof(data));
       }
     }

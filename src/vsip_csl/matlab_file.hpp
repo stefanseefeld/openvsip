@@ -4,15 +4,9 @@
    of a commercial license and under the GPL.  It is not part of the VSIPL++
    reference implementation and is not available under the BSD license.
 */
-/** @file    vsip_csl/matlab_file.hpp
-    @author  Assem Salama
-    @date    2006-06-21
-    @brief   VSIPL++ CodeSourcery Library: Matlab file class that handles
-             Matlab files using an iterator.
-*/
 
-#ifndef VSIP_CSL_MATLAB_FILE_HPP
-#define VSIP_CSL_MATLAB_FILE_HPP
+#ifndef vsip_csl_matlab_file_hpp_
+#define vsip_csl_matlab_file_hpp_
 
 #include <iostream>
 #include <fstream>
@@ -24,115 +18,112 @@ namespace vsip_csl
 
 class Matlab_file : vsip::impl::Non_copyable
 {
+public:
+  class iterator
+  {
+    friend class Matlab_file;
   public:
-    // Constructors
-    Matlab_file(std::string fname);
+    iterator(iterator const &obj)
+      : mf_(obj.mf_), end_iterator_(obj.end_iterator_) {}
 
-  // classes
-  public:
-    class iterator
+    iterator&
+    operator=(iterator const &src)
     {
-      private:
-        iterator(bool end_iterator,Matlab_file *mf) :
-	  mf_(mf),
-	  end_iterator_(end_iterator) {}
+      this->mf_           = src.mf_;
+      this->end_iterator_ = src.end_iterator_;
+      return *this;
+    }
+
+    void read_header() { mf_->is_ >> mf_->view_header_;}
+
+    iterator& operator++()
+    {
+      if(!mf_->read_data_)
+      {
+	// advance file pointer to next header
+	// make sure that we don't go beyond the end of file!
+	if(mf_->view_header_.next_header >= mf_->length_)
+	  mf_->end_of_file_ = true;
+	else 
+	  mf_->is_.seekg(mf_->view_header_.next_header);
+	
+      }
+      if(!mf_->end_of_file_) // read next header
+	read_header();
+      
+      mf_->read_data_ = false;
+      return *this;
+    }
+
+    bool operator==(iterator &i1) { return mf_->end_of_file_ == i1.end_iterator_;}
+    bool operator!=(iterator &i1) { return mf_->end_of_file_ != i1.end_iterator_;}
+    Matlab_view_header *operator*() { return &(mf_->view_header_);}
+
+  private:
+    iterator(bool end_iterator,Matlab_file *mf)
+      : mf_(mf), end_iterator_(end_iterator) {}
         
-      public:
-	// copy constructors
-	iterator(iterator const &obj) : 
-          mf_(obj.mf_), end_iterator_(obj.end_iterator_) {}
-
-        // = operator
-	iterator&
-	operator=(iterator const &src)
-	{
-	  this->mf_           = src.mf_;
-	  this->end_iterator_ = src.end_iterator_;
-	  return *this;
-	}
-
-	void read_header() { mf_->is_ >> mf_->view_header_; }
-
-      // operators
-      public:
-        iterator& operator++()
-	{
-	  if(!mf_->read_data_)
-	  {
-	    // advance file pointer to next header
-	    // make sure that we don't go beyond the end of file!
-	    if(mf_->view_header_.next_header >= mf_->length_)
-	      mf_->end_of_file_ = true;
-	    else 
-	      mf_->is_.seekg(mf_->view_header_.next_header);
-
-	  }
-	  if(!mf_->end_of_file_) // read next header
-            read_header();
-
-	  mf_->read_data_ = false;
-	  return *this;
-	}
-
-	bool operator==(iterator &i1)
-	{
-	  return mf_->end_of_file_ == i1.end_iterator_;
-	}
-
-	bool operator!=(iterator &i1)
-	{
-	  return mf_->end_of_file_ != i1.end_iterator_;
-	}
-
-	Matlab_view_header*
-	operator*()
-	{
-	  return &(mf_->view_header_);
-	}
-
-      private:
-        Matlab_file *mf_;
-        bool end_iterator_;
-
-      friend class Matlab_file;
-     
-    };
+    Matlab_file *mf_;
+    bool end_iterator_;
+  };
     
   friend class iterator;
 
-  public:
-    // iterator functions
-    iterator begin() { return begin_iterator_; };
-    iterator end() { return end_iterator_; };
+  Matlab_file(std::string fname);
 
-    // read a view from a matlab file after reading the header
-    template <typename T,
-	      typename Block0,
-	      template <typename,typename> class View>
-    void read_view(View<T,Block0> view, iterator  &iter);
+  iterator begin() { return begin_iterator_; };
+  iterator end() { return end_iterator_; };
 
-   Matlab_bin_hdr header() const { return matlab_header_; }
+  // read a view from a matlab file after reading the header
+  template <typename T,
+	    typename Block0,
+	    template <typename,typename> class View>
+  void read_view(View<T,Block0> view, iterator  &iter);
 
-  private:
-    Matlab_bin_hdr                    matlab_header_;
-    std::ifstream                     is_;
-    iterator                          begin_iterator_;
-    iterator                          end_iterator_;
+  Matlab_bin_hdr header() const { return matlab_header_;}
 
+private:
+  Matlab_bin_hdr                    matlab_header_;
+  std::ifstream                     is_;
+  iterator                          begin_iterator_;
+  iterator                          end_iterator_;
 
-  // these variables are used for the iterator
-  private:
-    Matlab_view_header view_header_;
-    bool read_data_;
-    bool end_of_file_;
-    vsip::impl::uint32_type length_;
-
+  Matlab_view_header view_header_;
+  bool read_data_;
+  bool end_of_file_;
+  vsip::impl::uint32_type length_;
 };
 
+Matlab_file::Matlab_file(std::string fname)
+  : is_(fname.c_str()),
+    begin_iterator_(false,this),
+    end_iterator_(true,this)
+{
+  // check to make sure we successfully opened the file
+  if (!is_)
+    VSIP_IMPL_THROW(std::runtime_error(
+      "Cannot open Matlab file '" + fname + "'"));
 
-/*****************************************************************************
- * Definitions
- *****************************************************************************/
+  // read header to make sure it is matlab file
+  is_ >> matlab_header_;
+
+  // get length of file
+  {
+    std::istream::off_type temp_offset = 0;
+    std::istream::pos_type temp_pos = is_.tellg();
+    is_.seekg(temp_offset,std::ios::end);
+    length_ = static_cast<vsip::impl::uint32_type>(is_.tellg());
+    is_.seekg(temp_pos);
+  }
+  view_header_.swap_bytes = matlab_header_.endian == ('I' << 8|'M');
+
+  // read first header
+  begin_iterator_.read_header();
+  // set the end_of_file_ flag
+  end_of_file_ = false;
+  read_data_ = false;
+
+}
 
 // read a view from a matlab file after reading the header
 template <typename T,
@@ -205,8 +196,8 @@ void Matlab_file::read_view(View<T,Block0> view, iterator  &iter)
             sizeof(temp_data_element));
 
     // should we swap this field?
-    matlab::swap<int32_type>(&(temp_data_element.type),swap_value);
-    matlab::swap<uint32_type>(&(temp_data_element.size),swap_value);
+    bswap(temp_data_element.type,swap_value);
+    bswap(temp_data_element.size,swap_value);
 
 
     // Because we don't know how the data was stored, we need to instantiate
@@ -254,7 +245,7 @@ void Matlab_file::read_view(View<T,Block0> view, iterator  &iter)
         matlab::read<uint32_type, i_v>(*is, subview::imag(view), swap_value);
     }
     else if(temp_data_element.type == matlab::miSINGLE) 
-      {
+    {
       if(i==0)
         matlab::read<float, r_v>(*is, subview::real(view), swap_value);
       else
@@ -267,12 +258,8 @@ void Matlab_file::read_view(View<T,Block0> view, iterator  &iter)
       else
         matlab::read<double, i_v>(*is, subview::imag(view), swap_value);
     }
-
   }
-
-
 }
-
 } // namespace vsip_csl
 
-#endif // VSIP_CSL_MATLAB_FILE_HPP
+#endif

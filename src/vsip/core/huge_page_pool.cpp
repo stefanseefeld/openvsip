@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include <vsip/core/config.hpp>
 #include <vsip/core/allocation.hpp>

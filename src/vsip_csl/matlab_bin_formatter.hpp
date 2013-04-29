@@ -11,8 +11,8 @@
 */
 
 /*  This file is written to conform to the Matlab .mat file specification,
-    downloaded from this url on 2009-04-23:
-    http://www.mathworks.com/access/helpdesk/help/pdf_doc/matlab/matfile_format.pdf
+    downloaded from this url on 2011-10-22:
+    http://www.mathworks.com/help/pdf_doc/matlab/matfile_format.pdf
 */
 
 #ifndef VSIP_CSL_MATLAB_BIN_FORMATTER_HPP
@@ -100,8 +100,8 @@ operator<<(
   matlab::File_header m_hdr;
 
   // set hdr to spaces
-  memset(&(m_hdr),' ',sizeof(m_hdr));
-  strncpy(m_hdr.description, h.description.data(), h.description.length());
+  std::memset(&(m_hdr),' ',sizeof(m_hdr));
+  std::strncpy(m_hdr.description, h.description.data(), h.description.length());
   m_hdr.version = 0x0100;
   m_hdr.endian = 'M' << 8 | 'I';
 
@@ -122,12 +122,12 @@ operator<<(
 {
   typedef typename vsip::impl::scalar_of<T>::type scalar_type;
   matlab::data_element temp_data_element;
-  size_t    sz;
+  std::size_t sz;
   matlab::view_header<vsip::impl::Dim_of_view<const_View>::dim > m_view;
   vsip::length_type num_points = mbf.view.size();
   vsip::dimension_type v_dims = vsip::impl::Dim_of_view<const_View>::dim;
 
-  memset(&m_view,0,sizeof(m_view));
+  std::memset(&m_view,0,sizeof(m_view));
 
   // matrix data type
   m_view.header.type = matlab::miMATRIX;
@@ -177,9 +177,16 @@ operator<<(
   sz = sizeof(m_view)-8;
   sz += mbf.name.length();
   sz += (8-mbf.name.length())&0x7;
-  sz += 8; // 8 bytes of header for real data
-  if(vsip::impl::is_complex<T>::value) sz += 8; // 8 more for complex data
-  sz += num_points*sizeof(T);
+  
+  std::size_t data_element_length = 8;			   // 8 bytes of header
+  data_element_length += num_points*sizeof(scalar_type);   // data elements
+  data_element_length += (8 - data_element_length) & 0x7;  // round up to 8 bytes
+  
+  sz += data_element_length;		// real data element
+
+  if(vsip::impl::is_complex<T>::value)
+    sz += data_element_length;		// imaginary data element
+
   m_view.header.size = sz;
 
   o.write(reinterpret_cast<char*>(&m_view),sizeof(m_view));
@@ -197,29 +204,8 @@ operator<<(
     // make sure we don't need a copy if we use DDA
     typedef vsip::dda::Data<Block0, vsip::dda::in,
       typename matlab::Matlab_desired_LP<const_View>::type> dda_type;
-    // This code block is disabled with '&& false' until we figure out how to
+    // This code block is disabled until we figure out how to
     // make it reliably produce column-major data and fix the padding.
-    if(dda_type::ct_cost==0 && false)
-    {
-      dda_type m_data(mbf.view.block());
-      typedef typename dda_type::storage_type storage_type;
-
-      temp_data_element.type = matlab::Matlab_header_traits<sizeof(scalar_type),
-                  std::numeric_limits<scalar_type>::is_signed,
-                  std::numeric_limits<scalar_type>::is_integer>::value_type;
-
-      temp_data_element.size = num_points*sizeof(scalar_type);
-      for(int i=0;i<=vsip::impl::is_complex<T>::value;i++)
-      {
-        o.write(reinterpret_cast<char*>(&temp_data_element),
-                  sizeof(temp_data_element));
-        if(i==0) o.write(reinterpret_cast<char const*>
-             (storage_type::get_real_ptr(m_data.ptr())), num_points*sizeof(scalar_type));
-        else o.write(reinterpret_cast<char const*>
-             (storage_type::get_imag_ptr(m_data.ptr())), num_points*sizeof(scalar_type));
-      }
-    }
-    else
     {
       typedef matlab::Subview_helper<const_View<T,Block0> > subview;
       typedef typename subview::realview_type r_v;
@@ -324,8 +310,8 @@ operator>>(
   if(is.gcount() < static_cast<std::streamsize>(sizeof(temp_element)))
     VSIP_IMPL_THROW(std::runtime_error(
       "Matlab_view_header(read): Unexpected end of file"));
-  matlab::swap<vsip::impl::int32_type> (&(temp_element.type),swap_bytes);
-  matlab::swap<vsip::impl::uint32_type>(&(temp_element.size),swap_bytes);
+  bswap(temp_element.type,swap_bytes);
+  bswap(temp_element.size,swap_bytes);
 
   if (temp_element.type != matlab::miMATRIX)
   {
@@ -350,8 +336,8 @@ operator>>(
   if(is.gcount() < static_cast<std::streamsize>(sizeof(temp_element)))
     VSIP_IMPL_THROW(std::runtime_error(
       "Matlab_view_header(read): Unexpected end of file"));
-  matlab::swap<vsip::impl::int32_type> (&(temp_element.type),swap_bytes);
-  matlab::swap<vsip::impl::uint32_type>(&(temp_element.size),swap_bytes);
+  bswap(temp_element.type,swap_bytes);
+  bswap(temp_element.size,swap_bytes);
 
   if (temp_element.type != matlab::miUINT32)
   {
@@ -375,7 +361,7 @@ operator>>(
     VSIP_IMPL_THROW(std::runtime_error(
      "Matlab_view_header(read): Unexpected end of file reading array flags"));
   for(index_type i=0;i<temp_element.size/4;i++)
-    matlab::swap<vsip::impl::uint32_type>(&(array_flags[i]),swap_bytes);
+    bswap(array_flags[i],swap_bytes);
 
   // is this complex?
   h.is_complex  = ((array_flags[0]&(1<<11)) == 1);
@@ -387,8 +373,8 @@ operator>>(
   if(is.gcount() < static_cast<std::streamsize>(sizeof(temp_element)))
     VSIP_IMPL_THROW(std::runtime_error(
       "Matlab_view_header(read): Unexpected end of file reading dimensions (1)"));
-  matlab::swap<vsip::impl::int32_type> (&(temp_element.type),swap_bytes);
-  matlab::swap<vsip::impl::uint32_type>(&(temp_element.size),swap_bytes);
+  bswap(temp_element.type,swap_bytes);
+  bswap(temp_element.size,swap_bytes);
 
   if ((temp_element.type & 0x0000ffff) != matlab::miINT32)
   {
@@ -414,7 +400,7 @@ operator>>(
   h.num_dims = temp_element.size/4;
   for(index_type i=0;i<temp_element.size/4;i++)
   {
-    matlab::swap<vsip::impl::uint32_type>(&(dims[i]),swap_bytes);
+    bswap(dims[i],swap_bytes);
     h.dims[i] = dims[i];
   }
 
@@ -424,7 +410,7 @@ operator>>(
   if(is.gcount() < static_cast<std::streamsize>(sizeof(temp_element)))
     VSIP_IMPL_THROW(std::runtime_error(
       "Matlab_view_header(read): Unexpected end of file reading array name (1)"));
-  matlab::swap<vsip::impl::int32_type>(&(temp_element.type),swap_bytes);
+  bswap(temp_element.type,swap_bytes);
   // Don't swab the length yet, it may be a string.
 
   if ((temp_element.type & 0x0000ffff) != matlab::miINT8)
@@ -441,12 +427,12 @@ operator>>(
   {
     int length = (temp_element.type & 0xffff0000) >> 16;
     // array name is short
-    strncpy(h.array_name, reinterpret_cast<char*>(&temp_element.size), length);
+    std::strncpy(h.array_name, reinterpret_cast<char*>(&temp_element.size), length);
     h.array_name[length] = 0;
   }
   else
   {
-    matlab::swap<vsip::impl::uint32_type>(&(temp_element.size),swap_bytes);
+    bswap(temp_element.size,swap_bytes);
     int length = temp_element.size;
     // the name is longer than 4 bytes
     if(length > 128)
@@ -597,8 +583,8 @@ operator>>(
         "Matlab_bin_formatter(read): Unexpected end of file (2)"));
 
     // should we swap this field?
-    matlab::swap<vsip::impl::int32_type>(&(temp_data_element.type),swap_value);
-    matlab::swap<vsip::impl::uint32_type>(&(temp_data_element.size),swap_value);
+    bswap(temp_data_element.type,swap_value);
+    bswap(temp_data_element.size,swap_value);
 
 
     // Because we don't know how the data was stored, we need to instantiate

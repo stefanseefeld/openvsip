@@ -14,12 +14,13 @@
   Included Files
 ***********************************************************************/
 
-#include <cstdlib>
-
+#include <vsip/support.hpp>
 #include <vsip/core/config.hpp>
 #include <vsip/core/layout.hpp>
 #include <vsip/core/profile.hpp>
 #include <complex>
+#include <cstdlib>
+#include <cstring>
 
 #if defined(HAVE_MALLOC_H)
 #  include <malloc.h>

@@ -30,26 +30,17 @@
 #include <vsip/core/working_view.hpp>
 #include <vsip/core/view_cast.hpp>
 
-#include <vsip_csl/matlab.hpp>
+#include <vsip_csl/endian.hpp>
 #include <vsip_csl/dda.hpp>
 
 namespace vsip_csl
 {
 
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
 /// Load values from a file descriptor into a VSIPL++ view.
-
 /// Note: assumes complex data on disk is always interleaved. 
-
 template <typename ViewT>
 void
-load_view(
-  FILE* fd,
-  ViewT view,
-  bool  swap_bytes = false)
+load_view(FILE* fd, ViewT view, bool  swap_bytes = false)
 {
   using namespace vsip;
   using vsip::get_block_layout;
@@ -65,7 +56,7 @@ load_view(
     typedef typename get_block_layout<l_block_type>::order_type order_type;
 
     typedef typename get_block_layout<l_block_type>::type layout_type;
-    typedef typename adjust_layout_storage_format<interleaved_complex, layout_type>::type
+    typedef typename adjust_layout_storage_format<array, layout_type>::type
       use_layout_type;
 
     l_view_type l_view = view.local();
@@ -101,30 +92,22 @@ load_view(
 
     l_pos *= sizeof(value_type);
 
-    size_t l_size = l_dom.size();
+    std::size_t l_size = l_dom.size();
 
     if (fseek(fd, l_pos, SEEK_SET) == -1)
-    {
-      fprintf(stderr, "load_view: error on fseek.\n");
-      exit(1);
-    }
+      VSIP_IMPL_THROW(std::runtime_error("load_view: error on fseek."));
 
-    size_t l_read = fread(data.ptr(), sizeof(value_type), l_size, fd);
+    std::size_t l_read = fread(data.ptr(), sizeof(value_type), l_size, fd);
     if (l_read != l_size)
-    {
-      std::cout << "load_view: error reading file %s." << std::endl;
-      std::cout << "         : read " << l_read << " elements" << std::endl;
-      std::cout << "         : expecting " << l_size << std::endl;
-      exit(1);
-    }
+      VSIP_IMPL_THROW(std::runtime_error("load_view: error on fread."));
 
     // Swap from either big- to little-endian, or vice versa.  We can do this
     // as if it were a 1-D view because it is guaranteed to be dense.
     if ( swap_bytes )
     {
       value_type* p_data = data.ptr();
-      for (size_t i = 0; i < l_size; ++i)
-        matlab::Swap_value<value_type,true>::swap(p_data++);
+      for (std::size_t i = 0; i < l_size; ++i)
+        bswap(*p_data++);
     }
   }
 }
@@ -132,26 +115,17 @@ load_view(
 
 
 /// Load values from a file into a VSIPL++ view.
-
 template <typename ViewT>
 void
-load_view(
-  char const* filename,
-  ViewT       view,
-  bool        swap_bytes = false)
+load_view(char const* filename, ViewT view, bool swap_bytes = false)
 {
   if (subblock(view) != vsip::no_subblock && subblock_domain(view).size() > 0)
   {
     FILE*  fd;
     
     if (!(fd = fopen(filename, "r")))
-    {
-      fprintf(stderr, "load_view: error opening '%s'.\n", filename);
-      exit(1);
-    }
-
+      VSIP_IMPL_THROW(std::runtime_error("load_view: error opening file."));
     load_view(fd, view, swap_bytes);
-
     fclose(fd);
   }
 }
@@ -159,22 +133,21 @@ load_view(
 
 
 /// Load a view from a file with another value type.
-
-/// Requires:
-///   T to be the type on disk.
-///   FILENAME to be filename.
-///   VIEW to be a VSIPL++ view.
 ///
-/// All other layout parameters (dimension-order and parallel
-/// distribution) are preserved.
-
+/// Template parameters:
+///   T: the type on disk.
+///
+/// Arguments:
+///   filename: the name of the file
+///   view: the view to be loaded
+///
+/// Note: 
+///   All other layout parameters (dimension-order and parallel
+///   distribution) are preserved.
 template <typename T,
           typename ViewT>
 void
-load_view_as(
-  char const* filename,
-  ViewT       view,
-  bool        swap_bytes = false)
+load_view_as(char const* filename, ViewT view, bool swap_bytes = false)
 {
   using vsip::get_block_layout;
   using vsip::impl::clone_view;

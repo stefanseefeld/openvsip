@@ -25,15 +25,11 @@
 #include <vsip/core/working_view.hpp>
 #include <vsip/core/view_cast.hpp>
 
-#include <vsip_csl/matlab.hpp>
+#include <vsip_csl/endian.hpp>
 #include <vsip_csl/dda.hpp>
 
 namespace vsip_csl
 {
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
 
 template <typename             OrderT,
 	  vsip::dimension_type Dim>
@@ -74,23 +70,20 @@ is_subdomain_contiguous(
 
 
 
-/// Save a view to a FILE*.
+/// Save a view to a file.
 ///
-/// Requires:
-///   FD to be a FILE open for writing.
-///   VIEW to be a VSIPL++ view.
-
+/// Arguments:
+///   fd: a FILE open for writing.
+///   view: a VSIPL++ view.
+///   swap_bytes: whether or not to change endianness.
 template <typename ViewT>
 void
-save_view(
-  FILE* fd,
-  ViewT view,
-  bool  swap_bytes = false)
+save_view(FILE* fd, ViewT view, bool  swap_bytes = false)
 {
   using vsip::get_block_layout;
   using vsip::dda::Data;
   using vsip::impl::adjust_layout_storage_format;
-  using vsip::interleaved_complex;
+  using vsip::array;
 
   if (subblock(view) != vsip::no_subblock)
   {
@@ -102,7 +95,7 @@ save_view(
     typedef typename get_block_layout<l_block_type>::order_type order_type;
 
     typedef typename get_block_layout<l_block_type>::type layout_type;
-    typedef typename adjust_layout_storage_format<interleaved_complex, layout_type>::type
+    typedef typename adjust_layout_storage_format<array, layout_type>::type
       use_layout_type;
 
     vsip::Domain<Dim> g_dom = global_domain(view);
@@ -131,33 +124,24 @@ save_view(
 
     l_pos *= sizeof(value_type);
 
-    size_t l_size = l_dom.size();
+    std::size_t l_size = l_dom.size();
 
     if (fseek(fd, l_pos, SEEK_SET) == -1)
-    {
-      fprintf(stderr, "save_view: error on fseek.\n");
-      exit(1);
-    }
+      VSIP_IMPL_THROW(std::runtime_error("save_view: error on fseek."));
 
     if ( swap_bytes )
     {
-      // Make a copy in order to swap the bytes prior to writing to disk
-      l_view_type l_view = vsip::impl::clone_view<l_view_type>(view.local());
-      l_view = view.local();
-      
-      dda::Data<l_block_type, dda::inout, use_layout_type> data(l_view.block());
+      l_view_type l_view = view.local();
+      dda::Data<l_block_type, dda::in, use_layout_type> data(l_view.block());
 
       // Swap from either big- to little-endian, or vice versa.  We can do this
       // as if it were a 1-D view because it is guaranteed to be dense.
       value_type* p_data = data.ptr();
-      for (size_t i = 0; i < l_size; ++i)
-        matlab::Swap_value<value_type,true>::swap(p_data++);
+      for (std::size_t i = 0; i < l_size; ++i)
+        bswap(*p_data++);
 
       if (fwrite(data.ptr(), sizeof(value_type), l_size, fd) != l_size)
-      {
-        fprintf(stderr, "save_view: error reading file.\n");
-        exit(1);
-      }
+	VSIP_IMPL_THROW(std::runtime_error("save_view: error writing file."));
     }
     else
     {
@@ -169,38 +153,27 @@ save_view(
       assert(vsip_csl::dda::is_data_dense<order_type>(Dim, data));
 
       if (fwrite(data.ptr(), sizeof(value_type), l_size, fd) != l_size)
-      {
-        fprintf(stderr, "save_view: error reading file.\n");
-        exit(1);
-      }
+	VSIP_IMPL_THROW(std::runtime_error("save_view: error writing file."));
     }
   }
 }
 
-
-
 /// Save a view to a file
 ///
-/// Requires:
-///   FILENAME to be filename.
-///   VIEW to be a VSIPL++ view.
-
+/// Arguments:
+///   filename: the name of the file
+///   view: the view to be saved
+///   swap_bytes: whether or not to change endianness.
 template <typename ViewT>
 void
-save_view(
-   char const* filename,
-   ViewT       view,
-   bool        swap_bytes = false)
+save_view(char const* filename, ViewT view, bool swap_bytes = false)
 {
   if (subblock(view) != vsip::no_subblock)
   {
     FILE*  fd;
     
     if (!(fd = fopen(filename, "w")))
-    {
-      fprintf(stderr, "save_view: error opening '%s'.\n", filename);
-      exit(1);
-    }
+      VSIP_IMPL_THROW(std::runtime_error("save_view: error opening file."));
 
     save_view(fd, view, swap_bytes);
 
@@ -208,21 +181,19 @@ save_view(
   }
 }
 
-
 /// Save a view to a file as another type
 ///
-/// Requires:
-///   T to be the desired type on disk.
-///   FILENAME to be filename.
-///   VIEW to be a VSIPL++ view.
-
+/// Template parameters:
+///   T: the desired type on disk.
+///
+/// Arguments:
+///   filename: the name of the file
+///   view: the view to be saved.
+///   swap_bytes: whether or not to change endianness.
 template <typename T,
           typename ViewT>
 void
-save_view_as(
-  char const* filename,
-  ViewT       view,
-  bool        swap_bytes = false)
+save_view_as(char const* filename, ViewT view, bool swap_bytes = false)
 {
   typedef typename vsip::impl::view_of<vsip::Dense<ViewT::dim, T> >::type view_type;
 
@@ -233,7 +204,6 @@ save_view_as(
   vsip_csl::save_view(filename, disk_view, swap_bytes);
 } 
 
-
 } // namespace vsip_csl
 
-#endif // VSIP_CSL_SAVE_VIEW_HPP
+#endif

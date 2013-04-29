@@ -20,6 +20,11 @@
 
 #include "benchmarks.hpp"
 
+#if !_WIN32
+# include <sys/types.h>
+# include <unistd.h>
+#endif
+
 using namespace vsip;
 
 extern int test(Loop1P& loop, int what);
@@ -209,13 +214,3 @@ main(int argc, char** argv)
   test(loop, what);
 }
 
-
-
-void marker1_start() {}
-void marker1_stop() {}
-void marker2_start() {}
-void marker2_stop() {}
-void marker3_start() {}
-void marker3_stop() {}
-void marker4_start() {}
-void marker4_stop() {}

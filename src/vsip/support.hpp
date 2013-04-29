@@ -19,6 +19,7 @@
 ***********************************************************************/
 
 #include <vsip/core/config.hpp>
+#include <vsip/core/complex_decl.hpp>
 #include <cassert>
 #include <stdexcept>
 #include <complex>
@@ -126,8 +127,8 @@ namespace vsip
 
 typedef float scalar_f;
 typedef int scalar_i;
-typedef std::complex<scalar_f> cscalar_f;
-typedef std::complex<scalar_i> cscalar_i;
+typedef complex<scalar_f> cscalar_f;
+typedef complex<scalar_i> cscalar_i;
 
 // Note: complex.hpp imports std::complex into the vsip namespace.
 
@@ -145,8 +146,8 @@ enum whole_domain_type { whole_domain};
 namespace impl 
 {
 
-typedef ptrdiff_t signed_index_type;
-typedef size_t unsigned_index_type;
+typedef std::ptrdiff_t signed_index_type;
+typedef std::size_t unsigned_index_type;
 
 } // namespace vsip::impl
 
@@ -329,8 +330,8 @@ using namespace vsip;
 namespace impl
 {
 using namespace vsip::impl;
-};
+}
 
 }
 
-#endif // VSIP_SUPPORT_HPP
+#endif
