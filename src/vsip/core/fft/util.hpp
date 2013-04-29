@@ -1,4 +1,10 @@
-/* Copyright (c) 2006 - 2010 by CodeSourcery.  All rights reserved. */
+//
+// Copyright (c) 2006 - 2010 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 /// Description
 ///   FFT common infrastructure used by all implementations.

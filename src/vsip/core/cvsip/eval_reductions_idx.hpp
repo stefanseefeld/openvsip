@@ -1,12 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/cvsip/eval_reductions_idx.hpp
-    @author  Jules Bergmann
-    @date    2006-12-08
-    @brief   VSIPL++ Library: Reduction_idx functions using C-VSIP BE.
-	     [math.fns.reductidx].
-
-*/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_CVSIP_REDUCTIONS_IDX_HPP
 #define VSIP_CORE_CVSIP_REDUCTIONS_IDX_HPP

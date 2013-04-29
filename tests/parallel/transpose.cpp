@@ -1,4 +1,10 @@
-/* Copyright (c) 2008 by CodeSourcery.  All rights reserved. */
+//
+// Copyright (c) 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.GPL file.
 
 /// Description
 ///   Unit tests for parallel matrix transpose.

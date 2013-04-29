@@ -1,14 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/expr/scalar_block.cpp
-    @author  Jules Bergmann
-    @date    2006-11-27
-    @brief   VSIPL++ Library: Scalar block class definitions.
-*/
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #include <vsip/core/expr/scalar_block.hpp>
 #include <vsip/core/parallel/global_map.hpp>

@@ -1,11 +1,10 @@
-/* Copyright (c) 2007 by CodeSourcery.  All rights reserved.
-*/
-/** @file    vsip/core/argv_utils.hpp
-    @author  Jules Bergmann
-    @date    2007-02-24
-    @brief   VSIPL++ Library: Utils for mucking with argv.
-
-*/
+//
+// Copyright (c) 2007 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_ARGV_UTILS_HPP
 #define VSIP_CORE_ARGV_UTILS_HPP

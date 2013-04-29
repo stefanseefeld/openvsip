@@ -1,10 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/equal.cpp
-    @author  Stefan Seefeld
-    @date    2006-04-20
-    @brief   VSIPL++ Library: Compare various objects for numeric equality.
-*/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_EQUAL_HPP
 #define VSIP_CORE_EQUAL_HPP

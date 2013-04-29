@@ -1,16 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/vector.hpp
-    @author  Zack Weinberg
-    @date    2005-01-24
-    @brief   VSIPL++ Library: [view.vector] views implementing
-             one-dimensional vectors.
-
-    This file declares the \c const_Vector and \c Vector classes,
-    which provide the generic View interface, and implement the
-    mathematical idea of vectors, i.e. one-dimensional storage and
-    access to values.  A \c const_Vector view is not modifiable, but a
-    \c Vector view is modifiable.  */
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_VECTOR_HPP
 #define VSIP_CORE_VECTOR_HPP

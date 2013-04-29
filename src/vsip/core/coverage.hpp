@@ -1,10 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/coverage.hpp
-    @author  Jules Bergmann
-    @date    2006-05-31
-    @brief   VSIPL++ Library: Coverage utilities.
-*/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_COVERAGE_HPP
 #define VSIP_CORE_COVERAGE_HPP

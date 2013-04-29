@@ -1,10 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/adjust_layout.hpp
-    @author  Jules Bergmann
-    @date    2006-02-02
-    @brief   VSIPL++ Library: Utilities to adjust layout policies.
-*/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_OPT_ADJUST_LAYOUT_HPP
 #define VSIP_OPT_ADJUST_LAYOUT_HPP

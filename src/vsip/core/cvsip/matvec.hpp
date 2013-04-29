@@ -1,11 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/cvsip/matvec.hpp
-    @author  Stefan Seefeld
-    @date    2006-10-25
-    @brief   VSIPL++ Library: C-VSIPL bindings for matvec operations.
-
-*/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_CVSIP_MATVEC_HPP
 #define VSIP_CORE_CVSIP_MATVEC_HPP

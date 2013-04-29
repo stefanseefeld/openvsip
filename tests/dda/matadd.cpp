@@ -1,36 +1,28 @@
-/* Copyright (c) 2005, 2006, 2008 by CodeSourcery.  All rights reserved.
+//
+// Copyright (c) 2005, 2006, 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.GPL file.
 
-   This file is available for license from CodeSourcery, Inc. under the terms
-   of a commercial license and under the GPL.  It is not part of the VSIPL++
-   reference implementation and is not available under the BSD license.
-*/
-/** @file    tests/extdata-matadd.cpp
-    @author  Jules Bergmann
-    @date    2005-02-14
-    @brief   VSIPL++ Library: Element-wise matrix add exmples/tests for DDI.
-
-    This file illustrates how data access may be used to perform
-    element-wise matrix add, in three different ways:
-
-     - A simple function for addition of matrices row by row, using
-       row/col stride information, with no attempt to re-arrange data
-       or select appropriate traversal based on layout. (matrix_add_1)
-
-     - A simple function for addition of matrices using row/col stride
-       information (relying on compiler strength reduction), with no
-       attempt to re-arrange data or select appropriate traversal
-       based on layout. (matrix_add_2)
-
-     - A more complex class template and gateway function design to
-       add matrices with an "appropriate" algorithm.  Algorithm is
-       selected based on dimension order (selection of row-major
-       traversal vs col-major traversal), and data layout (a single
-       loop can be used for dense/continguous data). (matrix_add).
-*/
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+//    This file illustrates how data access may be used to perform
+//    element-wise matrix add, in three different ways:
+//
+//     - A simple function for addition of matrices row by row, using
+//       row/col stride information, with no attempt to re-arrange data
+//       or select appropriate traversal based on layout. (matrix_add_1)
+//
+//     - A simple function for addition of matrices using row/col stride
+//       information (relying on compiler strength reduction), with no
+//       attempt to re-arrange data or select appropriate traversal
+//       based on layout. (matrix_add_2)
+//
+//     - A more complex class template and gateway function design to
+//       add matrices with an "appropriate" algorithm.  Algorithm is
+//       selected based on dimension order (selection of row-major
+//       traversal vs col-major traversal), and data layout (a single
+//       loop can be used for dense/continguous data). (matrix_add).
 
 #include <iostream>
 #include <cassert>

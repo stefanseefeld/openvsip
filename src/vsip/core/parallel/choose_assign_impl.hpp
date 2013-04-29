@@ -1,11 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/parallel/choose_assign_impl.hpp
-    @author  Jules Bergmann
-    @date    2006-08-29
-    @brief   VSIPL++ Library: Choose Par_assign impl tag.
-
-*/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_PARALLEL_CHOOSE_ASSIGN_IMPL_HPP
 #define VSIP_CORE_PARALLEL_CHOOSE_ASSIGN_IMPL_HPP

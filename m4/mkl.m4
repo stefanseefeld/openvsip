@@ -1,7 +1,10 @@
-dnl Copyright (c) 2010 by CodeSourcery, Inc.  All rights reserved.
 dnl
-dnl Contents: MKL configuration for Sourcery VSIPL++
+dnl Copyright (c) 2010 by CodeSourcery
+dnl Copyright (c) 2013 Stefan Seefeld
+dnl All rights reserved.
 dnl
+dnl This file is part of OpenVSIP. It is made available under the
+dnl license contained in the accompanying LICENSE.BSD file.
 
 AC_DEFUN([SVXX_CHECK_MKL],
 [

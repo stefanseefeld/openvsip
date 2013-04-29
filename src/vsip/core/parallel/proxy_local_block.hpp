@@ -1,11 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/proxy_local_block.hpp
-    @author  Jules Bergmann
-    @date    2005-08-21
-    @brief   VSIPL++ Library: ...
-
-*/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_PROXY_LOCAL_BLOCK_HPP
 #define VSIP_CORE_PROXY_LOCAL_BLOCK_HPP

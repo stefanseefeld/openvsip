@@ -1,11 +1,10 @@
-dnl Copyright (c) 2008 by CodeSourcery, Inc.  All rights reserved.
 dnl
-dnl File:   python.m4
-dnl Author: Stefan Seefeld
-dnl Date:   2008-04-17
+dnl Copyright (c) 2008 by CodeSourcery
+dnl Copyright (c) 2013 Stefan Seefeld
+dnl All rights reserved.
 dnl
-dnl Contents: python-bindings-related configuration
-dnl
+dnl This file is part of OpenVSIP. It is made available under the
+dnl license contained in the accompanying LICENSE.BSD file.
 
 AC_DEFUN([SVXX_CHECK_PYTHON],
 [

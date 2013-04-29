@@ -1,14 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery.  All rights reserved. */
-
-/** @file    simd.cpp
-    @author  Jules Bergmann
-    @date    2005-07-28
-    @brief   VSIPL++ Library: Unit tests for generic simd traits classes.
-*/
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.GPL file.
 
 #define VERBOSE 0
 

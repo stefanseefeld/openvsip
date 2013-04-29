@@ -1,10 +1,10 @@
-/* Copyright (c) 2005, 2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/block_fill.hpp
-    @author  Jules Bergmann
-    @date    2005-02-11
-    @brief   VSIPL++ Library: Fill block with value.
-*/
+//
+// Copyright (c) 2005, 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_BLOCK_FILL_HPP
 #define VSIP_CORE_BLOCK_FILL_HPP

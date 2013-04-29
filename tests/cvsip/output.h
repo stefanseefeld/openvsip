@@ -1,14 +1,10 @@
-/* Copyright (c) 2008 by CodeSourcery.  All rights reserved.
-
-   This file is available for license from CodeSourcery, Inc. under the terms
-   of a commercial license.  It is not part of the VSIPL++
-   reference implementation and is not available under the GPL or BSD licenses.
-*/
-/** @file    tests/cvsip/output.h
-    @author  Stefan Seefeld
-    @date    2008-05-02
-    @brief   view output support functions.
-*/
+//
+// Copyright (c) 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is made available under the GPL.
+// See the accompanying file LICENSE.GPL for details.
 
 #ifndef output_h_
 #define output_h_

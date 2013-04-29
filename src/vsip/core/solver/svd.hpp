@@ -1,4 +1,10 @@
-/* Copyright (c) 2005, 2006 by CodeSourcery, LLC.  All rights reserved. */
+//
+// Copyright (c) 2005, 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef vsip_core_solver_svd_hpp_
 #define vsip_core_solver_svd_hpp_

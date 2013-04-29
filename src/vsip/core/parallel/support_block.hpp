@@ -1,11 +1,10 @@
-/* Copyright (c) 2007 by CodeSourcery, Inc.  All rights reserved. */
-
-/** @file    vsip/core/parallel/support_block.hpp
-    @author  Jules Bergmann
-    @date    2007-05-07
-    @brief   VSIPL++ Library: Block versions of parallel support funcions.
-
-*/
+//
+// Copyright (c) 2007 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_PARALLEL_SUPPORT_BLOCK_HPP
 #define VSIP_CORE_PARALLEL_SUPPORT_BLOCK_HPP

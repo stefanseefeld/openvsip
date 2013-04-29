@@ -1,14 +1,11 @@
-/* Copyright (c) 2008 by CodeSourcery.  All rights reserved.
+//
+// Copyright (c) 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is made available under the GPL.
+// See the accompanying file LICENSE.GPL for details.
 
-   This file is available for license from CodeSourcery, Inc. under the terms
-   of a commercial license.  It is not part of the VSIPL++
-   reference implementation and is not available under the GPL or BSD licenses.
-*/
-/** @file    tests/cvsip/tensor.c
-    @author  Stefan Seefeld
-    @date    2008-05-02
-    @brief   tensor tests.
-*/
 #include <vsip.h>
 #include "output.h"
 #include "test.h"

@@ -1,9 +1,0 @@
-######################################################### -*-Makefile-*-
-#
-# Contents: Makefile for VSIPL++ example signal programs.
-#
-########################################################################
-
-targets := fft fft2d iir conv filter
-
-include ../common.mk

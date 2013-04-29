@@ -1,10 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/signal/conv_common.hpp
-    @author  Jules Bergmann
-    @date    08/31/2005
-    @brief   VSIPL++ Library: Common decls and functions for convolution.
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_SIGNAL_CONV_COMMON_HPP
 #define VSIP_CORE_SIGNAL_CONV_COMMON_HPP

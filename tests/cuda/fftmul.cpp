@@ -1,11 +1,10 @@
-/* Copyright (c) 2009 by CodeSourcery.  All rights reserved. */
-
-/** @file    examples/fconv_cuda.cpp
-    @author  Don McCoy
-    @date    2009-08-15
-    @brief   VSIPL++ Library: CUDA-based test for combined Fft + Multiply
-               evaluator.
-*/
+//
+// Copyright (c) 2009 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.GPL file.
 
 #include <vsip/initfin.hpp>
 #include <vsip/random.hpp>

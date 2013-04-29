@@ -1,14 +1,10 @@
-/* Copyright (c) 2007 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    tests/vmul_sizes.cpp
-    @author  Jules Bergmann
-    @date    2007-03-16
-    @brief   VSIPL++ Library: Check that range of vmul sizes are handled.
-*/
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+//
+// Copyright (c) 2007 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.GPL file.
 
 #define VERBOSE 0
 

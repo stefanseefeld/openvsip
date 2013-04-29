@@ -1,11 +1,10 @@
-/* Copyright (c) 2007 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/view_fwd.hpp
-    @author  Jules Bergmann
-    @date    2007-01-14
-    @brief   VSIPL++ Library: Forward declarations for Views.
-
-*/
+//
+// Copyright (c) 2007 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_VIEW_FWD_HPP
 #define VSIP_CORE_VIEW_FWD_HPP

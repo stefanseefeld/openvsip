@@ -1,11 +1,10 @@
-/* Copyright (c) 2005, 2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/solver/cholesky.hpp
-    @author  Jules Bergmann
-    @date    2005-09-09
-    @brief   VSIPL++ Library: Cholesky Linear system solver.
-
-*/
+//
+// Copyright (c) 2005, 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_SOLVER_CHOLESKY_HPP
 #define VSIP_CORE_SOLVER_CHOLESKY_HPP

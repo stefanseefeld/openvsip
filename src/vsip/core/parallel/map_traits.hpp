@@ -1,12 +1,10 @@
-/* Copyright (c) 2005, 2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/map_traits.hpp
-    @author  Jules Bergmann
-    @date    2005-10-31
-    @brief   VSIPL++ Library: Map traits.
-
-    Traits for map types.
-*/
+//
+// Copyright (c) 2005, 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_MAP_TRAITS_HPP
 #define VSIP_CORE_MAP_TRAITS_HPP

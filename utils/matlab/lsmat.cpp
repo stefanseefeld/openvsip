@@ -1,7 +1,7 @@
 /* Copyright (c) 2007 by CodeSourcery.  All rights reserved.
 
    This file is available for license from CodeSourcery, Inc. under the terms
-   of a commercial license and under the GPL.  It is not part of the VSIPL++
+   of a commercial license and under the GNU GPL version 2.0 or greater.  It is not part of the VSIPL++
    reference implementation and is not available under the BSD license.
 */
 

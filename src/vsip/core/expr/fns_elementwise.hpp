@@ -1,10 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/expr/fns_elementwise.hpp
-    @author  Stefan Seefeld
-    @date    2005-04-21
-    @brief   VSIPL++ Library: [math.fns.elementwise].
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_EXPR_FNS_ELEMENTWISE_HPP
 #define VSIP_CORE_EXPR_FNS_ELEMENTWISE_HPP

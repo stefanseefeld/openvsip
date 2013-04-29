@@ -1,19 +1,15 @@
-/* Copyright (c) 2008 by CodeSourcery, LLC.  All rights reserved. */
+//
+// Copyright (c) 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.GPL file.
 
-
-/** @file    tests/view_offset.cpp
-    @author  Jules Bergmann
-    @date    2008-02-22
-    @brief   VSIPL++ Library: Regression test for small (less than SIMD
-             width), unaligned element-wise vector operations that triggered
-	     a bug in the built-in generic SIMD routines.
+// Regression test for small (less than SIMD width), 
+// unaligned element-wise vector operations that triggered
+// a bug in the built-in generic SIMD routines.
      
-*/
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
-
 #define VERBOSE 0
 
 #if VERBOSE

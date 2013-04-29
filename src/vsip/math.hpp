@@ -1,12 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/math.hpp
-    @author  Jules Bergmann
-    @date    2005-03-31
-    @brief   VSIPL++ Library: Mathematical functions and operations
-	     [math].
-
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_MATH_HPP
 #define VSIP_MATH_HPP

@@ -1,15 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/complex_decl.hpp
-    @author  Jules Bergmann
-    @date    2005-07-25
-    @brief   VSIPL++ Library: Declarations for [complex] complex numbers.
-
-    This file declares the vsip::complex and vsip::polar types (which
-    are synonyms for std::complex and std::polar), and related
-    functions as specified in the [complex] section of the VSIPL++
-    specifiction.
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_COMPLEX_DECL_HPP
 #define VSIP_CORE_COMPLEX_DECL_HPP

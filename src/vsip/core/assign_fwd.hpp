@@ -1,15 +1,10 @@
-/* Copyright (c) 2009 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/assign_fwd.hpp
-    @author  Stefan Seefeld
-    @date    2009-07-15
-    @brief   VSIPL++ Library: view / block assignment forward declarations.
-
-    Separating declarations here allows eval/diag.hpp to be used
-    from headers that are included by assign.hpp, for
-    example, in eval_fastconv.hpp.
-
-*/
+//
+// Copyright (c) 2009 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_ASSIGN_FWD_HPP
 #define VSIP_CORE_ASSIGN_FWD_HPP

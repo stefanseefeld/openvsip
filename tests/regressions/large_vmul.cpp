@@ -1,16 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    tests/regressions/large_vmul.cpp
-    @author  Jules Bergmann
-    @date    2007-04-13
-    @brief   VSIPL++ Library: Regression for large complex vmul.
-
-    Caused segfault when run with 1 SPE.
-*/
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.GPL file.
 
 #define VERBOSE 0
 

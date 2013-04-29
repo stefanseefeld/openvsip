@@ -1,12 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/aligned_allocator.hpp
-    @author  Jules Bergmann
-    @date    2005-05-23
-    @brief   VSIPL++ Library: Aligned Allocator
-
-    Based on default allocator from Josuttis Ch. 15.
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_ALIGNED_ALLOCATOR_HPP
 #define VSIP_CORE_ALIGNED_ALLOCATOR_HPP

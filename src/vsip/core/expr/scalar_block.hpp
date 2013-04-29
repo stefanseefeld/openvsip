@@ -1,12 +1,10 @@
-/* Copyright (c) 2005, 2006, 2007 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/expr/scalar_block.hpp
-    @author  Stefan Seefeld
-    @date    2005-01-20
-    @brief   VSIPL++ Library: Scalar block class template.
-
-    This file defines the Scalar_block class templates.
-*/
+//
+// Copyright (c) 2005, 2006, 2007 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_EXPR_SCALAR_BLOCK_HPP
 #define VSIP_CORE_EXPR_SCALAR_BLOCK_HPP

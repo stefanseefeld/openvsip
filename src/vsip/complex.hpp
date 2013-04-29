@@ -1,20 +1,10 @@
-/* Copyright (c) 2005,2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    complex.hpp
-    @author  Jules Bergmann
-    @date    2005-03-17
-    @brief   VSIPL++ Library: [complex] complex numbers.
-
-    This file (via complex-decl and math) declares of vsip::complex
-    (which is a synonym for std::complex) and related functions as
-    specified in the [complex] section of the VSIPL++ specifiction.
-
-    vsip::complex declaration and functions not explicitly specified
-    in [math.fns.elementwise] are declared in vsip/core/complex_decl.hpp.
-
-    Functions from [math.fns.elementwise] are covered in
-    vsip/core/fns_elementwise.hpp, which is included from vsip/math.hpp.
-*/
+//
+// Copyright (c) 2005,2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_COMPLEX_HPP
 #define VSIP_COMPLEX_HPP

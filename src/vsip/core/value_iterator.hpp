@@ -1,13 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/value_iterator.hpp
-    @author  Jules Bergmann
-    @date    2005-02-16
-    @brief   VSIPL++ Library: Value Iterator.
-
-    Value iterator that iterates over a sequence of values expressed
-    by a current value and an increment.
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_VALUE_ITERATOR_HPP
 #define VSIP_CORE_VALUE_ITERATOR_HPP

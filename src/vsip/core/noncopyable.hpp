@@ -1,12 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/noncopyable.hpp
-    @author  Stefan Seefeld
-    @date    2005-03-01
-    @brief   VSIPL++ Library: Non_copyable base class.
-
-    This file defines the Non_copyable base class.
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_NONCOPYABLE_HPP
 #define VSIP_CORE_NONCOPYABLE_HPP

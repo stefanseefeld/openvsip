@@ -1,11 +1,10 @@
-/* Copyright (c) 2005, 2006 CodeSourcery.  All rights reserved.  */
-
-/** @file    vsip/core/counter.hpp
-    @author  Zack Weinberg
-    @date    2005-01-21
-    @brief   VSIPL++ Library: Checked counter classes.
- 
-    This file defines classes useful in use and reference counting.  */
+//
+// Copyright (c) 2005, 2006 CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_COUNTER_HPP
 #define VSIP_CORE_COUNTER_HPP

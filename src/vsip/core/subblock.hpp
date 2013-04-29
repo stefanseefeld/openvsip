@@ -1,30 +1,31 @@
-/* Copyright (c) 2005, 2006, 2008 by CodeSourcery.  All rights reserved. */
+//
+// Copyright (c) 2005, 2006, 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
-/** @file    vsip/core/subblock.hpp
-    @author  Zack Weinberg
-    @date    2005-01-28
-    @brief   VSIPL++ Library: Subblock classes.
-
-  This file implements Block-interface classes which wrap other Blocks
-  and rearrange the data they carry.  Currently we provide four wrappers:
-
-  1) Component_block: For blocks with complex values, expose only the
-     real or imaginary components of those values.  Could be
-     generalized to blocks with other non-scalar element types,
-     e.g. quaternions, if anyone ever wants them.
-
-  2) Transposed_block, Permuted_block: Reorder the indices of an
-     N-dimensional block (N>1).
-
-  3) Sliced_block: Bind one of the indices of an N-dimensional block (N>1)
-     to a constant, producing an (N-1)-dimensional block.  For example,
-     this can be used to extract a row or column vector from a matrix.
-
-  4) Subset_block: Without changing the dimensionality of a block,
-     restrict access to a subset of its values: every other element of
-     a 1-dimensional vector, or the upper left 3x3 of a 9x9 matrix.
-     The subset pattern is restricted to what can be expressed by a
-     Domain<N> where N is the underlying block's dimensionality.   */
+//  This file implements Block-interface classes which wrap other Blocks
+//  and rearrange the data they carry.  Currently we provide four wrappers:
+//
+//  1) Component_block: For blocks with complex values, expose only the
+//     real or imaginary components of those values.  Could be
+//     generalized to blocks with other non-scalar element types,
+//     e.g. quaternions, if anyone ever wants them.
+//
+//  2) Transposed_block, Permuted_block: Reorder the indices of an
+//     N-dimensional block (N>1).
+//
+//  3) Sliced_block: Bind one of the indices of an N-dimensional block (N>1)
+//     to a constant, producing an (N-1)-dimensional block.  For example,
+//     this can be used to extract a row or column vector from a matrix.
+//
+//  4) Subset_block: Without changing the dimensionality of a block,
+//     restrict access to a subset of its values: every other element of
+//     a 1-dimensional vector, or the upper left 3x3 of a 9x9 matrix.
+//     The subset pattern is restricted to what can be expressed by a
+//     Domain<N> where N is the underlying block's dimensionality.   */
 
 #ifndef VSIP_CORE_SUBBLOCK_HPP
 #define VSIP_CORE_SUBBLOCK_HPP

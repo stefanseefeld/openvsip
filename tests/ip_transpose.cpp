@@ -1,14 +1,10 @@
-/* Copyright (c) 2008 by CodeSourcery.  All rights reserved. */
-
-/** @file    tests/ip_transpose.cpp
-    @author  Jules Bergmann
-    @date    2008-06-16
-    @brief   VSIPL++ Library: Unit tests for in-place transpose.
-*/
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+//
+// Copyright (c) 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.GPL file.
 
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>

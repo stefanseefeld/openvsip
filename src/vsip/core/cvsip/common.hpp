@@ -1,10 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/cvsip/common.hpp
-    @author  Stefan Seefeld
-    @date    2006-10-30
-    @brief   VSIPL++ Library: common code used in the C-VSIPL backend.
-*/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_CVSIP_COMMON_HPP
 #define VSIP_CORE_CVSIP_COMMON_HPP

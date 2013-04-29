@@ -1,11 +1,10 @@
-dnl Copyright (c) 2005-2010 by CodeSourcery, Inc.  All rights reserved.
 dnl
-dnl File:   configure.ac
-dnl Author: Stefan Seefeld
-dnl Date:   2005-03-30
+dnl Copyright (c) 2005-2010 by CodeSourcery
+dnl Copyright (c) 2013 Stefan Seefeld
+dnl All rights reserved.
 dnl
-dnl Contents: configuration for Sourcery VSIPL++
-dnl
+dnl This file is part of OpenVSIP. It is made available under the
+dnl license contained in the accompanying LICENSE.BSD file.
 
 dnl ------------------------------------------------------------------
 dnl Autoconf initialization
@@ -30,9 +29,6 @@ AC_INIT(Sourcery VSIPL++, 3.1-4,
 #  be used.  The primary purpose of the option is turning on
 #  the feature, the secondary purpose is specifying which
 #  external code to use to enable that feature.
-
-
-SVXX_RELEASE
 
 # These may get set from different backend checks.
 provide_fft_float=
@@ -199,9 +195,6 @@ AC_ARG_WITH(ipp_suffix,
 		  a6, em64t, i7, m7, mx, px, t7, w7.  E.g. a6 => -lippsa6.
                   TARGET may be the empty string.]),
   )
-
-### Cell Broadband Engine
-SVXX_CHECK_CBE
 
 ### C-VSIPL
 AC_ARG_ENABLE([cvsip],,  

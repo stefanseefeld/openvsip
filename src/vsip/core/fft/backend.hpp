@@ -1,13 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/fft/backend.hpp
-    @author  Stefan Seefeld
-    @date    2006-02-17
-    @brief   VSIPL++ Library: fft backend interfaces.
-
-    This file defines fft backend interfaces to be implemented by
-    third-party library bridges.
-*/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_FFT_BACKEND_HPP
 #define VSIP_CORE_FFT_BACKEND_HPP

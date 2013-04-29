@@ -1,14 +1,10 @@
-/* Copyright (c) 2005 CodeSourcery, LLC.  All rights reserved.  */
-
-/** @file    initfin.hpp
-    @author  Zack Weinberg
-    @date    2005-01-19
-    @brief   VSIPL++ Library: [initfin] Initialization and finalization.
- 
-   This file declares the mechanism for initialization and
-   finalization of the library's private data structures.  Use of any
-   library routines while no \c vsipl object exists provokes
-   undefined behavior.  */
+//
+// Copyright (c) 2005 CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_INITFIN_HPP
 #define VSIP_INITFIN_HPP

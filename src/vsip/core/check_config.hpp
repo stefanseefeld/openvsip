@@ -1,10 +1,10 @@
-/* Copyright (c) 2006, 2007, 2008 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/check_config.hpp
-    @author  Jules Bergmann
-    @date    2006-10-04
-    @brief   VSIPL++ Library: Check library configuration.
-*/
+//
+// Copyright (c) 2006, 2007, 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_IMPL_CHECK_CONFIG_HPP
 #define VSIP_IMPL_CHECK_CONFIG_HPP

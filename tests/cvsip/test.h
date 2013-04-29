@@ -1,10 +1,10 @@
-/* Copyright (c) 2008 by CodeSourcery.  All rights reserved.
-*/
-/** @file    test.h
-    @author  Stefan Seefeld
-    @date    2008-05-19
-    @brief   testing routines for C-VSIPL tests.
-*/
+//
+// Copyright (c) 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is made available under the GPL.
+// See the accompanying file LICENSE.GPL for details.
 
 #include <math.h>
 

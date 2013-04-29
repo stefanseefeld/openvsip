@@ -1,11 +1,10 @@
-/* Copyright (c) 2005, 2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/parallel/none.hpp
-    @author  Jules Bergmann
-    @date    2005-03-30
-    @brief   VSIPL++ Library: Parallel Services: no services
-
-*/
+//
+// Copyright (c) 2005, 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_IMPL_PAR_SERVICES_NONE_HPP
 #define VSIP_IMPL_PAR_SERVICES_NONE_HPP

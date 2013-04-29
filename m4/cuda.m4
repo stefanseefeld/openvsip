@@ -1,11 +1,10 @@
-dnl Copyright (c) 2007 by CodeSourcery, Inc.  All rights reserved.
 dnl
-dnl File:   cuda.m4
-dnl Author: Stefan Seefeld
-dnl Date:   2009-02-12
+dnl Copyright (c) 2007 by CodeSourcery
+dnl Copyright (c) 2013 Stefan Seefeld
+dnl All rights reserved.
 dnl
-dnl Contents: CUDA configuration for Sourcery VSIPL++
-dnl
+dnl This file is part of OpenVSIP. It is made available under the
+dnl license contained in the accompanying LICENSE.BSD file.
 
 AC_DEFUN([SVXX_CHECK_CUDA],
 [

@@ -1,13 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/parallel/services.hpp
-    @author  Jules Bergmann
-    @date    2005-03-25
-    @brief   VSIPL++ Library: Common header for parallel services.
-
-    This file includes the "real" parallel services header and provides
-    common functions not specific to a particular service.
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_PARALLEL_HPP
 #define VSIP_CORE_PARALLEL_HPP

@@ -1,14 +1,10 @@
-/* Copyright (c) 2008 by CodeSourcery.  All rights reserved. */
-
-/** @file    tests/regressions/vmmul_rz_col.cpp
-    @author  Jules Bergmann
-    @date    2008-12-30
-    @brief   VSIPL++ Library: Regression test for vmmul (issue #243).
-*/
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+//
+// Copyright (c) 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.GPL file.
 
 #define SHOW_DIAG 0
 #define VERBOSE 0

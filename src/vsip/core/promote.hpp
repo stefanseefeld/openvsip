@@ -1,13 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/promote.hpp
-    @author  Stefan Seefeld
-    @date    2005-01-25
-    @brief   VSIPL++ Library: [math.fns.promotion] Promotion traits.
-
-    This file defines Promotion traits used to declare value types for
-    arithmetic expressions.
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_PROMOTE_HPP
 #define VSIP_CORE_PROMOTE_HPP

@@ -1,11 +1,10 @@
-/* Copyright (c) 2006, 2007, 2008 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/parallel/subset_map_decl.hpp
-    @author  Jules Bergmann
-    @date    2006-12-10
-    @brief   VSIPL++ Library: Map class for distributed subsets.
-
-*/
+//
+// Copyright (c) 2006, 2007, 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_PARALLEL_SUBSET_MAP_DECL_HPP
 #define VSIP_CORE_PARALLEL_SUBSET_MAP_DECL_HPP

@@ -1,13 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/vertex.hpp
-    @author  Stefan Seefeld
-    @date    2005-01-20
-    @brief   VSIPL++ Library: Helper type.
-
-    This file declares the a helper template from which other types such as
-    Index are instantiated.
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_VERTEX_HPP
 #define VSIP_CORE_VERTEX_HPP

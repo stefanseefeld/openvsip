@@ -1,10 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/signal/freqswap.hpp
-    @author  Don McCoy
-    @date    2005-11-29
-    @brief   VSIPL++ Library: Frequency swap functions [signal.freqswap]
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_SIGNAL_FREQSWAP_HPP
 #define VSIP_CORE_SIGNAL_FREQSWAP_HPP

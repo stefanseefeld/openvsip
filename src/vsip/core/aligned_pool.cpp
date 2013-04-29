@@ -1,14 +1,10 @@
-/* Copyright (c) 2007, 2008 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/aligned_pool.cpp
-    @author  Jules Bergmann
-    @date    2007-04-12
-    @brief   VSIPL++ Library: Aligned memory allocation pool
-*/
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+//
+// Copyright (c) 2007, 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #include <vsip/support.hpp>
 #include <vsip/core/config.hpp>

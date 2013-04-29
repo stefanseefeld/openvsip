@@ -1,14 +1,11 @@
-/* Copyright (c) 2008 by CodeSourcery.  All rights reserved.
+//
+// Copyright (c) 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is made available under the GPL.
+// See the accompanying file LICENSE.GPL for details.
 
-   This file is available for license from CodeSourcery, Inc. under the terms
-   of a commercial license.  It is not part of the VSIPL++
-   reference implementation and is not available under the GPL or BSD licenses.
-*/
-/** @file    tests/cvsip/dda.c
-    @author  Stefan Seefeld
-    @date    2008-11-10
-    @brief   direct data access tests.
-*/
 #include <vsip_csl.h>
 #include "output.h"
 #include "test.h"

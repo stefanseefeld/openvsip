@@ -1,13 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/fns_userelt.hpp
-    @author  Stefan Seefeld
-    @date    2005-07-27
-    @brief   VSIPL++ Library: [math.fns.userelt]
-
-    This file defines an extension mechanism for user-specified
-    functions applied in expression templates.
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_FNS_USERELT_HPP
 #define VSIP_CORE_FNS_USERELT_HPP

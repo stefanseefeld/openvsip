@@ -1,11 +1,10 @@
-/* Copyright (c) 2006, 2008 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/cvsip/qr.hpp
-    @author  Assem Salama
-    @date    2006-10-26
-    @brief   VSIPL++ Library: QR linear system solver using CVSIP.
-
-*/
+//
+// Copyright (c) 2006, 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_CVSIP_SOLVER_QR_HPP
 #define VSIP_CORE_CVSIP_SOLVER_QR_HPP

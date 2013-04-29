@@ -1,11 +1,10 @@
-dnl Copyright (c) 2007 by CodeSourcery, Inc.  All rights reserved.
 dnl
-dnl File:   cvsip.m4
-dnl Author: Stefan Seefeld
-dnl Date:   2007-12-28
+dnl Copyright (c) 2007 by CodeSourcery
+dnl Copyright (c) 2013 Stefan Seefeld
+dnl All rights reserved.
 dnl
-dnl Contents: C-VSIPL configuration for Sourcery VSIPL++
-dnl
+dnl This file is part of OpenVSIP. It is made available under the
+dnl license contained in the accompanying LICENSE.BSD file.
 
 AC_DEFUN([SVXX_CHECK_CVSIP],
 [

@@ -1,11 +1,10 @@
-/* Copyright (c) 2005, 2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/view_cast.hpp
-    @author  Jules Bergmann
-    @date    2005-06-15
-    @brief   VSIPL++ Library: View cast class.
-
-*/
+//
+// Copyright (c) 2005, 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_VIEW_CAST_HPP
 #define VSIP_CORE_VIEW_CAST_HPP

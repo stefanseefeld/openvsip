@@ -1,14 +1,14 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
-/** @file    vsip/random.hpp
-    @author  Don McCoy
-    @date    2005-09-02
-    @brief   VSIPL++ Library: Random number generation [random]
-
-    The core portion of the random number generator is taken 
-    from TASP VSIPL.  See http://www.vsipl.org/software/ for
-    copyright notice and additional information.
-*/
+// The core portion of the random number generator is taken 
+// from TASP VSIPL.  See http://www.vsipl.org/software/ for
+// copyright notice and additional information.
 
 #ifndef VSIP_RANDOM_HPP
 #define VSIP_RANDOM_HPP

@@ -1,17 +1,17 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
-/** @file    vsip/core/working-view.hpp
-    @author  Jules Bergmann
-    @date    2005-12-27
-    @brief   VSIPL++ Library: Utilities for local working views.
-
-    Used for working with distributed data by replicating a copy locally
-    to each processor.
-     - Assign_local() transfers data between local and distributed views.
-     - Working_view_holder creates a local working view of an argument,
-       either replicating a distributed view to a local copy, or aliasing
-       a local view.
-*/
+//    Used for working with distributed data by replicating a copy locally
+//    to each processor.
+//     - Assign_local() transfers data between local and distributed views.
+//     - Working_view_holder creates a local working view of an argument,
+//       either replicating a distributed view to a local copy, or aliasing
+//       a local view.
 
 #ifndef VSIP_CORE_WORKING_VIEW_HPP
 #define VSIP_CORE_WORKING_VIEW_HPP

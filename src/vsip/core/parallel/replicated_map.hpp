@@ -1,11 +1,10 @@
-/* Copyright (c) 2005, 2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/replicated_map.hpp
-    @author  Jules Bergmann
-    @date    2005-06-08
-    @brief   VSIPL++ Library: Replicated_map class.
-
-*/
+//
+// Copyright (c) 2005, 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_IMPL_REPLICATED_MAP_HPP
 #define VSIP_IMPL_REPLICATED_MAP_HPP

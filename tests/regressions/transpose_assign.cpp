@@ -1,22 +1,14 @@
-/* Copyright (c) 2006 by CodeSourcery.  All rights reserved.
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.GPL file.
 
-   This file is available for license from CodeSourcery, Inc. under the terms
-   of a commercial license and under the GPL.  It is not part of the VSIPL++
-   reference implementation and is not available under the BSD license.
-*/
-/** @file    tests/regressions/transpose_assign.cpp
-    @author  Jules Bergmann
-    @date    2006-09-14
-    @brief   VSIPL++ Library: Regression test for transpose assignment.
-
-    This test triggers a bug with Intel C++ for Windows 9.1 Build 20060816Z,
-    32-bit version.  Soucery VSIPL++ works around this bug by disabling
-    some dispatch in fast-transpose.hpp.
-*/
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+//    This test triggers a bug with Intel C++ for Windows 9.1 Build 20060816Z,
+//    32-bit version.  Soucery VSIPL++ works around this bug by disabling
+//    some dispatch in fast-transpose.hpp.
 
 #include <memory>
 #include <iostream>

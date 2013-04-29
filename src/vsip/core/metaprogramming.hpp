@@ -1,10 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/metaprogramming.hpp
-    @author  Jules Bergmann
-    @date    2005-04-11
-    @brief   VSIPL++ Library: Utilities for meta-programming with templates.
-*/
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_METAPROGRAMMING_HPP
 #define VSIP_CORE_METAPROGRAMMING_HPP

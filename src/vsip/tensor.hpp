@@ -1,16 +1,10 @@
-/* Copyright (c) 2005 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    tensor.hpp
-    @author  Stefan Seefeld
-    @date    2005-04-26
-    @brief   VSIPL++ Library: [view.tensor] views implementing
-             three-dimensional tensors.
-
-    This file declares the \c const_Tensor and \c Tensor classes,
-    which provide the generic View interface, and implement the
-    mathematical idea of matrices, i.e. two-dimensional storage and
-    access to values.  A \c const_Tensor view is not modifiable, but a
-    \c Tensor view is modifiable.  */
+//
+// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_TENSOR_HPP
 #define VSIP_TENSOR_HPP

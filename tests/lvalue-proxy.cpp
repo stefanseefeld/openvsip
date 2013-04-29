@@ -1,16 +1,10 @@
-/* Copyright (c) 2005, 2006, 2008 by CodeSourcery.  All rights reserved.
-
-   This file is available for license from CodeSourcery, Inc. under the terms
-   of a commercial license and under the GPL.  It is not part of the VSIPL++
-   reference implementation and is not available under the BSD license.
-*/
-/** @file    tests/lvalue_proxy.hpp
-    @author  Zack Weinberg
-    @date    2005-05-04
-    @brief   VSIPL++ Library: Lvalue proxy objects (tests).
-
-    Explicit instantiation of lvalue proxy objects and tests of their
-    functionality.  */
+//
+// Copyright (c) 2005, 2006, 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.GPL file.
 
 #include <vsip/core/lvalue_proxy.hpp>
 #include <vsip/core/static_assert.hpp>

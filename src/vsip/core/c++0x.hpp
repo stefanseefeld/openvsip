@@ -1,4 +1,11 @@
-/* Copyright (c) 2009 by CodeSourcery.  All rights reserved. */
+//
+// Copyright (c) 2009 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
+
 
 /// Description
 ///   C++0x bits that we can't use from libstdc++ just yet.

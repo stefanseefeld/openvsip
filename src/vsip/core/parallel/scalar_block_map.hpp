@@ -1,11 +1,10 @@
-/* Copyright (c) 2006, 2007 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/parallel/scalar_block_map.hpp
-    @author  Jules Bergmann
-    @date    2006-11-27
-    @brief   VSIPL++ Library: Scalar_block_map class.
-
-*/
+//
+// Copyright (c) 2006, 2007 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_PARALLEL_SCALAR_BLOCK_MAP_HPP
 #define VSIP_CORE_PARALLEL_SCALAR_BLOCK_MAP_HPP

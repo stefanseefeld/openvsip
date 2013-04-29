@@ -1,11 +1,10 @@
-/* Copyright (c) 2008 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/parallel/transpose_map.hpp
-    @author  Jules Bergmann
-    @date    2008-05-30
-    @brief   VSIPL++ Library: Map class for transposes.
-
-*/
+//
+// Copyright (c) 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_PARALLEL_TRANSPOSE_MAP_HPP
 #define VSIP_CORE_PARALLEL_TRANSPOSE_MAP_HPP

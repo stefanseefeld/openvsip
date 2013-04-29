@@ -1,10 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery, LLC.  All rights reserved. */
-
-/** @file    vsip/core/fft/no_fft.hpp
-    @author  Stefan Seefeld
-    @date    2006-05-01
-    @brief   VSIPL++ Library: FFT backend.
-*/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_CORE_FFT_NO_FFT_HPP
 #define VSIP_CORE_FFT_NO_FFT_HPP

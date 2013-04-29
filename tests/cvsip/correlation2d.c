@@ -1,18 +1,10 @@
-/* Copyright (c) 2008 by CodeSourcery.  All rights reserved.
-
-   This file is available for license from CodeSourcery, Inc. under the terms
-   of a commercial license.  It is not part of the VSIPL++
-   reference implementation and is not available under the GPL or BSD licenses.
-*/
-/** @file    correlation2d.c
-    @author  Jules Bergmann, Stefan Seefeld
-    @date    2008-06-17
-    @brief   VSIPL++ Library: Unit tests for [signal.correl] 2-D items.
-*/
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+//
+// Copyright (c) 2008 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is made available under the GPL.
+// See the accompanying file LICENSE.GPL for details.
 
 #include <vsip.h>
 #include "test.h"

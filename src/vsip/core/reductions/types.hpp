@@ -1,12 +1,10 @@
-/* Copyright (c) 2006 by CodeSourcery.  All rights reserved. */
-
-/** @file    vsip/core/reductions/types.hpp
-    @author  Jules Bergmann
-    @date    2006-01-10
-    @brief   VSIPL++ Library: Enumeration type for reduction functions.
-	     [math.fns.reductions].
-
-*/
+//
+// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2013 Stefan Seefeld
+// All rights reserved.
+//
+// This file is part of OpenVSIP. It is made available under the
+// license contained in the accompanying LICENSE.BSD file.
 
 #ifndef VSIP_IMPL_REDUCTIONS_TYPES_HPP
 #define VSIP_IMPL_REDUCTIONS_TYPES_HPP
