@@ -1,8 +1,0 @@
-2008-05-01  Don McCoy  <don@codesourcery.com>
-
-	* f2c.h: Fix definition of 'integer' to be consistent with the 
-	  other two copies of f2c.h in the clapack source tree.
-
-2007-04-22  Jules Bergmann  <jules@codesourcery.com>
-
-	* GNUmakefile.in: Use $OBJEXT.  Use $AR.  Update default .c.o rule.

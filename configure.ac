@@ -361,14 +361,8 @@ AC_ARG_ENABLE(shared-libs,
 
 # Find all template files and strip off the $srcdir and .in suffix.
 templates=`find $srcdir -name '_darcs' -prune -o	\
-	 -name 'atlas' -prune -o			\
-	 -name 'fftw' -prune -o			\
-	 -name 'TIMING' -prune -o			\
-	 -name 'TESTING' -prune -o			\
-	 -name 'BLAS' -prune -o				\
 	 -name '*.in' -print | 
            sed -e "s,^$srcdir/,,g" -e 's,\.in$,,g'`
-templates="$templates vendor/clapack/BLAS/SRC/GNUmakefile"
 
 AC_CONFIG_FILES([$templates])
 AC_CONFIG_HEADERS([src/vsip/core/acconfig.hpp])

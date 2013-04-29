@@ -16,17 +16,6 @@ AC_ARG_WITH(f2c-abi,
             [use_f2c_abi=$withval])
 
 
-# This option allows the user to OVERRIDE the default CFLAGS for CLAPACK.
-# It is up to the user to try specifying his own set of CFLAGS. If this option
-# is not used, CLAPACK_CLFAGS defaults to CFLAGS. .in files will find this
-# value in CLAPACK_CFLAGS
-AC_ARG_WITH(clapack-cflags,
-  AS_HELP_STRING([--with-clapack-cflags=CLAPACK_CFLAGS],
-                 [Specify CFLAGS to use when building builtin clapack.
-		  Only used if --with-lapack=builtin.]),
-            [CLAPACK_CFLAGS=$withval],
-            [CLAPACK_CFLAGS=no])
-
 AC_ARG_ENABLE([lapack],,  
   AC_MSG_ERROR([The option --enable-lapack is not correct; use 
     --with-lapack instead.  (Run 'configure --help' for details)]),)
@@ -34,13 +23,12 @@ AC_ARG_ENABLE([lapack],,
 AC_ARG_WITH([lapack],
   AS_HELP_STRING([--with-lapack\[=PKG\]],
                  [Select one or more LAPACK libraries to search for.
-                  The default is to probe for atlas, generic, and builtin,
+                  The default is to probe for atlas and generic,
 	          using the first one found.  Sourcery VSIPL++ understands the
 		  following LAPACK library selections: mkl (Intel Math Kernel
 		  Library), acml (AMD Core Math Library), atlas (system
-		  ATLAS/LAPACK installation), generic (system generic
-		  LAPACK installation), and builtin (Sourcery VSIPL++'s
-		  builtin C-LAPACK). 
+		  ATLAS/LAPACK installation), and generic (system generic
+		  LAPACK installation). 
 		  Specifying 'no' disables the search for a LAPACK library.]),,
   [with_lapack=probe])
 
@@ -74,13 +62,6 @@ AC_ARG_WITH([cblas],
   AS_HELP_STRING([--without-cblas],
                  [Disable C BLAS API (default is to use it if possible)]),,
   [with_cblas=yes])
-
-# assign cflags to CLAPACK_CFLAGS if the user didn't use --with-clapack-cflags
-if test "$CLAPACK_CFLAGS" == "no"; then
-  CLAPACK_CFLAGS=$CFLAGS
-fi
-# let's not forget AC_SUBST!
-AC_SUBST(CLAPACK_CFLAGS)
 
 # Disable lapack if building ref-impl
 if test "$only_ref_impl" = "1"; then
@@ -129,7 +110,7 @@ if test "$with_lapack" != "no"; then
       lapack_packages="mkl"
     ;;
     yes | probe)
-      lapack_packages="atlas atlas_blas_v3 generic_wo_blas generic_with_blas generic_v3_wo_blas generic_v3_with_blas builtin"
+      lapack_packages="atlas atlas_blas_v3 generic_wo_blas generic_with_blas generic_v3_wo_blas generic_v3_with_blas"
     ;;
     generic)
       lapack_packages="generic_wo_blas generic_with_blas generic_v3_wo_blas generic_v3_with_blas"
@@ -280,66 +261,6 @@ if test "$with_lapack" != "no"; then
         cblas_style="0"	# no cblas.h
         lapack_use_ilaenv=0
       ;;
-      builtin_atlas | builtin)
-      
-	if test "$use_f2c_abi" = "no"; then
-	  AC_MSG_ERROR([The builtin lapack option requires the F2C ABI to be used.])
-	fi
-	use_f2c_abi="yes"
-        if test "$trypkg" = "builtin_atlas"; then
-          if test "$with_atlas_libdir" != ""; then
-  	    atlas_libdir=" -L$with_atlas_libdir"
-          elif test "$with_atlas_prefix" != ""; then
-	    atlas_libdir=" -L$with_atlas_prefix/lib"
-          else
-	    atlas_libdir=""
-          fi
-
-          if test "$with_atlas_include" != ""; then
-  	    atlas_incdir=" -I$with_atlas_include"
-          elif test "$with_atlas_prefix" != ""; then
-	    atlas_incdir=" -I$with_atlas_prefix/include"
-          else
-	    atlas_incdir=""
-          fi
-
-          LDFLAGS="$keep_LDFLAGS$atlas_libdir"
-          CPPFLAGS="$keep_CPPFLAGS$atlas_incdir"
-	  # The builtin_atlas option uses the ATLAS cblas, and combines
-	  # ATLAS' own lapack archive with the builtin version.
-          LATE_LIBS="$LATE_LIBS -latlas_lapack -llapack -lcblas -latlas -lF77"
-
-          cblas_style="1"	# use cblas.h
-        else
-          CPPFLAGS="$keep_CPPFLAGS"
-          LDFLAGS="$keep_LDFLAGS"
-          LATE_LIBS="$LATE_LIBS -llapack -lblas -lF77"
-
-          AC_SUBST(USE_BUILTIN_BLAS, 1)   # Build blas from vendor/clapack
-        fi
-     
-        AC_SUBST(USE_BUILTIN_LAPACK, 1)   # Build lapack from vendor/clapack
-        mkdir -p src
-        cp $srcdir/vendor/clapack/SRC/cblas.h src/cblas.h
-
-        # Determine flags for CLAPACK_NOOPT, used for compiling with no
-        # optimization
-        if expr "$CFLAGS" : ".*-m32" > /dev/null; then
-          CLAPACK_NOOPT="-m32"
-        elif expr "$CFLAGS" : ".*-m64" > /dev/null; then
-          CLAPACK_NOOPT="-m64"
-        else
-          CLAPACK_NOOPT=""
-        fi
-        if expr "$CFLAGS" : ".*-fPIC" > /dev/null; then
-          CLAPACK_NOOPT="$CLAPACK_NOOPT -fPIC"
-        fi
-        AC_SUBST(CLAPACK_NOOPT)
- 
-        lapack_use_ilaenv=0
-        lapack_found="builtin"
-        break
-      ;;
       *)
         AC_MSG_ERROR([Unknown lapack trypkg: $trypkg])
       ;;
@@ -391,8 +312,7 @@ if test "$with_lapack" != "no"; then
       with_cblas="0"
     fi
 
-    # g77 by default uses the F2C ABI, as does the builtin clapack interface,
-    # while gfortran does not.
+    # g77 by default uses the F2C ABI, while gfortran does not.
     if test "$use_f2c_abi" = yes; then
       if test "$neutral_acconfig" = 'y'; then
         CPPFLAGS="$CPPFLAGS -DVSIP_IMPL_USE_F2C_ABI"
