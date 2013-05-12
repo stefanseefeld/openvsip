@@ -8,6 +8,7 @@
 
 #include <ovxx/library.hpp>
 #include <ovxx/allocator.hpp>
+#include <ovxx/c++11/chrono.hpp>
 #include <cstring>
 #include <cstdlib>
 #include <cctype>
@@ -24,6 +25,9 @@ void initialize(int &argc, char **&argv)
   if (use_count++ != 0) return;
 
   allocator::initialize(argc, argv);
+#ifndef OVXX_TIMER_SYSTEM
+  cxx11::chrono::high_resolution_clock::init();
+#endif
 }
 
 /// Destructor worker function.
