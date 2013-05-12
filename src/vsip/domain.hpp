@@ -80,20 +80,20 @@ operator+(
 }
 
 
-template <> class Index<2> : public Vertex<index_type, 2>
+template <> class Index<2> : public ovxx::Vertex<index_type, 2>
 {
 public:
   Index() VSIP_NOTHROW {}
   Index(index_type x, index_type y) VSIP_NOTHROW 
-  : Vertex<index_type, 2>(x, y) {}
+  : ovxx::Vertex<index_type, 2>(x, y) {}
 };
 
-template <> class Index<3> : public Vertex<index_type, 3>
+template <> class Index<3> : public ovxx::Vertex<index_type, 3>
 {
 public:
   Index() VSIP_NOTHROW {}
   Index(index_type x, index_type y, index_type z) VSIP_NOTHROW
-  : Vertex<index_type, 3>(x, y, z) {}
+  : ovxx::Vertex<index_type, 3>(x, y, z) {}
 };
 
 /// A Domain is a non-empty set of non-negative indexes.
@@ -396,20 +396,6 @@ Domain_base<D>::impl_equals(Domain_base<D> const& dom) const VSIP_NOTHROW
     this->domains_, dom.domains_);
 }
 
-
-
-// Return size of dimension.
-
-// Generic function.  Overloaded for structures that can encode
-// extents (Domain, Length)
-
-template <dimension_type D>
-inline length_type
-size_of_dim(Domain<D> const& len, dimension_type d)
-{
-  return len[d].size();
-}
-
 } // namespace impl
 
 
@@ -509,6 +495,22 @@ template <dimension_type D>
 inline const Domain<D>
 operator*(stride_scalar_type s, Domain<D> const& dom) VSIP_NOTHROW
 { return dom * s; }
+
+} // namespace vsip
+
+namespace ovxx
+{
+// Return size of dimension.
+
+// Generic function.  Overloaded for structures that can encode
+// extents (Domain, Length)
+
+template <dimension_type D>
+inline length_type
+size_of_dim(Domain<D> const& len, dimension_type d)
+{
+  return len[d].size();
+}
 
 } // namespace ovxx
 

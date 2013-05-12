@@ -11,7 +11,7 @@
 
 #include <ovxx/config.hpp>
 #include <ovxx/layout.hpp>
-#include <ovxx/complex_decl.hpp>
+#include <vsip/impl/complex_decl.hpp>
 #include <cstdlib>
 #include <cstring>
 #include <cassert>

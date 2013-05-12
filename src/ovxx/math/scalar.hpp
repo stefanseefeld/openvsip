@@ -6,19 +6,14 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_FNS_SCALAR_HPP
-#define VSIP_CORE_FNS_SCALAR_HPP
+#ifndef ovxx_math_scalar_hpp_
+#define ovxx_math_scalar_hpp_
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
-
-#include <vsip/core/config.hpp>
-#include <vsip/support.hpp>
-#include <vsip/core/promote.hpp>
-#include <vsip/core/metaprogramming.hpp>
+#include <ovxx/config.hpp>
+#include <ovxx/support.hpp>
+#include <ovxx/complex_traits.hpp>
+#include <vsip/impl/promotion.hpp>
 #include <cmath>
-#include <cstdlib> // ghs imports ::abs into std here.
 #include <complex>
 
 #if !HAVE_DECL_HYPOTF
@@ -32,14 +27,10 @@ extern "C" double hypot(double, double);
 # endif
 #endif
 
-namespace vsip_csl
+namespace ovxx
 {
-namespace fn
+namespace math
 {
-
-/***********************************************************************
- Scalar functions
-***********************************************************************/
 
 using std::acos;
 using std::arg;
@@ -77,14 +68,13 @@ using ::exp10;
 // If the C++ library does not provide ::exp10 we have to provide our
 // own version.
 inline double 
-exp10(double d) VSIP_NOTHROW {
-  return exp(d * log(10.0));
-}
+exp10(double d) VSIP_NOTHROW { return exp(d * log(10.0));}
 #endif // !HAVE_DECL_EXP10
 
 // Provide an overloaded version of exp10 that accepts a "float".
 inline float
-exp10(float f) VSIP_NOTHROW {
+exp10(float f) VSIP_NOTHROW 
+{
 #if HAVE_DECL_EXP10F
   return exp10f (f);
 #else // !HAVE_DECL_EXP10F
@@ -95,7 +85,8 @@ exp10(float f) VSIP_NOTHROW {
 // Provide an overloaded version of exp10 that accepts a "long
 // double".
 inline long double
-exp10(long double ld) VSIP_NOTHROW {
+exp10(long double ld) VSIP_NOTHROW 
+{
 #if HAVE_DECL_EXP10L
   return exp10l (ld);
 #else // !HAVE_DECL_EXP10L
@@ -109,9 +100,7 @@ template <typename T1,
 	  typename T2,
 	  typename T3>
 inline typename Promotion<T1, typename Promotion<T2, T3>::type>::type
-expoavg (T1 a,
-	 T2 b,
-	 T3 c) VSIP_NOTHROW
+expoavg (T1 a, T2 b, T3 c) VSIP_NOTHROW
 {
   return a * b + (T1(1) - a) * c;
 }
@@ -133,7 +122,7 @@ ite(bool pred, T a, T b) VSIP_NOTHROW { return pred ? a : b;}
 //
 // 070502: MCOE GCC 3.4.4 does not capture them.
 
-// Pull isfinite, isnan, and isnormal into fn namespace so Fp_traits
+// Pull isfinite, isnan, and isnormal into math namespace so Fp_traits
 // can see them.
 #if HAVE_STD_ISFINITE
 using std::isfinite;
@@ -234,7 +223,7 @@ namespace abs_detail
 // not place them into the std namespace when targeting mercury (when
 // _MC_EXEC is defined).
 
-#if VSIP_IMPL_FIX_MISSING_ABS
+#if OVXX_FIX_MISSING_ABS
 using ::abs;
 #endif
 using std::abs;
@@ -245,7 +234,7 @@ inline T
 sq(T t) VSIP_NOTHROW { return t*t;}
 
 template <typename T>
-inline typename impl::scalar_of<T>::type 
+inline typename scalar_of<T>::type 
 mag(T t) VSIP_NOTHROW { return abs_detail::abs(t);}
 
 namespace magsq_detail
@@ -284,7 +273,7 @@ struct Magsq_impl_helper
 } // namespace magsq_detail
 
 template <typename T>
-inline typename impl::scalar_of<T>::type 
+inline typename scalar_of<T>::type 
 magsq(T t) VSIP_NOTHROW 
 {
   return magsq_detail::Magsq_impl<T>::exec(t);
@@ -398,12 +387,12 @@ inline typename Promotion<T1, T2>::type
 impl_max(T1 t1, T2 t2) VSIP_NOTHROW { return t1 > t2 ? t1 : t2; }
 
 template <typename T1, typename T2>
-inline typename impl::scalar_of<typename Promotion<T1, T2>::type>::type
+inline typename scalar_of<typename Promotion<T1, T2>::type>::type
 maxmg(T1 t1, T2 t2) VSIP_NOTHROW { return impl_max(mag(t1), mag(t2));}
 
 template <typename T1, typename T2>
-inline typename impl::scalar_of<typename Promotion<T1, T2>::type>::type
-maxmgsq(T1 t1, T2 t2) VSIP_NOTHROW { return impl_max(fn::magsq(t1), fn::magsq(t2));}
+inline typename scalar_of<typename Promotion<T1, T2>::type>::type
+maxmgsq(T1 t1, T2 t2) VSIP_NOTHROW { return impl_max(math::magsq(t1), math::magsq(t2));}
 
 using std::min;
 
@@ -412,12 +401,12 @@ inline typename Promotion<T1, T2>::type
 impl_min(T1 t1, T2 t2) VSIP_NOTHROW { return t1 < t2 ? t1 : t2; }
 
 template <typename T1, typename T2>
-inline typename impl::scalar_of<typename Promotion<T1, T2>::type>::type
+inline typename scalar_of<typename Promotion<T1, T2>::type>::type
 minmg(T1 t1, T2 t2) VSIP_NOTHROW { return impl_min(mag(t1), mag(t2));}
 
 template <typename T1, typename T2>
-inline typename impl::scalar_of<typename Promotion<T1, T2>::type>::type
-minmgsq(T1 t1, T2 t2) VSIP_NOTHROW { return impl_min(fn::magsq(t1), fn::magsq(t2));}
+inline typename scalar_of<typename Promotion<T1, T2>::type>::type
+minmgsq(T1 t1, T2 t2) VSIP_NOTHROW { return impl_min(math::magsq(t1), math::magsq(t2));}
 
 using std::pow;
 
@@ -470,42 +459,18 @@ inline typename Promotion<typename Promotion<T1, T2>::type, T3>::type
 sbm(T1 t1, T2 t2, T3 t3) VSIP_NOTHROW { return (t1 - t2) * t3;}
 
 template <typename T>
-struct Impl_complex_class
-{
-  static T conj(T val) { return val; }
-  static T real(T val) { return val; }
-  static T imag(T val) { return T(); }
-};
-
-template <typename T>
-struct Impl_complex_class<complex<T> >
-{
-  static complex<T> conj(complex<T> val) { return std::conj(val); }
-  static T real(complex<T> val) { return val.real(); }
-  static T imag(complex<T> val) { return val.imag(); }
-};
-
-template <typename T>
 inline T
-impl_conj(T val) { return Impl_complex_class<T>::conj(val); }
+impl_conj(T val) { return detail::complex_traits<T>::conj(val);}
 
 template <typename T>
-inline typename impl::scalar_of<T>::type
-impl_real(T val) { return Impl_complex_class<T>::real(val); }
+inline typename scalar_of<T>::type
+impl_real(T val) { return detail::complex_traits<T>::real(val);}
 
 template <typename T>
-inline typename impl::scalar_of<T>::type
-impl_imag(T val) { return Impl_complex_class<T>::imag(val); }
+inline typename scalar_of<T>::type
+impl_imag(T val) { return detail::complex_traits<T>::imag(val);}
 
-} // namespace vsip_csl::fn
-} // namespace vsip_csl
-
-namespace vsip
-{
-namespace impl
-{
-namespace fn = vsip_csl::fn;
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::math
+} // namespace ovxx
 
 #endif

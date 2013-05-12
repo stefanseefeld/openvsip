@@ -6,21 +6,16 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-/// Description:
-///   VSIPL++ Library: Domain utilities.
-
-#ifndef VSIP_CORE_DOMAIN_UTILS_HPP
-#define VSIP_CORE_DOMAIN_UTILS_HPP
+#ifndef ovxx_domain_utils_hpp_
+#define ovxx_domain_utils_hpp_
 
 #include <vsip/domain.hpp>
-#include <vsip/core/length.hpp>
-#include <vsip/core/static_assert.hpp>
+#include <ovxx/length.hpp>
+#include <ovxx/ct_assert.hpp>
 
-namespace vsip
+namespace ovxx
 {
-namespace impl
-{
-namespace domain_utils
+namespace detail
 {
 
 /// Helper class to help project a domain: create a lower-dimensional
@@ -35,7 +30,7 @@ struct Project_domain<1>
   template <dimension_type D>
   static Domain<1> project(Domain<D> const& dom)
   {
-    assert(1 <= D);
+    OVXX_PRECONDITION(1 <= D);
     return Domain<1>(dom[0]);
   }
 };
@@ -47,7 +42,7 @@ struct Project_domain<2>
   template <dimension_type D>
   static Domain<2> project(Domain<D> const& dom)
   {
-    assert(2 <= D);
+    OVXX_PRECONDITION(2 <= D);
     return Domain<2>(dom[0], dom[1]);
   }
 };
@@ -59,7 +54,7 @@ struct Project_domain<3>
   template <dimension_type D>
   static Domain<3> project(Domain<D> const& dom)
   {
-    assert(3 <= D);
+    OVXX_PRECONDITION(3 <= D);
     return dom;
   }
 };
@@ -88,7 +83,7 @@ struct Block_domain_class<3, BlockT>
   { return Domain<3>(block.size(3, 0), block.size(3, 1), block.size(3, 2)); }
 };
 
-} // namespace domain_utils;
+} // namespace ovxx::detail
 
 /// Project an ORIGDIM-dimension domain to PROJDIM dimensions.
 /// (where PROJDIM <= ORIGDIM)
@@ -96,7 +91,7 @@ template <dimension_type ProjDim, dimension_type OrigDim>
 Domain<ProjDim>
 project(Domain<OrigDim> const& dom)
 {
-  return domain_utils::Project_domain<ProjDim>::project(dom);
+  return detail::Project_domain<ProjDim>::project(dom);
 }
 
 /// Construct a Domain<D> from an array of Dim Domain<1>s.
@@ -136,7 +131,7 @@ intersect(Domain<1> const &dom1,
 	  Domain<1> const &dom2,
 	  Domain<1> &res)
 {
-  assert(dom1.stride() == 1);
+  OVXX_PRECONDITION(dom1.stride() == 1);
 
   if (dom2.stride() == 1)
   {
@@ -319,7 +314,7 @@ template <dimension_type D, typename BlockT>
 inline Domain<D>
 block_domain(BlockT const &block)
 {
-  return domain_utils::Block_domain_class<D, BlockT>::func(block);
+  return detail::Block_domain_class<D, BlockT>::func(block);
 }
 
 /// Return the empty domain.
@@ -360,10 +355,10 @@ domain_nth(Domain<D> const &dom, Index<D> const &idx)
 
 /// Get the extent of a domain as a Length.
 template <dimension_type D>
-Length<D>
+ovxx::Length<D>
 extent(Domain<D> const &dom)
 {
-  Length<D> res;
+  ovxx::Length<D> res;
   for (dimension_type d = 0; d < D; ++d)
     res[d] = dom[d].length();
   return res;
@@ -384,28 +379,28 @@ first(Domain<D> const& dom)
 /// Construct a 1-dim domain with a size (implicit offset of 0 and
 /// stride of 1)
 inline Domain<1>
-domain(Length<1> const &size) { return Domain<1>(size[0]);}
+domain(ovxx::Length<1> const &size) { return Domain<1>(size[0]);}
 
 /// Construct a 2-dim domain with a size (implicit offset of 0 and
 /// stride of 1)
 inline Domain<2>
-domain(Length<2> const &size) { return Domain<2>(size[0], size[1]);}
+domain(ovxx::Length<2> const &size) { return Domain<2>(size[0], size[1]);}
 
 /// Construct a 3-dim domain with a size (implicit offset of 0 and
 /// stride of 1)
 inline Domain<3>
-domain(Length<3> const &size) { return Domain<3>(size[0], size[1], size[2]);}
+domain(ovxx::Length<3> const &size) { return Domain<3>(size[0], size[1], size[2]);}
 
 /// Construct a 1-dim domain with an offset and a size (implicit
 /// stride of 1)
 inline Domain<1>
-domain(Index<1> const &first, Length<1> const &size)
+domain(Index<1> const &first, ovxx::Length<1> const &size)
 { return Domain<1>(first[0], 1, size[0]);}
 
 /// Construct a 2-dim domain with an offset and a size (implicit
 /// stride of 1)
 inline Domain<2>
-domain(Index<2> const &first, Length<2> const &size)
+domain(Index<2> const &first, ovxx::Length<2> const &size)
 {
   return Domain<2>(Domain<1>(first[0], 1, size[0]),
 		   Domain<1>(first[1], 1, size[1]));
@@ -414,7 +409,7 @@ domain(Index<2> const &first, Length<2> const &size)
 /// Construct a 3-dim domain with an offset and a size (implicit
 /// stride of 1)
 inline Domain<3>
-domain(Index<3> const &first, Length<3> const &size)
+domain(Index<3> const &first, ovxx::Length<3> const &size)
 {
   return Domain<3>(Domain<1>(first[0], 1, size[0]),
 		   Domain<1>(first[1], 1, size[1]),
@@ -425,19 +420,19 @@ domain(Index<3> const &first, Length<3> const &size)
 /// dimension-order of the traversal.
 template <typename OrderT>
 inline Index<1>&
-next(Length<1> const &/*extent*/, Index<1> &idx)
+next(ovxx::Length<1> const &/*extent*/, Index<1> &idx)
 {
-  VSIP_IMPL_STATIC_ASSERT(OrderT::impl_dim0 == 0);
+  OVXX_CT_ASSERT(OrderT::impl_dim0 == 0);
   ++idx[OrderT::impl_dim0];
   return idx;
 }
 
 template <typename OrderT>
 inline Index<2>&
-next(Length<2> const &extent, Index<2> &idx)
+next(ovxx::Length<2> const &extent, Index<2> &idx)
 {
-  VSIP_IMPL_STATIC_ASSERT(OrderT::impl_dim0 < 2);
-  VSIP_IMPL_STATIC_ASSERT(OrderT::impl_dim1 < 2);
+  OVXX_CT_ASSERT(OrderT::impl_dim0 < 2);
+  OVXX_CT_ASSERT(OrderT::impl_dim1 < 2);
   if (++idx[OrderT::impl_dim1] == extent[OrderT::impl_dim1])
   {
     if (++idx[OrderT::impl_dim0] != extent[OrderT::impl_dim0])
@@ -448,7 +443,7 @@ next(Length<2> const &extent, Index<2> &idx)
 
 template <typename OrderT>
 inline Index<3>&
-next(Length<3> const &extent, Index<3> &idx)
+next(ovxx::Length<3> const &extent, Index<3> &idx)
 {
   if (++idx[OrderT::impl_dim2] == extent[OrderT::impl_dim2])
   {
@@ -466,16 +461,16 @@ next(Length<3> const &extent, Index<3> &idx)
 /// Overload of next that performs row-major traversal.
 template <dimension_type D>
 inline Index<D> &
-next(Length<D> const &extent, Index<D> &idx)
+next(ovxx::Length<D> const &extent, Index<D> &idx)
 {
-  return next<typename Row_major<D>::type>(extent, idx);
+  return next<typename row_major<D>::type>(extent, idx);
 }
 
 /// This function checks if the index is valid given a certain length. This
 /// function works for multiple dimension spaces.
 template <dimension_type D>
 inline bool
-valid(Length<D> const &extent, Index<D> const &idx)
+valid(ovxx::Length<D> const &extent, Index<D> const &idx)
 {
   for(dimension_type d = 0; d < D; ++d)
     if(idx[d] >= extent[d])
@@ -483,45 +478,6 @@ valid(Length<D> const &extent, Index<D> const &idx)
   return true;
 }
 
-/// Get a value from a 1-dim block.
-template <typename Block>
-inline typename Block::value_type
-get(Block const &block, Index<1> const &idx)
-{ return block.get(idx[0]);}
-
-/// Get a value from a 2-dim block.
-template <typename Block>
-inline typename Block::value_type
-get(Block const &block, Index<2> const &idx)
-{ return block.get(idx[0], idx[1]);}
-
-/// Get a value from a 3-dim block.
-template <typename Block>
-inline typename Block::value_type
-get(Block const &block, Index<3> const &idx)
-{ return block.get(idx[0], idx[1], idx[2]);}
-
-/// Put a value into a 1-dim block.
-template <typename Block>
-inline void
-put(Block &block, Index<1> const &idx,
-    typename Block::value_type const &val)
-{ block.put(idx[0], val);}
-
-/// Put a value into a 2-dim block.
-template <typename Block>
-inline void
-put(Block &block, Index<2> const &idx,
-    typename Block::value_type const &val)
-{ block.put(idx[0], idx[1], val);}
-
-template <typename Block>
-inline void
-put(Block &block, Index<3> const &idx,
-    typename Block::value_type const& val)
-{ block.put(idx[0], idx[1], idx[2], val);}
-
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx
 
 #endif

@@ -6,22 +6,14 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_PROMOTE_HPP
-#define VSIP_CORE_PROMOTE_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef vsip_impl_promotion_hpp_
+#define vsip_impl_promotion_hpp_
 
 #include <cmath>
 #include <complex>
 
 namespace vsip
 {
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
 
 /// [math.fns.promotion]
 template <typename Left, typename Right>
@@ -69,6 +61,6 @@ template <> struct Promotion<long, double> { typedef double type;};
 
 template <> struct Promotion<float, double> { typedef double type;};
 
-}
+} // namespace vsip
 
 #endif

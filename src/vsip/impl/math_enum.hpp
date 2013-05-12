@@ -6,12 +6,8 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_MATH_ENUM_HPP
-#define VSIP_CORE_MATH_ENUM_HPP
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+#ifndef vsip_impl_math_enum_hpp_
+#define vsip_impl_math_enum_hpp_
 
 namespace vsip
 {
@@ -42,4 +38,4 @@ enum storage_type
    
 } // namespace vsip
 
-#endif // VSIP_CORE_MATH_ENUM_HPP
+#endif

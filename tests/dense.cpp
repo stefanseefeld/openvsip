@@ -6,31 +6,22 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <iostream>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/dense.hpp>
+#include "test.hpp"
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-using vsip_csl::equal;
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename Order>
 index_type
 linear_index(index_type idx0, index_type idx1,
-	      length_type size0, length_type size1);
+	     length_type size0, length_type size1);
 
 template <>
 index_type
 linear_index<row2_type>(index_type idx0, index_type idx1,
-			 length_type /*size0*/, length_type size1)
+			length_type /*size0*/, length_type size1)
 {
   return size1*idx0+idx1;
 }
@@ -38,7 +29,7 @@ linear_index<row2_type>(index_type idx0, index_type idx1,
 template <>
 index_type
 linear_index<col2_type>(index_type idx0, index_type idx1,
-			 length_type size0, length_type /*size1*/)
+			length_type size0, length_type /*size1*/)
 {
   return idx0+size0*idx1;
 }
@@ -149,63 +140,63 @@ check_block_gp(Dense<3, T, Order>& block)
 
 
 
-/// Simple check of a 1-dimensional block's impl_ref() accessor.
+/// Simple check of a 1-dimensional block's ref() accessor.
 template <typename T>
 void
 check_block_at(Dense<1, T>& block)
 {
-  // impl_ref() is only valid if block stores complex in interleaved
+  // ref() is only valid if block stores complex in interleaved
   // format.  Otherwise lvalue_proxy's are used.
 
-  if (!vsip::impl::is_split_block<Dense<1, T> >::value)
+  if (!is_split_block<Dense<1, T> >::value)
   {
     for (index_type i=0; i<block.size(); ++i)
-      block.impl_ref(i) = T(2*i);
+      block.ref(i) = T(2*i);
 
     for (index_type i=0; i<block.size(); ++i)
-      test_assert(equal(block.impl_ref(i), T(2*i)));
+      test_assert(equal(block.ref(i), T(2*i)));
   }
 }
 
 
 
-/// Simple check of a 2-dimensional block's impl_ref() accessor.
+/// Simple check of a 2-dimensional block's ref() accessor.
 template <typename T,
 	  typename Order>
 void
 check_block_at(Dense<2, T, Order>& block)
 {
-  if (!vsip::impl::is_split_block<Dense<2, T> >::value)
+  if (!is_split_block<Dense<2, T> >::value)
   {
     for (index_type i=0; i<block.size(2, 0); ++i)
       for (index_type j=0; j<block.size(2, 1); ++j)
-	block.impl_ref(i, j) = T(100*i + j);
+	block.ref(i, j) = T(100*i + j);
     
     for (index_type i=0; i<block.size(2, 0); ++i)
       for (index_type j=0; j<block.size(2, 1); ++j)
-	test_assert(equal(block.impl_ref(i, j), T(100*i + j)));
+	test_assert(equal(block.ref(i, j), T(100*i + j)));
   }
 }
 
 
 
-/// Simple check of a 2-dimensional block's impl_ref() accessor.
+/// Simple check of a 2-dimensional block's ref() accessor.
 template <typename T,
 	  typename Order>
 void
 check_block_at(Dense<3, T, Order>& block)
 {
-  if (!vsip::impl::is_split_block<Dense<3, T> >::value)
+  if (!is_split_block<Dense<3, T> >::value)
   {
     for (index_type i=0; i<block.size(3, 0); ++i)
       for (index_type j=0; j<block.size(3, 1); ++j)
 	for (index_type k=0; k<block.size(3, 2); ++k)
-	  block.impl_ref(i, j, k) = T(1000*i + 100*j + k);
+	  block.ref(i, j, k) = T(1000*i + 100*j + k);
     
     for (index_type i=0; i<block.size(3, 0); ++i)
       for (index_type j=0; j<block.size(3, 1); ++j)
 	for (index_type k=0; k<block.size(3, 2); ++k)
-	  test_assert(equal(block.impl_ref(i, j, k), T(1000*i + 100*j + k)));
+	  test_assert(equal(block.ref(i, j, k), T(1000*i + 100*j + k)));
   }
 }
 

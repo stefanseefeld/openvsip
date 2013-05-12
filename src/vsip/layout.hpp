@@ -86,7 +86,7 @@ enum storage_format_type
 template <dimension_type D,
 	  typename Order,
 	  pack_type P,
-	  storage_format_type S = interleaved_complex>
+	  storage_format_type S = array>
 struct Layout
 {
   static dimension_type const dim = D;
@@ -101,7 +101,7 @@ struct get_block_layout
   static dimension_type const dim = Block::dim;
   typedef tuple<0, 1, 2>   order_type;
   static pack_type const packing = any_packing;
-  static storage_format_type const storage_format = interleaved_complex;
+  static storage_format_type const storage_format = array;
 
   typedef Layout<dim, order_type, packing, storage_format> type;
 };

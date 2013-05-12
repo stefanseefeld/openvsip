@@ -20,23 +20,23 @@ template <dimension_type D> struct Length;
 template <> class Length<1> : public Vertex<length_type, 1>
 {
 public:
-  Length() OVXX_NOTHROW {}
-  Length(length_type x) OVXX_NOTHROW : Vertex<length_type, 1>(x) {}
+  Length() VSIP_NOTHROW {}
+  Length(length_type x) VSIP_NOTHROW : Vertex<length_type, 1>(x) {}
 };
 
 template <> class Length<2> : public Vertex<length_type, 2>
 {
 public:
-  Length() OVXX_NOTHROW {}
-  Length(length_type x, length_type y) OVXX_NOTHROW 
+  Length() VSIP_NOTHROW {}
+  Length(length_type x, length_type y) VSIP_NOTHROW 
   : Vertex<length_type, 2>(x, y) {}
 };
 
 template <> class Length<3> : public Vertex<length_type, 3>
 {
 public:
-  Length() OVXX_NOTHROW {}
-  Length(length_type x, length_type y, length_type z) OVXX_NOTHROW 
+  Length() VSIP_NOTHROW {}
+  Length(length_type x, length_type y, length_type z) VSIP_NOTHROW 
   : Vertex<length_type, 3>(x, y, z) {}
 };
 

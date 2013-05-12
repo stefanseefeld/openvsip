@@ -13,25 +13,18 @@
 #include <cassert>
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
-#include <vsip/core/strided.hpp>
-#include <vsip/core/length.hpp>
-#include <vsip/core/domain_utils.hpp>
-#include <vsip_csl/test.hpp>
+#include <ovxx/strided.hpp>
+#include <ovxx/length.hpp>
+#include <ovxx/domain_utils.hpp>
+#include "test.hpp"
 
-using namespace vsip;
-using vsip_csl::equal;
-
-using vsip::impl::Length;
-using vsip::impl::extent;
-using vsip::impl::valid;
-using vsip::impl::next;
+using namespace ovxx;
 
 template <typename T>
 inline T
-identity(
-  Length<1> /*extent*/,
-  Index<1> idx,
-  int      k)
+identity(Length<1> /*extent*/,
+	 Index<1> idx,
+	 int      k)
 {
   return static_cast<T>(k*idx[0] + 1);
 }
@@ -39,10 +32,9 @@ identity(
 
 template <typename T>
 inline T
-identity(
-  Length<2> extent,
-  Index<2>  idx,
-  int       k)
+identity(Length<2> extent,
+	 Index<2>  idx,
+	 int       k)
 {
   Index<2> offset;
   index_type i = (idx[0]+offset[0])*extent[1] + (idx[1]+offset[1]);
@@ -84,7 +76,7 @@ check_block(Block& blk, int k)
 template <dimension_type Dim,
 	  typename       Block>
 void
-test(Domain<Dim> const& dom)
+test_block(Domain<Dim> const& dom)
 {
   Block block(dom);
 
@@ -96,32 +88,25 @@ template <typename T, pack_type P, storage_format_type C>
 void
 test_wrap()
 {
-  using vsip::Layout;
-
   Domain<1> dom1(15);
-  test<1, vsip::impl::Strided<1, T, Layout<1, row1_type, P, C> > >(dom1);
+  test_block<1, Strided<1, T, Layout<1, row1_type, P, C> > >(dom1);
 
   Domain<2> dom2(15, 17);
-  test<2, vsip::impl::Strided<2, T, Layout<2, row2_type, P, C> > >(dom2);
-  test<2, vsip::impl::Strided<2, T, Layout<2, col2_type, P, C> > >(dom2);
+  test_block<2, Strided<2, T, Layout<2, row2_type, P, C> > >(dom2);
+  test_block<2, Strided<2, T, Layout<2, col2_type, P, C> > >(dom2);
 }
 
 
 int
 main(int argc, char **argv)
 {
-  using vsip::dense;
-  using vsip::aligned;
-  using vsip::interleaved_complex;
-  using vsip::split_complex;
+  vsipl library(argc, argv);
 
-  vsip::vsipl library(argc, argv);
+  test_wrap<float, dense, array>();
+  test_wrap<float, aligned_16, array>();
 
-  test_wrap<float, dense, interleaved_complex>();
-  test_wrap<float, aligned_16, interleaved_complex>();
-  test_wrap<float, dense, split_complex>();
-  test_wrap<float, aligned_16, split_complex>();
-
+  test_wrap<complex<float>, dense, array>();
+  test_wrap<complex<float>, aligned_16, array>();
   test_wrap<complex<float>, dense, interleaved_complex>();
   test_wrap<complex<float>, aligned_16, interleaved_complex>();
   test_wrap<complex<float>, dense, split_complex>();
