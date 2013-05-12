@@ -6,10 +6,12 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_DISPATCH_TAGS_HPP
-#define VSIP_CORE_DISPATCH_TAGS_HPP
+#ifndef ovxx_dispatcher_tags_hpp_
+#define ovxx_dispatcher_tags_hpp_
 
-namespace vsip_csl
+#include <ovxx/support.hpp>
+
+namespace ovxx
 {
 namespace dispatcher
 {
@@ -18,16 +20,8 @@ namespace be
 {
 /// Hook for custom evaluators
 struct user;
-/// Intel IPP Library
-struct intel_ipp;
 /// Optimized Matrix Transpose
 struct transpose;
-/// Mercury SAL Library
-struct mercury_sal;
-/// IBM CBE SDK.
-struct cbe_sdk;
-/// IBM Cell Math Library
-struct cml;
 /// Dense multi-dim expr reduction
 struct dense_expr;
 /// Optimized Copy
@@ -36,7 +30,6 @@ struct copy;
 struct op_expr;
 /// SIMD.
 struct simd;
-struct simd_unaligned_loop_fusion;
 /// Fused Fastconv RBO evaluator.
 struct fc_expr;
 /// Return-block expression evaluator.
@@ -45,8 +38,8 @@ struct rbo_expr;
 struct mdim_expr;
 /// Generic Loop Fusion (base case).
 struct loop_fusion;
-/// FFTW3.
-struct fftw3;
+/// FFTW.
+struct fftw;
 /// Dummy FFT
 struct no_fft;
 
@@ -65,7 +58,7 @@ struct cuda;
 /// Optimized Tag.struct 
 struct opt;
 
-} // namespace vsip_csl::dispatcher::be
+} // namespace ovxx::dispatcher::be
 
 /// Operation tags
 namespace op
@@ -106,9 +99,9 @@ struct chold;
 /// singular value decomposition
 struct svd;
 
-} // namespace vsip_csl::dispatcher::op
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher::op
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
 
 #endif
