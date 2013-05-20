@@ -9,25 +9,30 @@
 /// Description
 ///   Coverage tests for expressions.
 
-#ifndef coverage_hpp_
-#define coverage_hpp_
-
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/diagnostics.hpp>
-#endif
+#ifndef common_hpp_
+#define common_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/complex.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-#include <vsip/core/metaprogramming.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-storage.hpp>
+#include <test.hpp>
+#include <storage.hpp>
 
-using vsip_csl::equal;
+using namespace ovxx;
 
+template <typename T> struct split_or_array
+{ static storage_format_type const value = array;};
+
+template <typename T> struct split_or_array<complex<T> >
+{ static storage_format_type const value = split_complex;};
+
+template <typename T> struct interleaved_or_array
+{ static storage_format_type const value = array;};
+
+template <typename T> struct interleaved_or_array<complex<T> >
+{ static storage_format_type const value = interleaved_complex;};
 
 enum range_type
 {
@@ -538,9 +543,6 @@ template <typename Test_class,
 void
 vector_cases2_rt()
 {
-  using namespace vsip;
-  using vsip::split_complex;
-
   typedef Storage<0, T1>            sca1_t;
 
   typedef Storage<1, T1>            vec1_t;
@@ -552,8 +554,8 @@ vector_cases2_rt()
   typedef Storage<1, T1, row1_type, Map<> >         dvec1_t;
   typedef Storage<1, T2, row1_type, Map<> >         dvec2_t;
 
-  typedef Storage<1, T1, row1_type, Local_map, split_complex> spl1_t;
-  typedef Storage<1, T2, row1_type, Local_map, split_complex> spl2_t;
+  typedef Storage<1, T1, row1_type, Local_map, split_or_array<T1>::value> spl1_t;
+  typedef Storage<1, T2, row1_type, Local_map, split_or_array<T2>::value> spl2_t;
 
   typedef Row_vector<T1, row2_type> row1_t;
   typedef Row_vector<T2, row2_type> row2_t;
@@ -575,6 +577,7 @@ vector_cases2_rt()
   do_case2<Test_class, spl1_t, spl2_t>(dom);
 
   // distributed cases
+#ifdef OVXX_PARALLEL
   do_case2<Test_class, gvec1_t, gvec2_t>(dom);
   do_case2<Test_class,  sca1_t, gvec2_t>(dom);
 
@@ -583,6 +586,7 @@ vector_cases2_rt()
 
   do_case2<Test_class, gvec1_t, dvec2_t>(dom);
   do_case2<Test_class, dvec1_t, gvec2_t>(dom);
+#endif
 }
 
 
@@ -602,17 +606,13 @@ template <typename Test_class,
 void
 vector_cases2_mix()
 {
-  using namespace vsip;
-  using vsip::interleaved_complex;
-  using vsip::split_complex;
-
   typedef T1 T2;
 
-  typedef Storage<1, T1, row1_type, Local_map, interleaved_complex> int1_t;
-  typedef Storage<1, T2, row1_type, Local_map, interleaved_complex> int2_t;
+  typedef Storage<1, T1, row1_type, Local_map, interleaved_or_array<T1>::value> int1_t;
+  typedef Storage<1, T2, row1_type, Local_map, interleaved_or_array<T2>::value> int2_t;
 
-  typedef Storage<1, T1, row1_type, Local_map, split_complex> spl1_t;
-  typedef Storage<1, T2, row1_type, Local_map, split_complex> spl2_t;
+  typedef Storage<1, T1, row1_type, Local_map, split_or_array<T1>::value> spl1_t;
+  typedef Storage<1, T2, row1_type, Local_map, split_or_array<T2>::value> spl2_t;
 
   vsip::Domain<1> dom(11);
   
@@ -631,9 +631,6 @@ template <typename Test_class,
 void
 vector_cases3_rt()
 {
-  using namespace vsip;
-  using vsip::split_complex;
-
   typedef Storage<0, T1>            sca1_t;
   typedef Storage<0, T2>            sca2_t;
 
@@ -677,6 +674,7 @@ vector_cases3_rt()
   do_case3_left_ip <Test_class, sca1_t, row2_t, vec3_t>(dom);
 
   // distributed cases
+#ifdef OVXX_PARALLEL
   do_case3<Test_class, gvec1_t, gvec2_t, gvec3_t>(dom);
   do_case3<Test_class,  sca1_t, gvec2_t, gvec3_t>(dom);
   do_case3<Test_class, gvec1_t,  sca2_t, gvec3_t>(dom);
@@ -684,6 +682,7 @@ vector_cases3_rt()
   do_case3<Test_class, dvec1_t, dvec2_t, dvec3_t>(dom);
   do_case3<Test_class,  sca1_t, dvec2_t, dvec3_t>(dom);
   do_case3<Test_class, dvec1_t,  sca2_t, dvec3_t>(dom);
+#endif
 }
 
 
@@ -721,9 +720,6 @@ template <typename Test_class,
 void
 vector_cases4()
 {
-  using namespace vsip;
-  using vsip::split_complex;
-
   typedef typename Promotion<T1, typename Promotion<T2, T3>::type>::type  T4;
 
   // Scalars

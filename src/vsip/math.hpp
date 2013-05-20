@@ -12,19 +12,14 @@
 #include <vsip/impl/promotion.hpp>
 #include <vsip/impl/math_enum.hpp>
 #include <ovxx/math/scalar.hpp>
-#include <vsip/core/expr/generator_block.hpp>
-#include <vsip/core/expr/unary_block.hpp>
-#include <vsip/core/expr/binary_block.hpp>
-#include <vsip/core/expr/scalar_block.hpp>
-#include <vsip/core/expr/operations.hpp>
-#include <vsip/core/expr/binary_operators.hpp>
-#include <vsip/core/expr/unary_operators.hpp>
-#include <vsip/core/expr/fns_elementwise.hpp>
-#include <vsip/core/fns_userelt.hpp>
+#include <ovxx/expr.hpp>
+#include <ovxx/view/operators.hpp>
+#include <ovxx/view/fns_elementwise.hpp>
+#include <vsip/impl/fns_userelt.hpp>
 #include <vsip/core/reductions/reductions.hpp>
 #include <vsip/core/reductions/reductions_idx.hpp>
-#include <vsip/core/matvec.hpp>
-#include <vsip/core/matvec_prod.hpp>
-#include <vsip/core/vmmul.hpp>
+// #include <vsip/core/matvec.hpp>
+// #include <vsip/core/matvec_prod.hpp>
+// #include <vsip/core/vmmul.hpp>
 
 #endif

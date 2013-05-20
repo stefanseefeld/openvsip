@@ -9,13 +9,11 @@
 #include <vsip/initfin.hpp>
 #include "common.hpp"
 
-using namespace vsip;
-
-TEST_UNARY(is_nan,    is_nan,    impl::fn::is_nan,    anyval)
+TEST_UNARY(is_nan,    is_nan,    math::is_nan,    anyval)
 // These C99 functions are unavailable on Windows.
 #if !defined(_MSC_VER)
-TEST_UNARY(is_finite, is_finite, impl::fn::is_finite, anyval)
-TEST_UNARY(is_normal, is_normal, impl::fn::is_normal, anyval)
+TEST_UNARY(is_finite, is_finite, math::is_finite, anyval)
+TEST_UNARY(is_normal, is_normal, math::is_normal, anyval)
 #endif
 
 

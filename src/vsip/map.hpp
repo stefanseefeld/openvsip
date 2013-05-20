@@ -6,37 +6,21 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_MAP_HPP
-#define VSIP_MAP_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
-
-#include <vector>
-#include <algorithm>
+#ifndef vsip_map_hpp_
+#define vsip_map_hpp_
 
 #include <vsip/support.hpp>
-#include <vsip/core/vector.hpp>
-#include <vsip/core/refcount.hpp>
-#include <vsip/core/value_iterator.hpp>
-#include <vsip/core/parallel/services.hpp>
-#include <vsip/core/map_fwd.hpp>
-#include <vsip/core/parallel/dist.hpp>
-#include <vsip/core/domain_utils.hpp>
-#include <vsip/core/block_traits.hpp>
-#include <vsip/core/length.hpp>
-
-#include <vsip/core/parallel/global_map.hpp>
-#include <vsip/core/parallel/replicated_map.hpp>
-#include <vsip/core/parallel/subset_map.hpp>
-#include <vsip/core/parallel/block.hpp>
-
-
-
-/***********************************************************************
-  Declarations & Class Definitions
-***********************************************************************/
+#include <vsip/impl/vector.hpp>
+#include <vsip/impl/map_fwd.hpp>
+#include <vsip/impl/replicated_map.hpp>
+#include <vsip/impl/dist.hpp>
+#include <ovxx/value_iterator.hpp>
+#include <ovxx/parallel/service.hpp>
+#include <ovxx/domain_utils.hpp>
+#include <ovxx/block_traits.hpp>
+#include <ovxx/length.hpp>
+#include <vector>
+#include <algorithm>
 
 namespace vsip
 {
@@ -65,7 +49,7 @@ split_tuple(
     value  = (value - pos[i]) / size[i];
   }
 
-  assert(
+  OVXX_PRECONDITION(
     (dim == 1 && pos[0]  == orig) ||
     (dim == 2 && pos[0] + pos[1]*size[0] == orig) ||
     (dim == 3 && pos[0] + pos[1]*size[0] + pos[2]*size[0]*size[1] == orig));
@@ -77,7 +61,7 @@ split_tuple(
     value  = (value - pos[i]) / size[i];
   }
 
-  assert(
+  OVXX_PRECONDITION(
     (dim == 1 && pos[0]  == orig) ||
     (dim == 2 && pos[0]*size[1] + pos[1] == orig) ||
     (dim == 3 && pos[0]*size[1]*size[2] + pos[1]*size[2] + pos[2] == orig));
@@ -97,7 +81,7 @@ operator==(Map<Dist0, Dist1, Dist2> const& map1,
 	   Map<Dist0, Dist1, Dist2> const& map2) VSIP_NOTHROW;
 
 // Forward declaration.
-template <dimension_type Dim,
+template <dimension_type D,
 	  typename       Dist0,
 	  typename       Dist1,
 	  typename       Dist2>
@@ -105,205 +89,157 @@ bool
 map_equiv(Map<Dist0, Dist1, Dist2> const& map1,
 	  Map<Dist0, Dist1, Dist2> const& map2) VSIP_NOTHROW;
 
-
-
-template <typename Dist0,
-	  typename Dist1,
-	  typename Dist2>
-struct Map_data
-  : public impl::Ref_count<Map_data<Dist0, Dist1, Dist2> >,
-    impl::Non_copyable
-{
-  typedef std::vector<processor_type>      impl_pvec_type;
-
-  // Constructors.
-public:
-  Map_data(
-    Dist0 const&            dist0,
-    Dist1 const&            dist1,
-    Dist2 const&            dist2)
-  VSIP_NOTHROW
-  : dist0_ (dist0),
-    dist1_ (dist1),
-    dist2_ (dist2),
-    comm_  (impl::default_communicator()),
-    pvec_  (),
-    num_subblocks_(dist0.num_subblocks() *
-		   dist1.num_subblocks() *
-		   dist2.num_subblocks()),
-    num_procs_ (num_subblocks_)
-  {
-    assert(num_subblocks_ <= comm_.pvec().size());
-
-    for (index_type i=0; i<num_subblocks_; ++i)
-      pvec_.push_back(comm_.pvec()[i]);
-
-    subblocks_[0] = dist0_.num_subblocks();
-    subblocks_[1] = dist1_.num_subblocks();
-    subblocks_[2] = dist2_.num_subblocks();
-
-    // It is necessary that the number of subblocks be less than the
-    // number of processors.
-    assert(num_subblocks_ <= num_procs_);
-  }
-
-  template <typename BlockT>
-  Map_data(
-    const_Vector<processor_type, BlockT> pvec,
-    Dist0 const&                         dist0,
-    Dist1 const&                         dist1,
-    Dist2 const&                         dist2)
-  VSIP_NOTHROW
-  : dist0_ (dist0),
-    dist1_ (dist1),
-    dist2_ (dist2),
-    comm_  (impl::default_communicator()),
-    pvec_  (),
-    num_subblocks_(dist0.num_subblocks() *
-		   dist1.num_subblocks() *
-		   dist2.num_subblocks()),
-    num_procs_ (num_subblocks_)
-  {
-    assert(num_subblocks_ <= pvec.size());
-
-    for (index_type i=0; i<num_subblocks_; ++i)
-      pvec_.push_back(pvec.get(i));
-
-    subblocks_[0] = dist0_.num_subblocks();
-    subblocks_[1] = dist1_.num_subblocks();
-    subblocks_[2] = dist2_.num_subblocks();
-  }
-
-   ~Map_data()
-  {
-  }
-
-  // Member data.
-public:
-  Dist0               dist0_;
-  Dist1               dist1_;
-  Dist2               dist2_;
-
-  impl::Communicator& comm_;
-  impl_pvec_type      pvec_;		  // Grid function.
-
-  length_type	      num_subblocks_;	  // Total number of subblocks.
-  length_type	      num_procs_;	  // Total number of processors.
-
-  index_type	      subblocks_[VSIP_MAX_DIMENSION];
-					  // Number of subblocks in each
-					  // dimension.
-};
-
-
-
-// Map class.
-
 template <typename Dist0,
 	  typename Dist1,
 	  typename Dist2>
 class Map
 {
-  // Compile-time typedefs.
-public:
-  typedef impl::Value_iterator<processor_type, unsigned> processor_iterator;
+  struct Data : ovxx::detail::noncopyable
+  {
+    typedef std::vector<processor_type> pvec_type;
 
-  typedef typename Map_data<Dist0, Dist1, Dist2>::impl_pvec_type
-    impl_pvec_type;
+    Data(Dist0 const &d0, Dist1 const &d1, Dist2 const &d2)
+    VSIP_NOTHROW
+    : dist0(d0), dist1(d1), dist2(d2),
+      comm(ovxx::parallel::default_communicator()),
+      pvec(),
+      num_subblocks(d0.num_subblocks() *
+		    d1.num_subblocks() *
+		    d2.num_subblocks()),
+      num_procs(num_subblocks)
+    {
+      OVXX_PRECONDITION(num_subblocks <= comm.pvec().size());
+      for (index_type i=0; i<num_subblocks; ++i)
+	pvec.push_back(comm.pvec()[i]);
+      subblocks[0] = dist0.num_subblocks();
+      subblocks[1] = dist1.num_subblocks();
+      subblocks[2] = dist2.num_subblocks();
+    }
+
+    template <typename B>
+    Data(const_Vector<processor_type, B> p,
+	 Dist0 const &d0, Dist1 const &d1, Dist2 const &d2)
+    VSIP_NOTHROW
+    : dist0(d0), dist1(d1), dist2(d2),
+      comm(ovxx::parallel::default_communicator()),
+      pvec(),
+      num_subblocks(d0.num_subblocks() *
+		    d1.num_subblocks() *
+		    d2.num_subblocks()),
+      num_procs(num_subblocks)
+    {
+      OVXX_PRECONDITION(num_subblocks <= p.size());
+      for (index_type i=0; i<num_subblocks; ++i)
+	pvec.push_back(p.get(i));
+      subblocks[0] = dist0.num_subblocks();
+      subblocks[1] = dist1.num_subblocks();
+      subblocks[2] = dist2.num_subblocks();
+    }
+
+    Dist0 dist0;
+    Dist1 dist1;
+    Dist2 dist2;
+    ovxx::parallel::Communicator &comm;
+    pvec_type pvec;
+    length_type num_subblocks;
+    length_type num_procs;
+    index_type subblocks[VSIP_MAX_DIMENSION];
+  };
+
+public:
+  typedef ovxx::value_iterator<processor_type, unsigned> processor_iterator;
+  typedef typename Data::pvec_type impl_pvec_type;
 
   static bool const impl_local_only  = false;
   static bool const impl_global_only = true;
 
-  // Constructors and destructor.
-public:
-  Map(Dist0 const& = Dist0(), Dist1 const& = Dist1(), Dist2 const& = Dist2())
-    VSIP_NOTHROW;
+  Map(Dist0 const &d0 = Dist0(), Dist1 const &d1 = Dist1(), Dist2 const &d2 = Dist2())
+    VSIP_NOTHROW
+    : data_(new Data(d0, d1, d2)), dim_(0) {}
 
-  template <typename BlockT>
-  Map(const_Vector<processor_type, BlockT>,
-      Dist0 const& = Dist0(),
-      Dist1 const& = Dist1(),
-      Dist2 const& = Dist2())
-    VSIP_NOTHROW;
+  template <typename B>
+  Map(const_Vector<processor_type, B> pvec,
+      Dist0 const &d0 = Dist0(), Dist1 const &d1 = Dist1(), Dist2 const &d2 = Dist2())
+    VSIP_NOTHROW
+    : data_(new Data(pvec, d0, d1, d2)), dim_(0) {}
 
-  Map(Map const&) VSIP_NOTHROW;
+  Map(Map const &other) VSIP_NOTHROW
+    : data_(other.data_), dom_(other.dom_), dim_(0) {}
 
-  Map& operator=(Map const&) VSIP_NOTHROW;
+  Map& operator=(Map const &other) VSIP_NOTHROW
+  {
+    data_ = other.data_;
+    dom_  = other.dom_;
+    dim_  = 0;
+    return *this;
+  }
 
   ~Map() VSIP_NOTHROW
   {
     if (this->impl_is_applied())
-      impl::destroy_ll_pset(applied_pset_);
+      ovxx::parallel::destroy_ll_pset(applied_pset_);
   }
 
-
-  // Accessors.
-public:
   // Information on individual distributions.
-  distribution_type distribution     (dimension_type d) const VSIP_NOTHROW;
-  length_type       num_subblocks    (dimension_type d) const VSIP_NOTHROW;
-  length_type       cyclic_contiguity(dimension_type d) const VSIP_NOTHROW;
+  distribution_type distribution(dimension_type d) const VSIP_NOTHROW;
+  length_type num_subblocks(dimension_type d) const VSIP_NOTHROW;
+  length_type cyclic_contiguity(dimension_type d) const VSIP_NOTHROW;
 
   length_type num_subblocks()  const VSIP_NOTHROW
-  { return data_->num_subblocks_; }
+  { return data_->num_subblocks;}
 
   length_type num_processors() const VSIP_NOTHROW
-  { return data_->num_procs_; }
+  { return data_->num_procs;}
 
   index_type subblock(processor_type pr) const VSIP_NOTHROW;
   index_type subblock() const VSIP_NOTHROW;
 
   processor_iterator processor_begin(index_type sb) const VSIP_NOTHROW;
-  processor_iterator processor_end  (index_type sb) const VSIP_NOTHROW;
+  processor_iterator processor_end(index_type sb) const VSIP_NOTHROW;
 
   const_Vector<processor_type> processor_set() const;
 
 
   // Applied map functions.
-  length_type impl_num_patches     (index_type sb) const VSIP_NOTHROW;
+  length_type impl_num_patches(index_type sb) const VSIP_NOTHROW;
 
-  template <dimension_type Dim>
-  void impl_apply(Domain<Dim> const& dom) VSIP_NOTHROW;
+  template <dimension_type D>
+  void impl_apply(Domain<D> const& dom) VSIP_NOTHROW;
 
-  template <dimension_type Dim>
-  Domain<Dim> impl_subblock_domain(index_type sb) const VSIP_NOTHROW;
+  template <dimension_type D>
+  Domain<D> impl_subblock_domain(index_type sb) const VSIP_NOTHROW;
 
-  template <dimension_type Dim>
-  impl::Length<Dim> impl_subblock_extent(index_type sb) const VSIP_NOTHROW;
+  template <dimension_type D>
+  ovxx::Length<D> impl_subblock_extent(index_type sb) const VSIP_NOTHROW;
 
-  template <dimension_type Dim>
-  Domain<Dim> impl_global_domain(index_type sb, index_type patch)
+  template <dimension_type D>
+  Domain<D> impl_global_domain(index_type sb, index_type patch)
     const VSIP_NOTHROW;
 
-  template <dimension_type Dim>
-  Domain<Dim> impl_local_domain (index_type sb, index_type patch)
+  template <dimension_type D>
+  Domain<D> impl_local_domain(index_type sb, index_type patch)
     const VSIP_NOTHROW;
 
-  template <dimension_type Dim>
-  Domain<Dim> applied_domain () const VSIP_NOTHROW;
+  template <dimension_type D>
+  Domain<D> applied_domain() const VSIP_NOTHROW;
 
   // Implementation functions.
-  impl::par_ll_pset_type impl_ll_pset() const VSIP_NOTHROW
-    { assert(this->impl_is_applied()); return applied_pset_; }
-  impl_pvec_type const& impl_pvec() const { return data_->pvec_; }
-  impl::Communicator&   impl_comm() const { return data_->comm_; }
-  bool                  impl_is_applied() const { return dim_ != 0; }
+  ovxx::parallel::par_ll_pset_type impl_ll_pset() const VSIP_NOTHROW
+  { OVXX_PRECONDITION(this->impl_is_applied()); return applied_pset_;}
+  impl_pvec_type const& impl_pvec() const { return data_->pvec;}
+  ovxx::parallel::Communicator &impl_comm() const { return data_->comm;}
+  bool impl_is_applied() const { return dim_ != 0;}
 
-  length_type         impl_working_size() const
-    { return std::min(this->num_subblocks(), this->data_->pvec_.size()); }
+  length_type impl_working_size() const
+  { return std::min(this->num_subblocks(), this->data_->pvec.size());}
 
-
-  // Implementation functions.
-public:
   length_type impl_subblock_patches(dimension_type d, index_type sb)
     const VSIP_NOTHROW;
   length_type impl_subblock_size(dimension_type d, index_type sb)
     const VSIP_NOTHROW;
-  Domain<1> impl_patch_global_dom(dimension_type d, index_type sb,
-				  index_type p)
+  Domain<1> impl_patch_global_dom(dimension_type d, index_type sb, index_type p)
     const VSIP_NOTHROW;
-  Domain<1> impl_patch_local_dom(dimension_type d, index_type sb,
-				 index_type p)
+  Domain<1> impl_patch_local_dom(dimension_type d, index_type sb, index_type p)
     const VSIP_NOTHROW;
 
   index_type impl_dim_subblock_from_index(dimension_type d, index_type idx)
@@ -313,25 +249,21 @@ public:
   index_type impl_local_from_global_index(dimension_type d, index_type idx)
     const VSIP_NOTHROW;
 
-  template <dimension_type Dim>
-  index_type impl_subblock_from_global_index(Index<Dim> const& idx)
+  template <dimension_type D>
+  index_type impl_subblock_from_global_index(Index<D> const &idx)
     const VSIP_NOTHROW;
 
-  template <dimension_type Dim>
-  index_type impl_patch_from_global_index(Index<Dim> const& idx)
+  template <dimension_type D>
+  index_type impl_patch_from_global_index(Index<D> const &idx)
     const VSIP_NOTHROW;
 
-  index_type impl_global_from_local_index(dimension_type d, index_type sb,
-					  index_type idx)
+  index_type impl_global_from_local_index(dimension_type d, index_type sb, index_type idx)
     const VSIP_NOTHROW;
 
-  template <dimension_type Dim>
-  Domain<Dim> impl_local_from_global_domain(index_type sb,
-					    Domain<Dim> const& dom)
+  template <dimension_type D>
+  Domain<D> impl_local_from_global_domain(index_type sb, Domain<D> const &dom)
     const VSIP_NOTHROW;
 
-  // Implementation compile-time types, and friends.
-public:
   typedef Dist0 impl_dim0_type;
   typedef Dist1 impl_dim1_type;
   typedef Dist2 impl_dim2_type;
@@ -340,100 +272,20 @@ public:
   friend bool map_equiv<1>(Map const&, Map const&) VSIP_NOTHROW;
   friend bool map_equiv<2>(Map const&, Map const&) VSIP_NOTHROW;
   friend bool map_equiv<3>(Map const&, Map const&) VSIP_NOTHROW;
-  friend struct impl::Map_equal<1, Map, Map>;
-  friend struct impl::Map_equal<2, Map, Map>;
-  friend struct impl::Map_equal<3, Map, Map>;
+  friend struct ovxx::parallel::map_equal<1, Map, Map>;
+  friend struct ovxx::parallel::map_equal<2, Map, Map>;
+  friend struct ovxx::parallel::map_equal<3, Map, Map>;
 
-public:
   index_type     impl_rank_from_proc(processor_type pr) const;
   processor_type impl_proc_from_rank(index_type idx) const
-    { return data_->pvec_[idx]; }
+  { return data_->pvec[idx];}
 
-  // Members.
 private:
-  impl::Ref_counted_ptr<Map_data<Dist0, Dist1, Dist2> > data_;
-
+  ovxx::shared_ptr<Data> data_;
   Domain<3>	         dom_;		  // Applied domain.
   dimension_type         dim_;		  // Dimension of applied domain.
-  impl::par_ll_pset_type applied_pset_;
+  ovxx::parallel::par_ll_pset_type applied_pset_;
 };
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-template <typename       Dist0,
-	  typename       Dist1,
-	  typename       Dist2>
-inline
-Map<Dist0, Dist1, Dist2>::Map(
-  Dist0 const&            dist0,
-  Dist1 const&            dist1,
-  Dist2 const&            dist2)
-VSIP_NOTHROW
-: data_      (new Map_data<Dist0, Dist1, Dist2>(dist0, dist1, dist2),
-	      impl::noincrement),
-  dim_       (0)
-{
-  // It is necessary that the number of subblocks be less than the
-  // number of processors.
-  assert(data_->num_subblocks_ <= data_->num_procs_);
-}
-
-
-
-template <typename Dist0,
-	  typename Dist1,
-	  typename Dist2>
-template <typename BlockT>
-inline
-Map<Dist0, Dist1, Dist2>::Map(
-  const_Vector<processor_type, BlockT> pvec,
-  Dist0 const&                         dist0,
-  Dist1 const&                         dist1,
-  Dist2 const&                         dist2)
-VSIP_NOTHROW
-: data_     (new Map_data<Dist0, Dist1, Dist2>(pvec, dist0, dist1, dist2),
-	     impl::noincrement),
-  dim_      (0)
-{
-  // It is necessary that the number of subblocks be less than the
-  // number of processors.
-  assert(data_->num_subblocks_ <= data_->num_procs_);
-}
-
-
-
-template <typename       Dist0,
-	  typename       Dist1,
-	  typename       Dist2>
-inline
-Map<Dist0, Dist1, Dist2>::Map(Map const& rhs) VSIP_NOTHROW
-: data_      (rhs.data_),
-  dom_       (rhs.dom_),
-  dim_       (0)
-{
-}
-
-
-
-template <typename       Dist0,
-	  typename       Dist1,
-	  typename       Dist2>
-inline Map<Dist0, Dist1, Dist2>&
-Map<Dist0, Dist1, Dist2>::operator=(Map const& rhs) VSIP_NOTHROW
-{
-  data_ = rhs.data_;
-
-  dom_  = rhs.dom_;
-  dim_  = 0;
-
-  return *this;
-}
-
-
 
 // Apply a map to a domain.
 
@@ -458,14 +310,14 @@ Map<Dist0, Dist1, Dist2>::impl_apply(Domain<Dim> const& dom)
   for (dimension_type d=Dim; d<VSIP_MAX_DIMENSION; ++d)
   {
     arr[d] = Domain<1>(1);
-    assert(this->num_subblocks(d) == 1); // note [1]
+    OVXX_PRECONDITION(this->num_subblocks(d) == 1); // note [1]
   }
 
   dim_ = Dim;
-  dom_ = impl::construct_domain<VSIP_MAX_DIMENSION>(arr);
+  dom_ = ovxx::construct_domain<VSIP_MAX_DIMENSION>(arr);
 
   impl_pvec_type const& pvec = this->impl_pvec();
-  impl::create_ll_pset(pvec, applied_pset_);
+  ovxx::parallel::create_ll_pset(pvec, applied_pset_);
 }
 
 
@@ -477,14 +329,14 @@ inline distribution_type
 Map<Dist0, Dist1, Dist2>::distribution(dimension_type d)
   const VSIP_NOTHROW
 {
-  assert(d < VSIP_MAX_DIMENSION);
+  OVXX_PRECONDITION(d < VSIP_MAX_DIMENSION);
 
   switch (d)
   {
   default: assert(false);
-  case 0: return data_->dist0_.distribution();
-  case 1: return data_->dist1_.distribution();
-  case 2: return data_->dist2_.distribution();
+  case 0: return data_->dist0.distribution();
+  case 1: return data_->dist1.distribution();
+  case 2: return data_->dist2.distribution();
   }
 }
 
@@ -497,14 +349,14 @@ inline length_type
 Map<Dist0, Dist1, Dist2>::num_subblocks(dimension_type d)
   const VSIP_NOTHROW
 {
-  assert(d < VSIP_MAX_DIMENSION);
+  OVXX_PRECONDITION(d < VSIP_MAX_DIMENSION);
 
   switch (d)
   {
   default: assert(false);
-  case 0: return data_->dist0_.num_subblocks();
-  case 1: return data_->dist1_.num_subblocks();
-  case 2: return data_->dist2_.num_subblocks();
+  case 0: return data_->dist0.num_subblocks();
+  case 1: return data_->dist1.num_subblocks();
+  case 2: return data_->dist2.num_subblocks();
   }
 }
 
@@ -517,14 +369,14 @@ inline length_type
 Map<Dist0, Dist1, Dist2>::cyclic_contiguity(dimension_type d)
   const VSIP_NOTHROW
 {
-  assert(d < VSIP_MAX_DIMENSION);
+  OVXX_PRECONDITION(d < VSIP_MAX_DIMENSION);
 
   switch (d)
   {
   default: assert(false);
-  case 0: return data_->dist0_.cyclic_contiguity();
-  case 1: return data_->dist1_.cyclic_contiguity();
-  case 2: return data_->dist2_.cyclic_contiguity();
+  case 0: return data_->dist0.cyclic_contiguity();
+  case 1: return data_->dist1.cyclic_contiguity();
+  case 2: return data_->dist2.cyclic_contiguity();
   }
 }
 
@@ -542,14 +394,14 @@ Map<Dist0, Dist1, Dist2>::impl_subblock_patches(
   )
   const VSIP_NOTHROW
 {
-  assert(d < VSIP_MAX_DIMENSION);
+  OVXX_PRECONDITION(d < VSIP_MAX_DIMENSION);
 
   switch (d)
   {
   default: assert(false);
-  case 0: return data_->dist0_.impl_subblock_patches(dom_[0], sb);
-  case 1: return data_->dist1_.impl_subblock_patches(dom_[1], sb);
-  case 2: return data_->dist2_.impl_subblock_patches(dom_[2], sb);
+  case 0: return data_->dist0.impl_subblock_patches(dom_[0], sb);
+  case 1: return data_->dist1.impl_subblock_patches(dom_[1], sb);
+  case 2: return data_->dist2.impl_subblock_patches(dom_[2], sb);
   }
 }
 
@@ -567,14 +419,14 @@ Map<Dist0, Dist1, Dist2>::impl_subblock_size(
   )
   const VSIP_NOTHROW
 {
-  assert(d < VSIP_MAX_DIMENSION);
+  OVXX_PRECONDITION(d < VSIP_MAX_DIMENSION);
 
   switch (d)
   {
   default: assert(false);
-  case 0: return data_->dist0_.impl_subblock_size(dom_[0], sb);
-  case 1: return data_->dist1_.impl_subblock_size(dom_[1], sb);
-  case 2: return data_->dist2_.impl_subblock_size(dom_[2], sb);
+  case 0: return data_->dist0.impl_subblock_size(dom_[0], sb);
+  case 1: return data_->dist1.impl_subblock_size(dom_[1], sb);
+  case 2: return data_->dist2.impl_subblock_size(dom_[2], sb);
   }
 }
 
@@ -593,14 +445,14 @@ Map<Dist0, Dist1, Dist2>::impl_patch_global_dom(
   )
   const VSIP_NOTHROW
 {
-  assert(d < VSIP_MAX_DIMENSION);
+  OVXX_PRECONDITION(d < VSIP_MAX_DIMENSION);
 
   switch (d)
   {
   default: assert(false);
-  case 0: return data_->dist0_.impl_patch_global_dom(dom_[0], sb, p);
-  case 1: return data_->dist1_.impl_patch_global_dom(dom_[1], sb, p);
-  case 2: return data_->dist2_.impl_patch_global_dom(dom_[2], sb, p);
+  case 0: return data_->dist0.impl_patch_global_dom(dom_[0], sb, p);
+  case 1: return data_->dist1.impl_patch_global_dom(dom_[1], sb, p);
+  case 2: return data_->dist2.impl_patch_global_dom(dom_[2], sb, p);
   }
 }
 
@@ -619,14 +471,14 @@ Map<Dist0, Dist1, Dist2>::impl_patch_local_dom(
   )
   const VSIP_NOTHROW
 {
-  assert(d < VSIP_MAX_DIMENSION);
+  OVXX_PRECONDITION(d < VSIP_MAX_DIMENSION);
 
   switch (d)
   {
   default: assert(false);
-  case 0: return data_->dist0_.impl_patch_local_dom(dom_[0], sb, p);
-  case 1: return data_->dist1_.impl_patch_local_dom(dom_[1], sb, p);
-  case 2: return data_->dist2_.impl_patch_local_dom(dom_[2], sb, p);
+  case 0: return data_->dist0.impl_patch_local_dom(dom_[0], sb, p);
+  case 1: return data_->dist1.impl_patch_local_dom(dom_[1], sb, p);
+  case 2: return data_->dist2.impl_patch_local_dom(dom_[2], sb, p);
   }
 }
 
@@ -644,15 +496,15 @@ Map<Dist0, Dist1, Dist2>::impl_dim_subblock_from_index(
   )
   const VSIP_NOTHROW
 {
-  assert(d < VSIP_MAX_DIMENSION);
-  assert(d < dim_);
+  OVXX_PRECONDITION(d < VSIP_MAX_DIMENSION);
+  OVXX_PRECONDITION(d < dim_);
 
   switch (d)
   {
   default: assert(false);
-  case 0: return data_->dist0_.impl_subblock_from_index(dom_[0], idx);
-  case 1: return data_->dist1_.impl_subblock_from_index(dom_[1], idx);
-  case 2: return data_->dist2_.impl_subblock_from_index(dom_[2], idx);
+  case 0: return data_->dist0.impl_subblock_from_index(dom_[0], idx);
+  case 1: return data_->dist1.impl_subblock_from_index(dom_[1], idx);
+  case 2: return data_->dist2.impl_subblock_from_index(dom_[2], idx);
   }
 }
 
@@ -670,15 +522,15 @@ Map<Dist0, Dist1, Dist2>::impl_dim_patch_from_index(
   )
   const VSIP_NOTHROW
 {
-  assert(d < VSIP_MAX_DIMENSION);
-  assert(d < dim_);
+  OVXX_PRECONDITION(d < VSIP_MAX_DIMENSION);
+  OVXX_PRECONDITION(d < dim_);
 
   switch (d)
   {
   default: assert(false);
-  case 0: return data_->dist0_.impl_patch_from_index(dom_[0], idx);
-  case 1: return data_->dist1_.impl_patch_from_index(dom_[1], idx);
-  case 2: return data_->dist2_.impl_patch_from_index(dom_[2], idx);
+  case 0: return data_->dist0.impl_patch_from_index(dom_[0], idx);
+  case 1: return data_->dist1.impl_patch_from_index(dom_[1], idx);
+  case 2: return data_->dist2.impl_patch_from_index(dom_[2], idx);
   }
 }
 
@@ -694,15 +546,15 @@ Map<Dist0, Dist1, Dist2>::impl_local_from_global_index(
   )
   const VSIP_NOTHROW
 {
-  assert(d < VSIP_MAX_DIMENSION);
-  assert(d < dim_);
+  OVXX_PRECONDITION(d < VSIP_MAX_DIMENSION);
+  OVXX_PRECONDITION(d < dim_);
 
   switch (d)
   {
   default: assert(false);
-  case 0: return data_->dist0_.impl_local_from_global_index(dom_[0], idx);
-  case 1: return data_->dist1_.impl_local_from_global_index(dom_[1], idx);
-  case 2: return data_->dist2_.impl_local_from_global_index(dom_[2], idx);
+  case 0: return data_->dist0.impl_local_from_global_index(dom_[0], idx);
+  case 1: return data_->dist1.impl_local_from_global_index(dom_[1], idx);
+  case 2: return data_->dist2.impl_local_from_global_index(dom_[2], idx);
   }
 }
 
@@ -721,22 +573,22 @@ Map<Dist0, Dist1, Dist2>::impl_subblock_from_global_index(
   const VSIP_NOTHROW
 {
   index_type sb = 0;
-  assert(dim_ != 0 && dim_ == Dim);
+  OVXX_PRECONDITION(dim_ != 0 && dim_ == Dim);
 
   for (dimension_type d=0; d<Dim; ++d)
   {
-    assert(idx[d] < dom_[d].size());
+    OVXX_PRECONDITION(idx[d] < dom_[d].size());
     if (d != 0)
-      sb *= data_->subblocks_[d];
+      sb *= data_->subblocks[d];
     sb += impl_dim_subblock_from_index(d, idx[d]);
   }
 
-  assert(sb < data_->num_subblocks_);
+  OVXX_PRECONDITION(sb < data_->num_subblocks);
   index_type dim_sb[VSIP_MAX_DIMENSION];
-  impl::split_tuple(sb, dim_, data_->subblocks_, dim_sb);
+  impl::split_tuple(sb, dim_, data_->subblocks, dim_sb);
   for (dimension_type d=0; d<Dim; ++d)
   {
-    assert(dim_sb[d] == impl_dim_subblock_from_index(d, idx[d]));
+    OVXX_PRECONDITION(dim_sb[d] == impl_dim_subblock_from_index(d, idx[d]));
   }
 
   return sb;
@@ -759,20 +611,20 @@ Map<Dist0, Dist1, Dist2>::impl_patch_from_global_index(
   index_type p = 0;
   index_type dim_sb[VSIP_MAX_DIMENSION];
 
-  assert(dim_ != 0 && dim_ == Dim);
+  OVXX_PRECONDITION(dim_ != 0 && dim_ == Dim);
 
   index_type sb = this->impl_subblock_from_global_index(idx);
-  impl::split_tuple(sb, dim_, data_->subblocks_, dim_sb);
+  impl::split_tuple(sb, dim_, data_->subblocks, dim_sb);
 
   for (dimension_type d=0; d<Dim; ++d)
   {
-    assert(idx[d] < dom_[d].size());
+    OVXX_PRECONDITION(idx[d] < dom_[d].size());
     if (d != 0)
       p *= impl_subblock_patches(d, dim_sb[d]);
     p += impl_dim_patch_from_index(d, idx[d]);
   }
 
-  assert(p < this->impl_num_patches(sb));
+  OVXX_PRECONDITION(p < this->impl_num_patches(sb));
   return p;
 }
 
@@ -798,18 +650,18 @@ Map<Dist0, Dist1, Dist2>::impl_global_from_local_index(
   )
   const VSIP_NOTHROW
 {
-  assert(d < VSIP_MAX_DIMENSION);
-  assert(dim_ != 0 && d < dim_);
+  OVXX_PRECONDITION(d < VSIP_MAX_DIMENSION);
+  OVXX_PRECONDITION(dim_ != 0 && d < dim_);
 
   index_type dim_sb[VSIP_MAX_DIMENSION];
-  impl::split_tuple(sb, dim_, data_->subblocks_, dim_sb);
+  impl::split_tuple(sb, dim_, data_->subblocks, dim_sb);
 
   switch (d)
   {
   default: assert(false);
-  case 0: return data_->dist0_.impl_global_from_local_index(dom_[0], dim_sb[0], idx);
-  case 1: return data_->dist1_.impl_global_from_local_index(dom_[1], dim_sb[1], idx);
-  case 2: return data_->dist2_.impl_global_from_local_index(dom_[2], dim_sb[2], idx);
+  case 0: return data_->dist0.impl_global_from_local_index(dom_[0], dim_sb[0], idx);
+  case 1: return data_->dist1.impl_global_from_local_index(dom_[1], dim_sb[1], idx);
+  case 2: return data_->dist2.impl_global_from_local_index(dom_[2], dim_sb[2], idx);
   }
 }
 
@@ -826,25 +678,25 @@ Map<Dist0, Dist1, Dist2>::impl_local_from_global_domain(
   )
   const VSIP_NOTHROW
 {
-  assert(sb < data_->num_subblocks_);
-  assert(dim_ == Dim);
+  OVXX_PRECONDITION(sb < data_->num_subblocks);
+  OVXX_PRECONDITION(dim_ == Dim);
 
   if (this->impl_num_patches(sb) != 1)
-      VSIP_IMPL_THROW(
-	impl::unimplemented(
+      OVXX_DO_THROW(
+	ovxx::unimplemented(
 	  "Map<>::impl_local_from_global_domain: Subviews have a single patch"));
 
   Domain<Dim> sb_g_dom = this->template impl_global_domain<Dim>(sb, 0);
   Domain<Dim> sb_l_dom = this->template impl_local_domain<Dim>(sb, 0);
   Domain<Dim> intr;
 
-  if (impl::intersect(sb_g_dom, g_dom, intr))
+  if (ovxx::intersect(sb_g_dom, g_dom, intr))
   {
-    Domain<Dim> l_dom = impl::apply_intr(sb_l_dom, sb_g_dom, intr);
+    Domain<Dim> l_dom = ovxx::apply_intr(sb_l_dom, sb_g_dom, intr);
     return l_dom;
   }
   else
-    return impl::empty_domain<Dim>();
+    return ovxx::empty_domain<Dim>();
 }
 
 
@@ -866,8 +718,8 @@ inline index_type
 Map<Dist0, Dist1, Dist2>::impl_rank_from_proc(processor_type pr)
   const
 {
-  for (index_type i=0; i<data_->pvec_.size(); ++i)
-    if (data_->pvec_[i] == pr)
+  for (index_type i=0; i<data_->pvec.size(); ++i)
+    if (data_->pvec[i] == pr)
       return i;
 
   return no_rank;
@@ -892,7 +744,7 @@ Map<Dist0, Dist1, Dist2>::subblock(processor_type pr)
 {
   index_type pi = impl_rank_from_proc(pr);
 
-  if (pi != no_rank && pi < data_->num_subblocks_)
+  if (pi != no_rank && pi < data_->num_subblocks)
     return pi;
   else
     return no_subblock;
@@ -916,7 +768,7 @@ Map<Dist0, Dist1, Dist2>::subblock()
   processor_type pr = local_processor();
   index_type     pi = impl_rank_from_proc(pr);
 
-  if (pi != no_rank && pi < data_->num_subblocks_)
+  if (pi != no_rank && pi < data_->num_subblocks)
     return pi;
   else
     return no_subblock;
@@ -944,9 +796,9 @@ typename Map<Dist0, Dist1, Dist2>::processor_iterator
 Map<Dist0, Dist1, Dist2>::processor_begin(index_type sb)
   const VSIP_NOTHROW
 {
-  assert(sb < data_->num_subblocks_);
+  OVXX_PRECONDITION(sb < data_->num_subblocks);
 
-  return processor_iterator(data_->pvec_[sb % data_->num_procs_], 1);
+  return processor_iterator(data_->pvec[sb % data_->num_procs], 1);
 }
 
 
@@ -971,9 +823,9 @@ typename Map<Dist0, Dist1, Dist2>::processor_iterator
 Map<Dist0, Dist1, Dist2>::processor_end(index_type sb)
   const VSIP_NOTHROW
 {
-  assert(sb < data_->num_subblocks_);
+  OVXX_PRECONDITION(sb < data_->num_subblocks);
 
-  return processor_iterator(data_->pvec_[sb % data_->num_procs_]+1, 1);
+  return processor_iterator(data_->pvec[sb % data_->num_procs]+1, 1);
 }
 
 
@@ -991,10 +843,10 @@ const_Vector<processor_type>
 Map<Dist0, Dist1, Dist2>::processor_set()
   const
 {
-  Vector<processor_type> pset(this->data_->num_procs_);
+  Vector<processor_type> pset(this->data_->num_procs);
 
-  for (index_type i=0; i<this->data_->num_procs_; ++i)
-    pset.put(i, this->data_->pvec_[i]);
+  for (index_type i=0; i<this->data_->num_procs; ++i)
+    pset.put(i, this->data_->pvec[i]);
 
   return pset;
 }
@@ -1014,8 +866,8 @@ length_type
 Map<Dist0, Dist1, Dist2>::impl_num_patches(index_type sb)
   const VSIP_NOTHROW
 {
-  assert(sb < data_->num_subblocks_ || sb == no_subblock);
-  assert(dim_ != 0);
+  OVXX_PRECONDITION(sb < data_->num_subblocks || sb == no_subblock);
+  OVXX_PRECONDITION(dim_ != 0);
 
   if (sb == no_subblock)
     return 0;
@@ -1023,7 +875,7 @@ Map<Dist0, Dist1, Dist2>::impl_num_patches(index_type sb)
   {
     index_type dim_sb[VSIP_MAX_DIMENSION];
 
-    impl::split_tuple(sb, dim_, data_->subblocks_, dim_sb);
+    impl::split_tuple(sb, dim_, data_->subblocks, dim_sb);
 
     length_type patches = 1;
     for (dimension_type d=0; d<dim_; ++d)
@@ -1049,22 +901,22 @@ Domain<Dim>
 Map<Dist0, Dist1, Dist2>::impl_subblock_domain(index_type sb)
   const VSIP_NOTHROW
 {
-  assert(sb < data_->num_subblocks_ || sb == no_subblock);
-  assert(dim_ == Dim);
+  OVXX_PRECONDITION(sb < data_->num_subblocks || sb == no_subblock);
+  OVXX_PRECONDITION(dim_ == Dim);
 
   if (sb == no_subblock)
-    return impl::empty_domain<Dim>();
+    return ovxx::empty_domain<Dim>();
   else
   {
     index_type dim_sb[VSIP_MAX_DIMENSION];
     Domain<1>  dom[VSIP_MAX_DIMENSION];
 
-    impl::split_tuple(sb, dim_, data_->subblocks_, dim_sb);
+    impl::split_tuple(sb, dim_, data_->subblocks, dim_sb);
 
     for (dimension_type d=0; d<dim_; ++d)
       dom[d] = Domain<1>(impl_subblock_size(d, dim_sb[d]));
 
-    return impl::construct_domain<Dim>(dom);
+    return ovxx::construct_domain<Dim>(dom);
   }
 }
 
@@ -1080,14 +932,14 @@ template <typename       Dist0,
 	  typename       Dist2>
 template <dimension_type Dim>
 inline
-impl::Length<Dim>
+ovxx::Length<Dim>
 Map<Dist0, Dist1, Dist2>::impl_subblock_extent(index_type sb)
   const VSIP_NOTHROW
 {
-  assert(sb < data_->num_subblocks_ || sb == no_subblock);
-  assert(dim_ == Dim);
+  OVXX_PRECONDITION(sb < data_->num_subblocks || sb == no_subblock);
+  OVXX_PRECONDITION(dim_ == Dim);
 
-  impl::Length<Dim> size;
+  ovxx::Length<Dim> size;
 
   if (sb == no_subblock)
   {
@@ -1098,7 +950,7 @@ Map<Dist0, Dist1, Dist2>::impl_subblock_extent(index_type sb)
   {
     index_type dim_sb[VSIP_MAX_DIMENSION];
 
-    impl::split_tuple(sb, dim_, data_->subblocks_, dim_sb);
+    impl::split_tuple(sb, dim_, data_->subblocks, dim_sb);
 
     for (dimension_type d=0; d<dim_; ++d)
       size[d] = impl_subblock_size(d, dim_sb[d]);
@@ -1137,14 +989,14 @@ const VSIP_NOTHROW
   {
     for (dimension_type d=0; d<Dim; ++d)
       dom[d] = Domain<1>(0);
-    return impl::construct_domain<Dim>(dom);
+    return ovxx::construct_domain<Dim>(dom);
   }
 
-  assert(sb < data_->num_subblocks_);
-  assert(p  < this->impl_num_patches(sb));
-  assert(dim_ == Dim);
+  OVXX_PRECONDITION(sb < data_->num_subblocks);
+  OVXX_PRECONDITION(p  < this->impl_num_patches(sb));
+  OVXX_PRECONDITION(dim_ == Dim);
 
-  impl::split_tuple(sb, Dim, data_->subblocks_, dim_sb);
+  impl::split_tuple(sb, Dim, data_->subblocks, dim_sb);
 
   for (dimension_type d=0; d<Dim; ++d)
     p_size[d] = impl_subblock_patches(d, dim_sb[d]);
@@ -1154,7 +1006,7 @@ const VSIP_NOTHROW
   for (dimension_type d=0; d<Dim; ++d)
     dom[d] = impl_patch_global_dom(d, dim_sb[d], dim_p[d]);
 
-  return impl::construct_domain<Dim>(dom);
+  return ovxx::construct_domain<Dim>(dom);
 }
 
 
@@ -1188,15 +1040,15 @@ Map<Dist0, Dist1, Dist2>::impl_local_domain(
   {
     for (dimension_type d=0; d<Dim; ++d)
       dom[d] = Domain<1>(0);
-    return impl::construct_domain<Dim>(dom);
+    return ovxx::construct_domain<Dim>(dom);
   }
 
-  assert(sb < data_->num_subblocks_);
-  assert(p  < this->impl_num_patches(sb));
-  assert(dim_ == Dim);
+  OVXX_PRECONDITION(sb < data_->num_subblocks);
+  OVXX_PRECONDITION(p  < this->impl_num_patches(sb));
+  OVXX_PRECONDITION(dim_ == Dim);
 
 
-  impl::split_tuple(sb, Dim, data_->subblocks_, dim_sb);
+  impl::split_tuple(sb, Dim, data_->subblocks, dim_sb);
 
   for (dimension_type d=0; d<Dim; ++d)
     p_size[d] = impl_subblock_patches(d, dim_sb[d]);
@@ -1206,7 +1058,7 @@ Map<Dist0, Dist1, Dist2>::impl_local_domain(
   for (dimension_type d=0; d<Dim; ++d)
     dom[d] = impl_patch_local_dom(d, dim_sb[d], dim_p[d]);
 
-  return impl::construct_domain<Dim>(dom);
+  return ovxx::construct_domain<Dim>(dom);
 }
 
 
@@ -1224,14 +1076,14 @@ Domain<Dim>
 Map<Dist0, Dist1, Dist2>::applied_domain()
   const VSIP_NOTHROW
 {
-  assert(dim_ == Dim);
+  OVXX_PRECONDITION(dim_ == Dim);
 
   Domain<1>  dom[VSIP_MAX_DIMENSION];
 
   for (dimension_type d=0; d<Dim; ++d)
     dom[d] = this->dom_[d];
 
-  return impl::construct_domain<Dim>(dom);
+  return ovxx::construct_domain<Dim>(dom);
 }
 
 
@@ -1251,22 +1103,20 @@ operator==(Map<Dim0, Dim1, Dim2> const& map1,
       return false;
   }
 
-  if (map1.data_->comm_ != map2.data_->comm_)
+  if (map1.data_->comm != map2.data_->comm)
     return false;
 
-  if (map1.data_->pvec_.size() != map2.data_->pvec_.size())
+  if (map1.data_->pvec.size() != map2.data_->pvec.size())
     return false;
 
-  for (index_type i=0; i<map1.data_->pvec_.size(); ++i)
-    if (map1.data_->pvec_[i] != map2.data_->pvec_[i])
+  for (index_type i=0; i<map1.data_->pvec.size(); ++i)
+    if (map1.data_->pvec[i] != map2.data_->pvec[i])
       return false;
 
   return true;
 }
 
-
-
-template <dimension_type Dim,
+template <dimension_type D,
 	  typename       Dist0,
 	  typename       Dist1,
 	  typename       Dist2>
@@ -1274,518 +1124,93 @@ bool
 map_equiv(Map<Dist0, Dist1, Dist2> const& map1,
 	  Map<Dist0, Dist1, Dist2> const& map2) VSIP_NOTHROW
 {
-  if (Dim == 1 &&
-         (map1.data_->dist0_.num_subblocks()     !=
-          map2.data_->dist0_.num_subblocks()
-       || map1.data_->dist0_.cyclic_contiguity() !=
-          map2.data_->dist0_.cyclic_contiguity()))
+  if (D == 1 &&
+      (map1.data_->dist0.num_subblocks() != map2.data_->dist0.num_subblocks() ||
+       map1.data_->dist0.cyclic_contiguity() != map2.data_->dist0.cyclic_contiguity()))
     return false;
-  else if (Dim == 2 &&
-         (map1.data_->dist0_.num_subblocks()     !=
-          map2.data_->dist0_.num_subblocks()
-       || map1.data_->dist0_.cyclic_contiguity() !=
-          map2.data_->dist0_.cyclic_contiguity()
-       || map1.data_->dist1_.num_subblocks()     !=
-          map2.data_->dist1_.num_subblocks()
-       || map1.data_->dist1_.cyclic_contiguity() !=
-          map2.data_->dist1_.cyclic_contiguity()))
+  else if (D == 2 &&
+	   (map1.data_->dist0.num_subblocks() != map2.data_->dist0.num_subblocks() ||
+	    map1.data_->dist0.cyclic_contiguity() != map2.data_->dist0.cyclic_contiguity() ||
+	    map1.data_->dist1.num_subblocks() != map2.data_->dist1.num_subblocks() ||
+	    map1.data_->dist1.cyclic_contiguity() != map2.data_->dist1.cyclic_contiguity()))
     return false;
-  else if (Dim == 3 &&
-      (   map1.data_->dist0_.num_subblocks()     !=
-          map2.data_->dist0_.num_subblocks()
-       || map1.data_->dist0_.cyclic_contiguity() !=
-          map2.data_->dist0_.cyclic_contiguity()
-       || map1.data_->dist1_.num_subblocks()     !=
-          map2.data_->dist1_.num_subblocks()
-       || map1.data_->dist1_.cyclic_contiguity() !=
-          map2.data_->dist1_.cyclic_contiguity()
-       || map1.data_->dist2_.num_subblocks()     !=
-          map2.data_->dist2_.num_subblocks()
-       || map1.data_->dist2_.cyclic_contiguity() !=
-          map2.data_->dist2_.cyclic_contiguity()))
+  else if (D == 3 &&
+	   (map1.data_->dist0.num_subblocks() != map2.data_->dist0.num_subblocks() ||
+	    map1.data_->dist0.cyclic_contiguity() != map2.data_->dist0.cyclic_contiguity() ||
+	    map1.data_->dist1.num_subblocks() != map2.data_->dist1.num_subblocks() ||
+	    map1.data_->dist1.cyclic_contiguity() != map2.data_->dist1.cyclic_contiguity() ||
+	    map1.data_->dist2.num_subblocks() != map2.data_->dist2.num_subblocks() ||
+	    map1.data_->dist2.cyclic_contiguity() != map2.data_->dist2.cyclic_contiguity()))
     return false;
-
 
   // implied by checks on distX_.num_subblocks()
-  assert(map1.num_subblocks() == map1.num_subblocks());
+  OVXX_PRECONDITION(map1.num_subblocks() == map1.num_subblocks());
 
-  if (map1.data_->comm_ != map2.data_->comm_)
+  if (map1.data_->comm != map2.data_->comm)
     return false;
 
-  assert(map1.data_->pvec_.size() >= map1.num_subblocks());
-  assert(map2.data_->pvec_.size() >= map2.num_subblocks());
+  OVXX_PRECONDITION(map1.data_->pvec.size() >= map1.num_subblocks());
+  OVXX_PRECONDITION(map2.data_->pvec.size() >= map2.num_subblocks());
 
   for (index_type i=0; i<map1.num_subblocks(); ++i)
-    if (map1.data_->pvec_[i] != map2.data_->pvec_[i])
+    if (map1.data_->pvec[i] != map2.data_->pvec[i])
       return false;
 
   return true;
 }
 
-
-
-template <typename DimA0,
-	  typename DimA1,
-	  typename DimA2,
-	  typename DimB0,
-	  typename DimB1,
-	  typename DimB2>
+template <typename D0A, typename D1A, typename D2A,
+	  typename D0B, typename D1B, typename D2B>
 bool
-operator==(Map<DimA0, DimA1, DimA2> const&,
-	   Map<DimB0, DimB1, DimB2> const&) VSIP_NOTHROW
+operator==(Map<D0A, D1A, D2A> const&, Map<D0B, D1B, D2B> const&) VSIP_NOTHROW
 {
   return false;
 }
 
+} // namespace vsip
 
-
-namespace impl
+namespace ovxx
 {
+namespace parallel
+{
+template <dimension_type D, typename D0, typename D1, typename D2>
+struct map_equal<D, Map<D0, D1, D2>, Map<D0, D1, D2> >
+{
+  static bool value(Map<D0, D1, D2> const &map1, Map<D0, D1, D2> const &map2)
+  { return (map1.data_.get() == map2.data_.get()) || map_equiv<D>(map1, map2);}
+};
 
-template <typename Dist0,
-	  typename Dist1,
-	  typename Dist2>
-struct is_global_map<Map<Dist0, Dist1, Dist2> >
-{ static bool const value = true; };
+template <dimension_type D, typename M>
+struct select_dist;
 
-template <dimension_type Dim,
-          typename       Map>
-struct Select_dist;
+template <typename D0, typename D1, typename D2>
+struct select_dist<0, vsip::Map<D0, D1, D2> >
+{ typedef D0 type;};
 
-template <typename Dist0,
-	  typename Dist1,
-	  typename Dist2>
-struct Select_dist<0, Map<Dist0, Dist1, Dist2> >
-{ typedef Dist0 type; };
+template <typename D0, typename D1, typename D2>
+struct select_dist<1, vsip::Map<D0, D1, D2> >
+{ typedef D1 type;};
 
-template <typename Dist0,
-	  typename Dist1,
-	  typename Dist2>
-struct Select_dist<1, Map<Dist0, Dist1, Dist2> >
-{ typedef Dist1 type; };
+template <typename D0, typename D1, typename D2>
+struct select_dist<2, vsip::Map<D0, D1, D2> >
+{ typedef D2 type;};
 
-template <typename Dist0,
-	  typename Dist1,
-	  typename Dist2>
-struct Select_dist<2, Map<Dist0, Dist1, Dist2> >
-{ typedef Dist2 type; };
-
-template <dimension_type Dim,
-	  typename       Dist0,
-	  typename       Dist1,
-	  typename       Dist2>
-struct Is_block_dist<Dim, Map<Dist0, Dist1, Dist2> >
+template <dimension_type D, typename D0, typename D1, typename D2>
+struct is_block_dist<D, vsip::Map<D0, D1, D2> >
 {
 private:
-  typedef typename Select_dist<Dim, Map<Dist0, Dist1, Dist2> >::type dist_type;
+  typedef typename parallel::select_dist<D, vsip::Map<D0, D1, D2> >::type dist_type;
 public:
-  static bool const value = is_same<dist_type, Block_dist>::value ||
-                            is_same<dist_type, Whole_dist>::value;
+  static bool const value = 
+    is_same<dist_type, vsip::Block_dist>::value ||
+    is_same<dist_type, vsip::Whole_dist>::value;
 };
 
-
-template <dimension_type Dim,
-	  typename       Dist0,
-	  typename       Dist1,
-	  typename       Dist2>
-struct Map_equal<Dim, Map<Dist0, Dist1, Dist2>, Map<Dist0, Dist1, Dist2> >
-{
-  static bool value(Map<Dist0, Dist1, Dist2> const& map1,
-		    Map<Dist0, Dist1, Dist2> const& map2)
-  { return (map1.data_.get() == map2.data_.get()) ||
-           map_equiv<Dim>(map1, map2); }
-};
-
-
-
-/***********************************************************************
-  Clone a distribution.
-***********************************************************************/
-
-template <typename DistT, typename MapT> struct Dist_factory;
-
-template <typename MapT>
-struct Dist_factory<Whole_dist, MapT>
-{
-  static Whole_dist copy(MapT const&, dimension_type)
-  { return Whole_dist(); }
-};
-
-template <typename MapT>
-struct Dist_factory<Block_dist, MapT>
-{
-  static Block_dist copy(MapT const& map, dimension_type dim)
-  { return Block_dist(map.num_subblocks(dim));}
-};
-
-template <typename MapT>
-struct Dist_factory<Cyclic_dist, MapT>
-{
-  static Cyclic_dist copy(MapT const& map, dimension_type dim)
-  {
-    return Cyclic_dist(map.num_subblocks(dim),
-		       map.cyclic_contiguity(dim));
-  }
-};
-
-template <typename DistT, typename MapT>
-DistT copy_dist(MapT const& map, dimension_type dim)
-{
-  return Dist_factory<DistT, MapT>::copy(map, dim);
-}
-
-
-
-/***********************************************************************
-  Project a Map, removing 1 dimension.
-***********************************************************************/
-
-template <typename       Dist0,
-	  typename       Dist1,
-	  typename       Dist2>
-struct Map_project_1<0, Map<Dist0, Dist1, Dist2> >
-{
-  typedef Map<Dist1, Dist2> type;
-
-  // Return the parent subblock corresponding to a child subblock.
-  static index_type parent_subblock(
-    Map<Dist0, Dist1, Dist2> const& map,
-    index_type                      idx,
-    index_type                      sb)
-  {
-    // length_type num_sb_0 = map.num_subblocks(0);
-    length_type num_sb_1 = map.num_subblocks(1);
-    length_type num_sb_2 = map.num_subblocks(2);
-
-    index_type fix_sb_0 = map.impl_dim_subblock_from_index(0, idx);
-
-    return fix_sb_0*num_sb_1*num_sb_2+ sb;
-  }
-
-  static type project(Map<Dist0, Dist1, Dist2> const& map, index_type idx)
-  {
-    // length_type num_sb_0 = map.num_subblocks(0);
-    length_type num_sb_1 = map.num_subblocks(1);
-    length_type num_sb_2 = map.num_subblocks(2);
-
-    index_type fix_sb_0 = map.impl_dim_subblock_from_index(0, idx);
-
-    Vector<processor_type> pvec(num_sb_1*num_sb_2);
-
-    for (index_type pi=0; pi<num_sb_1*num_sb_2; ++pi)
-      pvec(pi) = map.impl_proc_from_rank(fix_sb_0*num_sb_1*num_sb_2+pi);
-
-    return type(pvec, copy_dist<Dist1>(map, 1), copy_dist<Dist2>(map, 2));
-  }
-};
-
-
-
-template <typename       Dist0,
-	  typename       Dist1,
-	  typename       Dist2>
-struct Map_project_1<1, Map<Dist0, Dist1, Dist2> >
-{
-  typedef Map<Dist0, Dist2> type;
-
-  // Return the parent subblock corresponding to a child subblock.
-  static index_type parent_subblock(
-    Map<Dist0, Dist1, Dist2> const& map,
-    index_type                      idx,
-    index_type                      sb)
-  {
-    length_type num_sb_0 = map.num_subblocks(0);
-    length_type num_sb_1 = map.num_subblocks(1);
-    length_type num_sb_2 = map.num_subblocks(2);
-
-    index_type fix_sb_1 = map.impl_dim_subblock_from_index(1, idx);
-
-    index_type sb_0 = sb / num_sb_2;
-    index_type sb_2 = sb % num_sb_2;
-
-    return sb_0*num_sb_1*num_sb_2 + fix_sb_1*num_sb_2      + sb_2;
-  }
-
-  static type project(Map<Dist0, Dist1, Dist2> const& map, index_type idx)
-  {
-    length_type num_sb_0 = map.num_subblocks(0);
-    length_type num_sb_1 = map.num_subblocks(1);
-    length_type num_sb_2 = map.num_subblocks(2);
-
-    index_type fix_sb_1 = map.impl_dim_subblock_from_index(1, idx);
-
-    Vector<processor_type> pvec(num_sb_0*num_sb_2);
-
-    for (index_type pi=0; pi<num_sb_0*num_sb_2; ++pi)
-    {
-      index_type sb_0 = pi / num_sb_2;
-      index_type sb_2 = pi % num_sb_2;
-      pvec(pi) = map.impl_proc_from_rank(sb_0*num_sb_1*num_sb_2 +
-					 fix_sb_1*num_sb_2      + sb_2);
-    }
-
-    return type(pvec, copy_dist<Dist1>(map, 0), copy_dist<Dist2>(map, 2));
-  }
-};
-
-
-
-template <typename       Dist0,
-	  typename       Dist1,
-	  typename       Dist2>
-struct Map_project_1<2, Map<Dist0, Dist1, Dist2> >
-{
-  typedef Map<Dist0, Dist1> type;
-
-  // Return the parent subblock corresponding to a child subblock.
-  static index_type parent_subblock(
-    Map<Dist0, Dist1, Dist2> const& map,
-    index_type                      idx,
-    index_type                      sb)
-  {
-    length_type num_sb_0 = map.num_subblocks(0);
-    length_type num_sb_1 = map.num_subblocks(1);
-    length_type num_sb_2 = map.num_subblocks(2);
-
-    index_type fix_sb_2 = map.impl_dim_subblock_from_index(2, idx);
-
-    index_type sb_0 = sb / num_sb_1;
-    index_type sb_1 = sb % num_sb_1;
-    return sb_0*num_sb_1*num_sb_2 + sb_1*num_sb_2          + fix_sb_2;
-  }
-
-  static type project(Map<Dist0, Dist1, Dist2> const& map, index_type idx)
-  {
-    length_type num_sb_0 = map.num_subblocks(0);
-    length_type num_sb_1 = map.num_subblocks(1);
-    length_type num_sb_2 = map.num_subblocks(2);
-
-    index_type fix_sb_2 = map.impl_dim_subblock_from_index(2, idx);
-
-    Vector<processor_type> pvec(num_sb_0*num_sb_1);
-
-    for (index_type pi=0; pi<num_sb_0*num_sb_1; ++pi)
-    {
-      index_type sb_0 = pi / num_sb_1;
-      index_type sb_1 = pi % num_sb_1;
-      pvec(pi) = map.impl_proc_from_rank(sb_0*num_sb_1*num_sb_2 +
-					 sb_1*num_sb_2          +
-					 fix_sb_2);
-    }
-
-    return type(pvec, copy_dist<Dist1>(map, 0), copy_dist<Dist2>(map, 1));
-  }
-};
-
-
-
-/***********************************************************************
-  Project a Map, removing 2 dimensions.
-***********************************************************************/
-
-template <typename       Dist0,
-	  typename       Dist1,
-	  typename       Dist2>
-struct Map_project_2<0, 1, Map<Dist0, Dist1, Dist2> >
-{
-  typedef Map<Dist2> type;
-
-  static type project(
-    Map<Dist0, Dist1, Dist2> const& map,
-    index_type                      idx0,
-    index_type                      idx1)
-  {
-    // length_type num_sb_0 = map.num_subblocks(0);
-    length_type num_sb_1 = map.num_subblocks(1);
-    length_type num_sb_2 = map.num_subblocks(2);
-
-    index_type fix_sb_0 = map.impl_dim_subblock_from_index(0, idx0);
-    index_type fix_sb_1 = map.impl_dim_subblock_from_index(1, idx1);
-
-    Vector<processor_type> pvec(num_sb_2);
-
-    for (index_type pi=0; pi<num_sb_2; ++pi)
-      pvec(pi) = map.impl_proc_from_rank(fix_sb_0*num_sb_1*num_sb_2 +
-					 fix_sb_1*num_sb_2 + pi);
-
-    return type(pvec, copy_dist<Dist2>(map, 2));
-  }
-
-  // Return the parent subblock corresponding to a child subblock.
-  static index_type parent_subblock(
-    Map<Dist0, Dist1, Dist2> const& map,
-    index_type                      idx0,
-    index_type                      idx1,
-    index_type                      sb)
-  {
-    // length_type num_sb_0 = map.num_subblocks(0);
-    length_type num_sb_1 = map.num_subblocks(1);
-    length_type num_sb_2 = map.num_subblocks(2);
-
-    index_type fix_sb_0 = map.impl_dim_subblock_from_index(0, idx0);
-    index_type fix_sb_1 = map.impl_dim_subblock_from_index(1, idx1);
-
-    return fix_sb_0*num_sb_1*num_sb_2 + fix_sb_1*num_sb_2 + sb;
-  }
-};
-
-template <typename       Dist0,
-	  typename       Dist1,
-	  typename       Dist2>
-struct Map_project_2<0, 2, Map<Dist0, Dist1, Dist2> >
-{
-  typedef Map<Dist2> type;
-
-  static type project(
-    Map<Dist0, Dist1, Dist2> const& map,
-    index_type                      idx0,
-    index_type                      idx2)
-  {
-    // length_type num_sb_0 = map.num_subblocks(0);
-    length_type num_sb_1 = map.num_subblocks(1);
-    length_type num_sb_2 = map.num_subblocks(2);
-
-    index_type fix_sb_0 = map.impl_dim_subblock_from_index(0, idx0);
-    index_type fix_sb_2 = map.impl_dim_subblock_from_index(2, idx2);
-
-    Vector<processor_type> pvec(num_sb_1);
-
-    for (index_type pi=0; pi<num_sb_1; ++pi)
-      pvec(pi) = map.impl_proc_from_rank(fix_sb_0*num_sb_1*num_sb_2 +
-					 pi*num_sb_2 + fix_sb_2);
-
-    return type(pvec, copy_dist<Dist1>(map, 1));
-  }
-
-  // Return the parent subblock corresponding to a child subblock.
-  static index_type parent_subblock(
-    Map<Dist0, Dist1, Dist2> const& map,
-    index_type                      idx0,
-    index_type                      idx2,
-    index_type                      sb)
-  {
-    // length_type num_sb_0 = map.num_subblocks(0);
-    length_type num_sb_1 = map.num_subblocks(1);
-    length_type num_sb_2 = map.num_subblocks(2);
-
-    index_type fix_sb_0 = map.impl_dim_subblock_from_index(0, idx0);
-    index_type fix_sb_2 = map.impl_dim_subblock_from_index(2, idx2);
-
-    return fix_sb_0*num_sb_1*num_sb_2 + sb*num_sb_2 + fix_sb_2;
-  }
-};
-
-template <typename       Dist0,
-	  typename       Dist1,
-	  typename       Dist2>
-struct Map_project_2<1, 2, Map<Dist0, Dist1, Dist2> >
-{
-  typedef Map<Dist2> type;
-
-  static type project(
-    Map<Dist0, Dist1, Dist2> const& map,
-    index_type                      idx1,
-    index_type                      idx2)
-  {
-    length_type num_sb_0 = map.num_subblocks(0);
-    length_type num_sb_1 = map.num_subblocks(1);
-    length_type num_sb_2 = map.num_subblocks(2);
-
-    index_type fix_sb_1 = map.impl_dim_subblock_from_index(1, idx1);
-    index_type fix_sb_2 = map.impl_dim_subblock_from_index(2, idx2);
-
-    Vector<processor_type> pvec(num_sb_0);
-
-    for (index_type pi=0; pi<num_sb_0; ++pi)
-      pvec(pi) = map.impl_proc_from_rank(pi*num_sb_1*num_sb_2 +
-					 fix_sb_1*num_sb_2 + fix_sb_2);
-
-    return type(pvec, copy_dist<Dist0>(map, 0));
-  }
-
-  // Return the parent subblock corresponding to a child subblock.
-  static index_type parent_subblock(
-    Map<Dist0, Dist1, Dist2> const& map,
-    index_type                      idx1,
-    index_type                      idx2,
-    index_type                      sb)
-  {
-    length_type num_sb_0 = map.num_subblocks(0);
-    length_type num_sb_1 = map.num_subblocks(1);
-    length_type num_sb_2 = map.num_subblocks(2);
-
-    index_type fix_sb_1 = map.impl_dim_subblock_from_index(1, idx1);
-    index_type fix_sb_2 = map.impl_dim_subblock_from_index(2, idx2);
-
-    return sb*num_sb_1*num_sb_2 + fix_sb_1*num_sb_2 + fix_sb_2;
-  }
-};
-
-
-
-/***********************************************************************
-  Map subdomain
-***********************************************************************/
-
-#if 0
-// This functionality is now provided by Subset_map.  Remove after
-// performance is characterized.
-template <dimension_type Dim,
-	  typename       Dist0,
-	  typename       Dist1,
-	  typename       Dist2>
-struct Map_subdomain<Dim, Map<Dist0, Dist1, Dist2> >
-{
-  typedef Map<Dist0, Dist1, Dist2> type;
-
-  static type project(
-    Map<Dist0, Dist1, Dist2> const& map,
-    Domain<Dim> const&              dom)
-  {
-    // Check each dimension
-    for (dimension_type d=0; d<Dim; ++d)
-    {
-      if (map.num_subblocks(d) == 1)
-	; /* OK */
-      // TODO: Handle single index
-      else
-      {
-	// If this dimension is distributed, then subdomain must be full
-	if (dom[d].first() != 0 || dom[d].stride() != 1 ||
-	    dom[d].size() != map.template applied_domain<Dim>()[d].size())
-	{
-	  VSIP_IMPL_THROW(
-	    impl::unimplemented(
-	      "Map_subdomain: Subviews must not break up distributed dimensions"));
-	}
-      }
-    }
-
-    Vector<processor_type> pvec(map.num_subblocks());
-
-    for (index_type pi=0; pi<map.num_subblocks(); ++pi)
-      pvec(pi) = map.impl_proc_from_rank(pi);
-	
-    return type(pvec,
-		copy_dist<Dist0>(map, 0),
-		copy_dist<Dist1>(map, 1),
-		copy_dist<Dist2>(map, 2));
-  }
-
-  // Return the parent subblock corresponding to a child subblock.
-  static index_type parent_subblock(
-    Map<Dist0, Dist1, Dist2> const& map,
-    Domain<Dim> const&              /*dom*/,
-    index_type                      sb)
-  {
-    return sb;
-  }
-};
-#endif
-
-
-} // namespace vsip::impl
-
-} // namespace vsip
+template <typename D0, typename D1, typename D2>
+struct is_global_map<Map<D0, D1, D2> >
+{ static bool const value = true;};
+
+} // namespace ovxx::parallel
+} // namespace ovxx
 
 #endif

@@ -10,27 +10,17 @@
 // from TASP VSIPL.  See http://www.vsipl.org/software/ for
 // copyright notice and additional information.
 
-#ifndef VSIP_RANDOM_HPP
-#define VSIP_RANDOM_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef vsip_random_hpp_
+#define vsip_random_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/tensor.hpp>
-#include <vsip/core/expr/generator_block.hpp>
-#include <vsip/core/parallel/global_map.hpp>
-#include <vsip/map.hpp>
-
-
-
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
+#include <ovxx/expr/generator.hpp>
+#ifdef OVXX_PARALLEL
+# include <vsip/map.hpp>
+#endif
 
 namespace vsip
 {
@@ -377,16 +367,16 @@ class Rand : public impl::Rand_base<T>
     Rand<T> &rng;
   };
 
-  typedef impl::Generator_expr_block<1, Uniform_generator> const uniform1d_block_type;
-  typedef impl::Generator_expr_block<1, Normal_generator> const normal1d_block_type;
-  typedef impl::Generator_expr_block<2, Uniform_generator> const uniform2d_block_type;
-  typedef impl::Generator_expr_block<2, Normal_generator> const normal2d_block_type;
-  typedef impl::Generator_expr_block<3, Uniform_generator> const uniform3d_block_type;
-  typedef impl::Generator_expr_block<3, Normal_generator> const normal3d_block_type;
+  typedef ovxx::expr::Generator<1, Uniform_generator> const uniform1d_block_type;
+  typedef ovxx::expr::Generator<1, Normal_generator> const normal1d_block_type;
+  typedef ovxx::expr::Generator<2, Uniform_generator> const uniform2d_block_type;
+  typedef ovxx::expr::Generator<2, Normal_generator> const normal2d_block_type;
+  typedef ovxx::expr::Generator<3, Uniform_generator> const uniform3d_block_type;
+  typedef ovxx::expr::Generator<3, Normal_generator> const normal3d_block_type;
 
-  typedef Dense<1, T, row1_type, Local_or_global_map<1> > block1_type;
-  typedef Dense<2, T, row2_type, Local_or_global_map<2> > block2_type;
-  typedef Dense<3, T, row3_type, Local_or_global_map<3> > block3_type;
+  typedef Dense<1, T, row1_type, ovxx::parallel::local_or_global_map<1> > block1_type;
+  typedef Dense<2, T, row2_type, ovxx::parallel::local_or_global_map<2> > block2_type;
+  typedef Dense<3, T, row3_type, ovxx::parallel::local_or_global_map<3> > block3_type;
 
 public:
   // View types [random.rand.view types]

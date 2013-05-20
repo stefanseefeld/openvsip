@@ -14,18 +14,7 @@
 #include <vsip/vector.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-storage.hpp>
 #include "common.hpp"
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
 
 TEST_UNARY(copy,   ,      ,     anyval)
 TEST_UNARY(mag,   mag,   mag,   anyval)
@@ -37,14 +26,6 @@ TEST_UNARY(recip, recip, recip, nonzero)
 TEST_UNARY(bnot,  bnot,  bnot,  anyval)
 TEST_UNARY(lnot,  lnot,  lnot,  anyval)
 TEST_UNARY(conj,  conj,  conj,  anyval)
-
-
-
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
 
 int
 main(int argc, char** argv)

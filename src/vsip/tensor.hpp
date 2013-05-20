@@ -1,157 +1,127 @@
 //
-// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_TENSOR_HPP
-#define VSIP_TENSOR_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef vsip_tensor_hpp_
+#define vsip_tensor_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/domain.hpp>
 #include <vsip/dense.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/block_traits.hpp>
-#include <vsip/core/subblock.hpp>
-#include <vsip/core/refcount.hpp>
-#include <vsip/core/view_traits.hpp>
-#include <vsip/core/assign.hpp>
-#include <vsip/core/lvalue_proxy.hpp>
-#ifndef VSIP_IMPL_REF_IMPL
-# include <vsip_csl/pi/iterator.hpp>
-#endif
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
 
 namespace vsip
 {
 
 /// View which appears as a three-dimensional, read-only tensor.
 template <typename T, typename Block>
-class const_Tensor : public impl::Non_assignable,
-		     public  vsip::impl_const_View<vsip::const_Tensor,Block>
+class const_Tensor : public ovxx::const_View<const_Tensor,Block>
 {
-  typedef vsip::impl_const_View<vsip::const_Tensor,Block> impl_base_type;
-  typedef typename impl::Lvalue_factory_type<Block>::type impl_factory_type;
+  typedef ovxx::const_View<vsip::const_Tensor,Block> base_type;
+  typedef typename ovxx::lvalue_factory_type<Block, 3>::type ref_factory;
+
+  // [view.tensor.subview_types]
+protected:
+  typedef typename Block::map_type map_type;
+  typedef ovxx::expr::Subset<Block> impl_subblock_type;
 
 public:
-  // Compile-time values.
   static const dimension_type dim = 3;
-  typedef Block                                      block_type;
-  typedef typename block_type::value_type            value_type;
-  typedef typename impl_factory_type::reference_type reference_type;
-  typedef typename impl_factory_type::const_reference_type
-		const_reference_type;
+  typedef Block block_type;
+  typedef typename block_type::value_type value_type;
+  typedef typename ref_factory::reference_type reference_type;
+  typedef typename ref_factory::const_reference_type
+    const_reference_type;
 
   typedef vsip::whole_domain_type whole_domain_type;
   static whole_domain_type const whole_domain = vsip::whole_domain;
 
-  typedef typename impl_base_type::impl_const_view_type impl_const_view_type;
+  typedef typename base_type::impl_const_view_type impl_const_view_type;
 
-  // [view.tensor.subview_types]
-protected:
-  typedef typename Block::map_type  impl_map_type;
-  typedef impl::Subset_block<Block>  impl_subblock_type;
-
-public:
   typedef const_Tensor<T, impl_subblock_type> subview_type;
   typedef const_Tensor<T, impl_subblock_type> const_subview_type;
 
   template <dimension_type D0, dimension_type D1, dimension_type D2>
   struct transpose_view
   {
-    typedef impl::Permuted_block<block_type, tuple<D0, D1, D2> >
-      impl_transblock_type;
-    typedef const_Tensor<T, impl_transblock_type> type;
-    typedef const_Tensor<T, impl_transblock_type> const_type;
+    typedef ovxx::expr::Permuted<Block, tuple<D0, D1, D2> > block_type;
+    typedef const_Tensor<T, block_type> type;
+    typedef const_Tensor<T, block_type> const_type;
   }; 
 
   template <dimension_type D>
-  struct submatrix : public impl::Compile_time_assert<(D < 3)>
+  struct submatrix : ovxx::ct_assert<(D < 3)>
   {
-    typedef impl::Sliced_block<block_type, D> block;
-    typedef const_Matrix<T, block> type;
-    typedef const_Matrix<T, block> const_type;
+    typedef ovxx::expr::Sliced<Block, D> block_type;
+    typedef const_Matrix<T, block_type> type;
+    typedef const_Matrix<T, block_type> const_type;
 
-    typedef impl::Subset_block<block> subblock;
-    typedef const_Matrix<T, subblock> subset_type;
-    typedef const_Matrix<T, subblock> const_subset_type;
+    typedef ovxx::expr::Subset<block_type> subset_block_type;
+    typedef const_Matrix<T, subset_block_type> subset_type;
+    typedef const_Matrix<T, subset_block_type> const_subset_type;
   };
 
   template <dimension_type D1, dimension_type D2>
-  struct subvector : public impl::Compile_time_assert<(D1 < D2 && D2 < 3)>
+  struct subvector : ovxx::ct_assert<(D1 < D2 && D2 < 3)>
   {
-    typedef impl::Sliced2_block<block_type, D1, D2> block;
-    typedef const_Vector<T, block> type;
-    typedef const_Vector<T, block> const_type;
+    typedef ovxx::expr::Sliced2<Block, D1, D2> block_type;
+    typedef const_Vector<T, block_type> type;
+    typedef const_Vector<T, block_type> const_type;
 
-    typedef impl::Subset_block<block> subblock;
-    typedef const_Vector<T, subblock> subset_type;
-    typedef const_Vector<T, subblock> const_subset_type;
+    typedef ovxx::expr::Subset<block_type> subset_block_type;
+    typedef const_Vector<T, subset_block_type> subset_type;
+    typedef const_Vector<T, subset_block_type> const_subset_type;
   };
 
-public:
-
   // [view.tensor.constructors]
-  const_Tensor(length_type i, length_type j, length_type k, T const& value,
-	       impl_map_type const& map = impl_map_type())
-    : impl_base_type(new block_type(Domain<3>(i, j, k), value, map), impl::noincrement)
+  const_Tensor(length_type i, length_type j, length_type k, T const &value,
+	       map_type const &map = map_type())
+    : base_type(new block_type(Domain<3>(i, j, k), value, map), false)
   {}
   const_Tensor(length_type i, length_type j, length_type k,
-	       impl_map_type const& map = impl_map_type())
-    : impl_base_type(new block_type(Domain<3>(i, j, k), map), impl::noincrement)
+	       map_type const &map = map_type())
+    : base_type(new block_type(Domain<3>(i, j, k), map), false)
   {}
-  const_Tensor(Block& blk) VSIP_NOTHROW
-    : impl_base_type (&blk)
-  {}
-  const_Tensor(const_Tensor const& v) VSIP_NOTHROW
-    : impl_base_type(&v.block())
-  {}
-  ~const_Tensor() VSIP_NOTHROW
-  {}
+  const_Tensor(Block &block) VSIP_NOTHROW : base_type(&block) {}
+  const_Tensor(const_Tensor const &v) VSIP_NOTHROW : base_type(&v.block()) {}
+  ~const_Tensor() VSIP_NOTHROW {}
 
   // [view.tensor.transpose]
   template <dimension_type D0, dimension_type D1, dimension_type D2>
   typename transpose_view<D0, D1, D2>::const_type  
   transpose() const VSIP_NOTHROW
   {
-    typename transpose_view<D0, D1, D2>::impl_transblock_type  block(
-      this->block());
+    typename transpose_view<D0, D1, D2>::block_type  block(this->block());
     return typename transpose_view<D0, D1, D2>::const_type(block);
   }
 
   // [view.tensor.valaccess]
   value_type get(index_type i, index_type j, index_type k) const VSIP_NOTHROW
   {
-    assert(i < this->size(0));
-    assert(j < this->size(1));
-    assert(k < this->size(2));
+    OVXX_PRECONDITION(i < this->size(0));
+    OVXX_PRECONDITION(j < this->size(1));
+    OVXX_PRECONDITION(k < this->size(2));
     return this->block().get(i, j, k);
   }
 
   // Supported for some, but not all, underlying Blocks.
-  const_reference_type operator()(index_type i, index_type j, index_type k)
-    const VSIP_NOTHROW
-  { impl_factory_type f(this->block()); return f.impl_ref(i, j, k); }
+  const_reference_type 
+  operator()(index_type i, index_type j, index_type k) const VSIP_NOTHROW
+  { return ref_factory::ref(this->block(), i, j, k);}
 
   // [view.tensor.subviews]
-  const_subview_type get(Domain<3> const& dom)
-    const VSIP_THROW((std::bad_alloc))
+  const_subview_type get(Domain<3> const &dom) const VSIP_THROW((std::bad_alloc))
   {
     impl_subblock_type block(dom, this->block());
     return const_subview_type(block);
   }
 
-  const_subview_type operator()(Domain<3> const& dom)
+  const_subview_type operator()(Domain<3> const &dom)
     const VSIP_THROW((std::bad_alloc))
   {
     impl_subblock_type block(dom, this->block());
@@ -159,51 +129,51 @@ public:
   }
 
   typename subvector<1, 2>::const_subset_type
-  operator()(Domain<1> const& d, index_type j, index_type k)
+  operator()(Domain<1> const &d, index_type j, index_type k)
     const VSIP_THROW((std::bad_alloc))
   {
-    typename subvector<1, 2>::block block(this->block(), j, k);
-    typename subvector<1, 2>::subblock sblock(d, block);
+    typename subvector<1, 2>::block_type block(this->block(), j, k);
+    typename subvector<1, 2>::subset_block_type sblock(d, block);
     return typename subvector<1, 2>::const_subset_type(sblock);
   }
   typename subvector<0, 2>::const_subset_type
   operator()(index_type i, Domain<1> const& d, index_type k)
     const VSIP_THROW((std::bad_alloc))
   {
-    typename subvector<0, 2>::block block(this->block(), i, k);
-    typename subvector<0, 2>::subblock sblock(d, block);
+    typename subvector<0, 2>::block_type block(this->block(), i, k);
+    typename subvector<0, 2>::subset_block_type sblock(d, block);
     return typename subvector<0, 2>::const_subset_type(sblock);
   }
   typename subvector<0, 1>::const_subset_type
   operator()(index_type i, index_type j, Domain<1> const& d)
     const VSIP_THROW((std::bad_alloc))
   {
-    typename subvector<0, 1>::block block(this->block(), i, j);
-    typename subvector<0, 1>::subblock sblock(d, block);
+    typename subvector<0, 1>::block_type block(this->block(), i, j);
+    typename subvector<0, 1>::subset_block_type sblock(d, block);
     return typename subvector<0, 1>::const_subset_type(sblock);
   }
   typename submatrix<0>::const_subset_type
   operator()(index_type i, Domain<1> const& d1, Domain<1> const& d2)
     const VSIP_THROW((std::bad_alloc))
   {
-    typename submatrix<0>::block block(this->block(), i);
-    typename submatrix<0>::subblock sblock(Domain<2>(d1, d2), block);
+    typename submatrix<0>::block_type block(this->block(), i);
+    typename submatrix<0>::subset_block_type sblock(Domain<2>(d1, d2), block);
     return typename submatrix<0>::const_subset_type(sblock);
   }
   typename submatrix<1>::const_subset_type
   operator()(Domain<1> const& d1, index_type j, Domain<1> const& d2)
     const VSIP_THROW((std::bad_alloc))
   {
-    typename submatrix<1>::block block(this->block(), j);
-    typename submatrix<1>::subblock sblock(Domain<2>(d1, d2), block);
+    typename submatrix<1>::block_type block(this->block(), j);
+    typename submatrix<1>::subset_block_type sblock(Domain<2>(d1, d2), block);
     return typename submatrix<1>::const_subset_type(sblock);
   }
   typename submatrix<2>::const_subset_type
   operator()(Domain<1> const& d1, Domain<1> const& d2, index_type k)
     const VSIP_THROW((std::bad_alloc))
   {
-    typename submatrix<2>::block block(this->block(), k);
-    typename submatrix<2>::subblock sblock(Domain<2>(d1, d2), block);
+    typename submatrix<2>::block_type block(this->block(), k);
+    typename submatrix<2>::subset_block_type sblock(Domain<2>(d1, d2), block);
     return typename submatrix<2>::const_subset_type(sblock);
   }
 
@@ -211,57 +181,44 @@ public:
   operator()(whole_domain_type, index_type j, index_type k)
     const VSIP_THROW((std::bad_alloc))
   {
-    typename subvector<1, 2>::block block(this->block(), j, k);
+    typename subvector<1, 2>::block_type block(this->block(), j, k);
     return typename subvector<1, 2>::const_type(block);
   }
   typename subvector<0, 2>::const_type
   operator()(index_type i, whole_domain_type, index_type k)
     const VSIP_THROW((std::bad_alloc))
   {
-    typename subvector<0, 2>::block block(this->block(), i, k);
+    typename subvector<0, 2>::block_type block(this->block(), i, k);
     return typename subvector<0, 2>::const_type(block);
   }
   typename subvector<0, 1>::const_type
   operator()(index_type i, index_type j, whole_domain_type)
     const VSIP_THROW((std::bad_alloc))
   {
-    typename subvector<0, 1>::block block(this->block(), i, j);
+    typename subvector<0, 1>::block_type block(this->block(), i, j);
     return typename subvector<0, 1>::const_type(block);
   }
   typename submatrix<0>::const_type
   operator()(index_type i, whole_domain_type, whole_domain_type)
     const VSIP_THROW((std::bad_alloc))
   {
-    typename submatrix<0>::block block(this->block(), i);
+    typename submatrix<0>::block_type block(this->block(), i);
     return typename submatrix<0>::const_type(block);
   }
   typename submatrix<1>::const_type
   operator()(whole_domain_type, index_type j, whole_domain_type)
     const VSIP_THROW((std::bad_alloc))
   {
-    typename submatrix<1>::block block(this->block(), j);
+    typename submatrix<1>::block_type block(this->block(), j);
     return typename submatrix<1>::const_type(block);
   }
   typename submatrix<2>::const_type
   operator()(whole_domain_type, whole_domain_type, index_type k)
     const VSIP_THROW((std::bad_alloc))
   {
-    typename submatrix<2>::block block(this->block(), k);
+    typename submatrix<2>::block_type block(this->block(), k);
     return typename submatrix<2>::const_type(block);
   }
-#ifndef VSIP_IMPL_REF_IMPL
-  template <typename I, typename J, typename K>
-  typename impl::enable_if_c<vsip_csl::pi::is_iterator<I>::value || 
-			     vsip_csl::pi::is_iterator<J>::value || 
-			     vsip_csl::pi::is_iterator<K>::value,
-			     vsip_csl::pi::Call<block_type, I, J, K> >::type
-  operator()(I const &i, J const &j, K const &k)
-  {
-    using namespace vsip_csl::pi;
-    return Call<block_type, I, J, K>(this->block(), i, j, k);
-  }
-#endif
-
 };
 
 
@@ -269,86 +226,79 @@ public:
 /// inherits from const_Tensor, so only the members that const_Tensor
 /// does not carry, or that are different, need be specified.
 template <typename T, typename Block>
-class Tensor : public vsip::impl_View<vsip::Tensor, Block>
+class Tensor : public ovxx::View<Tensor, Block>
 {
-  typedef vsip::impl_View<vsip::Tensor, Block> impl_base_type;
-  typedef typename impl::Lvalue_factory_type<Block>::type impl_factory_type;
+  typedef ovxx::View<vsip::Tensor, Block> base_type;
+  typedef typename ovxx::lvalue_factory_type<Block, 3>::type ref_factory;
 
-  // Implementation compile-time values.
 protected:
-  typedef typename Block::map_type impl_map_type;
+  typedef typename Block::map_type map_type;
 
   // [view.tensor.subview_types]
   // Override subview_type and make it writable.
-  typedef impl::Subset_block<Block> impl_subblock_type;
+  typedef ovxx::expr::Subset<Block> impl_subblock_type;
 
 public:
-  typedef typename 
-    vsip::const_Tensor<T, Block>::whole_domain_type whole_domain_type;
+  typedef typename const_Tensor<T, Block>::whole_domain_type whole_domain_type;
   typedef Tensor<T, impl_subblock_type>      subview_type;
 
-  // Compile-time values.
   static const dimension_type dim = 3;
-  typedef Block                                       block_type;
-  typedef typename block_type::value_type             value_type;
-  typedef typename impl_factory_type::reference_type  reference_type;
-  typedef typename impl_factory_type::const_reference_type
-		const_reference_type;
+  typedef Block block_type;
+  typedef typename block_type::value_type value_type;
+  typedef typename ref_factory::reference_type reference_type;
+  typedef typename ref_factory::const_reference_type
+    const_reference_type;
 
   template <dimension_type D0, dimension_type D1, dimension_type D2>
   struct transpose_view
   {
-    typedef impl::Permuted_block<block_type, tuple<D0, D1, D2> >
-      impl_transblock_type;
-    typedef       Tensor<T, impl_transblock_type> type;
-    typedef const_Tensor<T, impl_transblock_type> const_type;
+    typedef ovxx::expr::Permuted<Block, tuple<D0, D1, D2> > block_type;
+    typedef       Tensor<T, block_type> type;
+    typedef const_Tensor<T, block_type> const_type;
   }; 
 
   template <dimension_type D>
-  struct submatrix : public impl::Compile_time_assert<(D < 3)>
+  struct submatrix : ovxx::ct_assert<(D < 3)>
   {
-    typedef impl::Sliced_block<block_type, D> block;
-    typedef Matrix<T, block> type;
-    typedef const_Matrix<T, block> const_type;
+    typedef ovxx::expr::Sliced<Block, D> block_type;
+    typedef Matrix<T, block_type> type;
+    typedef const_Matrix<T, block_type> const_type;
 
-    typedef impl::Subset_block<block> subblock;
-    typedef Matrix<T, subblock> subset_type;
-    typedef const_Matrix<T, subblock> const_subset_type;
+    typedef ovxx::expr::Subset<block_type> subset_block_type;
+    typedef Matrix<T, subset_block_type> subset_type;
+    typedef const_Matrix<T, subset_block_type> const_subset_type;
   };
 
   template <dimension_type D1, dimension_type D2>
-  struct subvector : public impl::Compile_time_assert<(D1 < D2 && D2 < 3)>
+  struct subvector : ovxx::ct_assert<(D1 < D2 && D2 < 3)>
   {
-    typedef impl::Sliced2_block<block_type, D1, D2> block;
-    typedef Vector<T, block> type;
-    typedef const_Vector<T, block> const_type;
+    typedef ovxx::expr::Sliced2<Block, D1, D2> block_type;
+    typedef Vector<T, block_type> type;
+    typedef const_Vector<T, block_type> const_type;
 
-    typedef impl::Subset_block<block> subblock;
-    typedef Vector<T, subblock> subset_type;
-    typedef const_Vector<T, subblock> const_subset_type;
+    typedef ovxx::expr::Subset<block_type> subset_block_type;
+    typedef Vector<T, subset_block_type> subset_type;
+    typedef const_Vector<T, subset_block_type> const_subset_type;
   };
 
-public:
-
   // [view.tensor.constructors]
-  Tensor(length_type i, length_type j, length_type k, const T& value,
-	 impl_map_type const& map = impl_map_type())
-    : impl_base_type(i, j, k, value, map, impl::disambiguate)
+  Tensor(length_type i, length_type j, length_type k, const T &value,
+	 map_type const &map = map_type())
+    : base_type(i, j, k, value, map, ovxx::detail::disambiguate)
   {}
   Tensor(length_type i, length_type j, length_type k,
-	 impl_map_type const& map = impl_map_type())
-    : impl_base_type(i, j, k, map)
+	 map_type const &map = map_type())
+    : base_type(i, j, k, map)
   {}
-  Tensor(Block& blk) VSIP_NOTHROW : impl_base_type(blk) {}
-  Tensor(Tensor const& v) VSIP_NOTHROW : impl_base_type(v.block())
-  {}
+  Tensor(Block &block) VSIP_NOTHROW : base_type(block) {}
+  Tensor(Tensor const &t) VSIP_NOTHROW : base_type(t.block()) {}
   template <typename T0, typename Block0>
-  Tensor(const_Tensor<T0, Block0> const& t) VSIP_NOTHROW
-    : impl_base_type (t.size(0), t.size(1), t.size(2), t.block().map())
+  Tensor(const_Tensor<T0, Block0> const &t) VSIP_NOTHROW
+    : base_type(t.size(0), t.size(1), t.size(2), t.block().map())
   { *this = t;}
   template <typename T0, typename Block0>
-  Tensor(Tensor<T0, Block0> const& t)
-    : impl_base_type(t.size(0), t.size(1), t.size(2), t.block().map())
+  Tensor(Tensor<T0, Block0> const &t)
+    : base_type(t.size(0), t.size(1), t.size(2), t.block().map())
   { *this = t;}
   ~Tensor() VSIP_NOTHROW {}
 
@@ -357,14 +307,13 @@ public:
   typename transpose_view<D0, D1, D2>::const_type
   transpose() const VSIP_NOTHROW
   {
-    return impl_base_type::transpose();
+    return base_type::transpose();
   }
   template <dimension_type D0, dimension_type D1, dimension_type D2>
   typename transpose_view<D0, D1, D2>::type
   transpose() VSIP_NOTHROW
   {
-    typename transpose_view<D0, D1, D2>::impl_transblock_type  block(
-      this->block());
+    typename transpose_view<D0, D1, D2>::block_type block(this->block());
     return typename transpose_view<D0, D1, D2>::type(block);
   }
 
@@ -374,23 +323,23 @@ public:
 	   index_type k,
 	   value_type val) const VSIP_NOTHROW
   {
-    assert(i < this->size(0));
-    assert(j < this->size(1));
-    assert(k < this->size(2));
+    OVXX_PRECONDITION(i < this->size(0));
+    OVXX_PRECONDITION(j < this->size(1));
+    OVXX_PRECONDITION(k < this->size(2));
     this->block().put(i, j, k, val);
   }
 
   reference_type operator()(index_type i,
                             index_type j,
                             index_type k) VSIP_NOTHROW
-  { impl_factory_type f(this->block()); return f.impl_ref(i, j, k); }
+  { return ref_factory::ref(this->block(), i, j, k);}
 
   Tensor& operator=(Tensor const& t) VSIP_NOTHROW
   {
-    assert(this->size(0) == t.size(0) &&
+    OVXX_PRECONDITION(this->size(0) == t.size(0) &&
 	   this->size(1) == t.size(1) &&
 	   this->size(2) == t.size(2));
-    impl::assign<3>(this->block(), t.block());
+    ovxx::assign<3>(this->block(), t.block());
     return *this;
   }
 
@@ -414,24 +363,24 @@ public:
   template <typename T0, typename Block0>
   Tensor& operator=(const_Tensor<T0, Block0> const& t) VSIP_NOTHROW
   {
-    assert(this->size(0) == t.size(0) &&
+    OVXX_PRECONDITION(this->size(0) == t.size(0) &&
 	   this->size(1) == t.size(1) &&
 	   this->size(2) == t.size(2));
-    impl::assign<3>(this->block(), t.block());
+    ovxx::assign<3>(this->block(), t.block());
     return *this;
   }
   template <typename T0, typename Block0>
   Tensor& operator=(Tensor<T0, Block0> const& t) VSIP_NOTHROW
   {
-    assert(this->size(0) == t.size(0) &&
+    OVXX_PRECONDITION(this->size(0) == t.size(0) &&
 	   this->size(1) == t.size(1) &&
 	   this->size(2) == t.size(2));
-    impl::assign<3>(this->block(), t.block());
+    ovxx::assign<3>(this->block(), t.block());
     return *this;
   }
 
   // [view.tensor.subviews]
-  using impl_base_type::operator(); // Pull in all the const versions.
+  using base_type::operator(); // Pull in all the const versions.
   subview_type
   operator()(const Domain<3>& dom) VSIP_THROW((std::bad_alloc))
   {
@@ -443,48 +392,48 @@ public:
   operator()(Domain<1> const& d, index_type j, index_type k)
     VSIP_THROW((std::bad_alloc))
   {
-    typename subvector<1, 2>::block block(this->block(), j, k);
-    typename subvector<1, 2>::subblock sblock(d, block);
+    typename subvector<1, 2>::block_type block(this->block(), j, k);
+    typename subvector<1, 2>::subset_block_type sblock(d, block);
     return typename subvector<1, 2>::subset_type(sblock);
   }
   typename subvector<0, 2>::subset_type
   operator()(index_type i, Domain<1> const& d, index_type k)
     VSIP_THROW((std::bad_alloc))
   {
-    typename subvector<0, 2>::block block(this->block(), i, k);
-    typename subvector<0, 2>::subblock sblock(d, block);
+    typename subvector<0, 2>::block_type block(this->block(), i, k);
+    typename subvector<0, 2>::subset_block_type sblock(d, block);
     return typename subvector<0, 2>::subset_type(sblock);
   }
   typename subvector<0, 1>::subset_type
   operator()(index_type i, index_type j, Domain<1> const& d)
     VSIP_THROW((std::bad_alloc))
   {
-    typename subvector<0, 1>::block block(this->block(), i, j);
-    typename subvector<0, 1>::subblock sblock(d, block);
+    typename subvector<0, 1>::block_type block(this->block(), i, j);
+    typename subvector<0, 1>::subset_block_type sblock(d, block);
     return typename subvector<0, 1>::subset_type(sblock);
   }
   typename submatrix<0>::subset_type
   operator()(index_type i, Domain<1> const& d1, Domain<1> const& d2)
     VSIP_THROW((std::bad_alloc))
   {
-    typename submatrix<0>::block block(this->block(), i);
-    typename submatrix<0>::subblock sblock(Domain<2>(d1, d2), block);
+    typename submatrix<0>::block_type block(this->block(), i);
+    typename submatrix<0>::subset_block_type sblock(Domain<2>(d1, d2), block);
     return typename submatrix<0>::subset_type(sblock);
   }
   typename submatrix<1>::subset_type
   operator()(Domain<1> const& d1, index_type j, Domain<1> const& d2)
     VSIP_THROW((std::bad_alloc))
   {
-    typename submatrix<1>::block block(this->block(), j);
-    typename submatrix<1>::subblock sblock(Domain<2>(d1, d2), block);
+    typename submatrix<1>::block_type block(this->block(), j);
+    typename submatrix<1>::subset_block_type sblock(Domain<2>(d1, d2), block);
     return typename submatrix<1>::subset_type(sblock);
   }
   typename submatrix<2>::subset_type
   operator()(Domain<1> const& d1, Domain<1> const& d2, index_type k)
     VSIP_THROW((std::bad_alloc))
   {
-    typename submatrix<2>::block block(this->block(), k);
-    typename submatrix<2>::subblock sblock(Domain<2>(d1, d2), block);
+    typename submatrix<2>::block_type block(this->block(), k);
+    typename submatrix<2>::subset_block_type sblock(Domain<2>(d1, d2), block);
     return typename submatrix<2>::subset_type(sblock);
   }
 
@@ -492,58 +441,44 @@ public:
   operator()(whole_domain_type, index_type j, index_type k)
     VSIP_THROW((std::bad_alloc))
   {
-    typename subvector<1, 2>::block block(this->block(), j, k);
+    typename subvector<1, 2>::block_type block(this->block(), j, k);
     return typename subvector<1, 2>::type(block);
   }
   typename subvector<0, 2>::type
   operator()(index_type i, whole_domain_type, index_type k)
     VSIP_THROW((std::bad_alloc))
   {
-    typename subvector<0, 2>::block block(this->block(), i, k);
+    typename subvector<0, 2>::block_type block(this->block(), i, k);
     return typename subvector<0, 2>::type(block);
   }
   typename subvector<0, 1>::type
   operator()(index_type i, index_type j, whole_domain_type)
     VSIP_THROW((std::bad_alloc))
   {
-    typename subvector<0, 1>::block block(this->block(), i, j);
+    typename subvector<0, 1>::block_type block(this->block(), i, j);
     return typename subvector<0, 1>::type(block);
   }
   typename submatrix<0>::type
   operator()(index_type i, whole_domain_type, whole_domain_type)
     VSIP_THROW((std::bad_alloc))
   {
-    typename submatrix<0>::block block(this->block(), i);
+    typename submatrix<0>::block_type block(this->block(), i);
     return typename submatrix<0>::type(block);
   }
   typename submatrix<1>::type
   operator()(whole_domain_type, index_type j, whole_domain_type)
     VSIP_THROW((std::bad_alloc))
   {
-    typename submatrix<1>::block block(this->block(), j);
+    typename submatrix<1>::block_type block(this->block(), j);
     return typename submatrix<1>::type(block);
   }
   typename submatrix<2>::type
   operator()(whole_domain_type, whole_domain_type, index_type k)
     VSIP_THROW((std::bad_alloc))
   {
-    typename submatrix<2>::block block(this->block(), k);
+    typename submatrix<2>::block_type block(this->block(), k);
     return typename submatrix<2>::type(block);
   }
-
-#ifndef VSIP_IMPL_REF_IMPL
-  template <typename I, typename J, typename K>
-  typename impl::enable_if_c<vsip_csl::pi::is_iterator<I>::value || 
-			     vsip_csl::pi::is_iterator<J>::value || 
-			     vsip_csl::pi::is_iterator<K>::value,
-			     vsip_csl::pi::Call<block_type, I, J, K> >::type
-  operator()(I const &i, J const &j, K const &k)
-  {
-    using namespace vsip_csl::pi;
-    return Call<block_type, I, J, K>(this->block(), i, j, k);
-  }
-#endif
-
 #define VSIP_IMPL_ELEMENTWISE_SCALAR(op)				\
   for (index_type i = 0; i < this->size(0); ++i)			\
     for (index_type j = 0; j < this->size(1); ++j)			\
@@ -551,7 +486,7 @@ public:
 	this->put(i, j, k, this->get(i, j, k) op val)
 
 #define VSIP_IMPL_ELEMENTWISE_TENSOR(op)				\
-  assert(this->size(0) == m.size(0) &&                                  \
+  OVXX_PRECONDITION(this->size(0) == m.size(0) &&			\
          this->size(1) == m.size(1) &&                                  \
          this->size(2) == m.size(2));					\
   for (index_type i = 0; i < this->size(0); ++i)			\
@@ -599,7 +534,9 @@ struct ViewConversion<const_Tensor, T, Block>
   typedef Tensor<T, Block>       view_type;
 };
 
-namespace impl
+} // namespace vsip
+
+namespace ovxx
 {
 template <typename B>
 struct view_of<B, 3>
@@ -609,21 +546,21 @@ struct view_of<B, 3>
 };
 
 template <typename T, typename Block>
-struct Is_view_type<Tensor<T, Block> >
+struct is_view_type<Tensor<T, Block> >
 {
   typedef Tensor<T, Block> type; 
   static bool const value = true;
 };
 
 template <typename T, typename Block>
-struct Is_view_type<const_Tensor<T, Block> >
+struct is_view_type<const_Tensor<T, Block> >
 {
   typedef const_Tensor<T, Block> type; 
   static bool const value = true;
 };
 
 template <typename T, typename Block>
-struct Is_const_view_type<const_Tensor<T, Block> >
+struct is_const_view_type<const_Tensor<T, Block> >
 {
   typedef const_Tensor<T, Block> type; 
   static bool const value = true;
@@ -661,7 +598,6 @@ extent(const_Tensor<T, Block> const &v)
   return Length<3>(v.size(0), v.size(1), v.size(2));
 }
 
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx
 
-#endif // VSIP_TENSOR_HPP
+#endif

@@ -6,27 +6,17 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_SELGEN_HPP
-#define VSIP_SELGEN_HPP
+#ifndef vsip_selgen_hpp_
+#define vsip_selgen_hpp_
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
-
-#include <vsip/core/block_traits.hpp>
-#include <vsip/core/expr/unary_block.hpp>
-#include <vsip/core/expr/generator_block.hpp>
+#include <ovxx/block_traits.hpp>
+#include <ovxx/expr/unary.hpp>
+#include <ovxx/expr/generator.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
-
 namespace vsip
 {
-
 namespace impl
 {
 
@@ -140,20 +130,16 @@ VSIP_NOTHROW
 /// Requires:
 ///   :len: to be output vector size (len > 0)
 template <typename T>
-const_Vector<T, impl::Generator_expr_block<1, impl::Ramp_generator<T> > const>
-ramp(
-  T           a,
-  T           b,
-  length_type len)
-VSIP_NOTHROW
+const_Vector<T, ovxx::expr::Generator<1, impl::Ramp_generator<T> > const>
+ramp(T a, T b, length_type len) VSIP_NOTHROW
 {
   assert(len > 0);
 
-  typedef impl::Ramp_generator<T>                             generator_type;
-  typedef impl::Generator_expr_block<1, generator_type> const block_type;
+  typedef impl::Ramp_generator<T> generator_type;
+  typedef ovxx::expr::Generator<1, generator_type> const block_type;
 
   generator_type gen(a, b);
-  block_type     block(impl::Length<1>(len), gen);
+  block_type block(ovxx::Length<1>(len), gen);
 
   return const_Vector<T, block_type>(block);
 }

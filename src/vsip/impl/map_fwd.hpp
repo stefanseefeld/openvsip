@@ -36,11 +36,11 @@ namespace parallel
 {
 template <dimension_type D> class local_or_global_map;
 template <dimension_type D> class scalar_map;
-template <dimension_type D> class Subset_map;
+template <dimension_type D> class subset_map;
 
-template <dimension_type D, typename M> struct Map_project_1;
-template <dimension_type D0, dimension_type D1, typename M> struct Map_project_2;
-template <dimension_type D, typename M> struct Map_subdomain;
+template <dimension_type D, typename M> struct map_project_1;
+template <dimension_type D0, dimension_type D1, typename M> struct map_project_2;
+template <dimension_type D, typename M> struct map_subdomain;
 
 } // namespace ovxx::parallel
 } // namespace ovxx

@@ -1,68 +1,46 @@
 //
-// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-/// Description
-///   [view.matrix] views implementing two-dimensional matrices.
-///
-///   This file declares the `const_Matrix` and `Matrix` classes,
-///   which provide the generic View interface, and implement the
-///   mathematical idea of matrices, i.e. two-dimensional storage and
-///   access to values.  A `const_Matrix` view is not modifiable, but a
-///   `Matrix` view is modifiable.
-
-#ifndef VSIP_MATRIX_HPP
-#define VSIP_MATRIX_HPP
+#ifndef vsip_matrix_hpp_
+#define vsip_matrix_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/domain.hpp>
 #include <vsip/dense.hpp>
 #include <vsip/vector.hpp>
-#include <vsip/core/block_traits.hpp>
-#include <vsip/core/block_fill.hpp>
-#include <vsip/core/subblock.hpp>
-#include <vsip/core/refcount.hpp>
-#include <vsip/core/view_traits.hpp>
-#include <vsip/core/assign.hpp>
-#include <vsip/core/lvalue_proxy.hpp>
-#include <vsip/core/metaprogramming.hpp>
-#ifndef VSIP_IMPL_REF_IMPL
-# include <vsip_csl/pi/iterator.hpp>
-#endif
 
 namespace vsip
 {
 
 /// View which appears as a two-dimensional, read-only matrix.
 template <typename T, typename Block>
-class const_Matrix : public impl::Non_assignable,
-		     public  vsip::impl_const_View<vsip::const_Matrix,Block>
+class const_Matrix : public ovxx::const_View<const_Matrix,Block>
 {
-  typedef vsip::impl_const_View<vsip::const_Matrix,Block> impl_base_type;
-  typedef typename impl::Lvalue_factory_type<Block>::type impl_factory_type;
+  typedef ovxx::const_View<vsip::const_Matrix,Block> base_type;
+  typedef typename ovxx::lvalue_factory_type<Block, 2>::type ref_factory;
 
 public:
-  // Compile-time values.
   static const dimension_type dim = 2;
-  typedef Block                                      block_type;
-  typedef typename block_type::value_type            value_type;
-  typedef typename impl_factory_type::reference_type reference_type;
-  typedef typename impl_factory_type::const_reference_type
-		const_reference_type;
-  typedef typename impl_base_type::impl_const_view_type impl_const_view_type;
+  typedef Block block_type;
+  typedef typename block_type::value_type value_type;
+  typedef typename ref_factory::reference_type reference_type;
+  typedef typename ref_factory::const_reference_type
+    const_reference_type;
+  typedef typename base_type::impl_const_view_type impl_const_view_type;
 
   // [view.matrix.subview_types]
 protected:
-  typedef typename block_type::map_type impl_map_type;
-  typedef impl::Subset_block<block_type> impl_subblock_type;
-  typedef impl::Transposed_block<block_type> impl_transblock_type;
-  typedef impl::Sliced_block<block_type, 1> impl_coblock_type;
-  typedef impl::Sliced_block<block_type, 0> impl_roblock_type;
-  typedef impl::Diag_block<block_type> impl_diagblock_type;
+  typedef typename block_type::map_type map_type;
+  typedef ovxx::expr::Subset<block_type> impl_subblock_type;
+  typedef ovxx::expr::Transposed<block_type> impl_transblock_type;
+  typedef ovxx::expr::Sliced<block_type, 1> impl_coblock_type;
+  typedef ovxx::expr::Sliced<block_type, 0> impl_roblock_type;
+  typedef ovxx::expr::Diag<block_type> impl_diagblock_type;
 
 public:
   typedef const_Matrix<T, impl_subblock_type> subview_type;
@@ -77,76 +55,63 @@ public:
   typedef const_Matrix<T, impl_transblock_type> const_transpose_type;
 
   // [view.matrix.constructors]
-  const_Matrix(length_type num_rows, length_type num_cols, T const& value,
-	       impl_map_type const& map = impl_map_type())
-    : impl_base_type(new block_type(Domain<2>(num_rows, num_cols), value, map),
-	   impl::noincrement)
+  const_Matrix(length_type num_rows, length_type num_cols, T const &value,
+	       map_type const &map = map_type())
+    : base_type(new block_type(Domain<2>(num_rows, num_cols), value, map), false)
   {}
   const_Matrix(length_type num_rows, length_type num_cols,
-	       impl_map_type const& map = impl_map_type())
-    : impl_base_type(new block_type(Domain<2>(num_rows, num_cols), map),
-	   impl::noincrement)
+	       map_type const &map = map_type())
+    : base_type(new block_type(Domain<2>(num_rows, num_cols), map), false)
   {}
-  const_Matrix(Block& blk) VSIP_NOTHROW
-    : impl_base_type(&blk)
-  {}
-  const_Matrix(const_Matrix const& m) VSIP_NOTHROW
-    : impl_base_type(&m.block())
-  {}
-  ~const_Matrix() VSIP_NOTHROW
-  {}
+  const_Matrix(Block &block) VSIP_NOTHROW : base_type(&block) {}
+  const_Matrix(const_Matrix const &m) VSIP_NOTHROW : base_type(&m.block()) {}
+  ~const_Matrix() VSIP_NOTHROW {}
 
   // [view.matrix.valaccess]
-  value_type get(vsip::index_type r, vsip::index_type c) const VSIP_NOTHROW
+  value_type get(index_type r, index_type c) const VSIP_NOTHROW
   {
-    assert(r < this->size(0));
-    assert(c < this->size(1));
+    OVXX_PRECONDITION(r < this->size(0));
+    OVXX_PRECONDITION(c < this->size(1));
     return this->block().get(r, c);
   }
 
   // Supported for some, but not all, underlying Blocks.
-  const_reference_type operator()(vsip::index_type r, vsip::index_type c)
-    const VSIP_NOTHROW
+  const_reference_type operator()(index_type r, index_type c) const VSIP_NOTHROW
   {
-    assert(r < this->size(0));
-    assert(c < this->size(1));
-    impl_factory_type f(this->block());
-    return f.impl_ref(r, c);
+    OVXX_PRECONDITION(r < this->size(0));
+    OVXX_PRECONDITION(c < this->size(1));
+    return ref_factory::ref(this->block(), r, c);
   }
 
   // [view.matrix.subviews]
-  const_subview_type get(const Domain<2>& dom)
-    const VSIP_THROW((std::bad_alloc))
+  const_subview_type get(const Domain<2>& dom) const VSIP_THROW((std::bad_alloc))
   {
     impl_subblock_type block(dom, this->block());
     return const_subview_type(block);
   }
 
-  const_subview_type operator()(const Domain<2>& dom)
-    const VSIP_THROW((std::bad_alloc))
+  const_subview_type operator()(const Domain<2>& dom) const VSIP_THROW((std::bad_alloc))
   {
     impl_subblock_type block(dom, this->block());
     return const_subview_type(block);
   }
 
-  const_transpose_type transpose() const
-    VSIP_THROW((std::bad_alloc))
+  const_transpose_type transpose() const VSIP_THROW((std::bad_alloc))
   {
     impl_transblock_type block(this->block());
     return const_transpose_type(block);
   }
 
   // [view.matrix.accessors]
-
-  const_col_type col(vsip::index_type i) const VSIP_THROW((std::bad_alloc))
+  const_col_type col(index_type i) const VSIP_THROW((std::bad_alloc))
   {
-    assert(i < this->size(1));
+    OVXX_PRECONDITION(i < this->size(1));
     impl_coblock_type block(this->block(), i);
     return const_col_type(block);
   }
-  const_row_type row(vsip::index_type i) const VSIP_THROW((std::bad_alloc))
+  const_row_type row(index_type i) const VSIP_THROW((std::bad_alloc))
   {
-    assert(i < this->size(0));
+    OVXX_PRECONDITION(i < this->size(0));
     impl_roblock_type block(this->block(), i);
     return const_row_type(block);
   }
@@ -154,7 +119,7 @@ public:
   {
     return col(i);
   }
-  const_row_type operator()(vsip::index_type i, whole_domain_type) const
+  const_row_type operator()(index_type i, whole_domain_type) const
   {
     return row(i);
   }
@@ -165,61 +130,34 @@ public:
     impl_diagblock_type block(this->block(), diagonal_offset);
     return const_diag_type(block);
   }
-#ifndef VSIP_IMPL_REF_IMPL
-  template <typename I, typename J>
-  typename impl::enable_if_c<vsip_csl::pi::is_iterator<I>::value || 
-			     vsip_csl::pi::is_iterator<J>::value,
-			     vsip_csl::pi::Call<block_type, I, J> >::type
-  operator()(I const &i, J const &j)
-  {
-    using namespace vsip_csl::pi;
-    return Call<block_type, I, J>(this->block(), i, j);
-  }
-  template <typename J>
-  typename impl::enable_if_c<vsip_csl::pi::is_iterator<J>::value,
-			     vsip_csl::pi::Call<block_type, whole_domain_type, J> >::type
-  col(J const &j)
-  {
-    using namespace vsip_csl::pi;
-    return Call<block_type, whole_domain_type, J>(this->block(), j);
-  }
-  template <typename I>
-  typename impl::enable_if_c<vsip_csl::pi::is_iterator<I>::value,
-			     vsip_csl::pi::Call<block_type, I, whole_domain_type> >::type
-  row(I const &i)
-  {
-    using namespace vsip_csl::pi;
-    return Call<block_type, I, whole_domain_type>(this->block(), i);
-  }
-#endif
 };
 
 /// View which appears as a two-dimensional, modifiable matrix.  This
 /// inherits from const_Matrix, so only the members that const_Matrix
 /// does not carry, or that are different, need be specified.
 template <typename T, typename Block>
-class Matrix : public vsip::impl_View<vsip::Matrix,Block>
+class Matrix : public ovxx::View<Matrix,Block>
 {
-  typedef vsip::impl_View<vsip::Matrix,Block> impl_base_type;
-  typedef typename impl::Lvalue_factory_type<Block>::type impl_factory_type;
+  typedef ovxx::View<vsip::Matrix,Block> base_type;
+  typedef typename ovxx::lvalue_factory_type<Block, 2>::type ref_factory;
 
 public:
   // Compile-time values.
   static const dimension_type dim = 2;
-  typedef Block                                     block_type;
-  typedef typename block_type::value_type           value_type;
-  typedef typename impl_factory_type::reference_type reference_type;
-  typedef typename impl_factory_type::const_reference_type
-		const_reference_type;
+  typedef Block block_type;
+  typedef typename block_type::value_type value_type;
+  typedef typename ref_factory::reference_type reference_type;
+  typedef typename ref_factory::const_reference_type
+    const_reference_type;
 
   // [view.matrix.subview_types]
 protected:
-  typedef typename block_type::map_type impl_map_type;
-  typedef impl::Subset_block<block_type> impl_subblock_type;
-  typedef impl::Transposed_block<block_type> impl_transblock_type;  
-  typedef impl::Sliced_block<Block, 1> impl_coblock_type;
-  typedef impl::Sliced_block<Block, 0> impl_roblock_type;
-  typedef impl::Diag_block<Block> impl_diagblock_type;
+  typedef typename block_type::map_type map_type;
+  typedef ovxx::expr::Subset<block_type> impl_subblock_type;
+  typedef ovxx::expr::Transposed<block_type> impl_transblock_type;  
+  typedef ovxx::expr::Sliced<Block, 1> impl_coblock_type;
+  typedef ovxx::expr::Sliced<Block, 0> impl_roblock_type;
+  typedef ovxx::expr::Diag<Block> impl_diagblock_type;
 
 public:
   typedef       Matrix<T, impl_subblock_type> subview_type;
@@ -235,98 +173,69 @@ public:
 
   // [view.matrix.constructors]
   Matrix(length_type num_rows, length_type num_cols, const T& value,
-	 impl_map_type const& map = impl_map_type())
-    : impl_base_type(num_rows, num_cols, value, map, impl::disambiguate)
+	 map_type const &map = map_type())
+    : base_type(num_rows, num_cols, value, map, ovxx::detail::disambiguate)
   {}
   Matrix(length_type num_rows, length_type num_cols,
-	 impl_map_type const& map = impl_map_type())
-    : impl_base_type(num_rows, num_cols, map)
+	 map_type const &map = map_type())
+    : base_type(num_rows, num_cols, map)
   {}
-  Matrix(Block& blk) VSIP_NOTHROW : impl_base_type(blk) {}
-  Matrix(Matrix const& v) VSIP_NOTHROW : impl_base_type(v.block()) 
-  { impl::expr::evaluate(this->block());}
+  Matrix(Block &block) VSIP_NOTHROW : base_type(block) {}
+  Matrix(Matrix const &m) VSIP_NOTHROW : base_type(m.block()) 
+  { ovxx::expr::evaluate(this->block());}
   template <typename T0, typename Block0>
-  Matrix(const_Matrix<T0,Block0> const& m)
-    : impl_base_type(m.size(0), m.size(1), m.block().map()) { *this = m;}
+  Matrix(const_Matrix<T0,Block0> const &m)
+    : base_type(m.size(0), m.size(1), m.block().map()) { *this = m;}
   ~Matrix()VSIP_NOTHROW {}
 
   // [view.matrix.valaccess]
-  void put(vsip::index_type r, vsip::index_type c, value_type val) const VSIP_NOTHROW
+  void put(index_type r, index_type c, value_type val) const VSIP_NOTHROW
   {
-    assert(r < this->size(0));
-    assert(c < this->size(1));
+    OVXX_PRECONDITION(r < this->size(0));
+    OVXX_PRECONDITION(c < this->size(1));
     this->block().put(r, c, val);
   }
 
-  reference_type operator()(vsip::index_type r, vsip::index_type c)
+  reference_type operator()(index_type r, index_type c)
     VSIP_NOTHROW
   {
-    assert(r < this->size(0));
-    assert(c < this->size(1));
-    impl_factory_type f(this->block());
-    return f.impl_ref(r, c);
+    OVXX_PRECONDITION(r < this->size(0));
+    OVXX_PRECONDITION(c < this->size(1));
+    return ref_factory::ref(this->block(), r, c);
   }
   
-#ifndef VSIP_IMPL_REF_IMPL
-  template <typename I, typename J>
-  typename impl::enable_if_c<vsip_csl::pi::is_iterator<I>::value || 
-			     vsip_csl::pi::is_iterator<J>::value,
-			     vsip_csl::pi::Call<block_type, I, J> >::type
-  operator()(I const &i, J const &j)
+  Matrix &operator=(Matrix const &m) VSIP_NOTHROW
   {
-    using namespace vsip_csl::pi;
-    return Call<block_type, I, J>(this->block(), i, j);
-  }
-  template <typename J>
-  typename impl::enable_if_c<vsip_csl::pi::is_iterator<J>::value,
-			     vsip_csl::pi::Call<block_type, whole_domain_type, J> >::type
-  col(J const &j)
-  {
-    using namespace vsip_csl::pi;
-    return Call<block_type, whole_domain_type, J>(this->block(), j);
-  }
-  template <typename I>
-  typename impl::enable_if_c<vsip_csl::pi::is_iterator<I>::value,
-			     vsip_csl::pi::Call<block_type, I, whole_domain_type> >::type
-  row(I const &i)
-  {
-    using namespace vsip_csl::pi;
-    return Call<block_type, I, whole_domain_type>(this->block(), i);
-  }
-#endif
-
-  Matrix& operator=(Matrix const& m) VSIP_NOTHROW
-  {
-    assert(this->size(0) == m.size(0) && this->size(1) == m.size(1));
-    impl::assign<2>(this->block(), m.block());
+    OVXX_PRECONDITION(this->size(0) == m.size(0) && this->size(1) == m.size(1));
+    ovxx::assign<2>(this->block(), m.block());
     return *this;
   }
 
-  Matrix& operator=(const_reference_type val) VSIP_NOTHROW
+  Matrix &operator=(const_reference_type val) VSIP_NOTHROW
   {
-    impl::expr::Scalar<2, T> scalar(val);
-    impl::assign<2>(this->block(), scalar);
+    ovxx::expr::Scalar<2, T> scalar(val);
+    ovxx::assign<2>(this->block(), scalar);
     return *this;
   }
   template <typename T0>
   Matrix& operator=(T0 const& val) VSIP_NOTHROW
   {
-    impl::expr::Scalar<2, T0> scalar(val);
-    impl::assign<2>(this->block(), scalar);
+    ovxx::expr::Scalar<2, T0> scalar(val);
+    ovxx::assign<2>(this->block(), scalar);
     return *this;
   }
   template <typename T0, typename Block0>
-  Matrix& operator=(const_Matrix<T0, Block0> const& m) VSIP_NOTHROW
+  Matrix &operator=(const_Matrix<T0, Block0> const &m) VSIP_NOTHROW
   {
-    assert(this->size(0) == m.size(0) && this->size(1) == m.size(1));
-    impl::assign<2>(this->block(), m.block());
+    OVXX_PRECONDITION(this->size(0) == m.size(0) && this->size(1) == m.size(1));
+    ovxx::assign<2>(this->block(), m.block());
     return *this;
   }
   template <typename T0, typename Block0>
-  Matrix& operator=(Matrix<T0, Block0> const& m) VSIP_NOTHROW
+  Matrix &operator=(Matrix<T0, Block0> const &m) VSIP_NOTHROW
   {
-    assert(this->size(0) == m.size(0) && this->size(1) == m.size(1));
-    impl::assign<2>(this->block(), m.block());
+    OVXX_PRECONDITION(this->size(0) == m.size(0) && this->size(1) == m.size(1));
+    ovxx::assign<2>(this->block(), m.block());
     return *this;
   }
 
@@ -339,50 +248,49 @@ public:
   }
 
   transpose_type
-  transpose() const
-    VSIP_THROW((std::bad_alloc))
+  transpose() const VSIP_THROW((std::bad_alloc))
   {
     impl_transblock_type block(this->block());
     return transpose_type(block);
   }
 
-  const_col_type col(vsip::index_type i) const VSIP_THROW((std::bad_alloc))
-  { return impl_base_type::col(i); } 
-  col_type col(vsip::index_type i) VSIP_THROW((std::bad_alloc))
+  const_col_type col(index_type i) const VSIP_THROW((std::bad_alloc))
+  { return base_type::col(i); } 
+  col_type col(index_type i) VSIP_THROW((std::bad_alloc))
   {
-    assert(i < this->size(1));
+    OVXX_PRECONDITION(i < this->size(1));
     impl_coblock_type block(this->block(), i);
     return col_type(block);
   }
 
-  const_row_type row(vsip::index_type i) const VSIP_THROW((std::bad_alloc))
-  { return impl_base_type::row(i); } 
-  row_type row(vsip::index_type i) VSIP_THROW((std::bad_alloc))
+  const_row_type row(index_type i) const VSIP_THROW((std::bad_alloc))
+  { return base_type::row(i); } 
+  row_type row(index_type i) VSIP_THROW((std::bad_alloc))
   {
-    assert(i < this->size(0));
+    OVXX_PRECONDITION(i < this->size(0));
     impl_roblock_type block(this->block(), i);
     return row_type(block);
   }
-  const_col_type operator()(whole_domain_type, vsip::index_type i) const
+  const_col_type operator()(whole_domain_type, index_type i) const
   {
     return col(i);
   }
-  col_type operator()(whole_domain_type, vsip::index_type i)
+  col_type operator()(whole_domain_type, index_type i)
   {
     return col(i);
   }
-  const_row_type operator()(vsip::index_type i, whole_domain_type) const
+  const_row_type operator()(index_type i, whole_domain_type) const
   {
     return row(i);
   }
-  row_type operator()(vsip::index_type i, whole_domain_type)
+  row_type operator()(index_type i, whole_domain_type)
   {
     return row(i);
   }
 
   const_diag_type diag(index_difference_type diagonal_offset = 0)
     const VSIP_THROW((std::bad_alloc))
-  { return impl_base_type::diag(diagonal_offset); }
+  { return base_type::diag(diagonal_offset);}
   diag_type diag(index_difference_type diagonal_offset = 0)
     VSIP_THROW((std::bad_alloc))
   {
@@ -402,7 +310,7 @@ public:
   *this = *this op m;
 
 #define VSIP_IMPL_ELEMENTWISE_MATRIX_NOFWD(op)				\
-  assert(this->size(0) == m.size(0) && this->size(1) == m.size(1));	\
+  OVXX_PRECONDITION(this->size(0) == m.size(0) && this->size(1) == m.size(1));	\
   for (vsip::index_type r = 0; r < this->size(0); ++r)			\
     for (vsip::index_type c = 0; c < this->size(1); ++c)		\
       this->put(r, c, this->get(r, c) op m.get(r, c))
@@ -418,13 +326,13 @@ public:
   Matrix& operator asop(const Matrix<T0, Block0> m) VSIP_NOTHROW   \
   { VSIP_IMPL_ELEMENTWISE_MATRIX(op); return *this;}
 
-#define VSIP_IMPL_ASSIGN_OP_NOFWD(asop, op)			   	   \
+#define VSIP_IMPL_ASSIGN_OP_NOFWD(asop, op)			   \
   template <typename T0>                                           \
   Matrix& operator asop(T0 const& val) VSIP_NOTHROW                \
-  { VSIP_IMPL_ELEMENTWISE_SCALAR_NOFWD(op); return *this;}               \
+  { VSIP_IMPL_ELEMENTWISE_SCALAR_NOFWD(op); return *this;}	   \
   template <typename T0, typename Block0>                          \
   Matrix& operator asop(const_Matrix<T0, Block0> m) VSIP_NOTHROW   \
-  { VSIP_IMPL_ELEMENTWISE_MATRIX_NOFWD(op); return *this;}               \
+  { VSIP_IMPL_ELEMENTWISE_MATRIX_NOFWD(op); return *this;}	   \
   template <typename T0, typename Block0>                          \
   Matrix& operator asop(const Matrix<T0, Block0> m) VSIP_NOTHROW   \
   { VSIP_IMPL_ELEMENTWISE_MATRIX_NOFWD(op); return *this;}
@@ -465,7 +373,9 @@ struct ViewConversion<const_Matrix, T, Block>
   typedef Matrix<T, Block>       view_type;
 };
 
-namespace impl
+} // namespace vsip
+
+namespace ovxx
 {
 template <typename B>
 struct view_of<B, 2>
@@ -475,21 +385,21 @@ struct view_of<B, 2>
 };
 
 template <typename T, typename Block>
-struct Is_view_type<Matrix<T, Block> >
+struct is_view_type<Matrix<T, Block> >
 {
   typedef Matrix<T, Block> type; 
   static bool const value = true;
 };
 
 template <typename T, typename Block> 
-struct Is_view_type<const_Matrix<T, Block> >
+struct is_view_type<const_Matrix<T, Block> >
 {
   typedef const_Matrix<T, Block> type; 
   static bool const value = true;
 };
 
 template <typename T, typename Block> 
-struct Is_const_view_type<const_Matrix<T, Block> >
+struct is_const_view_type<const_Matrix<T, Block> >
 {
   typedef const_Matrix<T, Block> type; 
   static bool const value = true;
@@ -527,7 +437,6 @@ extent(const_Matrix<T, Block> const &v)
   return Length<2>(v.size(0), v.size(1));
 }
 
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx
 
-#endif // VSIP_MATRIX_HPP
+#endif

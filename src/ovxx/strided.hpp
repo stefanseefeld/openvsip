@@ -311,6 +311,39 @@ get_local_block(Strided<D, T, L, M> const &block)
   return block.get_local_block();
 }
 
+namespace detail
+{
+/// Specialize lvalue accessor trait for Strided blocks.
+/// Strided provides direct lvalue accessors via ref unless data
+/// are stored as split-complex.
+template <typename B,
+	  dimension_type D,
+	  bool use_proxy = is_split_block<B>::value>
+struct strided_lvalue_factory_type;
+
+template <typename B, dimension_type D>
+struct strided_lvalue_factory_type<B, D, false>
+{
+  typedef ref_factory<B> type;
+  template <typename O>
+  struct rebind { typedef ref_factory<O> type;};
+};
+
+template <typename B, dimension_type D>
+struct strided_lvalue_factory_type<B, D, true>
+{
+  typedef proxy_factory<B, D> type;
+  template <typename O>
+  struct rebind { typedef proxy_factory<O, D> type;};
+};
+
+} // namespace ovxx::detail
+
+template <dimension_type D, typename T, typename L>
+struct lvalue_factory_type<Strided<D, T, L>, D>
+  : detail::strided_lvalue_factory_type<Strided<D, T, L>, D>
+{};
+
 } // namespace ovxx
 
 namespace vsip

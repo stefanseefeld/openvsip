@@ -11,14 +11,9 @@
 #include <vsip/initfin.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/math.hpp>
-#include <vsip/core/subblock.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
+#include <test.hpp>
 
-using namespace std;
-using namespace vsip;
-using vsip_csl::equal;
-  
+using namespace ovxx;
 
 template <typename T>
 void 

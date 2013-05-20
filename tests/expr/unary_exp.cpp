@@ -11,27 +11,10 @@
 #include <vsip/vector.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-storage.hpp>
 #include "common.hpp"
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
 
 TEST_UNARY(exp,   exp,   exp,   posval)
 TEST_UNARY(exp10, exp10, exp10, posval)
-
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
 
 int
 main(int argc, char** argv)

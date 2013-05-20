@@ -261,8 +261,8 @@ struct choose_peb { typedef peb_reorg type;};
 
 /// @group lvalue access to block elements {
 
-template <typename Block> class proxy_factory;
-template <typename Block> class ref_factory;
+template <typename B, dimension_type D> class proxy_factory;
+template <typename B> class ref_factory;
 
 /// Traits class to determine whether a block provides an lvalue accessor.
 /// The ::type member of this class, when instantiated for a block type,
@@ -271,12 +271,12 @@ template <typename Block> class ref_factory;
 /// get() and put() [see element_proxy.hpp].
 /// The rebind nested class is for use in specializations that want to say
 /// "make the same choice that that block makes"; see subblock.hpp for examples.
-template <typename B>
+template <typename B, dimension_type D>
 struct lvalue_factory_type
 {
-  typedef proxy_factory<B> type;
+  typedef proxy_factory<B, D> type;
   template <typename O>
-  struct rebind { typedef proxy_factory<O> type;};
+  struct rebind { typedef proxy_factory<O, D> type;};
 };
 
 /// }

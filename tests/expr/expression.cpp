@@ -10,16 +10,10 @@
 #include <vsip/math.hpp>
 #include <vsip/dense.hpp>
 #include <vsip/map.hpp>
-#include <vsip_csl/test.hpp>
+#include <test.hpp>
 #include "block_interface.hpp"
 
-using namespace std;
-using namespace vsip;
-using vsip_csl::equal;
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 // initialize elements according to block(i) = a * i + b
 template <typename Block>

@@ -6,17 +6,14 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
+#ifndef expr_block_interface_hpp_
+#define expr_block_interface_hpp_
+
 #include <vsip/support.hpp>
-#include <vsip_csl/test.hpp>
+#include <test.hpp>
 
-using vsip_csl::use_variable;
-
-namespace vsip
-{
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
+template <typename T>
+inline void use_variable(T const &) {}
 
 template <typename Block>
 void
@@ -56,4 +53,4 @@ block_3d_interface_test(Block const& block)
   map = block.map();
 }
 
-}
+#endif

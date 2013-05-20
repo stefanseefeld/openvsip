@@ -9,20 +9,10 @@
 #ifndef VSIP_CORE_REDUCTIONS_FUNTORS_HPP
 #define VSIP_CORE_REDUCTIONS_FUNTORS_HPP
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
-
 #include <vsip/support.hpp>
 #include <vsip/core/reductions/types.hpp>
 
-
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
-
-namespace vsip_csl
+namespace ovxx
 {
 namespace dispatcher
 {
@@ -32,19 +22,14 @@ namespace op
 template <template <typename> class ReduceT> struct reduce;
 // Evaluator OpTag for reductions returning index.
 template <template <typename> class ReduceT> struct reduce_idx;
-} // namespace vsip_csl::dispatcher::op
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher::op
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
 namespace vsip
 {
 namespace impl
 {
-
-/***********************************************************************
-  Reduction Functors
-***********************************************************************/
-
 
 template <typename T>
 struct All_true
@@ -168,10 +153,10 @@ struct Mean_magsq_value_base
   static accum_type initial() { return accum_type(); }
 
   static accum_type update(accum_type state, T new_value)
-    { return state + vsip::impl::fn::magsq(new_value, R()); }
+  { return state + ovxx::math::magsq(new_value, R());}
 
   static accum_type value(accum_type state, length_type size)
-    { return state / size; }
+  { return state / size; }
 
   static bool done(accum_type) { return false; }
 };

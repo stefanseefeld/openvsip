@@ -13,26 +13,9 @@
 #include <vsip/vector.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-storage.hpp>
 #include "common.hpp"
 
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Ternary Operator Tests
-***********************************************************************/
-
 TEST_TERNARY(am, am, +, *, +, *)
-
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
 
 int
 main(int argc, char** argv)

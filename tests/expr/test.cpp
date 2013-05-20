@@ -6,29 +6,18 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <iostream>
-
 #include <vsip/initfin.hpp>
 #include <vsip/dense.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/math.hpp>
-#include <vsip_csl/test.hpp>
+#include <test.hpp>
 #include "block_interface.hpp"
-
-using namespace std;
-using namespace vsip;
-using vsip_csl::equal;
-namespace expr = vsip::impl::expr;
 
 #ifndef ILLEGALCASE
 #  define ILLEGALCASE 0
 #endif
 
-
-
-/***********************************************************************
-  Definitions - Expression template functions.
-***********************************************************************/
+using namespace ovxx;
 
 // Unary-negation test function.
 //
@@ -94,58 +83,6 @@ t_mul(const_Vector<T1, Block1> v1, const_Vector<T2, Block2> v2)
 
   return const_Vector<RT, const block_t>(block_t(v1.block(), v2.block()));
 }
-
-
-
-//
-template <typename Block>
-struct Block_name
-{
-  static string name() { return "*unknown*"; }
-};
-
-
-
-template <typename Block>
-struct Block_name<const Block>
-{
-  static string name() { return string("const ") + Block_name<Block>::name(); }
-};
-
-
-
-template <dimension_type Dim,
-	  typename       T,
-	  typename       Order,
-	  typename       Map>
-struct Block_name<Dense<Dim, T, Order, Map> >
-{
-  static string name() { return string("Dense<>"); }
-};
-
-
-
-template <template <typename> class Operator, typename Block>
-struct Block_name<expr::Unary<Operator, Block, true> >
-{
-  static string name() { return string("expr::Unary<")
-      + Block_name<Block>::name() + ">";
-  }
-};
-
-
-
-template <template <typename, typename> class Operator,
-	  typename LBlock, typename RBlock>
-struct Block_name<expr::Binary<Operator, LBlock, RBlock, true> >
-{
-  static string name() { return string("expr::Binary<")
-      + Block_name<LBlock>::name() + ", "
-      + Block_name<RBlock>::name() + ">";
-  }
-};
-
-
 
 /***********************************************************************
   Definitions - Utility functions.

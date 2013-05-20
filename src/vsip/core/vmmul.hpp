@@ -9,14 +9,11 @@
 #ifndef VSIP_CORE_VMMUL_HPP
 #define VSIP_CORE_VMMUL_HPP
 
-#include <vsip/core/block_traits.hpp>
+#include <ovxx/block_traits.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/promote.hpp>
+#include <vsip/impl/promotion.hpp>
 #include <vsip/core/expr/vmmul_block.hpp>
-#if !VSIP_IMPL_REF_IMPL
-#  include <vsip/opt/expr/assign_fwd.hpp>
-#endif
 
 namespace vsip
 {
@@ -39,8 +36,7 @@ struct Vmmul_traits
 } // namespace vsip::impl
 } // namespace vsip
 
-#if !VSIP_IMPL_REF_IMPL
-namespace vsip_csl
+namespace ovxx
 {
 namespace dispatcher
 {
@@ -108,9 +104,8 @@ struct Evaluator<op::assign<2>, be::op_expr,
   }
 };
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
-#endif
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
 namespace vsip
 {
@@ -133,4 +128,4 @@ vmmul(const_Vector<T0, Block0> v, const_Matrix<T1, Block1> m) VSIP_NOTHROW
 
 } // namespace vsip
 
-#endif // VSIP_IMPL_VMMUL_HPP
+#endif

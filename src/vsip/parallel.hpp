@@ -6,16 +6,17 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_PARALLEL_HPP
-#define VSIP_PARALLEL_HPP
+#ifndef vsip_parallel_hpp_
+#define vsip_parallel_hpp_
 
-#include <vsip/core/vector.hpp>
-#include <vsip/map.hpp>
-#include <vsip/core/working_view.hpp>
-#include <vsip/core/parallel/support.hpp>
-#include <vsip/core/parallel/util.hpp>
-#ifndef VSIP_IMPL_REF_IMPL
-#  include <vsip/opt/parallel/foreach.hpp>
+#include <vsip/impl/vector.hpp>
+//#include <vsip/core/working_view.hpp>
+#include <vsip/impl/parallel.hpp>
+#include <vsip/impl/replicated_map.hpp>
+#include <ovxx/parallel/scalar_map.hpp>
+#ifdef OVXX_PARALLEL
+# include <vsip/map.hpp>
+# include <ovxx/parallel/util.hpp>
 #endif
 
-#endif // VSIP_PARALLEL_HPP
+#endif

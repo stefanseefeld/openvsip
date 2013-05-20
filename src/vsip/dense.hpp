@@ -173,12 +173,10 @@ public:
   {}
 };
 
-#ifdef OVXX_PARALLEL
-
 template <typename T, typename O, typename M>
-class Dense<1, T, O, M> : public ovxx::parallel::Distributed_block<Dense<1, T, O>, M>
+class Dense<1, T, O, M> : public ovxx::parallel::distributed_block<Dense<1, T, O>, M>
 {
-  typedef ovxx::parallel::Distributed_block<Dense<1, T, O>, M> base_type;
+  typedef ovxx::parallel::distributed_block<Dense<1, T, O>, M> base_type;
   typedef typename base_type::uT uT;
 public:
   typedef M map_type;
@@ -225,9 +223,9 @@ public:
 
 /// Partial specialization of Dense class template for 1,2-dimension.
 template <typename T, typename O, typename M>
-class Dense<2, T, O, M> : public ovxx::parallel::Distributed_block<Dense<2, T, O>, M>
+class Dense<2, T, O, M> : public ovxx::parallel::distributed_block<Dense<2, T, O>, M>
 {
-  typedef ovxx::parallel::Distributed_block<Dense<2, T, O>, M> base_type;
+  typedef ovxx::parallel::distributed_block<Dense<2, T, O>, M> base_type;
   typedef typename base_type::uT uT;
 public:
   typedef typename base_type::map_type             map_type;
@@ -277,9 +275,9 @@ public:
 };
 
 template <typename T, typename O, typename M>
-class Dense<3, T, O, M> : public ovxx::parallel::Distributed_block<Dense<3, T, O>, M>
+class Dense<3, T, O, M> : public ovxx::parallel::distributed_block<Dense<3, T, O>, M>
 {
-  typedef ovxx::parallel::Distributed_block<Dense<3, T, O>, M> base_type;
+  typedef ovxx::parallel::distributed_block<Dense<3, T, O>, M> base_type;
   typedef typename base_type::uT uT;
 public:
   typedef typename base_type::map_type             map_type;
@@ -324,8 +322,6 @@ public:
   {}
 };
 
-#endif
-
 /// Specialize block layout trait for Dense blocks.
 template <dimension_type D, typename T, typename O, typename M>
 struct get_block_layout<Dense<D, T, O, M> >
@@ -347,36 +343,26 @@ get_local_block(Dense<Dim, T, OrderT, Local_map>& block)
   return block;
 }
 
-template <dimension_type Dim,
-	  typename       T,
-	  typename       OrderT>
-Dense<Dim, T, OrderT, Local_map> const&
-get_local_block(Dense<Dim, T, OrderT, Local_map> const& block)
+template <dimension_type D, typename T, typename O>
+Dense<D, T, O, Local_map> const&
+get_local_block(Dense<D, T, O, Local_map> const &block)
 {
   return block;
 }
 
 /// Overload of get_local_block for Dense with distributed map.
-template <dimension_type Dim,
-	  typename       T,
-	  typename       OrderT,
-	  typename       MapT>
-inline typename Dense<Dim, T, OrderT, MapT>::local_block_type&
-get_local_block(Dense<Dim, T, OrderT, MapT> const& block)
+template <dimension_type D, typename T, typename O, typename M>
+inline typename Dense<D, T, O, M>::local_block_type&
+get_local_block(Dense<D, T, O, M> const& block)
 {
   return block.get_local_block();
 }
 
 namespace impl {
 
-template <dimension_type Dim,
-	  typename       T,
-	  typename       OrderT,
-	  typename       MapT>
-inline typename Dense<Dim, T, OrderT, MapT>::proxy_local_block_type
-get_local_proxy(
-  Dense<Dim, T, OrderT, MapT> const& block,
-  index_type                         sb)
+template <dimension_type D, typename T, typename O, typename M>
+inline typename Dense<D, T, O, M>::proxy_local_block_type
+get_local_proxy(Dense<D, T, O, M> const &block, index_type sb)
 {
   return block.impl_proxy_block(sb);
 }
@@ -428,35 +414,9 @@ struct distributed_local_block<vsip::Dense<D, T, O, M> >
   typedef typename vsip::Dense<D, T, O, M>::proxy_local_block_type proxy_type;
 };
 
-namespace detail
-{
-/// Specialize lvalue accessor trait for Dense blocks.
-/// Dense provides direct lvalue accessors via ref.
-template <typename B,
-	  bool use_proxy = is_split_block<B>::value>
-struct dense_lvalue_factory_type;
-
-template <typename B>
-struct dense_lvalue_factory_type<B, false>
-{
-  typedef ref_factory<B> type;
-  template <typename O>
-  struct rebind { typedef ref_factory<O> type;};
-};
-
-template <typename B>
-struct dense_lvalue_factory_type<B, true>
-{
-  typedef proxy_factory<B> type;
-  template <typename O>
-  struct rebind { typedef proxy_factory<O> type;};
-};
-
-} // namespace ovxx::detail
-
 template <dimension_type D, typename T, typename O>
 struct lvalue_factory_type<Dense<D, T, O, Local_map> >
-  : detail::dense_lvalue_factory_type<Dense<D, T, O, Local_map> >
+  : detail::strided_lvalue_factory_type<Dense<D, T, O> >
 {};
 
 }

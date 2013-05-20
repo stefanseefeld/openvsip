@@ -7,7 +7,6 @@
 // license contained in the accompanying LICENSE.GPL file.
 
 #include <vsip/initfin.hpp>
-#include <vsip/opt/assign_diagnostics.hpp>
 #include "common.hpp"
 
 using namespace vsip;

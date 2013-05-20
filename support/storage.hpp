@@ -13,7 +13,8 @@
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/tensor.hpp>
-
+#include <vsip/dense.hpp>
+#include <vsip/parallel.hpp>
 
 
 /* -------------------------------------------------------------------- *

@@ -6,23 +6,15 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_COMPLEX_HPP
-#define VSIP_COMPLEX_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef vsip_complex_hpp_
+#define vsip_complex_hpp_
 
 #include <vsip/support.hpp>
-#include <vsip/core/complex_decl.hpp>
-#include <vsip/core/expr/fns_elementwise.hpp>
+#include <vsip/impl/complex_decl.hpp>
+#include <ovxx/view/fns_elementwise.hpp>
 #include <vsip/math.hpp>
 
-
-
-/***********************************************************************
-  Definitions - Conversion [complex.convert]
-***********************************************************************/
+//  Definitions - Conversion [complex.convert]
 
 namespace vsip
 {
@@ -32,24 +24,15 @@ namespace vsip
 /// recttopolar -- convert complex number in rectangular coordinates
 ///                (real and imaginary) into polar coordinates (magnitude
 ///                and phase.
-
-template <typename T1,
-	  typename T2>
+template <typename T1, typename T2>
 inline void
-recttopolar(
-  complex<T1> const& rect,
-  T2&                mag,
-  T2&                phase)
-  VSIP_NOTHROW
+recttopolar(complex<T1> const &rect, T2 &mag, T2 &phase) VSIP_NOTHROW
 {
   mag   = abs(rect);
   phase = arg(rect);
 }
 
-
-
 /// Convert from rectangular to polar for view of complex values.
-
 template <typename                            T1,
 	  typename                            T2,
 	  template <typename, typename> class const_View,
@@ -72,46 +55,45 @@ recttopolar(const_View<complex<T1>, Block0> z,
     theta.put(i, arg(tmp));
   }
 }
+} // namespace vsip
 
-namespace impl
-{
+namespace ovxx { namespace expr { namespace op {
 template <typename T>
-struct realtocomplex_functor
+struct R2C
 {
   typedef complex<T> result_type;
-  static char const* name() { return "realtocomplex"; }
   static result_type apply(T rho) { return complex<T>(rho);}
   result_type operator() (T rho) const { return apply(rho);}
 };
 
 template <typename T1, typename T2>
-struct polartorect_functor
+struct Polar
 {
   typedef typename Promotion<complex<T1>, complex<T2> >::type result_type;
-  static char const* name() { return "polartorect"; }
   static result_type apply(T1 rho, T2 theta) { return polar(rho, theta);}
   result_type operator() (T1 rho, T2 theta) const { return apply(rho, theta);}
 };
 
-template <typename T1, typename T2>
-struct Dispatch_polartorect :
-  conditional<Is_view_type<T1>::value || Is_view_type<T2>::value,
-	      Binary_func_view<polartorect_functor, T1, T2>,
-	      polartorect_functor<T1, T2> >::type
-{
-};
-
-template <typename T1, typename T2>
-struct cmplx_functor
+template <typename T1, typename T2 = T1>
+struct Complex
 {
   typedef typename Promotion<complex<T1>, complex<T2> >::type result_type;
-  static char const* name() { return "cmplx"; }
   static result_type apply(T1 real, T2 imag) { return result_type(real, imag);}
   result_type operator() (T1 real, T2 imag) const { return apply(real, imag);}
 };
+}}}
 
-} // namespace impl
+namespace ovxx { namespace detail {
+template <typename T1, typename T2>
+struct Dispatch_polar :
+  conditional<is_view_type<T1>::value || is_view_type<T2>::value,
+	      functors::binary_view<expr::op::Polar, T1, T2>,
+	      expr::op::Polar<T1, T2> >::type
+{};
+}}
 
+namespace vsip
+{
 template <typename T>
 inline complex<T>
 polartorect(T rho) VSIP_NOTHROW { return complex<T>(rho);}
@@ -120,33 +102,33 @@ template <typename                            T,
 	  template <typename, typename> class const_View,
 	  typename                            Block0>
 inline const_View<complex<T>, 
-                  impl::Unary_func_view<impl::realtocomplex_functor, T> >
+                  ovxx::functors::unary_view<ovxx::expr::op::R2C, T> >
 polartorect(const_View<T, Block0> rho) VSIP_NOTHROW
 {
-  return impl::Unary_func_view<impl::realtocomplex_functor, T>::apply(rho);
+  return ovxx::functors::unary_view<ovxx::expr::op::R2C, T>::apply(rho);
 }
 
 template <typename T1, typename T2>
-inline typename impl::Dispatch_polartorect<T1, T2>::result_type
+inline typename ovxx::detail::Dispatch_polar<T1, T2>::result_type
 polartorect(T1 rho, T2 theta) VSIP_NOTHROW
 {
-  return impl::Dispatch_polartorect<T1, T2>::apply(rho, theta);
+  return ovxx::detail::Dispatch_polar<T1, T2>::apply(rho, theta);
 }
 
 template <typename T1, typename T2,
 	  template <typename, typename> class Const_view,
-	  typename Block1, typename Block2>
+	  typename B1, typename B2>
 inline typename 
-impl::Binary_func_view<impl::cmplx_functor, 
-		       Const_view<T1, Block1>,
-		       Const_view<T2, Block2> >::result_type
-cmplx(Const_view<T1, Block1> real, Const_view<T2, Block2> imag) VSIP_NOTHROW
+ovxx::functors::binary_view<ovxx::expr::op::Complex, 
+		       Const_view<T1, B1>,
+		       Const_view<T2, B2> >::result_type
+cmplx(Const_view<T1, B1> real, Const_view<T2, B2> imag) VSIP_NOTHROW
 {
-  return impl::Binary_func_view<impl::cmplx_functor,
-    Const_view<T1, Block1>,
-    Const_view<T2, Block2> >::apply(real, imag);
+  return ovxx::functors::binary_view<ovxx::expr::op::Complex,
+    Const_view<T1, B1>,
+    Const_view<T2, B2> >::apply(real, imag);
 }
 
 } // namespace vsip
 
-#endif // VSIP_COMPLEX_HPP
+#endif

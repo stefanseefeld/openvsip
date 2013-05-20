@@ -18,18 +18,8 @@
 #include <vsip/matrix.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/core/reductions/functors.hpp>
-#include <vsip/core/dispatch.hpp>
-#if !VSIP_IMPL_REF_IMPL
-#  include <vsip/opt/dispatch.hpp>
-#  include <vsip/opt/reductions/par_reductions.hpp>
-#  ifdef VSIP_IMPL_HAVE_CUDA
-#   include <vsip/opt/cuda/reductions.hpp>
-#  endif
-#  ifdef VSIP_IMPL_HAVE_SAL
-#    include <vsip/opt/sal/eval_reductions.hpp>
-#  endif
-#endif
-#if VSIP_IMPL_HAVE_CVSIP
+#include <ovxx/dispatch.hpp>
+#if OVXX_HAVE_CVSIP
 #  include <vsip/core/cvsip/eval_reductions_idx.hpp>
 #endif
 
@@ -39,24 +29,16 @@
   Declarations
 ***********************************************************************/
 
-namespace vsip_csl
+namespace ovxx
 {
 namespace dispatcher
 {
 
-/***********************************************************************
-  Generic evaluators.
-***********************************************************************/
-
-#ifndef VSIP_IMPL_REF_IMPL
 template<template <typename> class ReduceT>
 struct List<op::reduce_idx<ReduceT> >
 {
-  typedef Make_type_list<be::parallel, be::cvsip, be::cuda, be::mercury_sal,
-			 be::generic>::type type;
+  typedef make_type_list<be::parallel, be::cvsip, be::cuda, be::generic>::type type;
 };
-#endif
-
 
 /// Generic evaluator for vector reductions.
 template <template <typename> class ReduceT,
@@ -389,20 +371,14 @@ struct Evaluator<op::reduce_idx<ReduceT>, be::generic,
   }
 };
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
-
-namespace vsip
-{
-namespace impl
-{
+} // namespace ovxx::dispatcher
 
 template <template <typename> class ReduceT,
 	  typename                  ViewT>
 typename ReduceT<typename ViewT::value_type>::result_type
 reduce_idx(ViewT v, Index<ViewT::dim>& idx)
 {
-  using namespace vsip_csl::dispatcher;
+  using namespace dispatcher;
 
   typedef typename ViewT::value_type T;
   typedef typename ReduceT<T>::result_type result_type;
@@ -413,39 +389,25 @@ reduce_idx(ViewT v, Index<ViewT::dim>& idx)
 
   result_type r;
 
-#if VSIP_IMPL_REF_IMPL
-  Evaluator<op::reduce_idx<ReduceT>, be::cvsip,
-    void(result_type&, block_type const&, index_type&, order_type)>::
-    exec(r, v.block(), idx, order_type());
-#else
-
-  vsip_csl::dispatch<op::reduce_idx<ReduceT>, void,
+  dispatch<op::reduce_idx<ReduceT>, void,
     result_type&, block_type const&, index_type&, order_type>
     (r, v.block(), idx, order_type());
-#endif
 
   return r;
 }
 
-} // namespace vsip::impl
+} // namespace ovxx
 	     
-
-
-/***********************************************************************
-  API Reduction-Index Functions
-***********************************************************************/
+namespace vsip
+{
 
 template <typename                            T,
 	  template <typename, typename> class ViewT,
 	  typename                            BlockT>
-T
-maxval(
-   ViewT<T, BlockT>              v,
-   Index<ViewT<T, BlockT>::dim>& idx)
-VSIP_NOTHROW
+T maxval(ViewT<T, BlockT> v, Index<ViewT<T, BlockT>::dim>& idx) VSIP_NOTHROW
 {
   typedef typename get_block_layout<BlockT>::order_type order_type;
-  return impl::reduce_idx<impl::Max_value>(v, idx);
+  return ovxx::reduce_idx<impl::Max_value>(v, idx);
 }
 
 
@@ -453,11 +415,7 @@ VSIP_NOTHROW
 template <typename                            T,
 	  template <typename, typename> class ViewT,
 	  typename                            BlockT>
-T
-minval(
-   ViewT<T, BlockT>              v,
-   Index<ViewT<T, BlockT>::dim>& idx)
-VSIP_NOTHROW
+T minval(ViewT<T, BlockT> v, Index<ViewT<T, BlockT>::dim>& idx) VSIP_NOTHROW
 {
   typedef typename get_block_layout<BlockT>::order_type order_type;
   return impl::reduce_idx<impl::Min_value>(v, idx);
@@ -468,14 +426,11 @@ VSIP_NOTHROW
 template <typename                            T,
 	  template <typename, typename> class ViewT,
 	  typename                            BlockT>
-typename impl::scalar_of<T>::type
-maxmgval(
-   ViewT<T, BlockT>              v,
-   Index<ViewT<T, BlockT>::dim>& idx)
-VSIP_NOTHROW
+typename ovxx::scalar_of<T>::type
+maxmgval(ViewT<T, BlockT> v, Index<ViewT<T, BlockT>::dim> &idx) VSIP_NOTHROW
 {
   typedef typename get_block_layout<BlockT>::order_type order_type;
-  return impl::reduce_idx<impl::Max_mag_value>(v, idx);
+  return ovxx::reduce_idx<impl::Max_mag_value>(v, idx);
 }
 
 
@@ -483,29 +438,11 @@ VSIP_NOTHROW
 template <typename                            T,
 	  template <typename, typename> class ViewT,
 	  typename                            BlockT>
-typename impl::scalar_of<T>::type
-minmgval(
-   ViewT<T, BlockT>              v,
-   Index<ViewT<T, BlockT>::dim>& idx)
-VSIP_NOTHROW
+typename ovxx::scalar_of<T>::type
+minmgval(ViewT<T, BlockT> v, Index<ViewT<T, BlockT>::dim>& idx) VSIP_NOTHROW
 {
   typedef typename get_block_layout<BlockT>::order_type order_type;
-  return impl::reduce_idx<impl::Min_mag_value>(v, idx);
-}
-
-
-
-template <typename                            T,
-	  template <typename, typename> class ViewT,
-	  typename                            BlockT>
-T
-maxmgsqval(
-   ViewT<complex<T>, BlockT>              v,
-   Index<ViewT<complex<T>, BlockT>::dim>& idx)
-VSIP_NOTHROW
-{
-  typedef typename get_block_layout<BlockT>::order_type order_type;
-  return impl::reduce_idx<impl::Max_magsq_value>(v, idx);
+  return ovxx::reduce_idx<impl::Min_mag_value>(v, idx);
 }
 
 
@@ -514,15 +451,26 @@ template <typename                            T,
 	  template <typename, typename> class ViewT,
 	  typename                            BlockT>
 T
-minmgsqval(
-   ViewT<complex<T>, BlockT>              v,
-   Index<ViewT<complex<T>, BlockT>::dim>& idx)
-VSIP_NOTHROW
+maxmgsqval(ViewT<complex<T>, BlockT> v, Index<ViewT<complex<T>, BlockT>::dim> &idx)
+  VSIP_NOTHROW
 {
   typedef typename get_block_layout<BlockT>::order_type order_type;
-  return impl::reduce_idx<impl::Min_magsq_value>(v, idx);
+  return ovxx::reduce_idx<impl::Max_magsq_value>(v, idx);
+}
+
+
+
+template <typename                            T,
+	  template <typename, typename> class ViewT,
+	  typename                            BlockT>
+T
+minmgsqval(ViewT<complex<T>, BlockT> v, Index<ViewT<complex<T>, BlockT>::dim> &idx)
+  VSIP_NOTHROW
+{
+  typedef typename get_block_layout<BlockT>::order_type order_type;
+  return ovxx::reduce_idx<impl::Min_magsq_value>(v, idx);
 }
 
 } // namespace vsip
 
-#endif // VSIP_CORE_REDUCTIONS_REDUCTIONS_IDX_HPP
+#endif

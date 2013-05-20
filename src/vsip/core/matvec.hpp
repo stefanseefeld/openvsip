@@ -9,56 +9,30 @@
 #ifndef VSIP_CORE_MATVEC_HPP
 #define VSIP_CORE_MATVEC_HPP
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
-
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/promote.hpp>
-#include <vsip/core/expr/fns_elementwise.hpp>
-#include <vsip/core/dispatch.hpp>
-#ifndef VSIP_IMPL_REF_IMPL
-# include <vsip/opt/dispatch.hpp>
-# ifdef VSIP_IMPL_CBE_SDK
-#  include <vsip/opt/cbe/ppu/matvec.hpp>
-#  include <vsip/opt/cbe/cml/matvec.hpp>
-# endif
-# ifdef VSIP_IMPL_HAVE_BLAS
-#  include <vsip/opt/lapack/matvec.hpp>
-# endif
-# ifdef VSIP_IMPL_HAVE_SAL
-#  include <vsip/opt/sal/eval_misc.hpp>
-# endif
-# ifdef VSIP_IMPL_HAVE_CUDA
-#  include <vsip/opt/cuda/matvec.hpp>
-# endif
-#endif
-#if VSIP_IMPL_HAVE_CVSIP
+#include <vsip/impl/promotion.hpp>
+#include <ovxx/view/fns_elementwise.hpp>
+#include <ovxx/dispatch.hpp>
+#if OVXX_HAVE_CVSIP
 # include <vsip/core/cvsip/matvec.hpp>
 #endif
-#include <vsip/core/math_enum.hpp>
-#include <vsip/core/profile.hpp>
+#include <vsip/impl/math_enum.hpp>
 
-namespace vsip_csl
+namespace ovxx
 {
 namespace dispatcher
 {
 
-
-#ifndef VSIP_IMPL_REF_IMPL
 template<>
 struct List<op::outer>
 {
-  typedef Make_type_list<be::user,
-			 be::cml,
+  typedef make_type_list<be::user,
 			 be::cuda,
 			 be::blas,
-			 be::mercury_sal,
 			 be::cvsip,
 			 be::generic>::type type;
 };
-#endif
 
 /// Generic evaluator for outer product
 template <typename T1,
@@ -108,22 +82,15 @@ struct Evaluator<op::outer, be::generic,
   }
 };
 
-
-
-#ifndef VSIP_IMPL_REF_IMPL
 template<>
 struct List<op::dot>
 {
-  typedef Make_type_list<be::user,
-			 be::cbe_sdk,
-			 be::cml,
+  typedef make_type_list<be::user,
 			 be::cuda,
 			 be::blas,
-			 be::mercury_sal, 
 			 be::cvsip,
 			 be::generic>::type type;
 };
-#endif
 
 /// Generic evaluator for vector-vector dot-product.
 template <typename T,
@@ -146,20 +113,15 @@ struct Evaluator<op::dot, be::generic,
   }
 };
 
-
-#ifndef VSIP_IMPL_REF_IMPL
 template<>
 struct List<op::gemp>
 {
-  typedef Make_type_list<be::user,
-			 be::cml,
+  typedef make_type_list<be::user,
 			 be::cuda,
 			 be::blas,
-			 be::mercury_sal, 
 			 be::cvsip,
 			 be::generic>::type type;
 };
-#endif
 
 /// Generic evaluator for general product
 template <typename T1,
@@ -196,13 +158,7 @@ struct Evaluator<op::gemp, be::generic,
   }
 };
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
-
-namespace vsip
-{
-namespace impl
-{
+} // namespace ovxx::dispatcher
 
 /// Outer product dispatch
 template <typename T0,
@@ -212,24 +168,17 @@ template <typename T0,
 	  typename Block1,
 	  typename Block2>
 void
-outer(
-  T0 alpha, 
-  const_Vector<T0, Block0> a,
-  const_Vector<T1, Block1> b,
-  Matrix<T2, Block2>       r)
+outer(T0 alpha, 
+      const_Vector<T0, Block0> a,
+      const_Vector<T1, Block1> b,
+      Matrix<T2, Block2>       r)
 {
-  using namespace vsip_csl::dispatcher;
+  using namespace dispatcher;
   assert(r.size(0) == a.size());
   assert(r.size(1) == b.size());
-#ifdef VSIP_IMPL_REF_IMPL
-  Evaluator<op::outer, be::cvsip, 
-    void(Block2&, T0, Block0 const&, Block1 const&)>::exec
-    (r.block(), alpha, a.block(), b.block());
-#else
-  vsip_csl::dispatch<op::outer, void,
+  dispatch<op::outer, void,
     Block2&, T0, Block0 const&, Block1 const&>
     (r.block(), alpha, a.block(), b.block());
-#endif
 }
 
 
@@ -238,24 +187,17 @@ outer(
 // the user to resolve the call themselves.
 template <typename T0, typename T1, typename Block0, typename Block1>
 typename Promotion<T0, T1>::type
-impl_dot(
-  const_Vector<T0, Block0> v,
-  const_Vector<T1, Block1> w) VSIP_NOTHROW
+impl_dot(const_Vector<T0, Block0> v,
+	 const_Vector<T1, Block1> w) VSIP_NOTHROW
 {
-  using namespace vsip_csl::dispatcher;
+  using namespace dispatcher;
 
   typedef typename Promotion<T0, T1>::type return_type;
   return_type r(0);
 
-#ifdef VSIP_IMPL_REF_IMPL
-  r = Evaluator<op::dot, be::cvsip,
-    return_type(Block0 const&, Block1 const&) >::exec
-    (v.block(), w.block());
-#else
-  r = vsip_csl::dispatch<op::dot, return_type,
+  r = dispatch<op::dot, return_type,
     Block0 const&, Block1 const&>
     (v.block(), w.block());
-#endif
   return r;
 };
 
@@ -268,7 +210,7 @@ template <typename T0,
           typename Block2>
 const_Matrix<typename Promotion<T0, typename Promotion<T1, T2>::type>::type>
 impl_kron( T0 alpha, Vector<T1, Block1> v, Vector<T2, Block2> w)
-    VSIP_NOTHROW
+  VSIP_NOTHROW
 {
   typedef Matrix<typename Promotion<T0, 
     typename Promotion<T1, T2>::type>::type> return_type;
@@ -289,7 +231,7 @@ template <typename T0,
           typename Block2>
 const_Matrix<typename Promotion<T0, typename Promotion<T1, T2>::type>::type>
 impl_kron( T0 alpha, Matrix<T1, Block1> v, Matrix<T2, Block2> w)
-    VSIP_NOTHROW
+  VSIP_NOTHROW
 {
   typedef Matrix<typename Promotion<T0, 
     typename Promotion<T1, T2>::type>::type> return_type;
@@ -322,27 +264,21 @@ void
 gemp(T0 alpha, const_Matrix<T1, Block1> a,
      const_Matrix<T2, Block2> b, T0 beta, Matrix<T4, Block4> c) 
 {
-  using namespace vsip_csl::dispatcher;
+  using namespace dispatcher;
 
   assert(c.size(0) == a.size(0));
   assert(c.size(1) == b.size(1));
 
-#ifdef VSIP_IMPL_REF_IMPL
-  Evaluator<op::gemp, be::cvsip,
-    void(Block4&, T0, Block1 const&, Block2 const&, T0)>::exec
-    (c.block(), alpha, a.block(), b.block(), beta);
-#else
-  vsip_csl::dispatch<op::gemp, void,
+  dispatch<op::gemp, void,
     Block4&, T0, Block1 const&, Block2 const&, T0> 
     (c.block(), alpha, a.block(), b.block(), beta);
-#endif
 }
 
 /// General matrix sum
 template <typename T0, typename T1, typename T3, typename T4,
   typename Block1, typename Block4>
 void 
-gems( T0 alpha, const_Matrix<T1, Block1> A, T3 beta, Matrix<T4, Block4> C) 
+gems(T0 alpha, const_Matrix<T1, Block1> A, T3 beta, Matrix<T4, Block4> C) 
 {
   assert( A.size(0) == C.size(0) );
   assert( A.size(1) == C.size(1) );
@@ -622,48 +558,29 @@ modulate(
   return v.size() * nu + phi;
 }
 
-} // namespace impl
+} // namespace ovxx
 
-
-
-/***********************************************************************
-  Functions
-***********************************************************************/
-
+namespace vsip
+{
 
 /// dot products  [math.matvec.dot]
 
 /// dot
 template <typename T0, typename T1, typename Block0, typename Block1>
 typename Promotion<T0, T1>::type
-dot(
-  const_Vector<T0, Block0> v,
-  const_Vector<T1, Block1> w) VSIP_NOTHROW
+dot(const_Vector<T0, Block0> v, const_Vector<T1, Block1> w) VSIP_NOTHROW
 {
-#if VSIP_PROFILE_MASK & VSIP_IMPL_PROFILE_MASK_MATVEC
-  typedef typename Promotion<T0, T1>::type result_type;
-  impl::profile::Scope<impl::profile::matvec> scope
-    (impl::matvec::Description<result_type>::tag("dot", impl::extent(v)),
-     impl::matvec::Op_count_dot<result_type>::value(impl::extent(v)) );
-#endif
-  return impl::impl_dot(v, w);
+  return ovxx::impl_dot(v, w);
 }
 
 
 /// cvjdot
 template <typename T0, typename T1, typename Block0, typename Block1>
 typename Promotion<complex<T0>, complex<T1> >::type
-cvjdot(
-  const_Vector<complex<T0>, Block0> v,
-  const_Vector<complex<T1>, Block1> w) VSIP_NOTHROW
+cvjdot(const_Vector<complex<T0>, Block0> v,
+       const_Vector<complex<T1>, Block1> w) VSIP_NOTHROW
 {
-#if VSIP_PROFILE_MASK & VSIP_IMPL_PROFILE_MASK_MATVEC
-  typedef typename Promotion<T0, T1>::type result_type;
-  impl::profile::Scope<impl::profile::matvec> scope
-    (impl::matvec::Description<result_type>::tag("cvjdot", impl::extent(v)),
-     impl::matvec::Op_count_cvjdot<result_type>::value(impl::extent(v)));
-#endif
-  return impl::impl_dot(v, conj(w));
+  return ovxx::impl_dot(v, conj(w));
 }
 
  
@@ -674,10 +591,6 @@ template <typename T, typename Block>
 typename const_Matrix<T, Block>::transpose_type
 trans(const_Matrix<T, Block> m) VSIP_NOTHROW
 {
-#if VSIP_PROFILE_MASK & VSIP_IMPL_PROFILE_MASK_MATVEC
-  impl::profile::Scope<impl::profile::matvec> scope
-    (impl::matvec::Description<T>::tag("trans", impl::extent(m)));
-#endif
   return m.transpose();
 }
 
@@ -693,11 +606,6 @@ herm(const_Matrix<complex<T>, Block> m) VSIP_NOTHROW
   typedef impl::Unary_func_view<impl::expr::op::Conj, transpose_type> 
     functor_type;
 
-#if VSIP_PROFILE_MASK & VSIP_IMPL_PROFILE_MASK_MATVEC
-  impl::profile::Scope<impl::profile::matvec> scope
-    (impl::matvec::Description<complex<T> >::tag("herm", impl::extent(m)),
-     impl::matvec::Op_count_herm<complex<T> >::value(impl::extent(m)));
-#endif
   return functor_type::apply(m.transpose());
 } 
 
@@ -715,16 +623,7 @@ const_Matrix<typename Promotion<T0, typename Promotion<T1, T2>::type>::type>
 kron( T0 alpha, const_View<T1, Block1> v, const_View<T2, Block2> w )
     VSIP_NOTHROW
 {
-#if VSIP_PROFILE_MASK & VSIP_IMPL_PROFILE_MASK_MATVEC
-  typedef typename Promotion<T0, typename Promotion<T1, T2>::type
-    >::type result_type;
-  impl::profile::Scope<impl::profile::matvec> scope
-    (impl::matvec::Description<result_type>::tag("kron", impl::extent(v), 
-                                                 impl::extent(w)),
-     impl::matvec::Op_count_kron<impl::Dim_of_view<const_View>::dim, 
-     result_type>::value(impl::extent(v), impl::extent(w)));
-#endif
-  return impl::impl_kron( alpha, v, w );
+  return ovxx::impl_kron( alpha, v, w );
 }
 
 
@@ -741,17 +640,10 @@ outer( T0 alpha, const_Vector<T1, Block1> v, const_Vector<T2, Block2> w )
     VSIP_NOTHROW
 {
   typedef typename Promotion<T1, T2>::type return_type;
-#if VSIP_PROFILE_MASK & VSIP_IMPL_PROFILE_MASK_MATVEC
-  impl::profile::Scope<impl::profile::matvec> scope
-    (impl::matvec::Description<return_type>::tag("outer", impl::extent(v), 
-                                                 impl::extent(w)),
-     impl::matvec::Op_count_outer<return_type>::value(impl::extent(v), 
-                                                      impl::extent(w)));
-#endif
 
   Matrix<return_type> r(v.size(), w.size(), return_type());
 
-  impl::outer(alpha, v, w, r);
+  ovxx::outer(alpha, v, w, r);
 
   return r;
 }
@@ -778,17 +670,9 @@ gemp(T0 alpha,
      Matrix<T4, Block4> C)
   VSIP_NOTHROW
 {
-#if VSIP_PROFILE_MASK & VSIP_IMPL_PROFILE_MASK_MATVEC
-  impl::profile::Scope<impl::profile::matvec> scope
-    (impl::matvec::Description<T4>::tag("gemp", impl::extent(A), 
-                                        impl::extent(B)),
-     impl::matvec::Op_count_gemp<T4>::value(impl::extent(A), 
-                                            impl::extent(B), OpA, OpB));
-#endif
-
   // equivalent to C = alpha * OpA(A) * OpB(B) + beta * C
 
-  impl::gemp( alpha, 
+  ovxx::gemp( alpha, 
               impl::apply_mat_op<OpA>(A), 
               impl::apply_mat_op<OpB>(B),
               beta, 
@@ -805,19 +689,13 @@ template <mat_op_type OpA,
           typename Block1,
           typename Block4>
 void
-gems(
-  T0 alpha,
-  const_Matrix<T1, Block1> A,
-  T3 beta,
-  Matrix<T4, Block4> C) 
-    VSIP_NOTHROW
+gems(T0 alpha,
+     const_Matrix<T1, Block1> A,
+     T3 beta,
+     Matrix<T4, Block4> C) 
+  VSIP_NOTHROW
 {
-#if VSIP_PROFILE_MASK & VSIP_IMPL_PROFILE_MASK_MATVEC
-  impl::profile::Scope<impl::profile::matvec> scope
-    (impl::matvec::Description<T4>::tag("gems", impl::extent(A)),
-     impl::matvec::Op_count_gems<T4>::value(impl::extent(A), OpA));
-#endif
-  impl::gems(alpha, impl::apply_mat_op<OpA>(A), beta, C);
+  ovxx::gems(alpha, impl::apply_mat_op<OpA>(A), beta, C);
 }
 
 
@@ -832,19 +710,9 @@ template <dimension_type d,
           typename Block0,
           typename Block1>
 void
-cumsum(
-  const_View<T0, Block0> v,
-  View<T1, Block1> w) 
-    VSIP_NOTHROW
+cumsum(const_View<T0, Block0> v, View<T1, Block1> w) VSIP_NOTHROW
 {
-#if VSIP_PROFILE_MASK & VSIP_IMPL_PROFILE_MASK_MATVEC
-  dimension_type const dim = impl::Dim_of_view<const_View>::dim;
-  impl::profile::Scope<impl::profile::matvec> scope
-    (impl::matvec::Description<T0>::tag("cumsum", impl::extent(v)),
-     impl::matvec::Op_count_cumsum<dim, T0>::value(impl::extent(v)));
-#endif
-
-  impl::cumsum<d>(v, w);
+  ovxx::cumsum<d>(v, w);
 }
 
 /// modulate
@@ -855,21 +723,15 @@ template <typename T0,
           typename Block0,
           typename Block1>
 T1
-modulate(
-  const_Vector<T0, Block0> v,
-  T1 nu,
-  T2 phi,
-  Vector<complex<T3>, Block1> w)
+modulate(const_Vector<T0, Block0> v,
+	 T1 nu,
+	 T2 phi,
+	 Vector<complex<T3>, Block1> w)
     VSIP_NOTHROW
 {
-#if VSIP_PROFILE_MASK & VSIP_IMPL_PROFILE_MASK_MATVEC
-  impl::profile::Scope<impl::profile::matvec> scope
-    (impl::matvec::Description<T0>::tag("modulate", impl::extent(v)),
-     impl::matvec::Op_count_modulate<T0>::value(impl::extent(v)));
-#endif
-  return impl::modulate(v, nu, phi, w);
+  return ovxx::modulate(v, nu, phi, w);
 }
 
 } // namespace vsip
 
-#endif // VSIP_IMPL_MATVEC_HPP
+#endif

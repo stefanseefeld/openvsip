@@ -11,29 +11,12 @@
 #include <vsip/vector.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-storage.hpp>
 #include "common.hpp"
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
 
 TEST_UNARY(sin,   sin,   sin,   anyval)
 TEST_UNARY(cos,   cos,   cos,   anyval)
 TEST_UNARY(tan,   tan,   tan,   anyval)
 TEST_UNARY(atan,  atan,  atan,  anyval)
-
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
 
 int
 main(int argc, char** argv)

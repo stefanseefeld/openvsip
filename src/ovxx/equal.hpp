@@ -48,6 +48,63 @@ template <typename T1, typename T2>
 inline bool equal(complex<T1> const &a, complex<T2> const &b)
 { return equal(a.real(), b.real()) && equal(a.imag(), b.imag());}
 
+template <typename B, dimension_type D>
+inline bool equal(element_proxy<B, D> const &a, typename B::value_type b)
+{
+  return equal(static_cast<typename B::value_type>(a), b);
+}
+
+template <typename B, dimension_type D>
+inline bool equal(typename B::value_type a, element_proxy<B, D> const &b) 
+{
+  return equal(a, static_cast<typename B::value_type>(b));
+}
+
+template <typename B1, dimension_type D1, typename B2, dimension_type D2>
+inline bool equal(element_proxy<B1, D1> const &a, element_proxy<B2, D2> const &b)
+{
+  return equal(static_cast<typename B1::value_type>(a), static_cast<typename B2::value_type>(b));
+}
+
+template <typename B, dimension_type D>
+inline bool equal(element_proxy<B, D> const &a, element_proxy<B, D> const &b)
+{
+  return equal(static_cast<typename B::value_type>(a), static_cast<typename B::value_type>(b));
+}
+
+template <typename T, typename B1, typename B2>
+inline bool equal(const_Vector<T, B1> v, const_Vector<T, B2> w)
+{
+  if (v.size() != w.size()) return false;
+  for (length_type i = 0; i != v.size(); ++i)
+    if (!equal(v.get(i), w.get(i)))
+      return false;
+  return true;
+}
+
+template <typename T, typename B1, typename B2>
+inline bool equal(const_Matrix<T, B1> v, const_Matrix<T, B2> w)
+{
+  if (v.size(0) != w.size(0) || v.size(1) != w.size(1)) return false;
+  for (length_type i = 0; i != v.size(0); ++i)
+    for (length_type j = 0; j != v.size(1); ++j)
+      if (!equal(v.get(i, j), w.get(i, j)))
+	return false;
+  return true;
+}
+
+template <typename T, typename B1, typename B2>
+inline bool equal(const_Tensor<T, B1> v, const_Tensor<T, B2> w)
+{
+  if (v.size(0) != w.size(0) || v.size(1) != w.size(1) || v.size(2) != w.size(2))
+    return false;
+  for (length_type i = 0; i != v.size(0); ++i)
+    for (length_type j = 0; j != v.size(1); ++j)
+      for (length_type k = 0; k != v.size(2); ++k)
+	if (!equal(v.get(i, j, k), w.get(i, j, k)))
+	  return false;
+  return true;
+}
 } // namespace ovxx
 
 #endif

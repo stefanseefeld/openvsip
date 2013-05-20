@@ -13,18 +13,12 @@
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/tensor.hpp>
-#include <vsip/dda.hpp>
 #include <vsip/core/reductions/functors.hpp>
-#include <vsip/core/parallel/services.hpp>
-#include <vsip/core/dispatch.hpp>
-#ifndef VSIP_IMPL_REF_IMPL
-# include <vsip/opt/reductions/reductions.hpp>
-#endif
-#if VSIP_IMPL_HAVE_CVSIP
+#include <ovxx/parallel/service.hpp>
+#include <ovxx/dispatch.hpp>
+#if OVXX_HAVE_CVSIP
 # include <vsip/core/cvsip/eval_reductions.hpp>
 #endif
-#include <vsip/opt/expr/redim_block.hpp>
-#include <vsip/opt/expr/eval_dense.hpp>
 
 namespace vsip
 {
@@ -43,23 +37,21 @@ struct Reduction_dispatch_helper
   typedef typename ReduceT<T>::result_type result_type;
   typedef typename ViewT::block_type block_type;
   typedef typename get_block_layout<block_type>::order_type order_type;
-  typedef Int_type<ViewT::dim> dim_type;
+  typedef integral_constant<dimension_type, ViewT::dim> dim_type;
 
   static result_type
   apply(ViewT& v)
   {
-    using namespace vsip_csl::dispatcher;
+    using namespace dispatcher;
     result_type r;
 
     // Don't use the default dispatch list here, as that doesn't include the
     // 'parallel' backend. (The latter then uses the default list for local
     // dispatches.
-    typedef Make_type_list<
+    typedef make_type_list<
       be::parallel,
-      be::cbe_sdk,
       be::cuda,
       be::cvsip,
-      be::mercury_sal, 
       be::generic>::type list_type;
 
     Dispatcher<op::reduce<ReduceT>, 
@@ -71,6 +63,8 @@ struct Reduction_dispatch_helper
 };
 
 
+// FIXME: Reimplement block redimension
+#if 0
 /// This handles the case where the input is either 2- or 3-D view that 
 /// may be re-dimensioned to a 1-D view.  Because Redim_block requires
 /// direct data access to all expression blocks, including elementwise
@@ -84,22 +78,22 @@ struct Reduction_dispatch_helper<ReduceT, ViewT, true>
   typedef typename ReduceT<T>::result_type result_type;
   typedef typename ViewT::block_type block_type;
   typedef typename get_block_layout<block_type>::order_type order_type;
-  typedef Int_type<ViewT::dim> dim_type;
+  typedef integral_constant<dimension_type, ViewT::dim> dim_type;
 
   typedef Redim_block<block_type, ViewT::dim> new_block_type;
   typedef row1_type new_order_type;
-  typedef Int_type<1> new_dim_type;
+  typedef integral_constant<dimension_type, 1> new_dim_type;
 
   static result_type
   apply(ViewT& v)
   {
-    using namespace vsip_csl::dispatcher;
+    using namespace dispatcher;
     result_type r;
 
     // Don't use the default dispatch list here, as that doesn't include the
     // 'parallel' backend. (The latter then uses the default list for local
     // dispatches.
-    typedef Make_type_list<
+    typedef make_type_list<
       be::parallel,
       be::cbe_sdk,
       be::cuda,
@@ -123,6 +117,7 @@ struct Reduction_dispatch_helper<ReduceT, ViewT, true>
     return r;
   }
 };
+#endif
 
 
 
@@ -131,21 +126,15 @@ template <template <typename> class ReduceT,
 typename ReduceT<typename ViewT::value_type>::result_type
 reduce(ViewT v)
 {
-  using namespace vsip_csl::dispatcher;
+  using namespace dispatcher;
 
   typedef typename ViewT::value_type T;
   typedef typename ReduceT<T>::result_type result_type;
   typedef typename ViewT::block_type block_type;
   typedef typename get_block_layout<block_type>::order_type order_type;
-  typedef Int_type<ViewT::dim> dim_type;
+  typedef integral_constant<dimension_type, ViewT::dim> dim_type;
 
   result_type r;
-
-#if VSIP_IMPL_REF_IMPL
-  Evaluator<op::reduce<ReduceT>, be::cvsip, 
-    void(result_type&, block_type const&, order_type, dim_type)>::
-    exec(r, v.block(), order_type(), dim_type());
-#else
 
   // This optimization is only applicable to target platforms that provide a
   // backend that uses direct data access rather than redim_get/put().
@@ -158,7 +147,6 @@ reduce(ViewT v)
 #endif
 
   r = Reduction_dispatch_helper<ReduceT, ViewT, redimensionable>::apply(v);
-#endif
 
   return r;
 }

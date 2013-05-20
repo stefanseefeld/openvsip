@@ -9,12 +9,8 @@
 /// Description
 ///   Tests for compound expressions, double-precision floating point
 
-#include <iostream>
 #include <vsip/initfin.hpp>
 #include "compound.hpp"
-
-using namespace vsip;
-
 
 int
 main(int argc, char **argv)

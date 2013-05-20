@@ -12,159 +12,79 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/selgen.hpp>
-#include <vsip/opt/expr/redim_block.hpp>
-#include <vsip_csl/output.hpp>
-#include <vsip_csl/test.hpp>
-
-using namespace vsip;
+#include <vsip/signal.hpp>
+#include <test.hpp>
 
 #define DEBUG 0
 
+using namespace ovxx;
 
-template <typename       ViewT,
-          dimension_type D = ViewT::dim>
+template <typename V>
 struct Ramp
 {
-  typedef typename ViewT::value_type T;
-  typedef typename ViewT::block_type block_type;
+  typedef typename V::value_type T;
 
-  static void 
-  apply(ViewT& v, T start, T delta)
+  static void apply(V &v, T start, T delta)
   {
-    length_type size = 1;
-    for (vsip::dimension_type i = 0; i < D; ++i)
-      size *= v.size(i);
-
-    impl::Redim_block<block_type, D> rb(v.block());
-    Vector<T, impl::Redim_block<block_type, D> > rv(rb);
+    Vector<T, typename V::block_type> rv(v.block());
     rv = ramp(start, delta, v.size());
   }
 };
 
-template <typename       ViewT>
-struct Ramp<ViewT, 1>
-{
-  typedef typename ViewT::value_type T;
-
-  static void 
-  apply(ViewT& v, T start, T delta)
-  {
-    v = ramp(start, delta, v.size());
-  }
-};
-
-
-template <typename       ViewT,
-          dimension_type D = ViewT::dim>
+template <typename V>
 struct Check
 {
-  typedef typename ViewT::value_type T;
-  typedef typename ViewT::block_type block_type;
-
-  static void 
-  eval(ViewT& v, index_type index, T value, index_type line_number)
-  {
-    length_type size = 1;
-    for (vsip::dimension_type i = 0; i < D; ++i)
-      size *= v.size(i);
-
-    impl::Redim_block<block_type, D> rb(v.block());
-    Vector<T, impl::Redim_block<block_type, D> > rv(rb);
-
-#if DEBUG
-    if (!vsip_csl::equal(rv.get(index), value))
-      std::cout << "Error at index " << index << ", " 
-                << rv(index) << " != " << value << std::endl
-                << "Go to line number " << line_number 
-                << " in " << __FILE__ << std::endl;
-#endif
-    test_assert(vsip_csl::equal(rv.get(index), value));
-  }
-};
-
-template <typename ViewT>
-struct Check<ViewT, 1>
-{
-  typedef typename ViewT::value_type T;
-  typedef typename impl::scalar_of<T>::type scalar_type;
+  typedef typename V::value_type T;
+  typedef typename scalar_of<T>::type scalar_type;
 
   static void
-  eval(ViewT& v, index_type index, T value, index_type line_number)
+  eval(V &v, index_type index, T value, index_type line_number)
   {
+    Vector<T, typename V::block_type> rv(v.block());
     // Verify the result using a slightly lower threshold since 'equal(val, chk)'
     //  fails on CELL builds due to small numerical inconsistencies.
     scalar_type err_threshold = 1e-3;
 #if DEBUG
-    if (!vsip_csl::almost_equal(v.get(index), value, err_threshold))
+    if (!almost_equal(rv.get(index), value, err_threshold))
       std::cout << "Error at index " << index << ", " 
                 << v(index) << " != " << value << std::endl
                 << "Go to line number " << line_number 
                 << " in " << __FILE__ << std::endl;
 #endif
-    test_assert(vsip_csl::almost_equal(v.get(index), value, err_threshold));
+    test_assert(almost_equal(rv.get(index), value, err_threshold));
   }
 };
 
+#define CHECK0(v, r)   Check<view_type>::eval(v, i0, r##0, __LINE__)
+#define CHECK1(v, r)   Check<view_type>::eval(v, i1, r##1, __LINE__)
+#define CHECK2(v, r)   Check<view_type>::eval(v, i2, r##2, __LINE__)
+#define CHECK3(v, r)   Check<view_type>::eval(v, i3, r##3, __LINE__)
 
-#define CHECK0(v, r)   Check<view_type, D>::eval(v, i0, r##0, __LINE__)
-#define CHECK1(v, r)   Check<view_type, D>::eval(v, i1, r##1, __LINE__)
-#define CHECK2(v, r)   Check<view_type, D>::eval(v, i2, r##2, __LINE__)
-#define CHECK3(v, r)   Check<view_type, D>::eval(v, i3, r##3, __LINE__)
-
-
-
-
-template <typename       ViewT,
-          dimension_type D = ViewT::dim>
+template <typename V>
 struct Get
 {
-  typedef typename ViewT::value_type T;
-  typedef typename ViewT::block_type block_type;
+  typedef typename V::value_type T;
 
-  static T
-  apply(ViewT& v, index_type index)
+  static T apply(V &v, index_type index)
   {
-    length_type size = 1;
-    for (vsip::dimension_type i = 0; i < D; ++i)
-      size *= v.size(i);
-
-    impl::Redim_block<block_type, D> rb(v.block());
-    Vector<T, impl::Redim_block<block_type, D> > rv(rb);
-
-    return rv(index);
+    Vector<T, typename V::block_type> rv(v.block());
+    return rv.get(index);
   }
 };
 
-template <typename ViewT>
-struct Get<ViewT, 1>
-{
-  typedef typename ViewT::value_type T;
+#define GET0(v)  Get<view_type>::apply(v, i0)
+#define GET1(v)  Get<view_type>::apply(v, i1)
+#define GET2(v)  Get<view_type>::apply(v, i2)
+#define GET3(v)  Get<view_type>::apply(v, i3)
 
-  static T
-  apply(ViewT& v, index_type index)
-  {
-    return v(index);
-  }
-};
-
-
-#define GET0(v)  Get<view_type, D>::apply(v, i0)
-#define GET1(v)  Get<view_type, D>::apply(v, i1)
-#define GET2(v)  Get<view_type, D>::apply(v, i2)
-#define GET3(v)  Get<view_type, D>::apply(v, i3)
-
-
-
-
-template <typename       ViewT,
-          dimension_type D = ViewT::dim>
+template <typename V, dimension_type D = V::dim>
 struct Subview_every_other;
 
-template <typename ViewT>
-struct Subview_every_other<ViewT, 1>
+template <typename V>
+struct Subview_every_other<V, 1>
 {
-  static typename ViewT::subview_type 
-  apply(ViewT v, bool odd)
+  static typename V::subview_type 
+  apply(V v, bool odd)
   {
     int start = odd ? 1 : 0;
     Domain<1> dom(start, 2, v.size(0)/2);
@@ -172,64 +92,53 @@ struct Subview_every_other<ViewT, 1>
   }
 };
 
-template <typename ViewT>
-struct Subview_every_other<ViewT, 2>
+template <typename V>
+struct Subview_every_other<V, 2>
 {
-  static typename ViewT::subview_type 
-  apply(ViewT v, bool odd)
+  static typename V::subview_type 
+  apply(V v, bool odd)
   {
     int start = odd ? 1 : 0;
-    Domain<2> dom(
-      Domain<1>(v.size(0)),
-      Domain<1>(start, 2, v.size(1)/2)
-    );
+    Domain<2> dom(v.size(0), Domain<1>(start, 2, v.size(1)/2));
     return v(dom);
   }
 };
 
-template <typename ViewT>
-struct Subview_every_other<ViewT, 3>
+template <typename V>
+struct Subview_every_other<V, 3>
 {
-  static typename ViewT::subview_type 
-  apply(ViewT v, bool odd)
+  static typename V::subview_type 
+  apply(V v, bool odd)
   {
     int start = odd ? 1 : 0;
-    Domain<3> dom(
-      Domain<1>(v.size(0)),
-      Domain<1>(v.size(1)),
-      Domain<1>(start, 2, v.size(2)/2)
-    );
+    Domain<3> dom(v.size(0), v.size(1), Domain<1>(start, 2, v.size(2)/2));
     return v(dom);
   }
 };
 
-template <typename ViewT>
-static typename ViewT::subview_type get_even_subview(ViewT v)
+template <typename V>
+static typename V::subview_type get_even_subview(V v)
 {
   bool odd = false;
-  return Subview_every_other<ViewT>::apply(v, odd);
+  return Subview_every_other<V>::apply(v, odd);
 }
 
-template <typename ViewT>
-static typename ViewT::subview_type get_odd_subview(ViewT v)
+template <typename V>
+static typename V::subview_type get_odd_subview(V v)
 {
   bool odd = true;
-  return Subview_every_other<ViewT>::apply(v, odd);
+  return Subview_every_other<V>::apply(v, odd);
 }
-
-
-
 
 /// Elementwise tests run through several compound expressions and then
 /// compare results at select indices with individually computed values.
 ///
-template <dimension_type D,
-          typename T>
+template <dimension_type D, typename T>
 void
 test_elementwise(Domain<D> dom)
 {
   typedef typename vsip::Dense<D, T> block_type;
-  typedef typename impl::view_of<block_type>::type view_type;
+  typedef typename view_of<block_type>::type view_type;
   block_type a_blk(dom);
   block_type b_blk(dom);
   block_type c_blk(dom);
@@ -258,10 +167,10 @@ test_elementwise(Domain<D> dom)
             << std::endl;
 #endif
 
-  Ramp<view_type, D>::apply(a, T(1), T(1)/T(size));
-  Ramp<view_type, D>::apply(b, T(2), T(1)/T(size));
-  Ramp<view_type, D>::apply(c, T(3), T(1)/T(size));
-  Ramp<view_type, D>::apply(d, T(4), T(1)/T(size));
+  Ramp<view_type>::apply(a, T(1), T(1)/T(size));
+  Ramp<view_type>::apply(b, T(2), T(1)/T(size));
+  Ramp<view_type>::apply(c, T(3), T(1)/T(size));
+  Ramp<view_type>::apply(d, T(4), T(1)/T(size));
   z = T();
 
 
@@ -491,13 +400,12 @@ test_elementwise(Domain<D> dom)
 /// several compound expressions and then compare results at select indices 
 /// with individually computed values.
 ///
-template <dimension_type D,
-          typename T>
+template <dimension_type D, typename T>
 void
 test_elementwise_subview(Domain<D> dom)
 {
   typedef typename vsip::Dense<D, T> block_type;
-  typedef typename impl::view_of<block_type>::type view_type;
+  typedef typename view_of<block_type>::type view_type;
   block_type a_blk(dom);
   block_type b_blk(dom);
   block_type c_blk(dom);
@@ -528,16 +436,16 @@ test_elementwise_subview(Domain<D> dom)
             << std::endl;
 #endif
 
-  Ramp<view_type, D>::apply(a, T(1), T(1)/T(size));
-  Ramp<view_type, D>::apply(b, T(2), T(1)/T(size));
-  Ramp<view_type, D>::apply(c, T(3), T(1)/T(size));
-  Ramp<view_type, D>::apply(d, T(4), T(1)/T(size));
+  Ramp<view_type>::apply(a, T(1), T(1)/T(size));
+  Ramp<view_type>::apply(b, T(2), T(1)/T(size));
+  Ramp<view_type>::apply(c, T(3), T(1)/T(size));
+  Ramp<view_type>::apply(d, T(4), T(1)/T(size));
   z = T();
 
   
   // unary(subview)
   //  verify odd values are changed and even ones unaffected
-  Ramp<view_type, D>::apply(z, T(5), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(5), T(1)/T(size));
   r0 = GET0(z);
   r2 = GET2(z);
   get_odd_subview(z) = sin(get_odd_subview(a));
@@ -548,7 +456,7 @@ test_elementwise_subview(Domain<D> dom)
   CHECK2(z, r);
   CHECK3(z, r);
   //  verify even values are changed and odd ones unaffected
-  Ramp<view_type, D>::apply(z, T(6), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(6), T(1)/T(size));
   r1 = GET1(z);
   r3 = GET3(z);
   get_even_subview(z) = sin(get_even_subview(a));
@@ -561,7 +469,7 @@ test_elementwise_subview(Domain<D> dom)
 
   // unary(unary(subview))
   //  odd values
-  Ramp<view_type, D>::apply(z, T(5), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(5), T(1)/T(size));
   r0 = GET0(z);
   r2 = GET2(z);
   get_odd_subview(z) = sin(sin(get_odd_subview(a)));
@@ -572,7 +480,7 @@ test_elementwise_subview(Domain<D> dom)
   CHECK2(z, r);
   CHECK3(z, r);
   //  even values
-  Ramp<view_type, D>::apply(z, T(6), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(6), T(1)/T(size));
   r1 = GET1(z);
   r3 = GET3(z);
   get_even_subview(z) = sin(sin(get_even_subview(a)));
@@ -585,7 +493,7 @@ test_elementwise_subview(Domain<D> dom)
 
   // unary(binary(subview, subview))
   //  odd values
-  Ramp<view_type, D>::apply(z, T(5), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(5), T(1)/T(size));
   r0 = GET0(z);
   r2 = GET2(z);
   get_odd_subview(z) = sin(get_odd_subview(a) * get_odd_subview(b));
@@ -596,7 +504,7 @@ test_elementwise_subview(Domain<D> dom)
   CHECK2(z, r);
   CHECK3(z, r);
   //  even values
-  Ramp<view_type, D>::apply(z, T(6), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(6), T(1)/T(size));
   r1 = GET1(z);
   r3 = GET3(z);
   get_even_subview(z) = sin(get_even_subview(a) * get_even_subview(b));
@@ -611,7 +519,7 @@ test_elementwise_subview(Domain<D> dom)
 
   // binary(subview, unary(subview))
   //  odd values
-  Ramp<view_type, D>::apply(z, T(5), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(5), T(1)/T(size));
   r0 = GET0(z);
   r2 = GET2(z);
   get_odd_subview(z) = get_odd_subview(a) * sin(get_odd_subview(b));
@@ -622,7 +530,7 @@ test_elementwise_subview(Domain<D> dom)
   CHECK2(z, r);
   CHECK3(z, r);
   //  even values
-  Ramp<view_type, D>::apply(z, T(6), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(6), T(1)/T(size));
   r1 = GET1(z);
   r3 = GET3(z);
   get_even_subview(z) = get_even_subview(a) * sin(get_even_subview(b));
@@ -635,7 +543,7 @@ test_elementwise_subview(Domain<D> dom)
 
   // binary(unary(subview), subview)
   //  odd values
-  Ramp<view_type, D>::apply(z, T(5), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(5), T(1)/T(size));
   r0 = GET0(z);
   r2 = GET2(z);
   get_odd_subview(z) = sin(get_odd_subview(a)) * get_odd_subview(b);
@@ -646,7 +554,7 @@ test_elementwise_subview(Domain<D> dom)
   CHECK2(z, r);
   CHECK3(z, r);
   //  even values
-  Ramp<view_type, D>::apply(z, T(6), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(6), T(1)/T(size));
   r1 = GET1(z);
   r3 = GET3(z);
   get_even_subview(z) = sin(get_even_subview(a)) * get_even_subview(b);
@@ -659,7 +567,7 @@ test_elementwise_subview(Domain<D> dom)
 
   // binary(unary(subview), unary(subview))
   //  odd values
-  Ramp<view_type, D>::apply(z, T(5), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(5), T(1)/T(size));
   r0 = GET0(z);
   r2 = GET2(z);
   get_odd_subview(z) = sin(get_odd_subview(a)) + cos(get_odd_subview(b));
@@ -670,7 +578,7 @@ test_elementwise_subview(Domain<D> dom)
   CHECK2(z, r);
   CHECK3(z, r);
   //  even values
-  Ramp<view_type, D>::apply(z, T(6), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(6), T(1)/T(size));
   r1 = GET1(z);
   r3 = GET3(z);
   get_even_subview(z) = sin(get_even_subview(a)) + cos(get_even_subview(b));
@@ -685,7 +593,7 @@ test_elementwise_subview(Domain<D> dom)
 
   // ternary(unary(subview), binary(subview, unary(subview)), ternary(subview))
   //  odd values
-  Ramp<view_type, D>::apply(z, T(5), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(5), T(1)/T(size));
   r0 = GET0(z);
   r2 = GET2(z);
   get_odd_subview(z) = ma(
@@ -706,7 +614,7 @@ test_elementwise_subview(Domain<D> dom)
   CHECK2(z, r);
   CHECK3(z, r);
   //  even values
-  Ramp<view_type, D>::apply(z, T(6), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(6), T(1)/T(size));
   r1 = GET1(z);
   r3 = GET3(z);
   get_even_subview(z) = ma(
@@ -736,7 +644,7 @@ test_elementwise_subview(Domain<D> dom)
 
   // binary(unary(subview1), unary(subview2)), aliasing two inputs
   //  odd <-- odd, even
-  Ramp<view_type, D>::apply(z, T(5), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(5), T(1)/T(size));
   r0 = GET0(z);
   r2 = GET2(z);
   get_odd_subview(z) = sin(get_odd_subview(a)) + cos(get_even_subview(a));
@@ -747,7 +655,7 @@ test_elementwise_subview(Domain<D> dom)
   CHECK2(z, r);
   CHECK3(z, r);
   //  even <-- even, odd
-  Ramp<view_type, D>::apply(z, T(6), T(1)/T(size));
+  Ramp<view_type>::apply(z, T(6), T(1)/T(size));
   r1 = GET1(z);
   r3 = GET3(z);
   get_even_subview(z) = sin(get_even_subview(a)) + cos(get_odd_subview(a));
@@ -760,13 +668,13 @@ test_elementwise_subview(Domain<D> dom)
 
   // binary(unary(subview1), unary(subview2)), aliasing two inputs and output
   //  odd <-- odd, even
-  Ramp<view_type, D>::apply(a, T(5), T(1)/T(size));
+  Ramp<view_type>::apply(a, T(5), T(1)/T(size));
   r0 = GET0(a);
   r2 = GET2(a);
-  r1 = Get<view_type, D>::apply(a, i1) +
-       Get<view_type, D>::apply(a, i1-1);
-  r3 = Get<view_type, D>::apply(a, i3) +
-       Get<view_type, D>::apply(a, i3-1);
+  r1 = Get<view_type>::apply(a, i1) +
+       Get<view_type>::apply(a, i1-1);
+  r3 = Get<view_type>::apply(a, i3) +
+       Get<view_type>::apply(a, i3-1);
   get_odd_subview(a) = get_odd_subview(a) + get_even_subview(a);
   CHECK0(a, r);
   CHECK1(a, r);
@@ -784,7 +692,7 @@ template <typename T>
 void
 test_nonelementwise_vectors(length_type const N)
 {
-  VSIP_IMPL_STATIC_ASSERT((impl::is_same<typename impl::scalar_of<T>::type, T>::value));
+  OVXX_CT_ASSERT((is_same<typename scalar_of<T>::type, T>::value));
   typedef std::complex<T> C;
   typedef Vector<T> view_type;
   typedef Vector<C> cview_type;
@@ -823,8 +731,8 @@ test_nonelementwise_vectors(length_type const N)
     s = T();
     x = C();
 
-    typedef Fft<const_Vector, C, C, fft_fwd> fwd_fft_type;
-    typedef Fft<const_Vector, C, C, fft_inv> inv_fft_type;
+    typedef vsip::Fft<const_Vector, C, C, fft_fwd> fwd_fft_type;
+    typedef vsip::Fft<const_Vector, C, C, fft_inv> inv_fft_type;
 
     fwd_fft_type f_fft(Domain<1>(N), 1.0);
     inv_fft_type i_fft(Domain<1>(N), 1.0 / N);
@@ -929,8 +837,8 @@ test_nonelementwise_vectors(length_type const N)
     s = T();
     x = T();
 
-    typedef Fft<const_Vector, T, C> fwd_fft_type;
-    typedef Fft<const_Vector, C, T> inv_fft_type;
+    typedef vsip::Fft<const_Vector, T, C> fwd_fft_type;
+    typedef vsip::Fft<const_Vector, C, T> inv_fft_type;
 
     fwd_fft_type f_fft(Domain<1>(N), 1.0);
     inv_fft_type i_fft(Domain<1>(N), 1.0 / N);

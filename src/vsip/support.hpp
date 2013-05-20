@@ -173,6 +173,7 @@ dimension_type const dim2 = 2;	///< Third dimension of a Tensor.
 length_type num_processors() VSIP_NOTHROW;
 // processor_set() defined in parallel.hpp
 processor_type local_processor() VSIP_NOTHROW;
+index_type local_processor_index() VSIP_NOTHROW;
 
 } // namespace vsip
 
