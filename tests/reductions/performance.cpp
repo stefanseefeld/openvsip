@@ -9,16 +9,15 @@
 /// Description
 ///   Performance tests for math reductions.
 
-#include <iostream>
 #include <vsip/initfin.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/math.hpp>
+#include <vsip/math.hpp>
+#include <ovxx/timer.hpp>
+#include <test.hpp>
+#include <iostream>
 
-#include <vsip_csl/math.hpp>
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
+using namespace ovxx;
 
 
 #define TIME_REDUCTION(OP)                            \
@@ -30,11 +29,11 @@ time_##OP(ViewT<T, BlockT> view)                      \
 {                                                     \
   /* warmup (to remove cache-miss effects) */         \
   OP(view);                                           \
-  vsip::impl::profile::Timer t1;                      \
-  t1.start();                                         \
-    OP(view);                                         \
-  t1.stop(); printf("%f\n", t1.delta());              \
-  return t1.delta();                                  \
+  timer t1;					      \
+  OP(view);					      \
+  double delta = t1.elapsed();			      \
+  std::cout << "time: " << delta << std::endl;	      \
+  return delta;					      \
 }
 
 TIME_REDUCTION(sumval);
@@ -47,10 +46,10 @@ TIME_REDUCTION(meansqval);
 
 #define TEST_REDUCTION(OP, VIEW1, VIEW2, VIEW3)         \
 {                                                       \
-  float t1 = time_##OP(VIEW1);                          \
-  float t2 = time_##OP(VIEW2);                          \
-  float t3 = time_##OP(VIEW3);                          \
-  float tol = t1 * .1;                                  \
+  double t1 = time_##OP(VIEW1);                         \
+  double t2 = time_##OP(VIEW2);			        \
+  double t3 = time_##OP(VIEW3);                         \
+  double tol = t1 * .1;                                 \
   test_assert(((t1 - tol) < t2) && (t2 < (t1 + tol)) && \
               ((t1 - tol) < t3) && (t3 < (t1 + tol)));  \
 }

@@ -9,13 +9,10 @@
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
+#include <test.hpp>
+#include <storage.hpp>
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-storage.hpp>
-
-using namespace vsip;
-using namespace vsip_csl;
-
+using namespace ovxx;
 
 void
 simple_tests()

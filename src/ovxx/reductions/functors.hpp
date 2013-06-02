@@ -6,11 +6,11 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_REDUCTIONS_FUNTORS_HPP
-#define VSIP_CORE_REDUCTIONS_FUNTORS_HPP
+#ifndef ovxx_reductions_functors_hpp_
+#define ovxx_reductions_functors_hpp_
 
-#include <vsip/support.hpp>
-#include <vsip/core/reductions/types.hpp>
+#include <ovxx/support.hpp>
+#include <ovxx/reductions/types.hpp>
 
 namespace ovxx
 {
@@ -19,17 +19,11 @@ namespace dispatcher
 namespace op
 {
 // Evaluator OpTag for value reductions.
-template <template <typename> class ReduceT> struct reduce;
+template <template <typename> class R> struct reduce;
 // Evaluator OpTag for reductions returning index.
-template <template <typename> class ReduceT> struct reduce_idx;
+template <template <typename> class R> struct reduce_idx;
 } // namespace ovxx::dispatcher::op
 } // namespace ovxx::dispatcher
-} // namespace ovxx
-
-namespace vsip
-{
-namespace impl
-{
 
 template <typename T>
 struct All_true
@@ -39,17 +33,16 @@ struct All_true
   typedef T result_type;
   typedef T accum_type;
 
-  static accum_type initial() { return ~(accum_type()); }
+  static accum_type initial() { return ~(accum_type());}
 
   static accum_type update(accum_type state, T new_value)
-    { return band(state, new_value); }
+  { return band(state, new_value);}
 
   static accum_type value(accum_type state, length_type)
-    { return state; }
+  { return state;}
 
-  static bool done(accum_type state) { return (state == T()); }
+  static bool done(accum_type state) { return state == T();}
 };
-
 
 template <>
 struct All_true<bool>
@@ -59,18 +52,16 @@ struct All_true<bool>
   typedef bool result_type;
   typedef bool accum_type;
 
-  static bool initial() { return true; }
+  static bool initial() { return true;}
 
   static bool update(bool state, bool new_value)
-    { return land(state, new_value); }
+  { return land(state, new_value);}
 
   static bool value(bool state, length_type)
-    { return state; }
+  { return state;}
 
-  static bool done(bool state) { return state == false; }
+  static bool done(bool state) { return state == false;}
 };
-
-
 
 template <typename T>
 struct Any_true
@@ -80,17 +71,16 @@ struct Any_true
   typedef T result_type;
   typedef T accum_type;
 
-  static accum_type initial() { return accum_type(); }
+  static accum_type initial() { return accum_type();}
 
   static accum_type update(accum_type state, T new_value)
-    { return bor(state, new_value); }
+  { return bor(state, new_value);}
 
   static accum_type value(accum_type state, length_type)
-    { return state; }
+  { return state;}
 
-  static bool done(accum_type state) { return (state == ~(T())); }
+  static bool done(accum_type state) { return state == ~(T());}
 };
-
 
 template <>
 struct Any_true<bool>
@@ -100,17 +90,16 @@ struct Any_true<bool>
   typedef bool result_type;
   typedef bool accum_type;
 
-  static bool initial() { return false; }
+  static bool initial() { return false;}
 
   static bool update(bool state, bool new_value)
-    { return lor(state, new_value); }
+  { return lor(state, new_value);}
 
   static bool value(bool state, length_type)
-    { return state; }
+  { return state;}
 
-  static bool done(bool state) { return state == true; }
+  static bool done(bool state) { return state == true;}
 };
-
 
 template <typename T, typename R = T>
 struct Mean_value_base
@@ -120,15 +109,15 @@ struct Mean_value_base
   typedef R result_type;
   typedef R accum_type;
 
-  static accum_type initial() { return accum_type(); }
+  static accum_type initial() { return accum_type();}
 
   static accum_type update(accum_type state, T new_value)
-    { return state + new_value; }
+  { return state + new_value;}
 
   static accum_type value(accum_type state, length_type size)
-    { return state / static_cast<accum_type>(size); }
+  { return state / static_cast<accum_type>(size);}
 
-  static bool done(accum_type) { return false; }
+  static bool done(accum_type) { return false;}
 };
 
 template <typename T>
@@ -150,15 +139,15 @@ struct Mean_magsq_value_base
   typedef R result_type;
   typedef R accum_type;
 
-  static accum_type initial() { return accum_type(); }
+  static accum_type initial() { return accum_type();}
 
   static accum_type update(accum_type state, T new_value)
-  { return state + ovxx::math::magsq(new_value, R());}
+  { return state + math::magsq(new_value, R());}
 
   static accum_type value(accum_type state, length_type size)
-  { return state / size; }
+  { return state / size;}
 
-  static bool done(accum_type) { return false; }
+  static bool done(accum_type) { return false;}
 };
 
 template <typename T>
@@ -173,7 +162,6 @@ struct Mean_magsq_value_helper
 
 // Generic base class for summing items of type T into
 // an accumulator of type R.
-
 template <typename T, typename R = T>
 struct Sum_value_base
 {
@@ -182,21 +170,20 @@ struct Sum_value_base
   typedef R result_type;
   typedef R accum_type;
 
-  static accum_type initial() { return accum_type(); }
+  static accum_type initial() { return accum_type();}
 
   static accum_type update(accum_type state, T new_value)
-    { return state + new_value; }
+  { return state + new_value;}
 
   static accum_type value(accum_type state, length_type)
-    { return state; }
+  { return state;}
 
-  static bool done(accum_type) { return false; }
+  static bool done(accum_type) { return false;}
 };
 
 // Use this with reduce<> when T and R are identical.
 // eg:
 //   reduce<impl::Sum_value>
-
 template <typename T>
 struct Sum_value : public Sum_value_base<T> {};
 
@@ -211,8 +198,6 @@ struct Sum_value_helper
   struct Sum_value : public Sum_value_base<T,R> {};
 };
 
-
-
 template <typename T>
 struct Sum_magsq_value
 {
@@ -221,21 +206,18 @@ struct Sum_magsq_value
   typedef typename scalar_of<T>::type result_type;
   typedef typename scalar_of<T>::type accum_type;
 
-  static accum_type initial() { return accum_type(); }
+  static accum_type initial() { return accum_type();}
 
   static accum_type update(accum_type state, T new_value)
-    { return state + magsq(new_value); }
+  { return state + magsq(new_value);}
 
   static accum_type value(accum_type state, length_type)
-    { return state; }
+  { return state;}
 
   static bool done(accum_type) { return false; }
 };
 
-
-
 /// Specialization for 'bool': return the number of true values.
-
 template <>
 struct Sum_value<bool>
 {
@@ -244,18 +226,16 @@ struct Sum_value<bool>
   typedef length_type result_type;
   typedef length_type accum_type;
 
-  static accum_type initial() { return accum_type(); }
+  static accum_type initial() { return accum_type();}
 
   static accum_type update(accum_type state, bool new_value)
-    { return state + (new_value ? 1 : 0); }
+  { return state + (new_value ? 1 : 0);}
 
   static accum_type value(accum_type state, length_type)
-    { return state; }
+  { return state;}
 
-  static bool done(accum_type) { return false; }
+  static bool done(accum_type) { return false;}
 };
-
-
 
 template <typename T, typename R = T>
 struct Sum_sq_value_base
@@ -265,15 +245,15 @@ struct Sum_sq_value_base
   typedef R result_type;
   typedef R accum_type;
 
-  static accum_type initial() { return accum_type(); }
+  static accum_type initial() { return accum_type();}
 
   static accum_type update(accum_type state, T new_value)
-    { return state + new_value * new_value; }
+  { return state + new_value * new_value;}
 
   static accum_type value(accum_type state, length_type)
-    { return state; }
+  { return state;}
 
-  static bool done(accum_type) { return false; }
+  static bool done(accum_type) { return false;}
 };
 
 template <typename T>
@@ -282,18 +262,12 @@ struct Sum_sq_value : public Sum_sq_value_base<T> {};
 // Use this with reduce<> when T and R are different.
 // eg:
 //   reduce<impl::Sum_value_helper<R>::template Sum_value>
-
 template <typename R>
 struct Sum_sq_value_helper
 {
   template <typename T>
   struct Sum_sq_value : public Sum_sq_value_base<T,R> {};
 };
-
-
-/***********************************************************************
-  Reduction-Index Functors
-***********************************************************************/
 
 template <typename T>
 class Max_value
@@ -313,13 +287,11 @@ public:
     else return false;
   }
 
-  T value() { return value_; }
+  T value() { return value_;}
 
 private:
   T value_;
 };
-
-
 
 template <typename T>
 class Min_value
@@ -339,13 +311,11 @@ public:
     else return false;
   }
 
-  T value() { return value_; }
+  T value() { return value_;}
 
 private:
   T value_;
 };
-
-
 
 template <typename T>
 class Max_mag_value
@@ -366,7 +336,7 @@ public:
     else return false;
   }
 
-  result_type value() { return value_; }
+  result_type value() { return value_;}
 
 private:
   result_type value_;
@@ -393,7 +363,7 @@ public:
     else return false;
   }
 
-  result_type value() { return value_; }
+  result_type value() { return value_;}
 
 private:
   result_type value_;
@@ -420,13 +390,11 @@ public:
     else return false;
   }
 
-  result_type value() { return value_; }
+  result_type value() { return value_;}
 
 private:
   result_type value_;
 };
-
-
 
 template <typename T>
 class Min_magsq_value
@@ -447,13 +415,12 @@ public:
     else return false;
   }
 
-  result_type value() { return value_; }
+  result_type value() { return value_;}
 
 private:
   result_type value_;
 };
 
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx
 
-#endif // VSIP_IMPL_REDUCTIONS_FUNTORS_HPP
+#endif

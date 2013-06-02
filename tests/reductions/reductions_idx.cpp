@@ -13,17 +13,10 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/map.hpp>
+#include <test.hpp>
+#include <storage.hpp>
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-storage.hpp>
-
-
-using namespace vsip;
-using vsip_csl::equal;
-
-/***********************************************************************
-  maxval tests.
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T>
 void
@@ -97,9 +90,10 @@ cover_maxval()
   test_maxval<Storage<3, T, tuple<1, 2, 0> > >(Domain<3>(15, 17, 7), 8);
   test_maxval<Storage<3, T, tuple<2, 0, 1> > >(Domain<3>(15, 17, 7), 8);
   test_maxval<Storage<3, T, tuple<2, 1, 0> > >(Domain<3>(15, 17, 7), 8);
-
+#if OVXX_PARALLEL
   test_maxval<Storage<1, T, row1_type, Map<> > >(Domain<1>(15), 8);
   test_maxval<Storage<1, T, row1_type, Replicated_map<1> > >(Domain<1>(15), 8);
+#endif
 }
 
 
@@ -152,9 +146,10 @@ cover_minval()
   test_minval<Storage<3, T, tuple<1, 2, 0> > >(Domain<3>(15, 17, 7), 8);
   test_minval<Storage<3, T, tuple<2, 0, 1> > >(Domain<3>(15, 17, 7), 8);
   test_minval<Storage<3, T, tuple<2, 1, 0> > >(Domain<3>(15, 17, 7), 8);
-
+#if OVXX_PARALLEL
   test_minval<Storage<1, T, row1_type, Map<> > >(Domain<1>(15), 8);
   test_minval<Storage<1, T, row1_type, Replicated_map<1> > >(Domain<1>(15), 8);
+#endif
 }
 
 
@@ -169,7 +164,7 @@ void
 test_mgval(Domain<Dim> const& dom, length_type count)
 {
   typedef typename StoreT::value_type T;
-  typedef typename impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   StoreT      store(dom, T(30, 40));
   Index<Dim>  idx;
@@ -217,9 +212,10 @@ cover_mgval()
   test_mgval<Storage<3, T, tuple<1, 2, 0> > >(Domain<3>(15, 17, 7), 8);
   test_mgval<Storage<3, T, tuple<2, 0, 1> > >(Domain<3>(15, 17, 7), 8);
   test_mgval<Storage<3, T, tuple<2, 1, 0> > >(Domain<3>(15, 17, 7), 8);
-
+#if OVXX_PARALLEL
   test_mgval<Storage<1, T, row1_type, Map<> > >(Domain<1>(15), 8);
   test_mgval<Storage<1, T, row1_type, Replicated_map<1> > >(Domain<1>(15), 8);
+#endif
 }
 
 
@@ -234,7 +230,7 @@ void
 test_mgsqval(Domain<Dim> const& dom, length_type count)
 {
   typedef typename StoreT::value_type T;
-  typedef typename impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   StoreT      store(dom, T(3, 4));
   Index<Dim>  idx;
@@ -282,9 +278,10 @@ cover_mgsqval()
   test_mgsqval<Storage<3, T, tuple<1, 2, 0> > >(Domain<3>(15, 17, 7), 8);
   test_mgsqval<Storage<3, T, tuple<2, 0, 1> > >(Domain<3>(15, 17, 7), 8);
   test_mgsqval<Storage<3, T, tuple<2, 1, 0> > >(Domain<3>(15, 17, 7), 8);
-
+#if OVXX_PARALLEL
   test_mgsqval<Storage<1, T, row1_type, Map<> > >(Domain<1>(15), 8);
   test_mgsqval<Storage<1, T, row1_type, Replicated_map<1> > >(Domain<1>(15), 8);
+#endif
 }
 
 

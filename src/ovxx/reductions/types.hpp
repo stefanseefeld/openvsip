@@ -6,17 +6,10 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_IMPL_REDUCTIONS_TYPES_HPP
-#define VSIP_IMPL_REDUCTIONS_TYPES_HPP
+#ifndef ovxx_reductions_types_hpp_
+#define ovxx_reductions_types_hpp_
 
-/***********************************************************************
-  Declarations
-***********************************************************************/
-
-namespace vsip
-{
-
-namespace impl
+namespace ovxx
 {
 
 enum reduction_type
@@ -38,7 +31,6 @@ enum reduction_type
   reduce_min
 };
 
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx
 
-#endif // VSIP_IMPL_REDUCTIONS_TYPES_HPP
+#endif

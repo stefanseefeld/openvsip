@@ -11,13 +11,7 @@
 
 #include "reductions.hpp"
 
-using namespace vsip;
-using vsip_csl::equal;
-using vsip_csl::sumval;
-using vsip_csl::sumsqval;
-using vsip_csl::meansqval;
-using vsip_csl::meanval;
-
+using namespace ovxx;
 
 void
 cover_sumval_bool()
@@ -35,9 +29,10 @@ cover_sumval_bool()
   test_sumval_bool<Storage<3, T, tuple<1, 2, 0> > >(Domain<3>(15, 17, 7), 8);
   test_sumval_bool<Storage<3, T, tuple<2, 0, 1> > >(Domain<3>(15, 17, 7), 8);
   test_sumval_bool<Storage<3, T, tuple<2, 1, 0> > >(Domain<3>(15, 17, 7), 8);
-
+#if OVXX_PARALLEL
   test_sumval_bool<Storage<1, T, row1_type, Map<Block_dist> > >(Domain<1>(15), 8);
   test_sumval_bool<Storage<1, T, row1_type, Replicated_map<1> > >(Domain<1>(15), 8);
+#endif
 }
 
 
