@@ -1,47 +1,35 @@
 //
-// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_SIGNAL_FREQSWAP_HPP
-#define VSIP_CORE_SIGNAL_FREQSWAP_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef ovxx_signal_freqswap_hpp_
+#define ovxx_signal_freqswap_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/domain_utils.hpp>
-#include <vsip/core/block_traits.hpp>
-#include <vsip/core/expr/unary_block.hpp>
-#include <vsip/core/dispatch.hpp>
-#ifndef VSIP_IMPL_REF_IMPL
-# include <vsip/opt/dispatch.hpp>
-# ifdef VSIP_IMPL_HAVE_CUDA
-#  include <vsip/opt/cuda/eval_freqswap.hpp>
-# endif
-#endif
+#include <ovxx/domain_utils.hpp>
+#include <ovxx/block_traits.hpp>
+#include <ovxx/expr.hpp>
+#include <ovxx/dispatch.hpp>
 
-/***********************************************************************
-  Declarations
-***********************************************************************/
-
-namespace vsip
+namespace ovxx
 {
-namespace impl
+namespace signal
+{
+namespace detail
 {
 
 template <dimension_type> 
-struct Freqswap_worker;
+struct Freqswap;
 
 /// Specialization for 1D swap
 template <>
-struct Freqswap_worker<1>
+struct Freqswap<1>
 {
   template <typename ResultBlock, typename ArgumentBlock>
   static void apply(ResultBlock &out, ArgumentBlock const &in)
@@ -68,7 +56,7 @@ struct Freqswap_worker<1>
 
 /// Specialization for 2D swap
 template <>
-struct Freqswap_worker<2>
+struct Freqswap<2>
 {
   template <typename ResultBlock, typename ArgumentBlock>
   static void apply(ResultBlock &out, ArgumentBlock const &in)
@@ -160,21 +148,17 @@ struct Freqswap_worker<2>
     }
   }
 };
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::signal::detail
+} // namespace ovxx::signal
 
-namespace vsip_csl
-{
 namespace dispatcher
 {
-#ifndef VSIP_IMPL_REF_IMPL
 template<>
 struct List<op::freqswap>
 {
-  typedef Make_type_list<be::cuda,
+  typedef make_type_list<be::cuda,
 			 be::generic>::type type;
 };
-#endif
 
 template <typename ResultBlock,
 	  typename ArgumentBlock>
@@ -186,50 +170,43 @@ struct Evaluator<op::freqswap, be::generic,
 
   static void exec(ResultBlock &result, ArgumentBlock const &argument)
   {
-    vsip::impl::Freqswap_worker<ArgumentBlock::dim>::apply(result, argument);
+    signal::detail::Freqswap<ArgumentBlock::dim>::apply(result, argument);
   }
 };
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
 
-namespace vsip
+namespace expr
 {
-namespace impl
+namespace op
 {
-
-template <typename Block>
+template <typename B>
 class Freqswap
 {
-  typedef typename View_block_storage<Block>::plain_type block_ref_type;
+  typedef typename block_traits<B>::plain_type block_ref_type;
 
 public:
-  typedef typename Block::map_type map_type;
-  typedef typename Block::value_type result_type;
-  static dimension_type const dim = Block::dim;
+  typedef typename B::map_type map_type;
+  typedef typename B::value_type result_type;
+  static dimension_type const dim = B::dim;
 
-  typedef Freqswap<typename Distributed_local_block<Block>::type> local_type;
+  typedef Freqswap<typename distributed_local_block<B>::type> local_type;
 
   Freqswap(block_ref_type in) : in_(in) {}
 
   length_type size(dimension_type block_dim, dimension_type d) const
   {
-    assert(block_dim == dim);
+    OVXX_PRECONDITION(block_dim == dim);
     return in_.size(block_dim, d);
   }
   length_type size() const { return in_.size();}
   map_type const &map() const { return in_.map();}
-  Block const &arg() const { return in_;}
+  B const &arg() const { return in_;}
 
-  template <typename ResultBlock>
-  void apply(ResultBlock &out) const
+  template <typename B1>
+  void apply(B1 &out) const
   {
-    namespace d = vsip_csl::dispatcher;
-#ifdef VSIP_IMPL_REF_IMPL
-    Evaluator<d::op::freqswap, d::be::generic,
-      void(ResultBlock&, Block const&)>::exec(out, in_);
-#else
-    vsip_csl::dispatch<d::op::freqswap, void, ResultBlock &, Block const &>(out, in_);
-#endif
+    namespace d = ovxx::dispatcher;
+    dispatch<d::op::freqswap, void, B1 &, B const &>(out, in_);
   }
   local_type local() const { return local_type(get_local_block(in_));}
 
@@ -237,21 +214,8 @@ private:
   block_ref_type in_;
 };
 
-} // namespace impl
+} // namespace ovxx::expr::op
+} // namespace ovxx::expr
+} // namespace ovxx
 
-/// Swaps halves of a vector, or quadrants of a matrix, to remap zero 
-/// frequencies from the origin to the middle.
-template <template <typename, typename> class const_View,
-          typename T,
-          typename B>
-const_View<T, impl::expr::Unary<impl::Freqswap, B> const>
-freqswap(const_View<T, B> in) VSIP_NOTHROW
-{
-  typedef impl::expr::Unary<impl::Freqswap, B> const block_type;
-  impl::Freqswap<B> fs(in.block());
-  return const_View<T, block_type>(block_type(fs));
-}
-
-} // namespace vsip
-
-#endif // VSIP_CORE_SIGNAL_FREQSWAP_HPP
+#endif

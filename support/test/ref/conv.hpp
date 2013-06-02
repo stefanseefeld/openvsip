@@ -14,7 +14,8 @@
 #include <vsip/random.hpp>
 #include <vsip/selgen.hpp>
 #include <vsip/parallel.hpp>
-#include <vsip/core/working_view.hpp>
+#include <ovxx/view/utils.hpp>
+#include <test/ref/matvec.hpp>
 
 namespace test
 {
@@ -119,11 +120,14 @@ conv(
 
   typedef typename scalar_of<T>::type scalar_type;
 
-  vsip::working_view_holder<const_Vector<T, Block1> > w_coeff(coeff);
-  vsip::working_view_holder<const_Vector<T, Block2> > w_in(in);
-  vsip::working_view_holder<Vector<T, Block3> >       w_out(out);
+  typename as_local_view<const_Vector<T, Block1> >::type 
+    w_coeff = convert_to_local(coeff);
+  typename as_local_view<const_Vector<T, Block2> >::type
+    w_in = convert_to_local(in);
+  typename as_local_view<Vector<T, Block3> >::type
+    w_out = convert_to_local(out);
 
-  Vector<T> kernel = kernel_from_coeff(sym, w_coeff.view);
+  Vector<T> kernel = kernel_from_coeff(sym, w_coeff);
 
   length_type M = kernel.size(0);
   length_type N = in.size(0);
@@ -143,17 +147,18 @@ conv(
     index_type pos = i*D + shift;
 
     if (pos+1 < M)
-      sub(Domain<1>(0, 1, pos+1)) = w_in.view(Domain<1>(pos, -1, pos+1));
+      sub(Domain<1>(0, 1, pos+1)) = w_in(Domain<1>(pos, -1, pos+1));
     else if (pos >= N)
     {
       index_type start = pos - N + 1;
-      sub(Domain<1>(start, 1, M-start)) = w_in.view(Domain<1>(N-1, -1, M-start));
+      sub(Domain<1>(start, 1, M-start)) = w_in(Domain<1>(N-1, -1, M-start));
     }
     else
-      sub = w_in.view(Domain<1>(pos, -1, M));
+      sub = w_in(Domain<1>(pos, -1, M));
       
-    w_out.view(i) = dot(kernel, sub);
+    w_out(i) = dot(kernel, sub);
   }
+  if (as_local_view<Vector<T, Block3> >::is_copy) parallel::assign_local(out,w_out);
 }
 
 } // namespace test::ref

@@ -24,7 +24,7 @@ bool almost_equal(T a, T b,
 		  typename scalar_of<T>::type abs_eps = 1e-6)
 {
   if (math::mag(a - b) < abs_eps) return true;
-  T relative_error;
+  typename scalar_of<T>::type relative_error;
    
   if (math::mag(a) > math::mag(b))
     relative_error = math::mag((a - b) / b);

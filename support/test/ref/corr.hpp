@@ -13,6 +13,7 @@
 #include <vsip/signal.hpp>
 #include <vsip/random.hpp>
 #include <vsip/selgen.hpp>
+#include <test/ref/matvec.hpp>
 
 namespace test
 {

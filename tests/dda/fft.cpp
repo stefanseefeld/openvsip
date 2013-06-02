@@ -11,27 +11,20 @@
 ///   This file illustrates how data access may be used to implement
 ///   a signal processing object.
 
-#include <iostream>
-#include <cassert>
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/dense.hpp>
 #include <vsip/vector.hpp>
-#include "test.hpp"
+#include <test.hpp>
 #include "output.hpp"
 
-using namespace std;
-using namespace vsip;
-using ovxx::equal;
+using namespace ovxx;
 
 // Dummy interleaved FFT function, passes input through to output.
 
 template <typename T>
 void
-fft_unit_stride(
-  T const* in,
-  T*       out,
-  unsigned size)
+fft_unit_stride(T const *in, T *out, unsigned size)
 {
   for (index_type i=0; i<size; ++i)
     out[i] = in[i];
@@ -43,12 +36,11 @@ fft_unit_stride(
 
 template <typename T>
 void
-fft_unit_stride_split(
-  T const* in_real,
-  T const* in_imag,
-  T*       out_real,
-  T*       out_imag,
-  unsigned size)
+fft_unit_stride_split(T const* in_real,
+		      T const* in_imag,
+		      T*       out_real,
+		      T*       out_imag,
+		      unsigned size)
 {
   for (index_type i=0; i<size; ++i)
   {
@@ -88,11 +80,10 @@ public:
     const_Vector<T, Block1> vin,
     Vector      <T, Block2> vout)
   {
-    typedef vsip::Layout<1, row1_type,
-			 vsip::unit_stride, vsip::array>
+    typedef vsip::Layout<1, row1_type, vsip::unit_stride, vsip::array>
       LP;
-    typedef vsip::dda::Data<Block1, dda::in, LP> layout1;
-    typedef vsip::dda::Data<Block2, dda::out, LP> layout2;
+    typedef vsip::dda::Data<Block1, vsip::dda::in, LP> layout1;
+    typedef vsip::dda::Data<Block2, vsip::dda::out, LP> layout2;
 
     // PROFILE: Check sizes, check layout costs.
 
@@ -103,24 +94,24 @@ public:
 
     if (verbose_)
     {
-      cout << "Test_FFT_inter: " << str << endl;
-      cout << "get_block_layout<Block1>:\n";
-      print_layout<typename vsip::get_block_layout<Block1>::type>(cout);
-      cout << endl;
+      std::cout << "Test_FFT_inter: " << str << std::endl;
+      std::cout << "get_block_layout<Block1>:\n";
+      print_layout<typename vsip::get_block_layout<Block1>::type>(std::cout);
+      std::cout << std::endl;
 
-      cout << "LP:\n";
-      print_layout<LP>(cout);
-      cout << endl;
+      std::cout << "LP:\n";
+      print_layout<LP>(std::cout);
+      std::cout << std::endl;
 
-      cout << "  access_type<LP>(vin.block()) = "
-	   <<    access_type<LP>(vin.block()) << endl;
-      cout << "  access_type<LP>(vout.block()) = "
-	   <<    access_type<LP>(vout.block()) << endl;
+      std::cout << "  access_type<LP>(vin.block()) = "
+		<<    access_type<LP>(vin.block()) << std::endl;
+      std::cout << "  access_type<LP>(vout.block()) = "
+		<<    access_type<LP>(vout.block()) << std::endl;
       
-      cout << "  required_buffer_size<LP>(vin.block()) = "
-	   <<    vsip::dda::required_buffer_size<LP>(vin.block()) << endl;
-      cout << "  required_buffer_size<LP>(vout.block()) = "
-	   <<    vsip::dda::required_buffer_size<LP>(vout.block()) << endl;
+      std::cout << "  required_buffer_size<LP>(vin.block()) = "
+		<<    vsip::dda::required_buffer_size<LP>(vin.block()) << std::endl;
+      std::cout << "  required_buffer_size<LP>(vout.block()) = "
+		<<    vsip::dda::required_buffer_size<LP>(vout.block()) << std::endl;
     }
 
     test_assert(vsip::dda::required_buffer_size<LP>(vin.block())  <= sizeof(T)*size_);
@@ -170,11 +161,10 @@ public:
     const_Vector<T, Block1> vin,
     Vector      <T, Block2> vout)
   {
-    typedef vsip::Layout<1, row1_type,
-      vsip::unit_stride, vsip::split_complex>
-		LP;
-    typedef vsip::dda::Data<Block1, dda::in, LP> layout1;
-    typedef vsip::dda::Data<Block2, dda::out, LP> layout2;
+    typedef vsip::Layout<1, row1_type, vsip::unit_stride, vsip::split_complex>
+      LP;
+    typedef vsip::dda::Data<Block1, vsip::dda::in, LP> layout1;
+    typedef vsip::dda::Data<Block2, vsip::dda::out, LP> layout2;
 
     // PROFILE: Check sizes, check layout costs.
 
@@ -185,31 +175,31 @@ public:
 
     if (verbose_)
     {
-      cout << "Test_FFT_split: " << str << endl;
-      cout << "get_block_layout<Block1>:\n";
-      print_layout<typename vsip::get_block_layout<Block1>::type>(cout);
-      cout << endl;
+      std::cout << "Test_FFT_split: " << str << std::endl;
+      std::cout << "get_block_layout<Block1>:\n";
+      print_layout<typename vsip::get_block_layout<Block1>::type>(std::cout);
+      std::cout << std::endl;
       
-      cout << "LP:\n";
-      print_layout<LP>(cout);
-      cout << endl;
+      std::cout << "LP:\n";
+      print_layout<LP>(std::cout);
+      std::cout << std::endl;
       
-      cout << "  access_type<LP>(vin.block()) = "
-	   <<    access_type<LP>(vin.block()) << endl;
-      cout << "  access_type<LP>(vout.block()) = "
-	   <<    access_type<LP>(vout.block()) << endl;
+      std::cout << "  access_type<LP>(vin.block()) = "
+		<<    access_type<LP>(vin.block()) << std::endl;
+      std::cout << "  access_type<LP>(vout.block()) = "
+		<<    access_type<LP>(vout.block()) << std::endl;
       
-      cout << "  required_buffer_size<LP>(vin.block()) = "
-	   <<    vsip::dda::required_buffer_size<LP>(vin.block()) << endl;
-      cout << "  required_buffer_size<LP>(vout.block()) = "
-	   <<    vsip::dda::required_buffer_size<LP>(vout.block()) << endl;
+      std::cout << "  required_buffer_size<LP>(vin.block()) = "
+		<<    vsip::dda::required_buffer_size<LP>(vin.block()) << std::endl;
+      std::cout << "  required_buffer_size<LP>(vout.block()) = "
+		<<    vsip::dda::required_buffer_size<LP>(vout.block()) << std::endl;
     }
 
     test_assert(vsip::dda::required_buffer_size<LP>(vin.block())  <= sizeof(T)*size_);
     test_assert(vsip::dda::required_buffer_size<LP>(vout.block()) <= sizeof(T)*size_);
 
-    layout1 rin (vin.block(), make_pair(buffer_ + 0, buffer_ + size_));
-    layout2 rout(vout.block(), make_pair(buffer_ + 2*size_, buffer_ + 3*size_));
+    layout1 rin (vin.block(), std::make_pair(buffer_ + 0, buffer_ + size_));
+    layout2 rout(vout.block(), std::make_pair(buffer_ + 2*size_, buffer_ + 3*size_));
 
     test_assert(rin.stride(0) == 1);
     test_assert(rin.size(0) == size_);
@@ -277,9 +267,9 @@ test_view(const_Vector<complex<T>, Block> vec, int k)
   {
     if (!equal(vec.get(i), complex<T>(T(k*i+1), T(k*i+2))))
     {
-      cout << "ERROR: i        = " << i << endl
-	   << "       Got      = " << vec.get(i) << endl
-	   << "       expected = " << vec.get(i) << endl;
+      std::cout << "ERROR: i        = " << i << std::endl
+		<< "       Got      = " << vec.get(i) << std::endl
+		<< "       expected = " << vec.get(i) << std::endl;
     }
     test_assert(equal(vec.get(i), complex<T>(T(k*i+1), T(k*i+2))));
   }

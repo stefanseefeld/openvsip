@@ -6,22 +6,17 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_SIGNAL_HPP
-#define VSIP_SIGNAL_HPP
+#ifndef vsip_signal_hpp_
+#define vsip_signal_hpp_
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#include <vsip/impl/signal/types.hpp>
+#include <vsip/impl/signal/fft.hpp>
+#include <vsip/impl/signal/conv.hpp>
+#include <vsip/impl/signal/corr.hpp>
+#include <vsip/impl/signal/window.hpp>
+#include <vsip/impl/signal/fir.hpp>
+#include <vsip/impl/signal/iir.hpp>
+#include <vsip/impl/signal/freqswap.hpp>
+#include <vsip/impl/signal/histo.hpp>
 
-#include <vsip/core/signal/types.hpp>
-#include <vsip/core/fft.hpp>
-#include <vsip/core/signal/conv.hpp>
-#include <vsip/core/signal/corr.hpp>
-#include <vsip/core/signal/window.hpp>
-#include <vsip/core/signal/fir.hpp>
-#include <vsip/core/signal/iir.hpp>
-#include <vsip/core/signal/freqswap.hpp>
-#include <vsip/core/signal/histo.hpp>
-
-
-#endif // VSIP_SIGNAL_HPP
+#endif

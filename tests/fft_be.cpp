@@ -10,13 +10,11 @@
 #include <vsip/vector.hpp>
 #include <vsip/selgen.hpp>
 #include <vsip/math.hpp>
-#include <vsip/core/fft/dft.hpp>
-#include <vsip/core/fft/no_fft.hpp>
-#include <vsip/opt/dispatch.hpp>
-#include <vsip/core/fft.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/error_db.hpp>
-#include <vsip_csl/output.hpp>
+#include <ovxx/signal/fft/dft.hpp>
+#include <ovxx/signal/fft/no_fft.hpp>
+#include <ovxx/dispatch.hpp>
+#include <vsip/impl/signal/fft.hpp>
+#include <test.hpp>
 #include <map>
 
 // Define FFT_BE_TESTS in order for backends to
@@ -25,9 +23,7 @@
 // # define FFT_COMPOSITE
 // #endif
 
-using namespace vsip;
-namespace dispatcher = vsip_csl::dispatcher;
-using vsip_csl::error_db;
+using namespace ovxx;
 
 // In the default mode test the backends as they are
 // used by end-users.
@@ -43,7 +39,7 @@ struct composite
 struct fftw
 {
   typedef 
-  dispatcher::Make_type_list<
+  dispatcher::make_type_list<
 #if VSIP_IMPL_FFTW3
     dispatcher::be::fftw3,
 #endif
@@ -53,7 +49,7 @@ struct fftw
 struct sal
 {
   typedef 
-  dispatcher::Make_type_list<
+  dispatcher::make_type_list<
 #if VSIP_IMPL_SAL_FFT
     dispatcher::be::mercury_sal,
 #endif
@@ -63,7 +59,7 @@ struct sal
 struct ipp
 {
   typedef 
-  dispatcher::Make_type_list<
+  dispatcher::make_type_list<
 #if VSIP_IMPL_IPP_FFT
     dispatcher::be::intel_ipp,
 #endif
@@ -73,7 +69,7 @@ struct ipp
 struct cvsip
 {
   typedef 
-  dispatcher::Make_type_list<
+  dispatcher::make_type_list<
 #if VSIP_IMPL_CVSIP_FFT
     dispatcher::be::cvsip,
 #endif
@@ -83,7 +79,7 @@ struct cvsip
 struct cbe
 {
   typedef 
-  dispatcher::Make_type_list<
+  dispatcher::make_type_list<
 #if VSIP_IMPL_CBE_SDK_FFT
     dispatcher::be::cbe_sdk,
 #endif
@@ -93,7 +89,7 @@ struct cbe
 struct dft
 {
   typedef 
-  dispatcher::Make_type_list<dispatcher::be::generic,
+  dispatcher::make_type_list<dispatcher::be::generic,
 			     dispatcher::be::no_fft>::type
   list;
 };
@@ -169,7 +165,7 @@ struct rfft_type<T, F, fft_inv, A, OrderT>
 };
 
 template <typename T>
-const_Vector<T, vsip::impl::Generator_expr_block<1, vsip::impl::Ramp_generator<T> > const>
+const_Vector<T, expr::Generator<1, vsip::impl::Ramp_generator<T> > const>
 ramp(Domain<1> const &dom) 
 { return vsip::ramp(T(0.), T(1.), dom.length() * dom.stride());}
 
@@ -359,7 +355,7 @@ void fft_by_ref(Domain<D> const &dom)
   // ...with possibly non-unit-stride.
   typename Oview::subview_type sub_output = output(out_dom);
   // Create the FFT object...
-  typename vsip::impl::Fft_facade<D, I, O, typename B::list, T::s, r> fft(dom, 42.);
+  typename ovxx::signal::Fft<D, I, O, typename B::list, T::s, r> fft(dom, 42.);
   // ...and call it.
   fft(sub_input, sub_output);
 
@@ -368,7 +364,7 @@ void fft_by_ref(Domain<D> const &dom)
 
   Oview ref = empty<O>(out_dom);
   typename Oview::subview_type sub_ref = ref(out_dom);
-  typename vsip::impl::Fft_facade<D, I, O, dft::list, T::s, r> ref_fft(dom, 42.);
+  typename ovxx::signal::Fft<D, I, O, dft::list, T::s, r> ref_fft(dom, 42.);
   ref_fft(sub_input, sub_ref);
 
   if (error_db(output, ref) > -100)
@@ -394,19 +390,19 @@ void fft_in_place(Domain<D> const &dom)
   typedef typename vsip::Layout<D, row1_type, vsip::dense, F> layout_type;
   typedef std::complex<T> CT;
 
-  typedef vsip::impl::Strided<D, CT, layout_type> block_type;
-  typedef typename vsip::impl::view_of<block_type>::type View;
+  typedef Strided<D, CT, layout_type> block_type;
+  typedef typename view_of<block_type>::type View;
 
   View data = ramp<T>(dom);
   View ref = ramp<T>(dom);
 
   typename View::subview_type sub_data = data(dom);
 
-  typename vsip::impl::Fft_facade<D, CT, CT, typename B::list, s, r> fft(dom, 42.);
+  typename ovxx::signal::Fft<D, CT, CT, typename B::list, s, r> fft(dom, 42.);
   fft(sub_data);
 
   typename View::subview_type sub_ref = ref(dom);
-  typename vsip::impl::Fft_facade<D, CT, CT, dft::list, s, r> ref_fft(dom, 42.);
+  typename ovxx::signal::Fft<D, CT, CT, dft::list, s, r> ref_fft(dom, 42.);
   ref_fft(sub_ref);
 
   if (error_db(data, ref) > -100)
@@ -436,8 +432,8 @@ void fftm_by_ref(Domain<2> const &dom)
   typedef typename vsip::Layout<2, order_type, vsip::dense, T::o_format> o_layout_type;
   return_mechanism_type const r = by_reference;
 
-  typedef vsip::impl::Strided<2, I, i_layout_type> Iblock;
-  typedef vsip::impl::Strided<2, O, o_layout_type> Oblock;
+  typedef Strided<2, I, i_layout_type> Iblock;
+  typedef Strided<2, O, o_layout_type> Oblock;
   typedef Matrix<I, Iblock> Iview;
   typedef Matrix<O, Oblock> Oview;
 
@@ -449,14 +445,14 @@ void fftm_by_ref(Domain<2> const &dom)
 
   Oview output = empty<O>(out_dom);
   typename Oview::subview_type sub_output = output(out_dom);
-  typename vsip::impl::Fftm_facade<I, O, typename B::list,
-			     1 - T::axis, T::direction, r> fftm(dom, 42.);
+  typename ovxx::signal::Fftm<I, O, typename B::list,
+			      1 - T::axis, T::direction, r> fftm(dom, 42.);
   fftm(sub_input, sub_output);
 
   Oview ref = empty<O>(out_dom);
   typename Oview::subview_type sub_ref = ref(out_dom);
-  typename vsip::impl::Fftm_facade<I, O, dft::list,
-			     1 - T::axis, T::direction, r> ref_fftm(dom, 42.);
+  typename ovxx::signal::Fftm<I, O, dft::list,
+			      1 - T::axis, T::direction, r> ref_fftm(dom, 42.);
   ref_fftm(sub_input, sub_ref);
 
   if (error_db(output, ref) > -100)
@@ -484,7 +480,7 @@ void fftm_in_place(Domain<2> const &dom)
   typedef typename vsip::Layout<2, row1_type, vsip::dense, F> layout_type;
   typedef std::complex<T> CT;
 
-  typedef vsip::impl::Strided<2, CT, layout_type> block_type;
+  typedef Strided<2, CT, layout_type> block_type;
   typedef Matrix<CT, block_type> View;
 
   View data = ramp<T>(dom);
@@ -492,12 +488,12 @@ void fftm_in_place(Domain<2> const &dom)
 
   typename View::subview_type sub_data = data(dom);
 
-  typename vsip::impl::Fftm_facade<CT, CT, typename B::list, A, d, r>
+  typename ovxx::signal::Fftm<CT, CT, typename B::list, A, d, r>
     fftm(dom, 42.);
   fftm(sub_data);
 
   typename View::subview_type sub_ref = ref(dom);
-  typename vsip::impl::Fftm_facade<CT, CT, dft::list, A, d, r> ref_fftm(dom, 42.);
+  typename ovxx::signal::Fftm<CT, CT, dft::list, A, d, r> ref_fftm(dom, 42.);
   ref_fftm(sub_ref);
 
   if (error_db(data, ref) > -100)

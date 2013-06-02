@@ -18,32 +18,11 @@
 #include <vsip/signal.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-
-#include <vsip/core/config.hpp>
-#include <vsip/core/metaprogramming.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/error_db.hpp>
-#include <vsip_csl/ref_dft.hpp>
-
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#  include "extdata-output.hpp"
-#endif
+#include <test.hpp>
 
 #include "fft_common.hpp"
 
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-using namespace std;
-using namespace vsip;
-namespace ref = vsip_csl::ref;
-
-
+using namespace ovxx;
 
 template <typename View1,
 	  typename View2>
@@ -141,7 +120,7 @@ test_complex_by_ref(int set, length_type N)
 
   setup_ptr(set, in);
 
-  ref::dft(in, ref, -1);
+  test::ref::dft(in, ref, -1);
   f_fft(in, out);
   i_fft(out, inv);
 
@@ -189,7 +168,7 @@ test_complex_by_val(int set, length_type N)
 
   setup_ptr(set, in);
 
-  ref::dft(in, ref, -1);
+  test::ref::dft(in, ref, -1);
   out = f_fft(in);
   inv = i_fft(out);
 

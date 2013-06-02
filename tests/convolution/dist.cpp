@@ -13,31 +13,9 @@
 #include <vsip/initfin.hpp>
 #include <vsip/random.hpp>
 #include <vsip/parallel.hpp>
-#include <vsip/core/metaprogramming.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/ref_conv.hpp>
-#include <vsip_csl/error_db.hpp>
-
 #include "convolution.hpp"
 
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#endif
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
@@ -58,7 +36,9 @@ main(int argc, char** argv)
 #endif
 
   // Test distributed arguments.
+#if OVXX_PARALLEL
   cases_conv_dist<float>(32, 8, 1);
+#endif
 
   return 0;
 }

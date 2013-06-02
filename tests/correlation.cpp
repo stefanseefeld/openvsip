@@ -11,23 +11,12 @@
 #include <vsip/signal.hpp>
 #include <vsip/random.hpp>
 #include <vsip/selgen.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/ref_corr.hpp>
-#include <vsip_csl/error_db.hpp>
+#include <test.hpp>
+#include <test/ref/corr.hpp>
 
 #define VERBOSE 0
 
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#endif
-
-using namespace std;
-using namespace vsip;
-namespace ref = vsip_csl::ref;
-namespace be = vsip_csl::dispatcher::be;
-using vsip_csl::error_db;
+using namespace ovxx;
 
 // On some compute devices, the numerical accuracy is slightly
 // reduced, hence the slightly relaxed threshold used when 
@@ -57,7 +46,7 @@ test_corr(
   length_type              N,		// input size
   length_type const        n_loop = 3)
 {
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
   typedef Correlation<const_Vector, support, T> corr_type;
 
   length_type const P = ref::corr_output_size(support, M, N);
@@ -96,9 +85,9 @@ test_corr(
 
     corr(bias, ref, in, out);
 
-    ref::corr(bias, support, ref, in, chk);
+    test::ref::corr(bias, support, ref, in, chk);
 
-    double error = error_db(out, chk);
+    double error = test::diff(out, chk);
 
 #if VERBOSE
     if (error > threshold)
@@ -140,12 +129,12 @@ test_impl_corr(
   length_type              N,		// input size
   length_type const        n_loop = 3)
 {
-  using namespace vsip_csl::dispatcher;
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  using namespace dispatcher;
+  typedef typename scalar_of<T>::type scalar_type;
   typedef typename Dispatcher<op::corr<1, support, T, 0, alg_time> >::type
     corr_type;
 
-  length_type const P = ref::corr_output_size(support, M, N);
+  length_type const P = test::ref::corr_output_size(support, M, N);
 
   corr_type corr((Domain<1>(M)), Domain<1>(N));
 
@@ -183,9 +172,9 @@ test_impl_corr(
 
     corr.impl_correlate(bias, ref, in, out);
 
-    ref::corr(bias, support, ref, in, chk);
+    test::ref::corr(bias, support, ref, in, chk);
 
-    double error = error_db(out, chk);
+    double error = test::diff(out, chk);
 
 #if VERBOSE
     if (error > threshold)

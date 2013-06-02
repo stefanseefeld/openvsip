@@ -6,22 +6,13 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#ifndef VSIP_TESTS_FFT_COMMON_HPP
-#define VSIP_TESTS_FFT_COMMON_HPP
+#ifndef fft_common_hpp_
+#define fft_common_hpp_
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#include <test.hpp>
+#include <test/ref/dft.hpp>
 
-#include <vsip_csl/error_db.hpp>
-
-using vsip_csl::equal;
-using vsip_csl::error_db;
-
-
-/***********************************************************************
-  Macros
-***********************************************************************/
+using namespace ovxx;
 
 #if defined(VSIP_IMPL_FFTW3) || defined(VSIP_IMPL_SAL_FFT)
 #  define TEST_2D_CC 1
@@ -59,7 +50,7 @@ check_error(
   View2<T2, Block2> v2,
   double            epsilon)
 {
-  double error = error_db(v1, v2);
+  double error = test::diff(v1, v2);
 #if VERBOSE
   if (error >= epsilon)
   {
@@ -80,31 +71,25 @@ check_error(
 // Comprehensive 2D, 3D test
 //
 
-template <unsigned Dim, typename T, unsigned L> struct Arg;
+template <unsigned D, typename T, unsigned L> struct Arg;
 
-template <unsigned Dim, typename T> 
-struct Arg<Dim,T,0>
+template <unsigned D, typename T> 
+struct Arg<D,T,0>
 {
-  typedef typename vsip::impl::view_of<
-    vsip::Dense<Dim,T,typename vsip::impl::Row_major<Dim>::type> >::type type;
+  typedef typename view_of<Dense<D,T,typename row_major<D>::type> >::type type;
 };
 
-template <unsigned Dim, typename T> 
-struct Arg<Dim,T,1>
+template <unsigned D, typename T> 
+struct Arg<D,T,1>
 {
-  typedef typename vsip::impl::view_of<
-    vsip::Dense<Dim,T,typename vsip::impl::Col_major<Dim>::type> >::type type;
+  typedef typename view_of<Dense<D,T,typename col_major<D>::type> >::type type;
 };
 
-template <unsigned Dim, typename T> 
-struct Arg<Dim,T,2>
+template <unsigned D, typename T> 
+struct Arg<D,T,2>
 {
-  typedef typename vsip::impl::view_of<
-    vsip::impl::Strided<Dim,T,
-      vsip::Layout<Dim,
-        typename vsip::impl::Row_major<Dim>::type,
-        vsip::dense
-  > > >::type type;
+  typedef typename view_of<
+    Strided<D,T, Layout<D, typename row_major<D>::type, dense> > >::type type;
 };
 
 inline unsigned 
@@ -116,57 +101,50 @@ adjust_size(unsigned size, bool is_short, bool is_short_dim, bool no_odds)
   return (is_short && is_short_dim) ? size / 2 + 1 : size;
 }
 
-template <unsigned Dim> vsip::Domain<Dim> make_dom(unsigned*, bool, int, bool);
-template <> vsip::Domain<2> make_dom<2>(
-  unsigned* d, bool is_short, int sd, bool no_odds)
+template <unsigned D> Domain<D> make_dom(unsigned*, bool, int, bool);
+template <> Domain<2> make_dom<2>(unsigned* d, bool is_short, int sd, bool no_odds)
 {
-  return  vsip::Domain<2>(
-    vsip::Domain<1>(adjust_size(d[1], is_short, sd == 0, no_odds)),
-    vsip::Domain<1>(adjust_size(d[2], is_short, sd == 1, no_odds)));
+  return  Domain<2>(Domain<1>(adjust_size(d[1], is_short, sd == 0, no_odds)),
+		    Domain<1>(adjust_size(d[2], is_short, sd == 1, no_odds)));
 } 
-template <> vsip::Domain<3> make_dom<3>(
-  unsigned* d, bool is_short, int sd, bool no_odds)
+template <> Domain<3> make_dom<3>(unsigned* d, bool is_short, int sd, bool no_odds)
 {
-  return vsip::Domain<3>(
-    vsip::Domain<1>(adjust_size(d[0], is_short, sd == 0, no_odds)),
-    vsip::Domain<1>(adjust_size(d[1], is_short, sd == 1, no_odds)),
-    vsip::Domain<1>(adjust_size(d[2], is_short, sd == 2, no_odds)));
+  return Domain<3>(Domain<1>(adjust_size(d[0], is_short, sd == 0, no_odds)),
+		   Domain<1>(adjust_size(d[1], is_short, sd == 1, no_odds)),
+		   Domain<1>(adjust_size(d[2], is_short, sd == 2, no_odds)));
 } 
 
-template <typename T, typename BlockT>
-vsip::Domain<2>
-domain_of(vsip::Matrix<T,BlockT> const& src)
+template <typename T, typename B>
+Domain<2>
+domain_of(Matrix<T,B> const& src)
 {
-  return vsip::Domain<2>(vsip::Domain<1>(src.size(0)),
-                         vsip::Domain<1>(src.size(1)));
+  return Domain<2>(src.size(0), src.size(1));
 } 
  
 
-template <typename T, typename BlockT>
-vsip::Domain<3>
-domain_of(vsip::Tensor<T,BlockT> const& src)
+template <typename T, typename B>
+Domain<3>
+domain_of(Tensor<T,B> const& src)
 {
-  return vsip::Domain<2>(vsip::Domain<1>(src.size(0)),
-                         vsip::Domain<1>(src.size(1)),
-                         vsip::Domain<1>(src.size(2)));
+  return Domain<3>(src.size(0), src.size(1), src.size(2));
 } 
 
 //
 
-template <typename T, typename BlockT>
-vsip::Matrix<T,BlockT>
-force_copy_init(vsip::Matrix<T,BlockT> const& src)
+template <typename T, typename B>
+Matrix<T,B>
+force_copy_init(Matrix<T,B> const& src)
 { 
-  vsip::Matrix<T,BlockT> tmp(src.size(0), src.size(1));
+  Matrix<T,B> tmp(src.size(0), src.size(1));
   tmp = src;
   return tmp;
 }
 
-template <typename T, typename BlockT>
-vsip::Tensor<T,BlockT>
-force_copy_init(vsip::Tensor<T,BlockT> const& src)
+template <typename T, typename B>
+Tensor<T,B>
+force_copy_init(Tensor<T,B> const& src)
 { 
-  vsip::Tensor<T,BlockT> tmp(src.size(0), src.size(1), src.size(2));
+  Tensor<T,B> tmp(src.size(0), src.size(1), src.size(2));
   tmp = src;
   return tmp;
 }
@@ -176,10 +154,10 @@ force_copy_init(vsip::Tensor<T,BlockT> const& src)
 template <typename T> void set_values(T& v1, T& v2)
 { v1 = T(10); v2 = T(20); }
 
-template <typename T> void set_values(std::complex<T>& z1, std::complex<T>& z2)
+template <typename T> void set_values(complex<T>& z1, complex<T>& z2)
 {
-  z1 = std::complex<T>(T(10), T(10));
-  z2 = std::complex<T>(T(20), T(20));
+  z1 = complex<T>(T(10), T(10));
+  z2 = complex<T>(T(20), T(20));
 }
 
 #if FILL_RANDOM
@@ -188,32 +166,27 @@ template <typename T> void set_values(std::complex<T>& z1, std::complex<T>& z2)
 // 2D 
 
 template <typename BlockT, typename T>
-void fill_random(
-  vsip::Matrix<T,BlockT> in, vsip::Rand<T>& rander)
+void fill_random(Matrix<T,BlockT> in, vsip::Rand<T>& rander)
 {
   in = (rander.randu(in.size(0), in.size(1)) * 20.0) - 10.0;
 }
 
 template <typename BlockT, typename T>
-void fill_random(
-  vsip::Matrix<std::complex<T>,BlockT> in,
-  vsip::Rand<std::complex<T> >& rander)
+void fill_random(Matrix<complex<T>,BlockT> in,
+		 Rand<complex<T> >& rander)
 {
-  in = rander.randu(in.size(0), in.size(1)) * std::complex<T>(20.0) -
-         std::complex<T>(10.0, 10.0);
+  in = rander.randu(in.size(0), in.size(1)) * complex<T>(20.0) -
+    complex<T>(10.0, 10.0);
 }
 
 // 3D 
 
 template <typename BlockT, typename T>
-void fill_random(
-  vsip::Tensor<T,BlockT>& in, vsip::Rand<T>& rander)
+void fill_random(Tensor<T,BlockT>& in, Rand<T>& rander)
 {
-  vsip::Domain<2> sub(vsip::Domain<1>(in.size(1)),
-                      vsip::Domain<1>(in.size(2))); 
+  Domain<2> sub(in.size(1),in.size(2)); 
   for (unsigned i = in.size(0); i-- > 0;)
-    fill_random(in(i, vsip::Domain<1>(in.size(1)),
-                      vsip::Domain<1>(in.size(2))), rander);
+    fill_random(in(i, in.size(1), in.size(2)), rander);
 }
 
 #else
@@ -222,29 +195,23 @@ void fill_random(
 // 2D 
 
 template <typename BlockT, typename T>
-void fill_random(
-  vsip::Matrix<T,BlockT> in,
-  vsip::Rand<T>&         /*rander*/)
+void fill_random(Matrix<T,BlockT> in, Rand<T>&         /*rander*/)
 {
   in = T(0);
   in.block().put(0, 0, T(1.0));
 }
 
 template <typename BlockT, typename T>
-void fill_random(
-  vsip::Matrix<std::complex<T>,BlockT> in,
-  vsip::Rand<std::complex<T> >&        /*rander*/)
+void fill_random(Matrix<complex<T>,BlockT> in, Rand<complex<T> >&)
 {
   in = T(0);
-  in.block().put(0, 0, std::complex<T>(1.0, 1.0));
+  in.block().put(0, 0, complex<T>(1.0, 1.0));
 }
 
 // 3D 
 
 template <typename BlockT, typename T>
-void fill_random(
-  vsip::Tensor<T,BlockT>& in,
-  vsip::Rand<T>&          /*rander*/)
+void fill_random(Tensor<T,BlockT>& in, Rand<T>&          /*rander*/)
 {
   in = T(0);
   in.block().put(0, 0, 0, T(1.0));
@@ -265,10 +232,6 @@ compute_ref(
   vsip::Domain<2> const& out_dom,
   int (& /* dum */)[1])
 {
-  using vsip::index_type;
-  using vsip::Vector;
-  using vsip::complex;
-
   assert(in.size(0) == ref.size(0));
   assert(in.size(1) == ref.size(1));
   assert(in.size(0) == in_dom[0].size());
@@ -288,12 +251,12 @@ compute_ref(
 #else
   // This is slower, but should always be correct.
   for (index_type r=0; r<in.size(0); ++r)
-    vsip_csl::ref::dft(in.row(r), ref.row(r), -1);
+    test::ref::dft(in.row(r), ref.row(r), -1);
   Vector<complex<T> > tmp(in.size(0));
   for (index_type c=0; c<in.size(1); ++c)
   {
     tmp = ref.col(c);
-    vsip_csl::ref::dft(tmp, ref.col(c), -1);
+    test::ref::dft(tmp, ref.col(c), -1);
   }
 #endif
 }
@@ -496,11 +459,11 @@ check_in_place(
     force_copy_init(in));
 
   fwd(inout);
-  test_assert(error_db(inout, ref) < -100); 
+  test_assert(test::diff(inout, ref) < -100); 
 
   inv(inout);
   inout *= T(scalei);
-  test_assert(error_db(inout, in) < -100); 
+  test_assert(test::diff(inout, in) < -100); 
 }
 
 
@@ -595,15 +558,15 @@ test_fft()
     out_type  refN(force_copy_init(ref1));
     refN /= out_elt_type(in_dom.size());
 
-    test_assert(error_db(in, in_copy) < -200);  // not clobbered
+    test_assert(test::diff(in, in_copy) < -200);  // not clobbered
 
     { fwd_by_ref_type  fft_ref1(in_dom, 1.0);
       out_block_type  out_block(out_dom);
       out_type  out(out_block);
       out_type  other = fft_ref1(in, out);
       test_assert(&out.block() == &other.block());
-      test_assert(error_db(in, in_copy) < -200);  // not clobbered
-      test_assert(error_db(out, ref1) < -100); 
+      test_assert(test::diff(in, in_copy) < -200);  // not clobbered
+      test_assert(test::diff(out, ref1) < -100); 
 
       inv_by_ref_type  inv_refN(in_dom, 1.0/in_dom.size());
       in_block_type  in2_block(in_dom);
@@ -626,9 +589,9 @@ test_fft()
       in_block_type  in2_block(in_dom);
       in_type  in2(in2_block);
       inv_ref8(out, in2);
-      test_assert(error_db(out, ref4) < -100);  // not clobbered
+      test_assert(test::diff(out, ref4) < -100);  // not clobbered
       in2 /= in_elt_type(in_dom.size() / 32.0);
-      test_assert(error_db(in2, in) < -100); 
+      test_assert(test::diff(in2, in) < -100); 
 
       check_in_place(fft_ref4, inv_ref8, in, ref4, 32.0/in_dom.size());
     }
@@ -637,15 +600,15 @@ test_fft()
       out_type  out(out_block);
       out_type  other = fft_refN(in, out);
       test_assert(&out.block() == &other.block());
-      test_assert(error_db(in, in_copy) < -200);  // not clobbered
-      test_assert(error_db(out, refN) < -100); 
+      test_assert(test::diff(in, in_copy) < -200);  // not clobbered
+      test_assert(test::diff(out, refN) < -100); 
 
       inv_by_ref_type  inv_ref1(in_dom, 1.0);
       in_block_type  in2_block(in_dom);
       in_type  in2(in2_block);
       inv_ref1(out, in2);
-      test_assert(error_db(out, refN) < -100);  // not clobbered
-      test_assert(error_db(in2, in) < -100); 
+      test_assert(test::diff(out, refN) < -100);  // not clobbered
+      test_assert(test::diff(in2, in) < -100); 
 
       check_in_place(fft_refN, inv_ref1, in, refN, 1.0);
     }
@@ -653,34 +616,34 @@ test_fft()
 
     { fwd_by_value_type  fwd_val1(in_dom, 1.0);
       out_type  out(fwd_val1(in));
-      test_assert(error_db(in, in_copy) < -200);  // not clobbered
-      test_assert(error_db(out, ref1) < -100); 
+      test_assert(test::diff(in, in_copy) < -200);  // not clobbered
+      test_assert(test::diff(out, ref1) < -100); 
 
       inv_by_value_type  inv_valN(in_dom, 1.0/in_dom.size());
       in_type  in2(inv_valN(out));
-      test_assert(error_db(out, ref1) < -100);    // not clobbered
-      test_assert(error_db(in2, in) < -100); 
+      test_assert(test::diff(out, ref1) < -100);    // not clobbered
+      test_assert(test::diff(in2, in) < -100); 
     }
     { fwd_by_value_type  fwd_val4(in_dom, 0.25);
       out_type  out(fwd_val4(in));
-      test_assert(error_db(in, in_copy) < -200);  // not clobbered
-      test_assert(error_db(out, ref4) < -100); 
+      test_assert(test::diff(in, in_copy) < -200);  // not clobbered
+      test_assert(test::diff(out, ref4) < -100); 
 
       inv_by_value_type  inv_val8(in_dom, 0.125);
       in_type  in2(inv_val8(out));
-      test_assert(error_db(out, ref4) < -100);    // not clobbered
+      test_assert(test::diff(out, ref4) < -100);    // not clobbered
       in2 /= in_elt_type(in_dom.size() / 32.0);
-      test_assert(error_db(in2, in) < -100); 
+      test_assert(test::diff(in2, in) < -100); 
     }
     { fwd_by_value_type  fwd_valN(in_dom, 1.0/in_dom.size());
       out_type  out(fwd_valN(in));
-      test_assert(error_db(in, in_copy) < -200);  // not clobbered
-      test_assert(error_db(out, refN) < -100); 
+      test_assert(test::diff(in, in_copy) < -200);  // not clobbered
+      test_assert(test::diff(out, refN) < -100); 
 
       inv_by_value_type  inv_val1(in_dom, 1.0);
       in_type  in2(inv_val1(out));
-      test_assert(error_db(out, refN) < -100);    // not clobbered
-      test_assert(error_db(in2, in) < -100); 
+      test_assert(test::diff(out, refN) < -100);    // not clobbered
+      test_assert(test::diff(in2, in) < -100); 
     }
   }
 };

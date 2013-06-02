@@ -9,25 +9,12 @@
 #include <vsip/vector.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/initfin.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/error_db.hpp>
+#include <vsip/selgen.hpp>
+#include <test.hpp>
 
 #define VERBOSE 0
 
-#ifdef VERBOSE
-#  include <vsip_csl/output.hpp>
-#endif
-
-
-using namespace std;
-using namespace vsip;
-using vsip_csl::error_db;
-
-
-/***********************************************************************
-  Test IIR as single FIR -- no recursion
-***********************************************************************/
+using namespace ovxx;
 
 template <obj_state State,
 	  typename  T,
@@ -77,7 +64,7 @@ single_iir_as_fir_case(
     pos += chunk;
   }
 
-  float error = error_db(out_iir, out_fir);
+  float error = test::diff(out_iir, out_fir);
 
 #if VERBOSE
   if (error >= -150)
@@ -148,7 +135,7 @@ iir_as_fir_case(
     pos += chunk;
   }
 
-  float error = error_db(out_iir, out_fir);
+  float error = test::diff(out_iir, out_fir);
 
 #if VERBOSE
   using vsip::is_same;
@@ -308,9 +295,9 @@ sum_case(
     exp(i) = accum;
   }
 
-  float error1 = error_db(out1, exp);
-  float error2 = error_db(out2, exp);
-  float error3 = error_db(out3, exp);
+  float error1 = test::diff(out1, exp);
+  float error2 = test::diff(out2, exp);
+  float error3 = test::diff(out3, exp);
 
 #if VERBOSE
   if (error1 >= -150 || error2 >= -150 || error3 >= -150)

@@ -1,32 +1,33 @@
 //
-// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2006 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_FFT_DFT_HPP
-#define VSIP_CORE_FFT_DFT_HPP
+#ifndef ovxx_signal_fft_dft_hpp_
+#define ovxx_signal_fft_dft_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/domain.hpp>
-#include <vsip/opt/dispatch.hpp>
-#include <vsip/core/fft/util.hpp>
+#include <ovxx/dispatch.hpp>
+#include <ovxx/signal/fft/util.hpp>
+#include <ovxx/aligned_array.hpp>
 
-namespace vsip
+namespace ovxx
 {
-namespace impl
+namespace signal
 {
 namespace fft
 {
 namespace
 {
 template <typename T>
-inline vsip::complex<T>
+inline complex<T>
 sin_cos(double phi)
 {
-  return vsip::complex<T>(cos(phi), sin(phi));
+  return complex<T>(cos(phi), sin(phi));
 }
 
 template <typename T>
@@ -36,51 +37,50 @@ std::pair<T*,T*> offset(std::pair<T*,T*> data, int o)
 }
 
 }
-template <dimension_type D, typename I, typename O, int S> class Dft;
+template <dimension_type D, typename I, typename O, int S> class dft;
 
 // 1D complex -> complex DFT
 template <typename T, int S>
-class Dft<1, std::complex<T>, std::complex<T>, S>
-  : public fft::Fft_backend<1, std::complex<T>, std::complex<T>, S>
+class dft<1, complex<T>, complex<T>, S>
+  : public fft_backend<1, complex<T>, complex<T>, S>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
+  typedef double atype;
 
   static int const exponent = S == fft_fwd ? -1 : 1;
 
 public:
-  virtual char const* name() { return "fft-dft-1D-complex"; }
+  virtual char const* name() { return "dft<1,complex,complex>";}
   virtual void query_layout(Rt_layout<1> &) {}
   virtual void query_layout(Rt_layout<1> &rtl_in, Rt_layout<1> &rtl_out)
   { rtl_in.storage_format = rtl_out.storage_format;}
   virtual void in_place(ctype *inout, stride_type s, length_type l)
   {
-    typedef double AccT;
-    aligned_array<std::complex<T> > tmp(l);
-    AccT const phi = exponent * 2.0 * VSIP_IMPL_PI/l;
+    aligned_array<ctype> tmp(l);
+    atype const phi = exponent * 2.0 * OVXX_PI/l;
 
     for (index_type w = 0; w < l; ++w)
     {
-      complex<AccT> sum;
+      complex<atype> sum;
       for (index_type k = 0; k < l; ++k)
-	sum += vsip::complex<AccT>(inout[k * s]) * sin_cos<AccT>(phi * k * w);
+	sum += complex<atype>(inout[k * s]) * sin_cos<atype>(phi * k * w);
       tmp[w] = sum;
     }
     for (index_type w = 0; w < l; ++w) inout[w * s] = tmp[w];
   }
   virtual void in_place(ztype inout, stride_type s, length_type l)
   {
-    typedef double AccT;
-    aligned_array<std::complex<T> > tmp(l);
-    AccT const phi = exponent * 2.0 * VSIP_IMPL_PI/l;
+    aligned_array<ctype> tmp(l);
+    atype const phi = exponent * 2.0 * OVXX_PI/l;
 
     for (index_type w = 0; w < l; ++w)
     {
-      complex<T> sum;
+      complex<atype> sum;
       for (index_type k = 0; k < l; ++k)
-	sum += vsip::complex<AccT>(inout.first[k * s], inout.second[k * s])
-	  * sin_cos<AccT>(phi * k * w);
+	sum += complex<atype>(inout.first[k * s], inout.second[k * s])
+	  * sin_cos<atype>(phi * k * w);
       tmp[w] = sum;
     }
     for (index_type w = 0; w < l; ++w)
@@ -93,14 +93,13 @@ public:
 			    ctype *out, stride_type out_s,
 			    length_type l)
   {
-    typedef double AccT;
-    AccT const phi = exponent * 2.0 * VSIP_IMPL_PI/l;
+    atype const phi = exponent * 2.0 * OVXX_PI/l;
 
     for (index_type w = 0; w < l; ++w)
     {
-      complex<AccT> sum;
+      complex<atype> sum;
       for (index_type k = 0; k < l; ++k)
-	sum += vsip::complex<AccT>(in[k * in_s]) * sin_cos<AccT>(phi * k * w);
+	sum += complex<atype>(in[k * in_s]) * sin_cos<atype>(phi * k * w);
       out[w * out_s] = ctype(sum);
     }
   }
@@ -108,15 +107,14 @@ public:
 			    ztype out, stride_type out_s,
 			    length_type l)
   {
-    typedef double AccT;
-    AccT const phi = exponent * 2.0 * VSIP_IMPL_PI/l;
+    atype const phi = exponent * 2.0 * OVXX_PI/l;
 
     for (index_type w = 0; w < l; ++w)
     {
-      complex<AccT> sum;
+      complex<atype> sum;
       for (index_type k = 0; k < l; ++k)
-	sum += vsip::complex<AccT>(in.first[k * in_s], in.second[k * in_s])
-	  * sin_cos<AccT>(phi * k * w);
+	sum += complex<atype>(in.first[k * in_s], in.second[k * in_s])
+	  * sin_cos<atype>(phi * k * w);
       out.first[w * out_s] = sum.real();
       out.second[w * out_s] = sum.imag();
     }
@@ -125,28 +123,28 @@ public:
 
 // 1D real -> complex DFT
 template <typename T>
-class Dft<1, T, std::complex<T>, 0>
-  : public fft::Fft_backend<1, T, std::complex<T>, 0>
+class dft<1, T, complex<T>, 0> : public fft_backend<1, T, complex<T>, 0>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
+  typedef double atype;
 
 public:
-  virtual char const* name() { return "fft-dft-1D-real-forward"; }
+  virtual char const* name() { return "dft<1,real,complex>";}
   virtual void query_layout(Rt_layout<1> &rtl_in, Rt_layout<1> &rtl_out)
   { rtl_in.storage_format = rtl_out.storage_format;}
   virtual void out_of_place(rtype *in, stride_type in_s,
 			    ctype *out, stride_type out_s,
 			    length_type l)
   {
-    T const phi = - 2.0 * VSIP_IMPL_PI/l;
+    atype const phi = - 2.0 * OVXX_PI/l;
 
     for (index_type w = 0; w < l/2 + 1; ++w)
     {
-      complex<T> sum;
+      complex<atype> sum;
       for (index_type k = 0; k < l; ++k)
-	sum += vsip::complex<T>(in[k * in_s]) * sin_cos<T>(phi * k * w);
+	sum += complex<atype>(in[k * in_s]) * sin_cos<atype>(phi * k * w);
       out[w * out_s] = sum;
     }
   }
@@ -154,13 +152,13 @@ public:
 			    ztype out, stride_type out_s,
 			    length_type l)
   {
-    T const phi = - 2.0 * VSIP_IMPL_PI/l;
+    atype const phi = - 2.0 * OVXX_PI/l;
 
     for (index_type w = 0; w < l/2 + 1; ++w)
     {
-      complex<T> sum;
+      complex<atype> sum;
       for (index_type k = 0; k < l; ++k)
-	sum += vsip::complex<T>(in[k * in_s]) * sin_cos<T>(phi * k * w);
+	sum += complex<atype>(in[k * in_s]) * sin_cos<atype>(phi * k * w);
       out.first[w * out_s] = sum.real();
       out.second[w * out_s] = sum.imag();
     }
@@ -169,30 +167,30 @@ public:
 
 // 1D complex -> real DFT
 template <typename T>
-class Dft<1, std::complex<T>, T, 0>
-  : public fft::Fft_backend<1, std::complex<T>, T, 0>
+class dft<1, complex<T>, T, 0> : public fft_backend<1, complex<T>, T, 0>
 {
   typedef T rtype;
   typedef std::complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
+  typedef double atype;
 
 public:
-  virtual char const* name() { return "fft-dft-1D-real-inverse"; }
+  virtual char const* name() { return "dft<1,complex,real>";}
   virtual void query_layout(Rt_layout<1> &rtl_in, Rt_layout<1> &rtl_out)
   { rtl_in.storage_format = rtl_out.storage_format;}
   virtual void out_of_place(ctype *in, stride_type in_s,
 			    rtype *out, stride_type out_s,
 			    length_type l)
   {
-    T const phi = 2.0 * VSIP_IMPL_PI/l;
+    atype const phi = 2.0 * OVXX_PI/l;
 
     for (index_type w = 0; w < l; ++w)
     {
-      complex<T> sum;
+      complex<atype> sum;
       for (index_type k = 0; k < l/2 + 1; ++k)
-	sum += in[k * in_s] * sin_cos<T>(phi * k * w);
+	sum += complex<atype>(in[k * in_s]) * sin_cos<atype>(phi * k * w);
       for (index_type k = l/2 + 1; k < l; ++k)
-	sum += conj(in[(l - k) * in_s]) * sin_cos<T>(phi * k * w);
+	sum += conj(complex<atype>(in[(l - k) * in_s])) * sin_cos<atype>(phi * k * w);
       out[w * out_s] = sum.real();
     }
   }
@@ -200,17 +198,17 @@ public:
 			    rtype *out, stride_type out_s,
 			    length_type l)
   {
-    T const phi = 2.0 * VSIP_IMPL_PI/l;
+    atype const phi = 2.0 * OVXX_PI/l;
     
     for (index_type w = 0; w < l; ++w)
     {
-      complex<T> sum;
+      complex<atype> sum;
       for (index_type k = 0; k < l/2 + 1; ++k)
-	sum += complex<T>(in.first[k * in_s], in.second[k * in_s])
-	  * sin_cos<T>(phi * k * w);
+	sum += complex<atype>(in.first[k * in_s], in.second[k * in_s])
+	  * sin_cos<atype>(phi * k * w);
       for (index_type k = l/2 + 1; k < l; ++k)
-	sum += complex<T>(in.first[(l - k) * in_s], -in.second[(l - k) * in_s])
-	  * sin_cos<T>(phi * k * w);
+	sum += complex<atype>(in.first[(l - k) * in_s], -in.second[(l - k) * in_s])
+	  * sin_cos<atype>(phi * k * w);
       out[w * out_s] = sum.real();
     }
   }
@@ -218,18 +216,17 @@ public:
 
 // 2D complex -> complex DFT
 template <typename T, int S>
-class Dft<2, std::complex<T>, std::complex<T>, S>
-  : public fft::Fft_backend<2, std::complex<T>, std::complex<T>, S>
-
+class dft<2, complex<T>, complex<T>, S>
+ : public fft_backend<2, complex<T>, complex<T>, S>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
-
+  typedef double atype;
   static int const exponent = S == fft_fwd ? -1 : 1;
 
 public:
-  virtual char const* name() { return "fft-dft-2D-complex"; }
+  virtual char const* name() { return "dft<2,complex,complex>";}
   virtual void query_layout(Rt_layout<2> &) {}
   virtual void query_layout(Rt_layout<2> &rtl_in, Rt_layout<2> &rtl_out)
   { rtl_in.storage_format = rtl_out.storage_format;}
@@ -237,7 +234,7 @@ public:
 			stride_type r_stride, stride_type c_stride,
 			length_type rows, length_type cols)
   {
-    Dft<1, ctype, ctype, S> dft_1d;
+    dft<1, ctype, ctype, S> dft_1d;
     for (length_type r = 0; r != rows; ++r)
       dft_1d.in_place(inout + r * r_stride, c_stride, cols);
     for (length_type c = 0; c != cols; ++c)
@@ -247,7 +244,7 @@ public:
 			stride_type r_stride, stride_type c_stride,
 			length_type rows, length_type cols)
   {
-    Dft<1, ctype, ctype, S> dft_1d;
+    dft<1, ctype, ctype, S> dft_1d;
     for (length_type r = 0; r != rows; ++r)
     {
       ztype line = std::make_pair(inout.first + r * r_stride,
@@ -267,7 +264,7 @@ public:
 			    stride_type out_r_stride, stride_type out_c_stride,
 			    length_type rows, length_type cols)
   {
-    Dft<1, ctype, ctype, S> dft_1d;
+    dft<1, ctype, ctype, S> dft_1d;
     for (length_type r = 0; r != rows; ++r)
       dft_1d.out_of_place(in + r * in_r_stride, in_c_stride,
 			  out + r * out_r_stride, out_c_stride, cols);
@@ -280,7 +277,7 @@ public:
 			    stride_type out_r_stride, stride_type out_c_stride,
 			    length_type rows, length_type cols)
   {
-    Dft<1, ctype, ctype, S> dft_1d;
+    dft<1, ctype, ctype, S> dft_1d;
     for (length_type r = 0; r != rows; ++r)
     {
       ztype in_line = std::make_pair(in.first + r * in_r_stride,
@@ -301,17 +298,15 @@ public:
 
 // 2D real -> complex DFT
 template <typename T, int S>
-class Dft<2, T, std::complex<T>, S>
-  : public fft::Fft_backend<2, T, std::complex<T>, S>
+class dft<2, T, complex<T>, S> : public fft_backend<2, T, complex<T>, S>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
-
   static int const axis = S;
 
 public:
-  virtual char const* name() { return "fft-dft-2D-real-forward"; }
+  virtual char const* name() { return "dft<2,real,complex>";}
   virtual void query_layout(Rt_layout<2> &rtl_in, Rt_layout<2> &rtl_out)
   { rtl_in.storage_format = rtl_out.storage_format;}
   virtual void out_of_place(rtype *in,
@@ -320,8 +315,8 @@ public:
 			    stride_type out_r_stride, stride_type out_c_stride,
 			    length_type rows, length_type cols)
   {
-    Dft<1, rtype, ctype, 0> rdft_1d;
-    Dft<1, ctype, ctype, fft_fwd> dft_1d;
+    dft<1, rtype, ctype, 0> rdft_1d;
+    dft<1, ctype, ctype, fft_fwd> dft_1d;
     if (axis == 0)
     {
       for (length_type c = 0; c != cols; ++c)
@@ -345,8 +340,8 @@ public:
 			    stride_type out_r_stride, stride_type out_c_stride,
 			    length_type rows, length_type cols)
   {
-    Dft<1, rtype, ctype, 0> rdft_1d;
-    Dft<1, ctype, ctype, fft_fwd> dft_1d;
+    dft<1, rtype, ctype, 0> rdft_1d;
+    dft<1, ctype, ctype, fft_fwd> dft_1d;
     if (axis == 0)
     {
       for (length_type c = 0; c != cols; ++c)
@@ -385,17 +380,16 @@ public:
 
 // 2D complex -> real DFT
 template <typename T, int S>
-class Dft<2, std::complex<T>, T, S>
-  : public fft::Fft_backend<2, std::complex<T>, T, S>
+class dft<2, complex<T>, T, S> : public  fft_backend<2, complex<T>, T, S>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
 
   static int const axis = S;
 
 public:
-  virtual char const* name() { return "fft-dft-2D-real-inverse"; }
+  virtual char const* name() { return "dft<2,complex,real>";}
   virtual void query_layout(Rt_layout<2> &rtl_in, Rt_layout<2> &rtl_out)
   { rtl_in.storage_format = rtl_out.storage_format;}
   virtual void out_of_place(ctype *in,
@@ -404,8 +398,8 @@ public:
 			    stride_type out_r_stride, stride_type out_c_stride,
 			    length_type rows, length_type cols)
   {
-    Dft<1, ctype, ctype, fft_inv> dft_1d;
-    Dft<1, ctype, rtype, 0> rdft_1d;
+    dft<1, ctype, ctype, fft_inv> dft_1d;
+    dft<1, ctype, rtype, 0> rdft_1d;
     if (axis == 0)
     {
       length_type rows2 = rows/2 + 1;
@@ -435,8 +429,8 @@ public:
 			    stride_type out_r_stride, stride_type out_c_stride,
 			    length_type rows, length_type cols)
   {
-    Dft<1, ctype, ctype, fft_inv> dft_1d;
-    Dft<1, ctype, rtype, 0> rdft_1d;
+    dft<1, ctype, ctype, fft_inv> dft_1d;
+    dft<1, ctype, rtype, 0> rdft_1d;
     if (axis == 0)
     {
       length_type rows2 = rows/2 + 1;
@@ -483,15 +477,15 @@ public:
 
 // 3D complex -> complex DFT
 template <typename T, int S>
-class Dft<3, std::complex<T>, std::complex<T>, S>
-  : public fft::Fft_backend<3, std::complex<T>, std::complex<T>, S>
+class dft<3, complex<T>, complex<T>, S>
+  : public fft_backend<3, complex<T>, complex<T>, S>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
 
 public:
-  virtual char const* name() { return "fft-dft-3D-complex"; }
+  virtual char const* name() { return "dft<3,complex,complex>";}
   virtual void query_layout(Rt_layout<3> &) {}
   virtual void query_layout(Rt_layout<3> &rtl_in, Rt_layout<3> &rtl_out)
   { rtl_in.storage_format = rtl_out.storage_format;}
@@ -503,8 +497,8 @@ public:
 			length_type y_length,
 			length_type z_length)
   {
-    Dft<2, ctype, ctype, S> dft_2d;
-    Dft<1, ctype, ctype, S> dft_1d;
+    dft<2, ctype, ctype, S> dft_2d;
+    dft<1, ctype, ctype, S> dft_1d;
     for (index_type x = 0; x != x_length; ++x)
       dft_2d.in_place(inout + x * x_stride,
 		      y_stride, z_stride, y_length, z_length);
@@ -521,8 +515,8 @@ public:
 			length_type y_length,
 			length_type z_length)
   {
-    Dft<2, ctype, ctype, S> dft_2d;
-    Dft<1, ctype, ctype, S> dft_1d;
+    dft<2, ctype, ctype, S> dft_2d;
+    dft<1, ctype, ctype, S> dft_1d;
     for (index_type x = 0; x != x_length; ++x)
       dft_2d.in_place(offset(inout, x * x_stride),
 		      y_stride, z_stride, y_length, z_length);
@@ -543,8 +537,8 @@ public:
 			    length_type y_length,
 			    length_type z_length)
   {
-    Dft<2, ctype, ctype, S> dft_2d;
-    Dft<1, ctype, ctype, S> dft_1d;
+    dft<2, ctype, ctype, S> dft_2d;
+    dft<1, ctype, ctype, S> dft_1d;
     for (index_type x = 0; x != x_length; ++x)
       dft_2d.out_of_place(in + x * in_x_stride,
 			  in_y_stride, in_z_stride,
@@ -568,8 +562,8 @@ public:
 			    length_type y_length,
 			    length_type z_length)
   {
-    Dft<2, ctype, ctype, S> dft_2d;
-    Dft<1, ctype, ctype, S> dft_1d;
+    dft<2, ctype, ctype, S> dft_2d;
+    dft<1, ctype, ctype, S> dft_1d;
     for (index_type x = 0; x != x_length; ++x)
       dft_2d.out_of_place(offset(in, x * in_x_stride),
 			  in_y_stride, in_z_stride,
@@ -585,17 +579,16 @@ public:
 
 // 3D real -> complex DFT
 template <typename T, int S>
-class Dft<3, T, std::complex<T>, S>
-  : public fft::Fft_backend<3, T, std::complex<T>, S>
+class dft<3, T, complex<T>, S> : public fft_backend<3, T, complex<T>, S>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
 
   static int const axis = S;
 
 public:
-  virtual char const* name() { return "fft-dft-3D-real-forward"; }
+  virtual char const* name() { return "dft<3,real,complex>";}
   virtual void query_layout(Rt_layout<3> &rtl_in, Rt_layout<3> &rtl_out)
   { rtl_in.storage_format = rtl_out.storage_format;}
   virtual void out_of_place(rtype *in,
@@ -610,8 +603,8 @@ public:
 			    length_type y_length,
 			    length_type z_length)
   {
-    Dft<1, rtype, ctype, 0> rdft_1d;
-    Dft<2, ctype, ctype, fft_fwd> dft_2d;
+    dft<1, rtype, ctype, 0> rdft_1d;
+    dft<2, ctype, ctype, fft_fwd> dft_2d;
     if (axis == 0)
     {
       for (length_type y = 0; y != y_length; ++y)
@@ -664,8 +657,8 @@ public:
 			    length_type y_length,
 			    length_type z_length)
   {
-    Dft<1, rtype, ctype, 0> rdft_1d;
-    Dft<2, ctype, ctype, fft_fwd> dft_2d;
+    dft<1, rtype, ctype, 0> rdft_1d;
+    dft<2, ctype, ctype, fft_fwd> dft_2d;
     if (axis == 0)
     {
       for (length_type y = 0; y != y_length; ++y)
@@ -711,17 +704,16 @@ public:
 
 // 3D complex -> real DFT
 template <typename T, int S>
-class Dft<3, std::complex<T>, T, S>
-  : public fft::Fft_backend<3, std::complex<T>, T, S>
+class dft<3, complex<T>, T, S> : public fft_backend<3, complex<T>, T, S>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
 
   static int const axis = S;
 
 public:
-  virtual char const* name() { return "fft-dft-3D-real-inverse"; }
+  virtual char const* name() { return "dft<3,complex,real>";}
   virtual void query_layout(Rt_layout<3> &rtl_in, Rt_layout<3> &rtl_out)
   { rtl_in.storage_format = rtl_out.storage_format;}
   virtual void out_of_place(ctype *in,
@@ -736,8 +728,8 @@ public:
 			    length_type y_length,
 			    length_type z_length)
   {
-    Dft<2, ctype, ctype, fft_inv> dft_2d;
-    Dft<1, ctype, rtype, 0> rdft_1d;
+    dft<2, ctype, ctype, fft_inv> dft_2d;
+    dft<1, ctype, rtype, 0> rdft_1d;
     if (axis == 0)
     {
       length_type x2 = x_length/2 + 1;
@@ -802,8 +794,8 @@ public:
 			    length_type y_length,
 			    length_type z_length)
   {
-    Dft<2, ctype, ctype, fft_inv> dft_2d;
-    Dft<1, ctype, rtype, 0> rdft_1d;
+    dft<2, ctype, ctype, fft_inv> dft_2d;
+    dft<1, ctype, rtype, 0> rdft_1d;
     if (axis == 0)
     {
       length_type x2 = x_length/2 + 1;
@@ -886,19 +878,19 @@ public:
 
 };
 
-template <typename I, typename O, int A, int D> class Dftm;
+template <typename I, typename O, int A, int D> class dftm;
 
 // real -> complex DFTM
 template <typename T, int A>
-class Dftm<T, std::complex<T>, A, fft_fwd>
-  : public fft::Fftm_backend<T, std::complex<T>, A, fft_fwd>
+class dftm<T, complex<T>, A, fft_fwd>
+ : public fftm_backend<T, complex<T>, A, fft_fwd>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
 
 public:
-  virtual char const* name() { return "fftm-dft-real-forward"; }
+  virtual char const* name() { return "dftm<real,complex>";}
   virtual void query_layout(Rt_layout<2> &rtl_in, Rt_layout<2> &rtl_out)
   { rtl_in.storage_format = rtl_out.storage_format;}
   virtual void out_of_place(rtype *in,
@@ -907,7 +899,7 @@ public:
 			    stride_type out_r_stride, stride_type out_c_stride,
 			    length_type rows, length_type cols)
   {
-    Dft<1, rtype, ctype, 0> rdft;
+    dft<1, rtype, ctype, 0> rdft;
     if (A == vsip::col)
       for (length_type c = 0; c != cols; ++c)
 	rdft.out_of_place(in + c * in_c_stride, in_r_stride,
@@ -923,7 +915,7 @@ public:
 			    stride_type out_r_stride, stride_type out_c_stride,
 			    length_type rows, length_type cols)
   {
-    Dft<1, rtype, ctype, 0> rdft;
+    dft<1, rtype, ctype, 0> rdft;
     if (A == vsip::col)
       for (length_type c = 0; c != cols; ++c)
 	rdft.out_of_place(in + c * in_c_stride, in_r_stride,
@@ -937,15 +929,15 @@ public:
 
 // complex -> real DFTM
 template <typename T, int A>
-class Dftm<std::complex<T>, T, A, fft_inv>
-  : public fft::Fftm_backend<std::complex<T>, T, A, fft_inv>
+class dftm<complex<T>, T, A, fft_inv>
+  : public fftm_backend<complex<T>, T, A, fft_inv>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
 
 public:
-  virtual char const* name() { return "fftm-dft-real-inverse"; }
+  virtual char const* name() { return "dftm<complex,real>";}
   virtual void query_layout(Rt_layout<2> &rtl_in, Rt_layout<2> &rtl_out)
   { rtl_in.storage_format = rtl_out.storage_format;}
   virtual void out_of_place(ctype *in,
@@ -954,7 +946,7 @@ public:
 			    stride_type out_r_stride, stride_type out_c_stride,
 			    length_type rows, length_type cols)
   {
-    Dft<1, ctype, rtype, 0> rdft;
+    dft<1, ctype, rtype, 0> rdft;
     if (A == vsip::col)
     {
       for (length_type c = 0; c != cols; ++c)
@@ -974,7 +966,7 @@ public:
 			    stride_type out_r_stride, stride_type out_c_stride,
 			    length_type rows, length_type cols)
   {
-    Dft<1, ctype, rtype, 0> rdft;
+    dft<1, ctype, rtype, 0> rdft;
     if (A == vsip::col)
     {
       for (length_type c = 0; c != cols; ++c)
@@ -1000,15 +992,15 @@ public:
 
 // complex -> complex DFTM
 template <typename T, int A, int D>
-class Dftm<std::complex<T>, std::complex<T>, A, D>
-  : public fft::Fftm_backend<std::complex<T>, std::complex<T>, A, D>
+class dftm<complex<T>, complex<T>, A, D>
+  : public fftm_backend<complex<T>, complex<T>, A, D>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
 
 public:
-  virtual char const* name() { return "fftm-dft-complex"; }
+  virtual char const* name() { return "dftm<complex,complex>";}
   virtual void query_layout(Rt_layout<2> &) {}
   virtual void query_layout(Rt_layout<2> &rtl_in, Rt_layout<2> &rtl_out)
   { rtl_in.storage_format = rtl_out.storage_format;}
@@ -1016,7 +1008,7 @@ public:
 			stride_type r_stride, stride_type c_stride,
 			length_type rows, length_type cols)
   {
-    Dft<1, ctype, ctype, D> dft_1d;
+    dft<1, ctype, ctype, D> dft_1d;
     if (A == vsip::col)
       for (length_type c = 0; c != cols; ++c)
 	dft_1d.in_place(inout + c * c_stride, r_stride, rows);
@@ -1029,7 +1021,7 @@ public:
 			stride_type r_stride, stride_type c_stride,
 			length_type rows, length_type cols)
   {
-    Dft<1, ctype, ctype, D> dft_1d;
+    dft<1, ctype, ctype, D> dft_1d;
     if (A == vsip::col)
       for (length_type c = 0; c != cols; ++c)
       {
@@ -1052,7 +1044,7 @@ public:
 			    stride_type out_r_stride, stride_type out_c_stride,
 			    length_type rows, length_type cols)
   {
-    Dft<1, ctype, ctype, D> dft_1d;
+    dft<1, ctype, ctype, D> dft_1d;
     if (A == vsip::col)
       for (length_type c = 0; c != cols; ++c)
 	dft_1d.out_of_place(in + c * in_c_stride, in_r_stride,
@@ -1068,7 +1060,7 @@ public:
 			    stride_type out_r_stride, stride_type out_c_stride,
 			    length_type rows, length_type cols)
   {
-    Dft<1, ctype, ctype, D> dft_1d;
+    dft<1, ctype, ctype, D> dft_1d;
     if (A == vsip::col)
       for (length_type c = 0; c != cols; ++c)
       {
@@ -1091,12 +1083,9 @@ public:
       }
   }
 };
-} // namespace vsip::impl::fft
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::signal::fft
+} // namespace ovxx::signal
 
-namespace vsip_csl
-{
 namespace dispatcher
 {
 
@@ -1107,18 +1096,18 @@ template <dimension_type D,
 	  vsip::return_mechanism_type R,
 	  unsigned N>
 struct Evaluator<op::fft<D, I, O, S, R, N>, be::generic,
-  std::auto_ptr<impl::fft::Fft_backend<D, I, O, S> >
-  (Domain<D> const &, typename impl::scalar_of<I>::type)>
+  std::auto_ptr<signal::fft::fft_backend<D, I, O, S> >
+  (Domain<D> const &, typename scalar_of<I>::type)>
 {
-  typedef typename impl::scalar_of<I>::type scalar_type;
+  typedef typename scalar_of<I>::type scalar_type;
   static bool const ct_valid = true;
   static bool rt_valid(Domain<D> const &, scalar_type)
   { return true;}
-  static std::auto_ptr<impl::fft::Fft_backend<D, I, O, S> >
+  static std::auto_ptr<signal::fft::fft_backend<D, I, O, S> >
   exec(Domain<D> const &, scalar_type)
   {
-    return std::auto_ptr<impl::fft::Fft_backend<D, I, O, S> >
-      (new impl::fft::Dft<D, I, O, S>());
+    return std::auto_ptr<signal::fft::fft_backend<D, I, O, S> >
+      (new signal::fft::dft<D, I, O, S>());
   }
 };
 
@@ -1126,26 +1115,26 @@ template <typename I,
 	  typename O,
 	  int A,
 	  int D,
-	  vsip::return_mechanism_type R,
+	  return_mechanism_type R,
 	  unsigned N>
 struct Evaluator<op::fftm<I, O, A, D, R, N>, be::generic,
-  std::auto_ptr<impl::fft::Fftm_backend<I, O, A, D> > 
-  (Domain<2> const &, typename impl::scalar_of<I>::type)>
+  std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> > 
+  (Domain<2> const &, typename scalar_of<I>::type)>
 {
-  typedef typename impl::scalar_of<I>::type scalar_type;
+  typedef typename scalar_of<I>::type scalar_type;
   static bool const ct_valid = true;
   static bool rt_valid(Domain<2> const &, scalar_type)
   { return true;}
-  static std::auto_ptr<impl::fft::Fftm_backend<I, O, A, D> > 
+  static std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> > 
   exec(Domain<2> const &, scalar_type)
   {
-    return std::auto_ptr<impl::fft::Fftm_backend<I, O, A, D> >
-      (new impl::fft::Dftm<I, O, A, D>());
+    return std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> >
+      (new signal::fft::dftm<I, O, A, D>());
   }
 };
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
 #endif
 

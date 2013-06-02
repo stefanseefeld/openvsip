@@ -11,9 +11,8 @@
 #include <vsip/support.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
-//#include <ovxx/parallel/services.hpp>
 #include <ovxx/ct_assert.hpp>
-#include <ovxx/assign_local.hpp>
+#include <ovxx/parallel/assign_local.hpp>
 
 namespace ovxx
 {

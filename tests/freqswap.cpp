@@ -10,15 +10,10 @@
 #include <vsip/support.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/random.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
+#include <vsip/selgen.hpp>
+#include <test.hpp>
 
-using namespace vsip;
-using vsip_csl::equal;
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T>
 void

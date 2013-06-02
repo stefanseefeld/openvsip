@@ -1,41 +1,41 @@
 //
-// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2006 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_FFT_NO_FFT_HPP
-#define VSIP_CORE_FFT_NO_FFT_HPP
+#ifndef ovxx_signal_fft_no_fft_hpp_
+#define ovxx_signal_fft_no_fft_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/domain.hpp>
-#include <vsip/opt/dispatch.hpp>
-#include <vsip/core/fft/util.hpp>
+#include <ovxx/dispatch.hpp>
+#include <ovxx/signal/fft/util.hpp>
 
-namespace vsip
+namespace ovxx
 {
-namespace impl
+namespace signal
 {
 namespace fft
 {
 /// Dummy backend, for testing purposes.
-/// As the Fft_backend base class throws "unimplemented" in all its
+/// As the fft_backend base class throws "unimplemented" in all its
 /// out_of_place and in_place functions, we merely override those here
 /// as no-ops, since this makes testing easier.
-template <dimension_type D, typename I, typename O, int S> class No_fft;
+template <dimension_type D, typename I, typename O, int S> class no_fft;
 
 // 1D complex -> complex FFT
 template <typename T, int S>
-class No_fft<1, std::complex<T>, std::complex<T>, S>
-  : public fft::Fft_backend<1, std::complex<T>, std::complex<T>, S>
+class no_fft<1, complex<T>, complex<T>, S>
+  : public fft_backend<1, complex<T>, complex<T>, S>
 {
 public:
-  void in_place(std::complex<T> *, stride_type, length_type) {}
+  void in_place(complex<T> *, stride_type, length_type) {}
   void in_place(std::pair<T *, T *>, stride_type, length_type) {}
-  void out_of_place(std::complex<T> *, stride_type,
-  		    std::complex<T> *, stride_type,
+  void out_of_place(complex<T> *, stride_type,
+  		    complex<T> *, stride_type,
   		    length_type)
   {}
   void out_of_place(std::pair<T *, T *>, stride_type,
@@ -46,13 +46,12 @@ public:
 
 // 1D real -> complex FFT
 template <typename T>
-class No_fft<1, T, std::complex<T>, 0>
-  : public fft::Fft_backend<1, T, std::complex<T>, 0>
+class no_fft<1, T, complex<T>, 0> : public fft_backend<1, T, complex<T>, 0>
 {
 public:
   void out_of_place(T *, stride_type,
-  		    std::complex<T> *, stride_type,
-  		    length_type)
+		    complex<T> *, stride_type,
+		    length_type)
   {}
   void out_of_place(T *, stride_type,
 		    std::pair<T *, T *>, stride_type,
@@ -62,11 +61,11 @@ public:
 
 // 1D complex -> real FFT
 template <typename T>
-class No_fft<1, std::complex<T>, T, 0>
-  : public fft::Fft_backend<1, std::complex<T>, T, 0>
+class no_fft<1, complex<T>, T, 0>
+  : public fft_backend<1, complex<T>, T, 0>
 {
 public:
-  void out_of_place(std::complex<T> *, stride_type,
+  void out_of_place(complex<T> *, stride_type,
   		    T *, stride_type,
   		    length_type)
   {}
@@ -78,11 +77,11 @@ public:
 
 // 2D complex -> complex FFT
 template <typename T, int S>
-class No_fft<2, std::complex<T>, std::complex<T>, S>
-  : public fft::Fft_backend<2, std::complex<T>, std::complex<T>, S>
+class no_fft<2, complex<T>, complex<T>, S>
+  : public fft_backend<2, complex<T>, complex<T>, S>
 {
 public:
-  virtual void in_place(std::complex<T> *,
+  virtual void in_place(complex<T> *,
 			stride_type, stride_type,
 			length_type, length_type)
   {}
@@ -90,9 +89,9 @@ public:
 			stride_type, stride_type,
 			length_type, length_type)
   {}
-  virtual void out_of_place(std::complex<T> *,
+  virtual void out_of_place(complex<T> *,
 			    stride_type, stride_type,
-			    std::complex<T> *,
+			    complex<T> *,
 			    stride_type, stride_type,
 			    length_type, length_type)
   {}
@@ -106,13 +105,13 @@ public:
 
 // 2D real -> complex FFT
 template <typename T, int S>
-class No_fft<2, T, std::complex<T>, S>
-  : public fft::Fft_backend<2, T, std::complex<T>, S>
+class no_fft<2, T, complex<T>, S>
+  : public fft_backend<2, T, complex<T>, S>
 {
 public:
   void out_of_place(T *,
   		    stride_type, stride_type,
-  		    std::complex<T> *,
+  		    complex<T> *,
   		    stride_type, stride_type,
   		    length_type, length_type)
   {}
@@ -126,11 +125,11 @@ public:
 
 // 2D complex -> real FFT
 template <typename T, int S>
-class No_fft<2, std::complex<T>, T, S>
-  : public fft::Fft_backend<2, std::complex<T>, T, S>
+class no_fft<2, complex<T>, T, S>
+  : public fft_backend<2, complex<T>, T, S>
 {
 public:
-  void out_of_place(std::complex<T> *,
+  void out_of_place(complex<T> *,
   		    stride_type, stride_type,
   		    T *,
   		    stride_type, stride_type,
@@ -146,11 +145,11 @@ public:
 
 // 3D complex -> complex FFT
 template <typename T, int S>
-class No_fft<3, std::complex<T>, std::complex<T>, S>
-  : public fft::Fft_backend<3, std::complex<T>, std::complex<T>, S>
+class no_fft<3, complex<T>, complex<T>, S>
+  : public fft_backend<3, complex<T>, complex<T>, S>
 {
 public:
-  void in_place(std::complex<T> *,
+  void in_place(complex<T> *,
   		stride_type,
   		stride_type,
   		stride_type,
@@ -166,11 +165,11 @@ public:
   		length_type,
   		length_type)
   {}
-  void out_of_place(std::complex<T> *,
+  void out_of_place(complex<T> *,
   		    stride_type,
   		    stride_type,
   		    stride_type,
-  		    std::complex<T> *,
+  		    complex<T> *,
   		    stride_type,
   		    stride_type,
   		    stride_type,
@@ -194,15 +193,15 @@ public:
 
 // 3D real -> complex FFT
 template <typename T, int S>
-class No_fft<3, T, std::complex<T>, S>
-  : public fft::Fft_backend<3, T, std::complex<T>, S>
+class no_fft<3, T, complex<T>, S>
+  : public fft_backend<3, T, complex<T>, S>
 {
 public:
   void out_of_place(T *,
   		    stride_type,
   		    stride_type,
   		    stride_type,
-  		    std::complex<T> *,
+  		    complex<T> *,
   		    stride_type,
   		    stride_type,
   		    stride_type,
@@ -226,11 +225,11 @@ public:
 
 // 3D complex -> real FFT
 template <typename T, int S>
-class No_fft<3, std::complex<T>, T, S>
-  : public fft::Fft_backend<3, std::complex<T>, T, S>
+class no_fft<3, complex<T>, T, S>
+  : public fft_backend<3, complex<T>, T, S>
 {
 public:
-  void out_of_place(std::complex<T> *,
+  void out_of_place(complex<T> *,
   		    stride_type,
   		    stride_type,
   		    stride_type,
@@ -256,17 +255,17 @@ public:
   {}
 };
 
-template <typename I, typename O, int A, int D> class No_fftm;
+template <typename I, typename O, int A, int D> class no_fftm;
 
 // real -> complex FFTM
 template <typename T, int A>
-class No_fftm<T, std::complex<T>, A, fft_fwd>
-  : public fft::Fftm_backend<T, std::complex<T>, A, fft_fwd>
+class no_fftm<T, complex<T>, A, fft_fwd>
+  : public fftm_backend<T, complex<T>, A, fft_fwd>
 {
 public:
   void out_of_place(T *,
   		    stride_type, stride_type,
-  		    std::complex<T> *,
+  		    complex<T> *,
   		    stride_type, stride_type,
   		    length_type, length_type)
   {}
@@ -280,11 +279,11 @@ public:
 
 // complex -> real FFTM
 template <typename T, int A>
-class No_fftm<std::complex<T>, T, A, fft_inv>
-  : public fft::Fftm_backend<std::complex<T>, T, A, fft_inv>
+class no_fftm<complex<T>, T, A, fft_inv>
+  : public fftm_backend<complex<T>, T, A, fft_inv>
 {
 public:
-  void out_of_place(std::complex<T> *,
+  void out_of_place(complex<T> *,
   		    stride_type, stride_type,
   		    T *,
   		    stride_type, stride_type,
@@ -300,11 +299,11 @@ public:
 
 // complex -> complex FFTM
 template <typename T, int A, int D>
-class No_fftm<std::complex<T>, std::complex<T>, A, D>
-  : public fft::Fftm_backend<std::complex<T>, std::complex<T>, A, D>
+class no_fftm<complex<T>, complex<T>, A, D>
+  : public fftm_backend<complex<T>, complex<T>, A, D>
 {
 public:
-  void in_place(std::complex<T> *,
+  void in_place(complex<T> *,
   		stride_type, stride_type,
   		length_type, length_type)
   {}
@@ -312,9 +311,9 @@ public:
   		stride_type, stride_type,
   		length_type, length_type)
   {}
-  void out_of_place(std::complex<T> *,
+  void out_of_place(complex<T> *,
   		    stride_type, stride_type,
-  		    std::complex<T> *,
+  		    complex<T> *,
   		    stride_type, stride_type,
   		    length_type, length_type)
   {}
@@ -326,32 +325,29 @@ public:
   {}
 };
 
-} // namespace vsip::impl::fft
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::signal::fft
+} // namespace ovxx::signal
 
-namespace vsip_csl
-{
 namespace dispatcher
 {
 template <dimension_type D,
 	  typename I,
 	  typename O,
 	  int S,
-	  return_mechanism_type R,
+	  vsip::return_mechanism_type R,
 	  unsigned N>
 struct Evaluator<op::fft<D, I, O, S, R, N>, be::no_fft,
-  std::auto_ptr<impl::fft::Fft_backend<D, I, O, S> >
-  (Domain<D> const &, typename impl::scalar_of<I>::type)>
+  std::auto_ptr<signal::fft::fft_backend<D, I, O, S> >
+  (Domain<D> const &, typename scalar_of<I>::type)>
 {
-  typedef typename impl::scalar_of<I>::type scalar_type;
+  typedef typename scalar_of<I>::type scalar_type;
   static bool const ct_valid = true;
   static bool rt_valid(Domain<D> const &, scalar_type) { return true;}
-  static std::auto_ptr<impl::fft::Fft_backend<D, I, O, S> >
+  static std::auto_ptr<signal::fft::fft_backend<D, I, O, S> >
   exec(Domain<D> const &, scalar_type)
   {
-    return std::auto_ptr<impl::fft::Fft_backend<D, I, O, S> >
-      (new impl::fft::No_fft<D, I, O, S>());
+    return std::auto_ptr<signal::fft::fft_backend<D, I, O, S> >
+      (new signal::fft::no_fft<D, I, O, S>());
   }
 };
 
@@ -362,22 +358,22 @@ template <typename I,
 	  return_mechanism_type R,
 	  unsigned N>
 struct Evaluator<op::fftm<I, O, A, D, R, N>, be::no_fft,
-  std::auto_ptr<impl::fft::Fftm_backend<I, O, A, D> > 
-  (Domain<2> const &, typename impl::scalar_of<I>::type)>
+  std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> > 
+  (Domain<2> const &, typename scalar_of<I>::type)>
 {
-  typedef typename impl::scalar_of<I>::type scalar_type;
+  typedef typename scalar_of<I>::type scalar_type;
   static bool const ct_valid = true;
   static bool rt_valid(Domain<2> const &, scalar_type) { return true;}
-  static std::auto_ptr<impl::fft::Fftm_backend<I, O, A, D> > 
+  static std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> > 
   exec(Domain<2> const &, scalar_type)
   {
-    return std::auto_ptr<impl::fft::Fftm_backend<I, O, A, D> > 
-      (new impl::fft::No_fftm<I, O, A, D>());
+    return std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> > 
+      (new signal::fft::no_fftm<I, O, A, D>());
   }
 };
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
 #endif
 

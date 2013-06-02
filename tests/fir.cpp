@@ -8,29 +8,15 @@
 
 #define VERBOSE 0
 
-#if VERBOSE
-#  include <iostream>
-#  include <iomanip>
-#endif
-#include <cmath>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/math.hpp>
 #include <vsip/matrix.hpp>
+#include <test.hpp>
+#include <cmath>
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/error_db.hpp>
-#if VERBOSE
-#  include <vsip_csl/output.hpp>
-#endif
-
-using vsip_csl::error_db;
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T, vsip::symmetry_type sym>
 void
@@ -117,8 +103,8 @@ test_fir(
   vsip::Vector<T>  result(output1(vsip::Domain<1>(got1a)));
 
   test_assert(outsize - got1a <= 1);
-  double error_rr = error_db(result, reference);
-  double error_23 = error_db(output2(vsip::Domain<1>(got1b)),
+  double error_rr = test::diff(result, reference);
+  double error_23 = test::diff(output2(vsip::Domain<1>(got1b)),
 			     output3(vsip::Domain<1>(got1b)));
 #if VERBOSE
   using vsip::is_same;

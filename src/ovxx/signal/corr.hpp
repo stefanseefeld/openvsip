@@ -1,25 +1,21 @@
 //
-// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_SIGNAL_CORR_COMMON_HPP
-#define VSIP_CORE_SIGNAL_CORR_COMMON_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef ovxx_signal_corr_hpp_
+#define ovxx_signal_corr_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/domain.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/domain_utils.hpp>
-#include <vsip/core/signal/types.hpp>
-
+#include <ovxx/domain_utils.hpp>
+#include <ovxx/aligned_array.hpp>
+#include <vsip/impl/signal/types.hpp>
 
 // C-VSIPL defines the scaling for support_same correlation such
 // that the number of terms in the correlation product is different
@@ -68,13 +64,7 @@
 
 #define VSIP_IMPL_CORR_CORRECT_SAME_SUPPORT_SCALING 0
 
-
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
-
-namespace vsip_csl
+namespace ovxx
 {
 namespace dispatcher
 {
@@ -86,32 +76,21 @@ template <dimension_type D,
           unsigned int N = 0,
           alg_hint_type H = alg_time>
 struct corr;
-} // namespace vsip_csl::dispatcher::op
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher::op
+} // namespace ovxx::dispatcher
 
-namespace vsip
+namespace signal
 {
-namespace impl
-{
-
 template <typename T>
-struct Correlation_accum_trait
+struct corr_accum_trait
 {
   typedef T sum_type;
 };
 
-
-
-/***********************************************************************
-  1-D Correlations (interleaved)
-***********************************************************************/
-
 /// Perform 1-D correlation with full region of support.
-
 template <typename T>
 inline void
-corr_full(bias_type   bias,
+corr_full(bias_type bias,
 	  T const *ref,
 	  length_type ref_size,		// M
 	  stride_type ref_stride,
@@ -122,9 +101,9 @@ corr_full(bias_type   bias,
 	  length_type out_size,		// P
 	  stride_type out_stride)
 {
-  assert(ref_size <= in_size);
+  OVXX_PRECONDITION(ref_size <= in_size);
 
-  typedef typename Correlation_accum_trait<T>::sum_type sum_type;
+  typedef typename corr_accum_trait<T>::sum_type sum_type;
 
   for (index_type n=0; n<out_size; ++n)
   {
@@ -136,7 +115,7 @@ corr_full(bias_type   bias,
 
       if (n+k >= (ref_size-1) && n+k < in_size+(ref_size-1))
       {
-	sum += ref[k * ref_stride] * impl_conj(in[pos * in_stride]);
+	sum += ref[k * ref_stride] * math::impl_conj(in[pos * in_stride]);
       }
     }
 
@@ -154,13 +133,10 @@ corr_full(bias_type   bias,
   }
 }
 
-
-
 /// Perform 1-D correlation with same region of support.
-
 template <typename T>
 inline void
-corr_same(bias_type   bias,
+corr_same(bias_type bias,
 	  T const *ref,
 	  length_type ref_size,		// M
 	  stride_type ref_stride,
@@ -171,7 +147,7 @@ corr_same(bias_type   bias,
 	  length_type out_size,		// P
 	  stride_type out_stride)
 {
-  typedef typename Correlation_accum_trait<T>::sum_type sum_type;
+  typedef typename corr_accum_trait<T>::sum_type sum_type;
 
   for (index_type n=0; n<out_size; ++n)
   {
@@ -183,7 +159,7 @@ corr_same(bias_type   bias,
 
       if (n+k >= (ref_size/2) && n+k <  in_size + (ref_size/2))
       {
-	sum += ref[k * ref_stride] * impl_conj(in[pos * in_stride]);
+	sum += ref[k * ref_stride] * math::impl_conj(in[pos * in_stride]);
       }
     }
     if (bias == unbiased)
@@ -206,13 +182,10 @@ corr_same(bias_type   bias,
   }
 }
 
-
-
 /// Perform correlation with minimal region of support.
-
 template <typename T>
 inline void
-corr_min(bias_type   bias,
+corr_min(bias_type bias,
 	 T const *ref,
 	 length_type ref_size,		// M
 	 stride_type ref_stride,
@@ -223,7 +196,7 @@ corr_min(bias_type   bias,
 	 length_type out_size,		// P
 	 stride_type out_stride)
 {
-  typedef typename Correlation_accum_trait<T>::sum_type sum_type;
+  typedef typename corr_accum_trait<T>::sum_type sum_type;
 
   for (index_type n=0; n<out_size; ++n)
   {
@@ -231,7 +204,7 @@ corr_min(bias_type   bias,
       
     for (index_type k=0; k<ref_size; ++k)
     {
-      sum += ref[k*ref_stride] * impl_conj(in[(n+k) * in_stride]);
+      sum += ref[k*ref_stride] * math::impl_conj(in[(n+k) * in_stride]);
     }
 
     if (bias == unbiased)
@@ -241,13 +214,7 @@ corr_min(bias_type   bias,
   }
 }
 
-
-/***********************************************************************
-  1-D Correlations (split)
-***********************************************************************/
-
 /// Perform 1-D correlation with full region of support.
-
 template <typename T>
 inline void
 corr_full(bias_type bias,
@@ -261,10 +228,10 @@ corr_full(bias_type bias,
 	  length_type       out_size,		// P
 	  stride_type       out_stride)
 {
-  assert(ref_size <= in_size);
+  OVXX_PRECONDITION(ref_size <= in_size);
 
-  typedef typename Correlation_accum_trait<std::complex<T> >::sum_type sum_type;
-  typedef Storage<split_complex, complex<T> > storage_type;
+  typedef typename corr_accum_trait<std::complex<T> >::sum_type sum_type;
+  typedef storage_traits<complex<T>, split_complex> storage;
 
   for (index_type n=0; n<out_size; ++n)
   {
@@ -277,8 +244,8 @@ corr_full(bias_type bias,
       if (n+k >= (ref_size-1) && n+k < in_size+(ref_size-1))
       {
 	sum = sum +
-	       storage_type::get(ref, k * ref_stride) *
-	       impl_conj(storage_type::get(in, pos * in_stride));
+	  storage::get(ref, k * ref_stride) *
+	  math::impl_conj(storage::get(in, pos * in_stride));
       }
     }
 
@@ -292,28 +259,26 @@ corr_full(bias_type bias,
 	sum /= sum_type(ref_size);
     }
       
-    storage_type::put(out, n * out_stride, sum);
+    storage::put(out, n * out_stride, sum);
   }
 }
 
-
 /// Perform 1-D correlation with same region of support.
-
 template <typename T>
 inline void
-corr_same(bias_type         bias,
+corr_same(bias_type bias,
 	  std::pair<T const *, T const *> ref,
-	  length_type       ref_size,		// M
-	  stride_type       ref_stride,
+	  length_type ref_size,		// M
+	  stride_type ref_stride,
 	  std::pair<T const *, T const *> in,
-	  length_type       in_size,		// N
-	  stride_type       in_stride,
+	  length_type in_size,		// N
+	  stride_type in_stride,
 	  std::pair<T*, T*> out,
-	  length_type       out_size,		// P
-	  stride_type       out_stride)
+	  length_type out_size,		// P
+	  stride_type out_stride)
 {
-  typedef typename Correlation_accum_trait<std::complex<T> >::sum_type sum_type;
-  typedef Storage<split_complex, complex<T> > storage_type;
+  typedef typename corr_accum_trait<std::complex<T> >::sum_type sum_type;
+  typedef storage_traits<complex<T>, split_complex> storage;
 
   for (index_type n=0; n<out_size; ++n)
   {
@@ -326,8 +291,8 @@ corr_same(bias_type         bias,
       if (n+k >= (ref_size/2) && n+k <  in_size + (ref_size/2))
       {
 	sum = sum +
-	       storage_type::get(ref, k * ref_stride) *
-	       impl_conj(storage_type::get(in, pos * in_stride));
+	  storage::get(ref, k * ref_stride) *
+	  math::impl_conj(storage::get(in, pos * in_stride));
       }
     }
     if (bias == unbiased)
@@ -346,29 +311,26 @@ corr_same(bias_type         bias,
       else
 	sum /= sum_type(ref_size);
     }
-    storage_type::put(out, n * out_stride, sum);
+    storage::put(out, n * out_stride, sum);
   }
 }
 
-
-
 /// Perform correlation with minimal region of support.
-
 template <typename T>
 inline void
-corr_min(bias_type         bias,
+corr_min(bias_type bias,
 	 std::pair<T const *, T const *> ref,
-	 length_type       ref_size,		// M
-	 stride_type       ref_stride,
+	 length_type ref_size,		// M
+	 stride_type ref_stride,
 	 std::pair<T const *, T const *> in,
-	 length_type       /*in_size*/,	// N
-	 stride_type       in_stride,
+	 length_type /*in_size*/,	// N
+	 stride_type in_stride,
 	 std::pair<T*, T*> out,
-	 length_type       out_size,		// P
-	 stride_type       out_stride)
+	 length_type out_size,		// P
+	 stride_type out_stride)
 {
-  typedef typename Correlation_accum_trait<std::complex<T> >::sum_type sum_type;
-  typedef Storage<split_complex, complex<T> > storage_type;
+  typedef typename corr_accum_trait<std::complex<T> >::sum_type sum_type;
+  typedef storage_traits<complex<T>, split_complex> storage;
 
   for (index_type n=0; n<out_size; ++n)
   {
@@ -377,28 +339,21 @@ corr_min(bias_type         bias,
     for (index_type k=0; k<ref_size; ++k)
     {
       sum = sum +
-             storage_type::get(ref, k*ref_stride) *
-	     impl_conj(storage_type::get(in, (n+k) * in_stride));
+	storage::get(ref, k*ref_stride) *
+	math::impl_conj(storage::get(in, (n+k) * in_stride));
     }
 
     if (bias == unbiased)
       sum /= sum_type(ref_size);
 
-    storage_type::put(out, n * out_stride, sum);
+    storage::put(out, n * out_stride, sum);
   }
 }
 
-
-
-/***********************************************************************
-  2-D Definitions
-***********************************************************************/
-
 /// Perform 2-D correlation with full region of support.
-
 template <typename T>
 inline void
-corr_base(bias_type   bias,
+corr_base(bias_type bias,
 	  T const *ref,
 	  length_type ref_rows,		// Mr
 	  length_type ref_cols,		// Mc
@@ -419,10 +374,10 @@ corr_base(bias_type   bias,
 	  stride_type out_row_stride,
 	  stride_type out_col_stride)
 {
-  assert(ref_rows <= in_rows);
-  assert(ref_cols <= in_cols);
+  OVXX_PRECONDITION(ref_rows <= in_rows);
+  OVXX_PRECONDITION(ref_cols <= in_cols);
 
-  typedef typename Correlation_accum_trait<T>::sum_type sum_type;
+  typedef typename corr_accum_trait<T>::sum_type sum_type;
 
   for (index_type r=0; r<out_rows; ++r)
   {
@@ -441,7 +396,7 @@ corr_base(bias_type   bias,
 	      c+cc >= col_shift && c+cc < in_cols+col_shift)
 	  {
 	    sum += ref[rr * ref_row_stride + cc * ref_col_stride] *
-                   impl_conj(in[rpos * in_row_stride + cpos * in_col_stride]);
+	      math::impl_conj(in[rpos * in_row_stride + cpos * in_col_stride]);
 	  }
 	}
       }
@@ -450,31 +405,29 @@ corr_base(bias_type   bias,
       {
 	sum_type scale = sum_type(1);
 
-	if (r < row_shift)     scale *= sum_type(r+ (ref_rows-row_shift));
+	if (r < row_shift)
+	  scale *= sum_type(r+ (ref_rows-row_shift));
 	else if (r >= in_rows - row_edge)
-                               scale *= sum_type(in_rows + row_shift - r);
-	else                   scale *= sum_type(ref_rows);
-
-	if (c < col_shift)     scale *= sum_type(c+ (ref_cols-col_shift));
+	  scale *= sum_type(in_rows + row_shift - r);
+	else
+	  scale *= sum_type(ref_rows);
+	if (c < col_shift)     
+	  scale *= sum_type(c+ (ref_cols-col_shift));
 	else if (c >= in_cols - col_edge)
-                               scale *= sum_type(in_cols + col_shift - c);
-	else                   scale *= sum_type(ref_cols);
-
+	  scale *= sum_type(in_cols + col_shift - c);
+	else
+	  scale *= sum_type(ref_cols);
 	sum /= scale;
       }
-      
       out[r * out_row_stride + c * out_col_stride] = sum;
     }
   }
 }
 
-
-
 /// Perform 2-D correlation with full region of support.
-
 template <typename T>
 inline void
-corr_full(bias_type   bias,
+corr_full(bias_type bias,
 	  T const *ref,
 	  length_type ref_rows,		// Mr
 	  length_type ref_cols,		// Mc
@@ -498,13 +451,10 @@ corr_full(bias_type   bias,
 	    out, out_rows, out_cols, out_row_stride, out_col_stride);
 }
 
-
-
 /// Perform 2-D correlation with same region of support.
-
 template <typename T>
 inline void
-corr_same(bias_type   bias,
+corr_same(bias_type bias,
 	  T const *ref,
 	  length_type ref_rows,		// Mr
 	  length_type ref_cols,		// Mc
@@ -528,13 +478,10 @@ corr_same(bias_type   bias,
 	    out, out_rows, out_cols, out_row_stride, out_col_stride);
 }
 
-
-
 /// Perform 2-D correlation with minimal region of support.
-
 template <typename T>
 inline void
-corr_min(bias_type   bias,
+corr_min(bias_type bias,
 	 T const *ref,
 	 length_type ref_rows,		// Mr
 	 length_type ref_cols,		// Mc
@@ -558,16 +505,10 @@ corr_min(bias_type   bias,
 	    out, out_rows, out_cols, out_row_stride, out_col_stride);
 }
 
-
-/***********************************************************************
-  2-D Definitions (split)
-***********************************************************************/
-
 /// Perform 2-D correlation with full region of support.
-
 template <typename T>
 inline void
-corr_base(bias_type   bias,
+corr_base(bias_type bias,
 	  std::pair<T const *, T const *> ref,
 	  length_type ref_rows,		// Mr
 	  length_type ref_cols,		// Mc
@@ -588,11 +529,11 @@ corr_base(bias_type   bias,
 	  stride_type out_row_stride,
 	  stride_type out_col_stride)
 {
-  assert(ref_rows <= in_rows);
-  assert(ref_cols <= in_cols);
+  OVXX_PRECONDITION(ref_rows <= in_rows);
+  OVXX_PRECONDITION(ref_cols <= in_cols);
 
-  typedef typename Correlation_accum_trait<complex<T> >::sum_type sum_type;
-  typedef Storage<split_complex, complex<T> > storage_type;
+  typedef typename corr_accum_trait<complex<T> >::sum_type sum_type;
+  typedef storage_traits<complex<T>, split_complex> storage;
 
   for (index_type r=0; r<out_rows; ++r)
   {
@@ -610,8 +551,8 @@ corr_base(bias_type   bias,
 	  if (r+rr >= row_shift && r+rr < in_rows+row_shift &&
 	      c+cc >= col_shift && c+cc < in_cols+col_shift)
 	  {
-	    sum += storage_type::get(ref,rr * ref_row_stride + cc * ref_col_stride) *
-                   impl_conj(storage_type::get(in,rpos * in_row_stride + cpos * in_col_stride));
+	    sum += storage::get(ref,rr * ref_row_stride + cc * ref_col_stride) *
+	      math::impl_conj(storage::get(in,rpos * in_row_stride + cpos * in_col_stride));
 	  }
 	}
       }
@@ -620,30 +561,30 @@ corr_base(bias_type   bias,
       {
 	sum_type scale = sum_type(1);
 
-	if (r < row_shift)     scale *= sum_type(r+ (ref_rows-row_shift));
+	if (r < row_shift)
+	  scale *= sum_type(r+ (ref_rows-row_shift));
 	else if (r >= in_rows - row_edge)
-                               scale *= sum_type(in_rows + row_shift - r);
-	else                   scale *= sum_type(ref_rows);
-
-	if (c < col_shift)     scale *= sum_type(c+ (ref_cols-col_shift));
+	  scale *= sum_type(in_rows + row_shift - r);
+	else
+	  scale *= sum_type(ref_rows);
+	if (c < col_shift)
+	  scale *= sum_type(c+ (ref_cols-col_shift));
 	else if (c >= in_cols - col_edge)
-                               scale *= sum_type(in_cols + col_shift - c);
-	else                   scale *= sum_type(ref_cols);
-
+	  scale *= sum_type(in_cols + col_shift - c);
+	else
+	  scale *= sum_type(ref_cols);
 	sum /= scale;
       }
       
-      storage_type::put(out,r * out_row_stride + c * out_col_stride,sum);
+      storage::put(out,r * out_row_stride + c * out_col_stride,sum);
     }
   }
 }
 
-
 /// Perform 2-D correlation with minimal region of support.
-
 template <typename T>
 inline void
-corr_min(bias_type   bias,
+corr_min(bias_type bias,
 	 std::pair<T const *, T const *> ref,
 	 length_type ref_rows,		// Mr
 	 length_type ref_cols,		// Mc
@@ -667,10 +608,198 @@ corr_min(bias_type   bias,
 	    out, out_rows, out_cols, out_row_stride, out_col_stride);
 }
 
+template <dimension_type      D,
+	  support_region_type R,
+	  typename            T,
+	  unsigned            N,
+          alg_hint_type       H>
+class Correlation
+{
+  static dimension_type const dim = D;
 
+public:
+  static support_region_type const supprt  = R;
 
-} // namespace vsip::impl
+  Correlation(Domain<dim> const &ref_size,
+              Domain<dim> const &input_size)
+    VSIP_THROW((std::bad_alloc))
+  : ref_size_(normalize(ref_size)),
+    input_size_(normalize(input_size)),
+    output_size_(conv_output_size(R, ref_size_, input_size_, 1)),
+    in_buffer_(input_size_.size()),
+    out_buffer_(output_size_.size()),
+    ref_buffer_(ref_size_.size())
+  {}
+  Correlation(Correlation const&) VSIP_NOTHROW;
+  Correlation& operator=(Correlation const&) VSIP_NOTHROW;
+  ~Correlation() VSIP_NOTHROW {}
 
-} // namespace vsip
+  Domain<dim> const &reference_size() const VSIP_NOTHROW { return ref_size_;}
+  Domain<dim> const &input_size() const VSIP_NOTHROW { return input_size_;}
+  Domain<dim> const &output_size() const VSIP_NOTHROW { return output_size_;}
 
-#endif // VSIP_CORE_SIGNAL_CORR_COMMON_HPP
+  template <typename B1, typename B2, typename B3>
+  void
+  correlate(bias_type bias, const_Vector<T, B1> ref,
+	    const_Vector<T, B2> in, Vector<T, B3> out)
+    VSIP_NOTHROW;
+
+  template <typename B1, typename B2, typename B3>
+  void
+  correlate(bias_type bias, const_Matrix<T, B1> ref,
+	    const_Matrix<T, B2> in, Matrix<T, B3> out)
+    VSIP_NOTHROW;
+
+private:
+  Domain<dim> ref_size_;
+  Domain<dim> input_size_;
+  Domain<dim> output_size_;
+
+  aligned_array<T> in_buffer_;
+  aligned_array<T> out_buffer_;
+  aligned_array<T> ref_buffer_;
+};
+
+template <dimension_type      D,
+	  support_region_type R,
+	  typename            T,
+	  unsigned            Nu,
+          alg_hint_type       H>
+template <typename B1, typename B2, typename B3>
+void
+Correlation<D, R, T, Nu, H>::correlate
+(bias_type bias, const_Vector<T, B1> ref,
+ const_Vector<T, B2> in, Vector<T, B3> out)
+  VSIP_NOTHROW
+{
+  length_type const M = this->ref_size_[0].size();
+  length_type const N = this->input_size_[0].size();
+  length_type const P = this->output_size_[0].size();
+
+  OVXX_PRECONDITION(M == ref.size());
+  OVXX_PRECONDITION(N == in.size());
+  OVXX_PRECONDITION(P == out.size());
+
+  typedef typename get_block_layout<B1>::type L1;
+  typedef typename get_block_layout<B2>::type L2;
+  typedef typename get_block_layout<B3>::type L3;
+
+  typedef Layout<1, any_type, any_packing, array> req_layout;
+
+  typedef typename adjust_layout<req_layout, L1>::type use_l1;
+  typedef typename adjust_layout<req_layout, L2>::type use_l2;
+  typedef typename adjust_layout<req_layout, L3>::type use_l3;
+
+  typedef dda::Data<B1, dda::in, use_l1> ref_data_type;
+  typedef dda::Data<B2, dda::in, use_l2> in_data_type;
+  typedef dda::Data<B3, dda::out, use_l3> out_data_type;
+
+  ref_data_type ref_data(ref.block(), ref_buffer_.get());
+  in_data_type in_data(in.block(), in_buffer_.get());
+  out_data_type out_data(out.block(), out_buffer_.get());
+
+  if (R == support_full)
+  {
+    corr_full<T>(bias, ref_data.ptr(), M, ref_data.stride(0),
+		 in_data.ptr(), N, in_data.stride(0),
+		 out_data.ptr(), P, out_data.stride(0));
+  }
+  else if (R == support_same)
+  {
+    corr_same<T>(bias, ref_data.ptr(), M, ref_data.stride(0),
+		 in_data.ptr(), N, in_data.stride(0),
+		 out_data.ptr(), P, out_data.stride(0));
+  }
+  else // (R == support_min)
+  {
+    corr_min<T>(bias, ref_data.ptr(), M, ref_data.stride(0),
+		in_data.ptr(), N, in_data.stride(0),
+		out_data.ptr(), P, out_data.stride(0));
+  }
+}
+
+template <dimension_type      D,
+	  support_region_type R,
+	  typename            T,
+	  unsigned            N,
+          alg_hint_type       H>
+template <typename B1, typename B2, typename B3>
+void
+Correlation<D, R, T, N, H>::correlate
+(bias_type bias, const_Matrix<T, B1> ref,
+ const_Matrix<T, B2> in, Matrix<T, B3> out)
+  VSIP_NOTHROW
+{
+  length_type const Mr = this->ref_size_[0].size();
+  length_type const Mc = this->ref_size_[1].size();
+  length_type const Nr = this->input_size_[0].size();
+  length_type const Nc = this->input_size_[1].size();
+  length_type const Pr = this->output_size_[0].size();
+  length_type const Pc = this->output_size_[1].size();
+
+  OVXX_PRECONDITION(Mr == ref.size(0));
+  OVXX_PRECONDITION(Mc == ref.size(1));
+  OVXX_PRECONDITION(Nr == in.size(0));
+  OVXX_PRECONDITION(Nc == in.size(1));
+  OVXX_PRECONDITION(Pr == out.size(0));
+  OVXX_PRECONDITION(Pc == out.size(1));
+
+  typedef typename get_block_layout<B1>::type L1;
+  typedef typename get_block_layout<B2>::type L2;
+  typedef typename get_block_layout<B3>::type L3;
+
+  typedef Layout<2, any_type, any_packing, array> req_layout;
+
+  typedef typename adjust_layout<req_layout, L1>::type use_l1;
+  typedef typename adjust_layout<req_layout, L2>::type use_l2;
+  typedef typename adjust_layout<req_layout, L3>::type use_l3;
+
+  typedef dda::Data<B1, dda::in, use_l1> ref_data_type;
+  typedef dda::Data<B2, dda::in, use_l2> in_data_type;
+  typedef dda::Data<B3, dda::out, use_l3> out_data_type;
+
+  ref_data_type ref_data(ref.block(), ref_buffer_.get());
+  in_data_type in_data(in.block(), in_buffer_.get());
+  out_data_type out_data(out.block(), out_buffer_.get());
+
+  if (R == support_full)
+  {
+    corr_full<T>(bias,
+		 ref_data.ptr(), Mr, Mc, ref_data.stride(0), ref_data.stride(1),
+		 in_data.ptr(), Nr, Nc, in_data.stride(0), in_data.stride(1),
+		 out_data.ptr(), Pr, Pc, out_data.stride(0), out_data.stride(1));
+  }
+  else if (R == support_same)
+  {
+    corr_same<T>(bias,
+		 ref_data.ptr(), Mr, Mc, ref_data.stride(0), ref_data.stride(1),
+		 in_data.ptr(), Nr, Nc, in_data.stride(0), in_data.stride(1),
+		 out_data.ptr(), Pr, Pc, out_data.stride(0), out_data.stride(1));
+  }
+  else // (R == support_min)
+  {
+    corr_min<T>(bias,
+		ref_data.ptr(), Mr, Mc, ref_data.stride(0), ref_data.stride(1),
+		in_data.ptr(), Nr, Nc, in_data.stride(0), in_data.stride(1),
+		out_data.ptr(), Pr, Pc, out_data.stride(0), out_data.stride(1));
+  }
+}
+
+} // namespace ovxx::signal
+
+namespace dispatcher
+{
+template <dimension_type      D,
+          support_region_type R,
+          typename            T,
+	  unsigned            N,
+          alg_hint_type       H>
+struct Evaluator<op::corr<D, R, T, N, H>, be::generic>
+{
+  static bool const ct_valid = true;
+  typedef signal::Correlation<D, R, T, N, H> backend_type;
+};
+} // namespace ovxx::dispatcher
+} // namespace ovxx
+
+#endif

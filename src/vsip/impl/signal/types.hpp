@@ -1,17 +1,13 @@
 //
-// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_SIGNAL_TYPES
-#define VSIP_CORE_SIGNAL_TYPES
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
+#ifndef vsip_impl_signal_types_hpp_
+#define vsip_impl_signal_types_hpp_
 
 namespace vsip
 {
@@ -44,16 +40,12 @@ enum bias_type
   unbiased
 };
 
-enum obj_state {
+enum obj_state 
+{
   state_no_save,
   state_save
 };
 
 } // namespace vsip
 
-namespace vsip_csl
-{
-using namespace vsip;
-}
-
-#endif // VSIP_CORE_SIGNAL_TYPES
+#endif

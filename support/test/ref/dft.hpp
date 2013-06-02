@@ -9,9 +9,6 @@
 #ifndef test_ref_dft_hpp_
 #define test_ref_dft_hpp_
 
-#include <vsip/core/config.hpp>
-#include <cassert>
-
 #include <vsip/complex.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/math.hpp>

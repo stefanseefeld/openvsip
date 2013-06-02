@@ -8,23 +8,20 @@
 
 #define VERBOSE 0
 
+#include <vsip/initfin.hpp>
+#include <vsip/support.hpp>
+#include <vsip/signal.hpp>
+#include <vsip/math.hpp>
+#include <vsip/matrix.hpp>
+#include <test.hpp>
+#include <test/ref/dft.hpp>
+
 #if VERBOSE
 #  include <iostream>
 #  include <iomanip>
 #endif
 
 #include <cmath>
-
-#include <vsip/initfin.hpp>
-#include <vsip/support.hpp>
-#include <vsip/signal.hpp>
-#include <vsip/math.hpp>
-#include <vsip/matrix.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
-#include <vsip_csl/error_db.hpp>
-#include <vsip_csl/ref_dft.hpp>
 
 #if VSIP_IMPL_SAL_FFT
 #  define TEST_NON_REALCOMPLEX 0
@@ -34,17 +31,7 @@
 #  define TEST_NON_POWER_OF_2  1
 #endif
 
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-using namespace std;
-using namespace vsip;
-using vsip_csl::error_db;
-namespace ref = vsip_csl::ref;
-
+using namespace ovxx;
 
 template <typename View1,
 	  typename View2>
@@ -135,7 +122,7 @@ test_by_ref_x(length_type N)
 
   setup_data_x(in);
 
-  ref::dft_x(in, ref, -1);
+  test::ref::dft_x(in, ref, -1);
 
   f_fftm(in, out);
 
@@ -189,7 +176,7 @@ test_by_val_x(length_type N)
 
   setup_data_x(in);
 
-  ref::dft_x(in, ref, -1);
+  test::ref::dft_x(in, ref, -1);
   out = f_fftm(in);
   inv = i_fftm(out);
 
@@ -259,7 +246,7 @@ test_by_ref_y(length_type N)
 
   setup_data_y(in);
 
-  ref::dft_y(in, ref, -1);
+  test::ref::dft_y(in, ref, -1);
 
 #if 0
   cout.precision(3);
@@ -323,7 +310,7 @@ test_by_val_y(length_type N)
   Matrix<T> inv(N, 5);
 
   setup_data_y(in);
-  ref::dft_y(in, ref, -1);
+  test::ref::dft_y(in, ref, -1);
   out = f_fftm(in);
   inv = i_fftm(out);
 
@@ -365,7 +352,7 @@ test_real(const length_type N)
   Matrix<T> inv(N, 5);
 
   setup_data_y(in);
-  ref::dft_y_real(in, ref);
+  test::ref::dft_y_real(in, ref);
   out = f_fftm(in);
   inv = i_fftm(out);
 
@@ -376,7 +363,7 @@ test_real(const length_type N)
 
 template <typename T>
 void
-test()
+run_tests()
 {
   // Test powers-of-2
   test_by_ref_x<complex<T> >(64);
@@ -419,16 +406,16 @@ main(int argc, char** argv)
   vsipl init(argc, argv);
 
 #if VSIP_IMPL_PROVIDE_FFT_FLOAT
-  test<float>();
+  run_tests<float>();
 #endif
 
 #if VSIP_IMPL_PROVIDE_FFT_DOUBLE
-  test<double>();
+  run_tests<double>();
 #endif
 
 #if VSIP_IMPL_PROVIDE_FFT_LONG_DOUBLE
 #  if ! defined(VSIP_IMPL_IPP_FFT)
-  test<long double>();
+  run_tests<long double>();
 #  endif /* VSIP_IMPL_IPP_FFT */
 #endif
 

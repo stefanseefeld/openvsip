@@ -6,6 +6,7 @@
 // license contained in the accompanying LICENSE.BSD file.
 
 #include <test/assert.hpp>
+#include <test/diff.hpp>
 #include <ovxx/equal.hpp>
 
 using namespace test;

@@ -10,7 +10,7 @@
 #include <vsip/support.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/vector.hpp>
-#include <vsip_csl/test.hpp>
+#include <test.hpp>
 
 #if VSIP_IMPL_SAL_FFT
 #  define TEST_NON_POWER_OF_2  0
@@ -18,8 +18,7 @@
 #  define TEST_NON_POWER_OF_2  1
 #endif
 
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
 
 /***********************************************************************

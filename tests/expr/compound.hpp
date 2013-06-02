@@ -746,9 +746,9 @@ test_nonelementwise_vectors(length_type const N)
     cr0 = y.get(i0);
     cr1 = y.get(i1);
     cr2 = y.get(i2);
-    Check<cview_type, 1>::eval(z, i0, cr0, __LINE__);
-    Check<cview_type, 1>::eval(z, i1, cr1, __LINE__);
-    Check<cview_type, 1>::eval(z, i2, cr2, __LINE__);
+    Check<cview_type>::eval(z, i0, cr0, __LINE__);
+    Check<cview_type>::eval(z, i1, cr1, __LINE__);
+    Check<cview_type>::eval(z, i2, cr2, __LINE__);
 
     // unary(ne(unary(view)))
     z = mag(f_fft(sq(a)));
@@ -758,9 +758,9 @@ test_nonelementwise_vectors(length_type const N)
     cr0 = y.get(i0);
     cr1 = y.get(i1);
     cr2 = y.get(i2);
-    Check<cview_type, 1>::eval(z, i0, cr0, __LINE__);
-    Check<cview_type, 1>::eval(z, i1, cr1, __LINE__);
-    Check<cview_type, 1>::eval(z, i2, cr2, __LINE__);
+    Check<cview_type>::eval(z, i0, cr0, __LINE__);
+    Check<cview_type>::eval(z, i1, cr1, __LINE__);
+    Check<cview_type>::eval(z, i2, cr2, __LINE__);
 
     // ne(binary(ne(unary(view)), view))
     z = i_fft(f_fft(sq(a)) * b);
@@ -771,9 +771,9 @@ test_nonelementwise_vectors(length_type const N)
     cr0 = y.get(i0);
     cr1 = y.get(i1);
     cr2 = y.get(i2);
-    Check<cview_type, 1>::eval(z, i0, cr0, __LINE__);
-    Check<cview_type, 1>::eval(z, i1, cr1, __LINE__);
-    Check<cview_type, 1>::eval(z, i2, cr2, __LINE__);
+    Check<cview_type>::eval(z, i0, cr0, __LINE__);
+    Check<cview_type>::eval(z, i1, cr1, __LINE__);
+    Check<cview_type>::eval(z, i2, cr2, __LINE__);
 
     // ne(binary(view, ne(unary(view))))
     z = i_fft(b * f_fft(sq(a)));
@@ -784,9 +784,9 @@ test_nonelementwise_vectors(length_type const N)
     cr0 = y.get(i0);
     cr1 = y.get(i1);
     cr2 = y.get(i2);
-    Check<cview_type, 1>::eval(z, i0, cr0, __LINE__);
-    Check<cview_type, 1>::eval(z, i1, cr1, __LINE__);
-    Check<cview_type, 1>::eval(z, i2, cr2, __LINE__);
+    Check<cview_type>::eval(z, i0, cr0, __LINE__);
+    Check<cview_type>::eval(z, i1, cr1, __LINE__);
+    Check<cview_type>::eval(z, i2, cr2, __LINE__);
 
     // ne(binary(ne(unary(view)), view)), real filter values
     z = i_fft(f_fft(sq(a)) * r);
@@ -797,9 +797,9 @@ test_nonelementwise_vectors(length_type const N)
     cr0 = y.get(i0);
     cr1 = y.get(i1);
     cr2 = y.get(i2);
-    Check<cview_type, 1>::eval(z, i0, cr0, __LINE__);
-    Check<cview_type, 1>::eval(z, i1, cr1, __LINE__);
-    Check<cview_type, 1>::eval(z, i2, cr2, __LINE__);
+    Check<cview_type>::eval(z, i0, cr0, __LINE__);
+    Check<cview_type>::eval(z, i1, cr1, __LINE__);
+    Check<cview_type>::eval(z, i2, cr2, __LINE__);
   }
 
 
@@ -852,9 +852,9 @@ test_nonelementwise_vectors(length_type const N)
     cr0 = yy.get(i0/2);  // index is reduced to stay in valid range
     cr1 = yy.get(i1/2);  //   due to there only being N/2-1 samples.
     cr2 = yy.get(i2/2);
-    Check<cview_type, 1>::eval(zz, i0/2, cr0, __LINE__);
-    Check<cview_type, 1>::eval(zz, i1/2, cr1, __LINE__);
-    Check<cview_type, 1>::eval(zz, i2/2, cr2, __LINE__);
+    Check<cview_type>::eval(zz, i0/2, cr0, __LINE__);
+    Check<cview_type>::eval(zz, i1/2, cr1, __LINE__);
+    Check<cview_type>::eval(zz, i2/2, cr2, __LINE__);
 
     // ne(binary(ne(unary(view)), view))
     z = i_fft(f_fft(sq(a)) * b);
@@ -865,9 +865,9 @@ test_nonelementwise_vectors(length_type const N)
     r0 = y.get(i0);
     r1 = y.get(i1);
     r2 = y.get(i2);
-    Check<view_type, 1>::eval(z, i0, r0, __LINE__);
-    Check<view_type, 1>::eval(z, i1, r1, __LINE__);
-    Check<view_type, 1>::eval(z, i2, r2, __LINE__);
+    Check<view_type>::eval(z, i0, r0, __LINE__);
+    Check<view_type>::eval(z, i1, r1, __LINE__);
+    Check<view_type>::eval(z, i2, r2, __LINE__);
   }
 }
 

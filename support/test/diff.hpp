@@ -10,11 +10,12 @@
 #define test_diff_hpp_
 
 #include <vsip/math.hpp>
-#include <vsip/core/view_cast.hpp>
+#include <ovxx/view/cast.hpp>
 #include <algorithm>
 
 namespace test
 {
+using namespace ovxx;
 namespace detail
 {
 
@@ -31,7 +32,7 @@ template <> struct diff_traits<signed int>   { typedef float type;};
 template <typename T>
 struct diff_traits<std::complex<T> >
 {
-  typedef std::complex<typename diff_traits<T>::type> type;
+  typedef complex<typename diff_traits<T>::type> type;
 };
 
 } // namespace ovxx::test::detail
@@ -78,10 +79,10 @@ diff(V1<T1, B1> v1, V2<T2, B2> v2)
 
   Index<dim> idx;
 
-  typename vsip::impl::View_cast<p1_type, V1, T1, B1>::view_type
-    pv1 = vsip::impl::view_cast<p1_type>(v1);
-  typename vsip::impl::View_cast<p2_type, V2, T2, B2>::view_type
-    pv2 = vsip::impl::view_cast<p2_type>(v2);
+  typename ovxx::detail::view_cast<p1_type, V1, T1, B1>::view_type
+    pv1 = view_cast<p1_type>(v1);
+  typename ovxx::detail::view_cast<p2_type, V2, T2, B2>::view_type
+    pv2 = view_cast<p2_type>(v2);
 
   double refmax1 = maxval(magsq(pv1), idx);
   double refmax2 = maxval(magsq(pv2), idx);

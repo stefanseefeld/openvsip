@@ -1,24 +1,18 @@
 //
-// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_SIGNAL_HISTO_HPP
-#define VSIP_CORE_SIGNAL_HISTO_HPP
+#ifndef vsip_impl_signal_histo_hpp_
+#define vsip_impl_signal_histo_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/dispatch.hpp>
-#ifndef VSIP_IMPL_REF_IMPL
-# include <vsip/opt/dispatch.hpp>
-# ifdef VSIP_IMPL_CBE_SDK
-#  include <vsip/opt/cbe/ppu/signal.hpp>
-# endif
-#endif
+#include <ovxx/dispatch.hpp>
 
 namespace vsip
 {
@@ -73,19 +67,16 @@ struct Histogram_accumulator<2>
 } // namespace vsip::impl
 } // namespace vsip
 
-namespace vsip_csl
+namespace ovxx
 {
 namespace dispatcher
 {
-#ifndef VSIP_IMPL_REF_IMPL
 template<>
 struct List<op::hist>
 {
-  typedef Make_type_list<be::user,
-			 be::cbe_sdk,
+  typedef make_type_list<be::user,
 			 be::generic>::type type;
 };
-#endif
 
 template <typename T, typename HBlock, typename DBlock>
 struct Evaluator<op::hist, be::generic, void(T, T, HBlock &, DBlock const &)>
@@ -99,8 +90,8 @@ struct Evaluator<op::hist, be::generic, void(T, T, HBlock &, DBlock const &)>
   }
 };
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
 namespace vsip
 {
@@ -119,8 +110,8 @@ public:
       max_(max_value),
       hist_(num_bin, 0)
   {
-    assert(min_ < max_);
-    assert(num_bin >= 3);
+    OVXX_PRECONDITION(min_ < max_);
+    OVXX_PRECONDITION(num_bin >= 3);
   }
 
   /// This constructor, albeit not required by the VSIPL++ spec, is
@@ -134,8 +125,8 @@ public:
       max_(max_value),
       hist_(hist.size())
   {
-    assert(min_ < max_);
-    assert(hist_.size() >= 3);
+    OVXX_PRECONDITION(min_ < max_);
+    OVXX_PRECONDITION(hist_.size() >= 3);
     hist_ = hist;
   }
 
@@ -148,17 +139,12 @@ public:
   operator()(const_Vector<T, Block> input, bool accumulate = false)
     VSIP_NOTHROW
   {
-    namespace d = vsip_csl::dispatcher;
+    namespace d = ovxx::dispatcher;
 
     if (accumulate == false) hist_ = 0;
 
-#ifdef VSIP_IMPL_REF_IMPL
-    Evaluator<d::op::hist, be::generic, void(T, T, hist_block_type &, Block const&)>::
-      exec(min_, max_, hist_.block(), input.block());
-#else
-    vsip_csl::dispatch<d::op::hist, void, T, T, hist_block_type &, Block const &>
+    ovxx::dispatch<d::op::hist, void, T, T, hist_block_type &, Block const &>
       (min_, max_, hist_.block(), input.block());
-#endif
     return hist_;
   }
 
@@ -167,17 +153,12 @@ public:
   operator()(const_Matrix<T, Block> input, bool accumulate = false)
     VSIP_NOTHROW
   {
-    namespace d = vsip_csl::dispatcher;
+    namespace d = ovxx::dispatcher;
 
     if (accumulate == false) hist_ = 0;
 
-#ifdef VSIP_IMPL_REF_IMPL
-    Evaluator<d::op::hist, be::generic, void(T, T, hist_block_type &, Block const&)>::
-      exec(min_, max_, hist_.block(), input.block());
-#else
-    vsip_csl::dispatch<d::op::hist, void, T, T, hist_block_type &, Block const &>
+    ovxx::dispatch<d::op::hist, void, T, T, hist_block_type &, Block const &>
       (min_, max_, hist_.block(), input.block());
-#endif
 
     return hist_;
   }
@@ -190,4 +171,4 @@ private:
 
 } // namespace vsip
 
-#endif // VSIP_CORE_SIGNAL_HISTO_HPP
+#endif

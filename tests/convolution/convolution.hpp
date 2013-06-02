@@ -6,8 +6,8 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#ifndef TEST_CONVOLUTION_CONVOLUTION_HPP
-#define TEST_CONVOLUTION_CONVOLUTION_HPP
+#ifndef convolution_convolution_hpp_
+#define convolution_convolution_hpp_
 
 #define VERBOSE 0
 
@@ -16,28 +16,12 @@
 #include <vsip/initfin.hpp>
 #include <vsip/random.hpp>
 #include <vsip/parallel.hpp>
-#include <vsip/core/metaprogramming.hpp>
+#include <test.hpp>
+#include <test/ref/conv.hpp>
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/ref_conv.hpp>
-#include <vsip_csl/error_db.hpp>
-
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#endif
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
 double const ERROR_THRESH = -70;
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
 
 length_type
 expected_kernel_size(
@@ -159,7 +143,7 @@ test_conv_nonsym(
     exp.put(i, T(k1) * val1 + T(k2) * val2);
   }
 
-  double error = error_db(out, exp);
+  double error = test::diff(out, exp);
 #if VERBOSE
   std::cout << "error-nonsym: " << error
 	    << "  M/N/P " << M << "/" << N << "/" << P
@@ -190,9 +174,6 @@ test_conv_base(
   length_type              D,		// decimation
   length_type const        n_loop = 2)
 {
-  using vsip::impl::conditional;
-  using vsip::impl::is_global_map;
-
   typedef Convolution<const_Vector, symmetry, support, T> conv_type;
 
   length_type M = expected_kernel_size(symmetry, coeff.size());
@@ -217,7 +198,7 @@ test_conv_base(
   // If 'out's map is global, make it global_map.
   // Otherwise, make it a local_map.
   typedef typename
-          conditional<is_global_map<typename Block2::map_type>::value,
+    conditional<parallel::is_global_map<typename Block2::map_type>::value,
 		      Replicated_map<1>,
 		      Local_map>::type
           map_type;
@@ -236,7 +217,7 @@ test_conv_base(
 
     // Check result
     Index<1> idx;
-    double error   = error_db(out, exp);
+    double error   = test::diff(out, exp);
     double maxdiff = maxval(magsq(out - exp), idx);
 
 #if VERBOSE
@@ -349,7 +330,7 @@ test_conv_dist(
   view_type out(P, T(100), map);
 
   Rand<T> rgen(0);
-  vsip::impl::assign_local(coeff, rgen.randu(M));
+  parallel::assign_local(coeff, rgen.randu(M));
 
   test_conv_base<symmetry, support>(in, out, coeff, D, n_loop);
 }
@@ -505,4 +486,4 @@ cases(bool rand)
   }
 }
 
-#endif // TEST_CONVOLUTION_CONVOLUTION_HPP
+#endif

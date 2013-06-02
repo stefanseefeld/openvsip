@@ -10,20 +10,11 @@
 #include <vsip/signal.hpp>
 #include <vsip/random.hpp>
 #include <vsip/initfin.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
+#include <test.hpp>
 
 #define VERBOSE 0
 
-using namespace std;
-using namespace vsip;
-using vsip_csl::equal;
-using vsip_csl::operator<<;
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 length_type expected_output_size(
   support_region_type supp,

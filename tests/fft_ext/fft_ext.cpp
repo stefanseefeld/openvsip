@@ -15,16 +15,9 @@
 #include <vsip/support.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/math.hpp>
-#include <vsip_csl/test.hpp>
+#include <test.hpp>
 
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 /// Possible types of FFT
 enum fft_type
@@ -120,10 +113,10 @@ fft_by_value(Vector<T1> in, Vector<T2> test, scalar_f scale)
 template<typename T>
 void test_fft_cc (char *filename)
 {
-  ifstream ifile(filename, ios::in);
+  std::ifstream ifile(filename, std::ios::in);
   if (ifile.fail()) 
   {
-    cerr << "Failed to open file " << filename << endl;
+    std::cerr << "Failed to open file " << filename << std::endl;
     test_assert(0);
     return;
   }
@@ -135,7 +128,7 @@ void test_fft_cc (char *filename)
 
   // first line contains three values separated by spaces
   ifile.getline(line, sizeof(line));
-  istringstream (line) >> size >> scale >> ntimes; 
+  std::istringstream (line) >> size >> scale >> ntimes; 
 
   Vector<complex<T> > input(size);
   Vector<complex<T> > expected(size);
@@ -147,13 +140,13 @@ void test_fft_cc (char *filename)
   for ( i = 0; i < size; ++i )
   {
     ifile.getline(line, sizeof(line), ',');
-    istringstream (line) >> val1;
+    std::istringstream (line) >> val1;
     
     ifile.getline(line, sizeof(line), ',');
-    istringstream (line) >> val2 >> val3;
+    std::istringstream (line) >> val2 >> val3;
     
     ifile.getline(line, sizeof(line));
-    istringstream (line) >> val4;
+    std::istringstream (line) >> val4;
     
     input.put( i, complex<float>(val1, val2) );
     expected.put( i, complex<float>(val3, val4) );
@@ -170,10 +163,10 @@ void test_fft_cc (char *filename)
 template<typename T>
 void test_fft_cr (char *filename)
 {
-  ifstream ifile(filename, ios::in);
+  std::ifstream ifile(filename, std::ios::in);
   if (ifile.fail()) 
   {
-    cerr << "Failed to open file " << filename << endl;
+    std::cerr << "Failed to open file " << filename << std::endl;
     test_assert(0);
     return;
   }
@@ -184,7 +177,7 @@ void test_fft_cr (char *filename)
   char line[120];
 
   ifile.getline(line, sizeof(line));
-  istringstream (line) >> size >> scale >> ntimes; 
+  std::istringstream (line) >> size >> scale >> ntimes; 
 
   test_assert( (size / 2) * 2 == size );
 
@@ -198,10 +191,10 @@ void test_fft_cr (char *filename)
   for ( i = 0; i < size; ++i )
   {
     ifile.getline(line, sizeof(line), ',');
-    istringstream (line) >> val1;
+    std::istringstream (line) >> val1;
     
     ifile.getline(line, sizeof(line));
-    istringstream (line) >> val2 >> val3;
+    std::istringstream (line) >> val2 >> val3;
     val4 = 0;
     
     if ( i < size / 2 + 1 )
@@ -220,10 +213,10 @@ void test_fft_cr (char *filename)
 template<typename T>
 void test_fft_rc (char *filename)
 {
-  ifstream ifile(filename, ios::in);
+  std::ifstream ifile(filename, std::ios::in);
   if (ifile.fail()) 
   {
-    cerr << "Failed to open file " << filename << endl;
+    std::cerr << "Failed to open file " << filename << std::endl;
     test_assert(0);
     return;
   }
@@ -234,7 +227,7 @@ void test_fft_rc (char *filename)
   char line[120];
 
   ifile.getline(line, sizeof(line));
-  istringstream (line) >> size >> scale >> ntimes; 
+  std::istringstream (line) >> size >> scale >> ntimes; 
 
   test_assert( (size / 2) * 2 == size );
 
@@ -248,11 +241,11 @@ void test_fft_rc (char *filename)
   for ( i = 0; i < size; ++i )
   {
     ifile.getline(line, sizeof(line), ',');
-    istringstream (line) >> val1 >> val3;
+    std::istringstream (line) >> val1 >> val3;
     val2 = 0;
     
     ifile.getline(line, sizeof(line));
-    istringstream (line) >> val4;
+    std::istringstream (line) >> val4;
     
     input.put( i, T(val1) );
     if ( i < size / 2 + 1 )

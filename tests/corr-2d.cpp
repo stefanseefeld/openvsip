@@ -11,27 +11,12 @@
 #include <vsip/random.hpp>
 #include <vsip/selgen.hpp>
 #include <vsip/initfin.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/ref_corr.hpp>
-#include <vsip_csl/error_db.hpp>
+#include <test.hpp>
+#include <test/ref/corr.hpp>
 
 #define VERBOSE 0
 
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#endif
-
-using namespace std;
-using namespace vsip;
-namespace ref = vsip_csl::ref;
-using vsip_csl::error_db;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 /// Test general 1-D correlation.
 
@@ -44,7 +29,7 @@ test_corr(
   Domain<2> const&         N,		// input size
   length_type const        n_loop = 3)
 {
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
   typedef Correlation<const_Matrix, support, T> corr_type;
 
   length_type Mr = M[0].size();
@@ -52,8 +37,8 @@ test_corr(
   length_type Nr = N[0].size();
   length_type Nc = N[1].size();
 
-  length_type const Pr = ref::corr_output_size(support, Mr, Nr);
-  length_type const Pc = ref::corr_output_size(support, Mc, Nc);
+  length_type const Pr = test::ref::corr_output_size(support, Mr, Nr);
+  length_type const Pc = test::ref::corr_output_size(support, Mc, Nc);
 
   corr_type corr(M, N);
 
@@ -99,7 +84,7 @@ test_corr(
 
     ref::corr(bias, support, ref, in, chk);
 
-    double error = error_db(out, chk);
+    double error = test::diff(out, chk);
 
 #if VERBOSE
     if (error > -100)
