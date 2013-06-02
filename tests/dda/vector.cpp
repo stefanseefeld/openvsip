@@ -16,11 +16,6 @@
 
 using namespace vsip;
 
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
 template <typename T>
 void
 vector_test(Domain<1> const& dom)
@@ -40,7 +35,7 @@ void
 vector_strided_test(Domain<1> const& dom)
 {
   typedef vsip::Layout<1, row1_type, vsip::dense, C> layout_type;
-  typedef vsip::impl::Strided<1, T, layout_type> block_type;
+  typedef ovxx::Strided<1, T, layout_type> block_type;
   typedef Vector<T, block_type> view_type;
 
   view_type view(dom[0].size());
@@ -56,8 +51,7 @@ test_for_type()
 {
   vector_test<T>(Domain<1>(7));
 
-  vector_strided_test<T, vsip::interleaved_complex>(Domain<1>(7));
-  vector_strided_test<T, vsip::split_complex>(Domain<1>(7));
+  vector_strided_test<T, vsip::array>(Domain<1>(7));
 }
 
 
@@ -73,6 +67,7 @@ main(int argc, char** argv)
 #else
   test_for_type<float>();
   test_for_type<complex<float> >();
+  vector_strided_test<complex<float>, vsip::split_complex>(Domain<1>(7));
 #endif
 
   return 0;

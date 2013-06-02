@@ -17,17 +17,12 @@
 #include <vsip/support.hpp>
 #include <vsip/dense.hpp>
 #include <vsip/vector.hpp>
-#include <vsip_csl/test.hpp>
+#include "test.hpp"
 #include "output.hpp"
 
 using namespace std;
 using namespace vsip;
-using vsip_csl::equal;
-
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
+using ovxx::equal;
 
 // Dummy interleaved FFT function, passes input through to output.
 
@@ -94,8 +89,8 @@ public:
     Vector      <T, Block2> vout)
   {
     typedef vsip::Layout<1, row1_type,
-      vsip::unit_stride, vsip::interleaved_complex>
-		LP;
+			 vsip::unit_stride, vsip::array>
+      LP;
     typedef vsip::dda::Data<Block1, dda::in, LP> layout1;
     typedef vsip::dda::Data<Block2, dda::out, LP> layout2;
 
@@ -122,14 +117,14 @@ public:
       cout << "  access_type<LP>(vout.block()) = "
 	   <<    access_type<LP>(vout.block()) << endl;
       
-      cout << "  mem_required<LP>(vin.block()) = "
-	   <<    vsip::dda::impl::mem_required<LP>(vin.block()) << endl;
-      cout << "  mem_required<LP>(vout.block()) = "
-	   <<    vsip::dda::impl::mem_required<LP>(vout.block()) << endl;
+      cout << "  required_buffer_size<LP>(vin.block()) = "
+	   <<    vsip::dda::required_buffer_size<LP>(vin.block()) << endl;
+      cout << "  required_buffer_size<LP>(vout.block()) = "
+	   <<    vsip::dda::required_buffer_size<LP>(vout.block()) << endl;
     }
 
-    test_assert(vsip::dda::impl::mem_required<LP>(vin.block())  <= sizeof(T)*size_);
-    test_assert(vsip::dda::impl::mem_required<LP>(vout.block()) <= sizeof(T)*size_);
+    test_assert(vsip::dda::required_buffer_size<LP>(vin.block())  <= sizeof(T)*size_);
+    test_assert(vsip::dda::required_buffer_size<LP>(vout.block()) <= sizeof(T)*size_);
 
     layout1 rin (vin.block(), buffer_ + 0);
     layout2 rout(vout.block(), buffer_ + size_);
@@ -204,14 +199,14 @@ public:
       cout << "  access_type<LP>(vout.block()) = "
 	   <<    access_type<LP>(vout.block()) << endl;
       
-      cout << "  mem_required<LP>(vin.block()) = "
-	   <<    vsip::dda::impl::mem_required<LP>(vin.block()) << endl;
-      cout << "  mem_required<LP>(vout.block()) = "
-	   <<    vsip::dda::impl::mem_required<LP>(vout.block()) << endl;
+      cout << "  required_buffer_size<LP>(vin.block()) = "
+	   <<    vsip::dda::required_buffer_size<LP>(vin.block()) << endl;
+      cout << "  required_buffer_size<LP>(vout.block()) = "
+	   <<    vsip::dda::required_buffer_size<LP>(vout.block()) << endl;
     }
 
-    test_assert(vsip::dda::impl::mem_required<LP>(vin.block())  <= sizeof(T)*size_);
-    test_assert(vsip::dda::impl::mem_required<LP>(vout.block()) <= sizeof(T)*size_);
+    test_assert(vsip::dda::required_buffer_size<LP>(vin.block())  <= sizeof(T)*size_);
+    test_assert(vsip::dda::required_buffer_size<LP>(vout.block()) <= sizeof(T)*size_);
 
     layout1 rin (vin.block(), make_pair(buffer_ + 0, buffer_ + size_));
     layout2 rout(vout.block(), make_pair(buffer_ + 2*size_, buffer_ + 3*size_));
@@ -314,7 +309,6 @@ int
 main()
 {
   vsip::vsipl init;
-  test_fft_1d<Test_FFT_inter, vsip::impl::Strided<1, complex<float> > >(256, 3);
-  test_fft_1d<Test_FFT_split, vsip::impl::Strided<1, complex<float> > >(256, 3);
-  return 0;
+  test_fft_1d<Test_FFT_inter, ovxx::Strided<1, complex<float> > >(256, 3);
+  test_fft_1d<Test_FFT_split, ovxx::Strided<1, complex<float> > >(256, 3);
 }

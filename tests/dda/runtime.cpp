@@ -18,17 +18,13 @@
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/tensor.hpp>
-
-#include <vsip_csl/test.hpp>
+#include "test.hpp"
 #include "output.hpp"
 
 #define VERBOSE 1
 
 using namespace vsip;
-using vsip_csl::equal;
-
-using vsip::impl::conditional;
-using vsip::impl::is_same;
+using namespace ovxx;
 
 length_type g_size = 10;
 
@@ -39,26 +35,18 @@ length_type g_dim0 = 8;
 length_type g_dim1 = 12;
 length_type g_dim2 = 14;
 
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
 template <typename BlockT>
 void
 dump_access_details()
 {
-  std::cout << "Access details (block_type = " << Type_name<BlockT>::name() << std::endl;
+  std::cout << "Access details (block_type = " << ovxx::type_name<BlockT>() << std::endl;
 
   typedef vsip::dda::dda_block_layout<BlockT> dbl_type;
-  typedef typename dbl_type::access_type access_type;
   typedef typename dbl_type::order_type  order_type;
   static pack_type const packing = dbl_type::packing;
   typedef typename dbl_type::layout_type layout_type;
 
-  std::cout << "  dbl access_type = " << Type_name<access_type>::name() << std::endl;
-  std::cout << "  dbl order_type  = " << Type_name<order_type>::name() << std::endl;
+  std::cout << "  dbl order_type  = " << ovxx::type_name<order_type>() << std::endl;
   std::cout << "  dbl packing   = " << packing << std::endl;
 
   typedef vsip::get_block_layout<BlockT> bl_type;
@@ -67,17 +55,13 @@ dump_access_details()
   static pack_type const bl_packing = bl_type::packing;
   typedef typename bl_type::layout_type bl_layout_type;
 
-  std::cout << "  bl  access_type = " << Type_name<bl_access_type>::name() << std::endl;
-  std::cout << "  bl  order_type  = " << Type_name<bl_order_type>::name() << std::endl;
+  std::cout << "  bl  access_type = " << ovxx::type_name<bl_access_type>() << std::endl;
+  std::cout << "  bl  order_type  = " << ovxx::type_name<bl_order_type>() << std::endl;
   std::cout << "  bl  packing   = " << bl_packing << std::endl;
 
-  typedef typename vsip::dda::impl::Choose_access<BlockT, layout_type>::type
-    use_access_type;
-
-  std::cout << "  use_access_type = " << Type_name<use_access_type>::name() << std::endl;
-
-  std::cout << "  cost            = " << vsip::dda::Data<BlockT, dda::in>::ct_cost
-       << std::endl;
+  std::cout << "  use_access_type = " << access_type<BlockT, bl_layout_type>() << std::endl;
+  std::cout << "  cost            = " << vsip::dda::Data<BlockT, vsip::dda::in>::ct_cost
+	    << std::endl;
 }
 
 
@@ -91,12 +75,6 @@ struct Spar {};		// sparse - every other element
 struct Spar4 {};		// sparse - every other element
 struct Sing {};		// single - one element
 
-
-
-/***********************************************************************
-  Vector test harnass
-***********************************************************************/
-
 template <pack_type P,
 	  storage_format_type C,
 	  typename T,
@@ -107,57 +85,54 @@ test_vector(
   int               rt_cost,
   Vector<T, BlockT> view)
 {
+  using namespace ovxx::dda;
   // length_type size = view.size(0);
 
   dimension_type const dim = BlockT::dim;
-  typedef typename impl::conditional<supports_dda<BlockT>::value,
-    dda::impl::Direct_access_tag, dda::impl::Copy_access_tag>::type access_type;
+  access_kind const access = supports_dda<BlockT>::value ? direct_access : copy_access;
   typedef typename get_block_layout<BlockT>::order_type   order_type;
   static pack_type const blk_packing = get_block_layout<BlockT>::packing;
 
   typedef vsip::Layout<dim, order_type, P, C> LP;
 
-  typedef typename vsip::dda::impl::Choose_access<BlockT, LP>::type real_access_type;
-
   for (index_type i=0; i<view.size(0); ++i)
     view.put(i, T(i));
 
   {
-    vsip::dda::Data<BlockT, dda::inout, LP> data(view.block());
+    typedef vsip::dda::Data<BlockT, vsip::dda::inout, LP> data_type;
+    typedef storage_traits<typename BlockT::value_type,
+			   data_type::layout_type::storage_format> storage;
+    data_type data(view.block());
 
 #if VERBOSE
-    std::cout << "Block (" << Type_name<BlockT>::name() << ")" << std::endl
-	 << "  Blk AT   = " << Type_name<access_type>::name() << std::endl
-	 << "  Blk pack = " << blk_packing << std::endl
+    std::cout << "Block (" << ovxx::type_name<BlockT>() << ")" << std::endl
+	      << "  Blk AT   = " << access_type(access) << std::endl
+	      << "  Blk pack = " << blk_packing << std::endl
 
-	 << "  Req AT   = " << Type_name<real_access_type>::name() << std::endl
-	 << "  Req pack = " << P << std::endl
-	 << "  ct_cost  = " << vsip::dda::Data<BlockT, dda::in, LP>::ct_cost << std::endl
-	 << "  rt_cost  = " << data.cost() << std::endl
+	      << "  Req AT   = " << access_type<BlockT, LP>() << std::endl
+	      << "  Req pack = " << P << std::endl
+	      << "  ct_cost  = " << vsip::dda::Data<BlockT, vsip::dda::in, LP>::ct_cost << std::endl
+	      << "  rt_cost  = " << data.cost() << std::endl
       ;
 #endif
     
-    test_assert((ct_cost == vsip::dda::Data<BlockT, dda::in, LP>::ct_cost));
+    test_assert((ct_cost == vsip::dda::Data<BlockT, vsip::dda::in, LP>::ct_cost));
     test_assert(rt_cost == data.cost());
     test_assert(rt_cost == vsip::dda::cost<LP>(view.block()));
 
     // Check that rt_cost == 0 implies mem_required == 0
-    test_assert((rt_cost == 0 && vsip::dda::impl::mem_required<LP>(view.block()) == 0) ||
-		(rt_cost != 0 && vsip::dda::impl::mem_required<LP>(view.block()) > 0));
-
-    // Check that rt_cost == 0 implies xfer_required == false
-    test_assert((rt_cost == 0 && !vsip::dda::impl::xfer_required<LP>(view.block())) ||
-		(rt_cost != 0 &&  vsip::dda::impl::xfer_required<LP>(view.block())) );
+    test_assert((rt_cost == 0 && vsip::dda::required_buffer_size<LP>(view.block()) == 0) ||
+		(rt_cost != 0 && vsip::dda::required_buffer_size<LP>(view.block()) > 0));
 
     test_assert(data.size(0) == view.size(0));
 
-    T *ptr = data.ptr();
+    typename data_type::ptr_type ptr = data.ptr();
     stride_type stride0 = data.stride(0);
 
     for (index_type i=0; i<data.size(0); ++i)
     {
-      test_assert(equal(ptr[i*stride0], T(i)));
-      ptr[i*stride0] = T(i+100);
+      test_assert(equal(storage::get(ptr, i*stride0), T(i)));
+      storage::put(ptr, i*stride0, T(i+100));
     }
   }
 
@@ -214,15 +189,9 @@ template <typename Block,
 	  storage_format_type BlkC = vsip::get_block_layout<Block>::storage_format,
 	  pack_type const ActP = ReqP,
 	  storage_format_type const ActC = Same ? BlkC :
-	  (BlkC == split_complex ? interleaved_complex : split_complex)>
+	  (BlkC == split_complex ? array : split_complex)>
 struct Tv : Test_vector<Block, D, ActP, ActC>
 {};
-
-
-
-/***********************************************************************
-  Matrix test harnass
-***********************************************************************/
 
 template <pack_type P,
 	  typename OrderT,
@@ -234,43 +203,37 @@ test_matrix(int ct_cost,
 	    int rt_cost,
 	    Matrix<T, BlockT> view)
 {
+  using namespace ovxx::dda;
   // length_type size = view.size(0);
 
   dimension_type const dim = BlockT::dim;
-  typedef typename impl::conditional<supports_dda<BlockT>::value,
-    dda::impl::Direct_access_tag, dda::impl::Copy_access_tag>::type access_type;
+  access_kind const access = supports_dda<BlockT>::value ? direct_access : copy_access;
   typedef OrderT  order_type;
 
   typedef vsip::Layout<dim, order_type, P, C> LP;
-
-  typedef typename vsip::dda::impl::Choose_access<BlockT, LP>::type real_access_type;
 
   for (index_type i=0; i<view.size(0); ++i)
     for (index_type j=0; j<view.size(1); ++j)
       view.put(i, j, T(i*view.size(1)+j));
 
   {
-    vsip::dda::Data<BlockT, dda::inout, LP> data(view.block());
+    vsip::dda::Data<BlockT, vsip::dda::inout, LP> data(view.block());
 
 #if VERBOSE
-    std::cout << "Block (" << Type_name<BlockT>::name() << ")" << std::endl
-	 << "  AT      = " << Type_name<access_type>::name() << std::endl
-	 << "  RAT     = " << Type_name<real_access_type>::name() << std::endl
-	 << "  ct_cost = " << vsip::dda::Data<BlockT, dda::inout, LP>::ct_cost << std::endl
-	 << "  rt_cost = " << data.cost() << std::endl
+    std::cout << "Block (" << ovxx::type_name<BlockT>() << ")" << std::endl
+	      << "  AT      = " << access_type(access) << std::endl
+	      << "  RAT     = " << access_type<BlockT, LP>() << std::endl
+	      << "  ct_cost = " << vsip::dda::Data<BlockT, vsip::dda::inout, LP>::ct_cost << std::endl
+	      << "  rt_cost = " << data.cost() << std::endl
       ;
 #endif
     
-    test_assert((ct_cost == vsip::dda::Data<BlockT, dda::inout, LP>::ct_cost));
+    test_assert((ct_cost == vsip::dda::Data<BlockT, vsip::dda::inout, LP>::ct_cost));
     test_assert(rt_cost == data.cost());
 
     // Check that rt_cost == 0 implies mem_required == 0
-    test_assert((rt_cost == 0 && vsip::dda::impl::mem_required<LP>(view.block()) == 0) ||
-		(rt_cost != 0 && vsip::dda::impl::mem_required<LP>(view.block()) > 0));
-
-    // Check that rt_cost == 0 implies xfer_required == false
-    test_assert((rt_cost == 0 && !vsip::dda::impl::xfer_required<LP>(view.block())) ||
-		(rt_cost != 0 &&  vsip::dda::impl::xfer_required<LP>(view.block())) );
+    test_assert((rt_cost == 0 && vsip::dda::required_buffer_size<LP>(view.block()) == 0) ||
+		(rt_cost != 0 && vsip::dda::required_buffer_size<LP>(view.block()) > 0));
 
     test_assert(data.size(0) == view.size(0));
     test_assert(data.size(1) == view.size(1));
@@ -363,13 +326,9 @@ template <typename Block,
 	      typename conditional<is_same<BlkO, row2_type>::value, col2_type, row2_type>::type,
 	      ReqO>::type>::type,
 	  storage_format_type C = SameC ? BlkC :
-	  (BlkC == interleaved_complex ? split_complex : interleaved_complex)>
+	  (BlkC == array ? split_complex : array)>
 struct Tm : Test_matrix<Block, Dim0, Dim1, ReqP, O, C>
 {};
-
-/***********************************************************************
-  Tensor test harnass
-***********************************************************************/
 
 template <pack_type P,
 	  typename O,
@@ -379,12 +338,11 @@ template <pack_type P,
 void
 test_tensor(int ct_cost, int rt_cost, Tensor<T, Block> view)
 {
-  dimension_type const dim = Block::dim;
-  typedef typename impl::conditional<supports_dda<Block>::value,
-    dda::impl::Direct_access_tag, dda::impl::Copy_access_tag>::type access_type;
-  typedef vsip::Layout<dim, O, P, C> LP;
+  using namespace ovxx::dda;
 
-  typedef typename vsip::dda::impl::Choose_access<Block, LP>::type real_access_type;
+  dimension_type const dim = Block::dim;
+  access_kind const access = supports_dda<Block>::value ? direct_access : copy_access;
+  typedef vsip::Layout<dim, O, P, C> LP;
 
   for (index_type i=0; i<view.size(0); ++i)
     for (index_type j=0; j<view.size(1); ++j)
@@ -392,27 +350,23 @@ test_tensor(int ct_cost, int rt_cost, Tensor<T, Block> view)
 	view.put(i, j, k, T(i*view.size(1)*view.size(2) + j*view.size(2) + k));
 
   {
-    vsip::dda::Data<Block, dda::inout, LP> data(view.block());
+    vsip::dda::Data<Block, vsip::dda::inout, LP> data(view.block());
 
 #if VERBOSE
-    std::cout << "Block (" << Type_name<Block>::name() << ")" << std::endl
-	 << "  AT      = " << Type_name<access_type>::name() << std::endl
-	 << "  RAT     = " << Type_name<real_access_type>::name() << std::endl
-	 << "  ct_cost = " << vsip::dda::Data<Block, dda::inout, LP>::ct_cost << std::endl
-	 << "  rt_cost = " << data.cost() << std::endl
+    std::cout << "Block (" << type_name<Block>() << ")" << std::endl
+	      << "  AT      = " << access_type(access) << std::endl
+	      << "  RAT     = " << access_type<Block, LP>() << std::endl
+	      << "  ct_cost = " << vsip::dda::Data<Block, vsip::dda::inout, LP>::ct_cost << std::endl
+	      << "  rt_cost = " << data.cost() << std::endl
       ;
 #endif
     
-    test_assert((ct_cost == vsip::dda::Data<Block, dda::inout, LP>::ct_cost));
+    test_assert((ct_cost == vsip::dda::Data<Block, vsip::dda::inout, LP>::ct_cost));
     test_assert(rt_cost == data.cost());
 
     // Check that rt_cost == 0 implies mem_required == 0
-    test_assert((rt_cost == 0 && vsip::dda::impl::mem_required<LP>(view.block()) == 0) ||
-		(rt_cost != 0 && vsip::dda::impl::mem_required<LP>(view.block()) > 0));
-
-    // Check that rt_cost == 0 implies xfer_required == false
-    test_assert((rt_cost == 0 && !vsip::dda::impl::xfer_required<LP>(view.block())) ||
-		(rt_cost != 0 &&  vsip::dda::impl::xfer_required<LP>(view.block())) );
+    test_assert((rt_cost == 0 && vsip::dda::required_buffer_size<LP>(view.block()) == 0) ||
+		(rt_cost != 0 && vsip::dda::required_buffer_size<LP>(view.block()) > 0));
 
     test_assert(data.size(0) == view.size(0));
     test_assert(data.size(1) == view.size(1));
@@ -516,7 +470,7 @@ template <typename BlockT,
 		ReqO>::type>::type,
 
 	  storage_format_type C = SameC ? BlkC :
-	  (BlkC == interleaved_complex ? split_complex : interleaved_complex)>
+	  (BlkC == array ? split_complex : array)>
 struct Tt : Test_tensor<BlockT, Dim0, Dim1, Dim2, P, O, C>
 {};
 
@@ -528,6 +482,7 @@ void
 vector_tests()
 {
   typedef Dense<1, float> block_type;
+  typedef Dense<1, complex<float> > cblock_type;
 
   // Blk  , Dim0, Pack          , Cplx
   // -----,-----,---------------,-----
@@ -538,9 +493,9 @@ vector_tests()
   Tv<block_type, Full, any_packing, true>::test(0, 0);
   Tv<block_type, Cont, any_packing, true>::test(0, 0);
   Tv<block_type, Spar, any_packing, true>::test(0, 0);
-  Tv<block_type, Full, any_packing, false>::test(2, 2);
-  Tv<block_type, Cont, any_packing, false>::test(2, 2);
-  Tv<block_type, Spar, any_packing, false>::test(2, 2);
+  Tv<cblock_type, Full, any_packing, false>::test(2, 2);
+  Tv<cblock_type, Cont, any_packing, false>::test(2, 2);
+  Tv<cblock_type, Spar, any_packing, false>::test(2, 2);
 
 
   // Asking for packing::unit_stride packing indicates we want unit stride,
@@ -551,17 +506,17 @@ vector_tests()
   Tv<block_type, Full, unit_stride, true>::test(0, 0);
   Tv<block_type, Cont, unit_stride, true>::test(2, 0);	// runtime stride-1
   Tv<block_type, Spar, unit_stride, true>::test(2, 2);
-  Tv<block_type, Full, unit_stride, false>::test(2, 2);
-  Tv<block_type, Cont, unit_stride, false>::test(2, 2);
-  Tv<block_type, Spar, unit_stride, false>::test(2, 2);
+  Tv<cblock_type, Full, unit_stride, false>::test(2, 2);
+  Tv<cblock_type, Cont, unit_stride, false>::test(2, 2);
+  Tv<cblock_type, Spar, unit_stride, false>::test(2, 2);
 
   Tv<block_type, Full, dense, true>::test(0, 0);
   Tv<block_type, Cont, dense, true>::test(2, 0);
   Tv<block_type, Off1, dense, true>::test(2, 0);
   Tv<block_type, Spar, dense, true>::test(2, 2);
-  Tv<block_type, Full, dense, false>::test(2, 2);
-  Tv<block_type, Cont, dense, false>::test(2, 2);
-  Tv<block_type, Spar, dense, false>::test(2, 2);
+  Tv<cblock_type, Full, dense, false>::test(2, 2);
+  Tv<cblock_type, Cont, dense, false>::test(2, 2);
+  Tv<cblock_type, Spar, dense, false>::test(2, 2);
 
   Tv<block_type, Full, aligned_16, true>::test(2, 0);
   Tv<block_type, Cont, aligned_16, true>::test(2, 0);

@@ -6,17 +6,18 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef vsip_core_assign_local_hpp_
-#define vsip_core_assign_local_hpp_
+#ifndef ovxx_parallel_assign_local_hpp_
+#define ovxx_parallel_assign_local_hpp_
 
-#include <vsip/support.hpp>
-#include <vsip/core/parallel/services.hpp>
-#include <vsip/core/static_assert.hpp>
-#include <vsip/core/metaprogramming.hpp>
+#include <ovxx/support.hpp>
+#include <ovxx/parallel/service.hpp>
+#include <ovxx/ct_assert.hpp>
 
-namespace vsip
+namespace ovxx
 {
-namespace impl
+namespace parallel
+{
+namespace detail
 {
 
 /// Used for working with distributed data by replicating a copy locally
@@ -28,8 +29,8 @@ namespace impl
 ///     a local view.
 template <typename Block1,
 	  typename Block2,
-	  bool IsLocal1 = Is_local_map<typename Block1::map_type>::value,
-	  bool IsLocal2 = Is_local_map<typename Block2::map_type>::value>
+	  bool IsLocal1 = is_local_map<typename Block1::map_type>::value,
+	  bool IsLocal2 = is_local_map<typename Block2::map_type>::value>
 struct Assign_local;
 
 // Local assignment
@@ -94,23 +95,25 @@ struct Assign_local_if<false, LHS, RHS>
   static void exec(LHS &, RHS const &) {}
 };
 
+} // namespace ovxx::parallel::detail
+
 /// Assign between local and distributed views.
 template <typename LHS, typename RHS>
 void assign_local(LHS lhs, RHS rhs,
-		  typename enable_if_c<Is_view_type<LHS>::value &&
-		                       Is_view_type<RHS>::value>::type * = 0)
+		  typename enable_if<is_view_type<LHS>::value &&
+		                     is_view_type<RHS>::value>::type * = 0)
 {
-  Assign_local<typename LHS::block_type, typename RHS::block_type>
+  detail::Assign_local<typename LHS::block_type, typename RHS::block_type>
     ::exec(lhs.block(), rhs.block());
 }
 
 /// Assign between local and distributed views.
-template <bool Predicate, typename LHS, typename RHS>
+template <bool P, typename LHS, typename RHS>
 void assign_local_if(LHS lhs, RHS rhs,
-	 	     typename enable_if_c<Is_view_type<LHS>::value &&
-		                          Is_view_type<RHS>::value>::type * = 0)
+	 	     typename enable_if<is_view_type<LHS>::value &&
+		                        is_view_type<RHS>::value>::type * = 0)
 {
-  Assign_local_if<Predicate, typename LHS::block_type, typename RHS::block_type>
+  detail::Assign_local_if<P, typename LHS::block_type, typename RHS::block_type>
     ::exec(lhs.block(), rhs.block());
 }
 
@@ -118,22 +121,22 @@ void assign_local_if(LHS lhs, RHS rhs,
 /// Assign between local and distributed blocks.
 template <typename LHS, typename RHS>
 void assign_local(LHS &lhs, RHS const &rhs,
-		  typename enable_if_c<!Is_view_type<LHS>::value ||
-		                       !Is_view_type<RHS>::value>::type * = 0)
+		  typename enable_if<!is_view_type<LHS>::value ||
+		                     !is_view_type<RHS>::value>::type * = 0)
 {
-  Assign_local<LHS, RHS>::exec(lhs, rhs);
+  detail::Assign_local<LHS, RHS>::exec(lhs, rhs);
 }
 
 /// Assign between local and distributed blocks.
-template <bool Predicate, typename LHS, typename RHS>
+template <bool P, typename LHS, typename RHS>
 void assign_local_if(LHS &lhs, RHS const &rhs,
-		     typename enable_if_c<!Is_view_type<LHS>::value ||
-		                          !Is_view_type<RHS>::value>::type * = 0)
+		     typename enable_if<!is_view_type<LHS>::value ||
+		                        !is_view_type<RHS>::value>::type * = 0)
 {
-  Assign_local_if<Predicate, LHS, RHS>::exec(lhs, rhs);
+  detail::Assign_local_if<P, LHS, RHS>::exec(lhs, rhs);
 }
 
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::parallel
+} // namespace ovxx
 
 #endif

@@ -9,21 +9,17 @@
 #include <vsip/support.hpp>
 #include <vsip/dense.hpp>
 #include <vsip/serialization.hpp>
-#include <vsip_csl/strided.hpp>
 #include <vsip/selgen.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
-#include "test-random.hpp"
+#include <ovxx/strided.hpp>
+#include <test.hpp>
 #include <cassert>
 #include <iostream>
 
-using namespace vsip;
+using namespace ovxx;
 namespace s = serialization;
-using vsip_csl::view_equal;
-using vsip_csl::Strided;
 
 template <typename T, storage_format_type S> 
-struct allocator
+struct allocator_
 {
   typedef T *ptr_type;
   static T *allocate(length_type N) { return new T[N];}
@@ -31,7 +27,7 @@ struct allocator
 };
 
 template <typename T>
-struct allocator<complex<T>, interleaved_complex>
+struct allocator_<complex<T>, interleaved_complex>
 {
   typedef T *ptr_type;
   static T *allocate(length_type N) { return new T[2*N];}
@@ -39,7 +35,7 @@ struct allocator<complex<T>, interleaved_complex>
 };
 
 template <typename T>
-struct allocator<complex<T>, split_complex>
+struct allocator_<complex<T>, split_complex>
 {
   typedef std::pair<T*,T*> ptr_type;
   static std::pair<T*,T*> allocate(length_type N)
@@ -78,11 +74,11 @@ void serialize_and_validate(P data, s::Descriptor const &info, B const &referenc
   typedef Strided<B::dim, value_type, typename get_block_layout<B>::type> block_type;
   Domain<B::dim> dom;
   block_type block(dom, P());
-  typename impl::view_of<block_type>::type output(block);
+  typename view_of<block_type>::type output(block);
   test_assert(s::is_compatible<block_type>(info));
   block.rebind(data, make_domain<B::dim>::create(info));
   block.admit();
-  test_assert(view_equal(output, typename impl::view_of<B>::type(const_cast<B &>(reference))));
+  test_assert(view_equal(output, typename view_of<B>::type(const_cast<B &>(reference))));
 }
 
 // Construct a block of the given type and size, then serialize it via DDA.
@@ -91,8 +87,8 @@ template <typename B>
 void test_serialize_data(length_type N)
 {
   Vector<typename B::value_type, B> input(N);
-  randomize(input);
-  dda::Data<B, dda::inout> data(input.block());
+  test::randomize(input);
+  vsip::dda::Data<B, vsip::dda::inout> data(input.block());
   s::Descriptor info;
   s::describe_data(data, info);
   serialize_and_validate(data.ptr(), info, input.block());
@@ -102,8 +98,8 @@ template <typename B>
 void test_serialize_data(length_type N, length_type M)
 {
   Matrix<typename B::value_type, B> input(N, M);
-  randomize(input);
-  dda::Data<B, dda::inout> data(input.block());
+  test::randomize(input);
+  vsip::dda::Data<B, vsip::dda::inout> data(input.block());
   s::Descriptor info;
   s::describe_data(data, info);
   serialize_and_validate(data.ptr(), info, input.block());
@@ -115,14 +111,14 @@ void test_serialize_data(length_type N, length_type M)
 template <typename B>
 void test_serialize_user_storage(Domain<B::dim> const dom)
 {
-  typedef allocator<typename B::value_type, B::storage_format> alloc;
+  typedef allocator_<typename B::value_type, B::storage_format> alloc;
   typedef typename B::value_type value_type;
   typename alloc::ptr_type data = alloc::allocate(dom.size());
   // The block constructors unfortunately ignore the stride...
   B block(dom, data);
   block.admit();
-  typename impl::view_of<B>::type input(block);
-  randomize(input);
+  typename view_of<B>::type input(block);
+  test::randomize(input);
   block.release();
   s::Descriptor info;
   s::describe_user_storage(input.block(), info);
@@ -133,8 +129,11 @@ void test_serialize_user_storage(Domain<B::dim> const dom)
 int
 main(int argc, char** argv)
 {
+  typedef Layout<1, tuple<0,1,2>, dense, array> array_layout;
   typedef Layout<1, tuple<0,1,2>, dense, interleaved_complex> inter_layout;
   typedef Layout<1, tuple<0,1,2>, dense, split_complex> split_layout;
+  typedef Layout<2, tuple<0,1,2>, dense, array> array_row_layout;
+  typedef Layout<2, tuple<1,0,2>, dense, array> array_col_layout;
   typedef Layout<2, tuple<0,1,2>, dense, interleaved_complex> inter_row_layout;
   typedef Layout<2, tuple<1,0,2>, dense, interleaved_complex> inter_col_layout;
   typedef Layout<2, tuple<0,1,2>, dense, split_complex> split_row_layout;
@@ -144,8 +143,8 @@ main(int argc, char** argv)
   typedef Strided<1, complex<float>, inter_layout> inter_block_type;
   typedef Strided<1, complex<float>, split_layout> split_block_type;
 
-  typedef Strided<2, float, inter_row_layout> real_row_block_type;
-  typedef Strided<2, float, inter_col_layout> real_col_block_type;
+  typedef Strided<2, float, array_row_layout> real_row_block_type;
+  typedef Strided<2, float, array_col_layout> real_col_block_type;
   typedef Strided<2, complex<float>, inter_row_layout> inter_row_block_type;
   typedef Strided<2, complex<float>, inter_col_layout> inter_col_block_type;
   typedef Strided<2, complex<float>, split_row_layout> split_row_block_type;
@@ -157,9 +156,9 @@ main(int argc, char** argv)
   test_serialize_data<inter_block_type>(8);
   test_serialize_data<split_block_type>(8);
 
-  test_serialize_user_storage<real_block_type>(8);
-  test_serialize_user_storage<inter_block_type>(8);
-  test_serialize_user_storage<split_block_type>(8);
+  test_serialize_user_storage<real_block_type, 1>(8);
+  test_serialize_user_storage<inter_block_type, 1>(8);
+  test_serialize_user_storage<split_block_type, 1>(8);
 
   test_serialize_data<real_row_block_type>(8, 8);
   test_serialize_data<real_col_block_type>(8, 8);

@@ -12,31 +12,13 @@
 #include <vsip/vector.hpp>
 #include <vsip/dda.hpp>
 #include <vsip/initfin.hpp>
+#include <vsip/math.hpp>
 #include <vsip/map.hpp>
 #include <vsip/selgen.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
-#include <vsip_csl/diagnostics.hpp>
+#include "test.hpp"
 
 using namespace vsip;
-using vsip_csl::equal;
-
-using vsip::impl::Any_type;
-using vsip::impl::Strided;
-using vsip::impl::adjust_layout;
-using vsip::impl::is_same;
-using vsip::impl::conditional;
-using vsip::impl::scalar_of;
-using vsip::impl::Aligned_allocator;
-using vsip::impl::Is_local_map;
-using vsip::impl::is_complex;
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 /// Test high-level data interface to 1-dimensional block.
 
@@ -52,8 +34,8 @@ test_1_ext(int expect_cost)
   typedef Strided<1, T, GivenLP, MapT> block_type;
 
   typedef T value_type;
-  typedef typename adjust_layout<value_type, ReqLP, GivenLP>::type use_LP;
-  typedef vsip::impl::Storage<use_LP::storage_format, T> storage_type;
+  typedef typename adjust_layout<ReqLP, GivenLP>::type use_LP;
+  typedef storage_traits<T, use_LP::storage_format> storage;
 
   block_type block(size, 0.0);
 
@@ -66,16 +48,9 @@ test_1_ext(int expect_cost)
   block.put(0, val0);
   block.put(1, val1);
 
-  typedef typename
-      conditional<use_LP::storage_format == interleaved_complex,
-		  Aligned_allocator<T>,
-		  Aligned_allocator<typename scalar_of<T>::type> >
-      ::type alloc_type;
-  alloc_type alloc;
-  typename storage_type::type buffer = storage_type::allocate(alloc, size);
-
   {
-    vsip::dda::Data<block_type, dda::inout, use_LP> raw(block, buffer);
+    typedef vsip::dda::Data<block_type, vsip::dda::inout, use_LP> data_type;
+    data_type raw(block);
 
     assert(raw.cost() == expect_cost);
 
@@ -83,18 +58,16 @@ test_1_ext(int expect_cost)
     test_assert(raw.stride(0) == 1);
     test_assert(raw.size(0) == size);
 
-    typename storage_type::type data = raw.ptr();
+    typename data_type::ptr_type data = raw.ptr();
 
     // Check that block values are reflected.
-    test_assert(equal(storage_type::get(data, 0), val0));
-    test_assert(equal(storage_type::get(data, 1), val1));
+    test_assert(equal(storage::get(data, 0), val0));
+    test_assert(equal(storage::get(data, 1), val1));
 
     // Place values in raw data.
-    storage_type::put(data, 1, val2);
-    storage_type::put(data, 2, val3);
+    storage::put(data, 1, val2);
+    storage::put(data, 2, val3);
   }
-
-  storage_type::deallocate(alloc, buffer, size);
 
   // Check that raw data values are reflected.
   test_assert(equal(block.get(1), val2));
@@ -112,7 +85,7 @@ template <typename T,
 	  typename GivenLP>
 int expected_cost()
 {
-  bool is_local_equiv = Is_local_map<MapT>::value ||
+  bool is_local_equiv = parallel::is_local_map<MapT>::value ||
                         is_same<MapT, Replicated_map<1> >::value;
 
   bool same_order = is_same<OrderT, typename use_LP::order_type>::value;
@@ -120,7 +93,7 @@ int expected_cost()
   bool same_complex_fmt = 
     !is_complex<T>::value || GivenLP::storage_format == use_LP::storage_format;
 
-  return (is_local_equiv && same_order && same_complex_fmt) ? 0 : 2;
+  return (is_local_equiv && same_order && same_complex_fmt) ? 0 : 10;
 }
 
 
@@ -139,8 +112,8 @@ test_1_dense(MapT const& map)
   typedef typename get_block_layout<block_type>::type GivenLP;
 
   typedef T value_type;
-  typedef typename adjust_layout<value_type, ReqLP, GivenLP>::type use_LP;
-  typedef vsip::impl::Storage<use_LP::storage_format, T> storage_type;
+  typedef typename adjust_layout<ReqLP, GivenLP>::type use_LP;
+  typedef storage_traits<T, use_LP::storage_format> storage;
 
   block_type block(size, T(), map);
 
@@ -153,17 +126,9 @@ test_1_dense(MapT const& map)
   block.put(0, val0);
   block.put(1, val1);
 
-  typedef typename
-      conditional<use_LP::storage_format == interleaved_complex,
-               Aligned_allocator<T>,
-               Aligned_allocator<typename scalar_of<T>::type> >
-      ::type alloc_type;
-
-  alloc_type alloc;
-  typename storage_type::type buffer = storage_type::allocate(alloc, size);
-
   {
-    vsip::dda::Data<block_type, dda::inout, use_LP> raw(block, buffer);
+    typedef vsip::dda::Data<block_type, vsip::dda::inout, use_LP> data_type;
+    data_type raw(block);
 
     assert((raw.cost() == expected_cost<T, MapT, OrderT, use_LP, GivenLP>()));
 
@@ -171,18 +136,16 @@ test_1_dense(MapT const& map)
     test_assert(raw.stride(0) == 1);
     test_assert(raw.size(0) == size);
 
-    typename storage_type::type data = raw.ptr();
+    typename data_type::ptr_type data = raw.ptr();
 
     // Check that block values are reflected.
-    test_assert(equal(storage_type::get(data, 0), val0));
-    test_assert(equal(storage_type::get(data, 1), val1));
+    test_assert(equal(storage::get(data, 0), val0));
+    test_assert(equal(storage::get(data, 1), val1));
 
     // Place values in raw data.
-    storage_type::put(data, 1, val2);
-    storage_type::put(data, 2, val3);
+    storage::put(data, 1, val2);
+    storage::put(data, 2, val3);
   }
-
-  storage_type::deallocate(alloc, buffer, size);
 
   // Check that raw data values are reflected.
   test_assert(equal(block.get(1), val2));
@@ -205,8 +168,8 @@ test_1_dense_const(MapT const& map)
   typedef typename get_block_layout<block_type>::type GivenLP;
 
   typedef T value_type;
-  typedef typename adjust_layout<value_type, ReqLP, GivenLP>::type use_LP;
-  typedef vsip::impl::Storage<use_LP::storage_format, T> storage_type;
+  typedef typename adjust_layout<ReqLP, GivenLP>::type use_LP;
+  typedef storage_traits<T, use_LP::storage_format> storage;
 
   block_type block(size, T(), map);
 
@@ -217,37 +180,27 @@ test_1_dense_const(MapT const& map)
   block.put(0, val0);
   block.put(1, val1);
 
-  typedef typename
-      conditional<use_LP::storage_format == interleaved_complex,
-               Aligned_allocator<T>,
-               Aligned_allocator<typename scalar_of<T>::type> >
-      ::type alloc_type;
-
-  alloc_type alloc;
-  typename storage_type::type buffer = storage_type::allocate(alloc, size);
-
   {
     block_type const& ref = block;
-    vsip::dda::Data<block_type, dda::in, use_LP> raw(ref, buffer);
+    typedef vsip::dda::Data<block_type, vsip::dda::in, use_LP> data_type;
+    data_type raw(ref);
     assert((raw.cost() == expected_cost<T, MapT, OrderT, use_LP, GivenLP>()));
 
     // Check properties of DDI.
     test_assert(raw.stride(0) == 1);
     test_assert(raw.size(0) == size);
 
-    typename storage_type::const_type data = raw.ptr();
+    typename data_type::const_ptr_type data = raw.ptr();
 
     // Check that block values are reflected.
-    test_assert(equal(storage_type::get(data, 0), val0));
-    test_assert(equal(storage_type::get(data, 1), val1));
+    test_assert(equal(storage::get(data, 0), val0));
+    test_assert(equal(storage::get(data, 1), val1));
   }
-
-  storage_type::deallocate(alloc, buffer, size);
 }
 
 
 
-// Helper function to test dda::Data_dist access to an expression block.
+// Helper function to test DDA to an expression block.
 // Deduces type of expression block.
 //
 
@@ -264,45 +217,36 @@ test_1_expr_helper(ViewT view, T val0, T val1, bool alloc_buffer)
 
   typedef typename get_block_layout<block_type>::type GivenLP;
 
-  typedef typename adjust_layout<value_type, ReqLP, GivenLP>::type use_LP;
-  typedef vsip::impl::Storage<use_LP::storage_format, T> storage_type;
-
-  typedef typename
-      conditional<use_LP::storage_format == interleaved_complex,
-               Aligned_allocator<T>,
-               Aligned_allocator<typename scalar_of<T>::type> >
-      ::type alloc_type;
+  typedef typename adjust_layout<ReqLP, GivenLP>::type use_LP;
+  typedef storage_traits<T, use_LP::storage_format> storage;
 
   length_type size = view.size();
 
-  alloc_type alloc;
-  typedef typename storage_type::type ptr_type;
-  ptr_type buffer = alloc_buffer ? storage_type::allocate(alloc, size)
-                                 : ptr_type();
-
+  typedef typename storage::ptr_type ptr_type;
   {
-    dda::Data<block_type, dda::in, use_LP> raw(view.block(), buffer);
+    vsip::dda::Data<block_type, vsip::dda::in, use_LP> raw(view.block());
 
     // Because block is an expression block, access requires a copy.
-    assert(raw.cost() == 2);
+    if (is_same<typename block_type::map_type, Local_map>::value)
+      assert(raw.cost() == 2);
+    else
+      assert(raw.cost() == 10);
 
     // Check properties of DDI.
     test_assert(raw.stride(0) == 1);
     test_assert(raw.size(0) == size);
 
-    typename dda::Data<block_type, dda::in, use_LP>::ptr_type data = raw.ptr();
+    typename vsip::dda::Data<block_type, vsip::dda::in, use_LP>::ptr_type data = raw.ptr();
 
     // Check that block values are reflected.
-    test_assert(equal(storage_type::get(data, 0), val0));
-    test_assert(equal(storage_type::get(data, 1), val1));
+    test_assert(equal(storage::get(data, 0), val0));
+    test_assert(equal(storage::get(data, 1), val1));
   }
-
-  if (alloc_buffer) storage_type::deallocate(alloc, buffer, size);
 }
 
 
 
-// Test dda::Data_dist access to a simple expression block.
+// Test distributed DDA to a simple expression block.
 // (vector + vector).
 
 template <typename T,
@@ -332,7 +276,7 @@ test_1_expr_1(MapT const& map)
 
 
 
-// Test dda::Data_dist access to a more complex expression block.
+// Test distributed DDA to a more complex expression block.
 // (vector + vector)(subset).
 
 template <typename T,
@@ -364,7 +308,7 @@ test_1_expr_2(MapT const& map)
 
 
 
-// Test dda::Data_dist access to an 'magsq(v)' expression block.
+// Test distributed DDA to an 'magsq(v)' expression block.
 
 template <typename T,
 	  typename OrderT,
@@ -386,106 +330,92 @@ test_1_expr_3(MapT const& map)
   view.put(0, val0);
   view.put(1, val1);
 
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
+  typedef typename adjust_layout_storage_format<array, ReqLP>::type scalar_layout_type;
 
-  test_1_expr_helper<scalar_type, OrderT, MapT, ReqLP>(
-		magsq(view), magsq(val0), magsq(val1), true);
-  test_1_expr_helper<scalar_type, OrderT, MapT, ReqLP>(
-		magsq(view), magsq(val0), magsq(val1), false);
+  test_1_expr_helper<scalar_type, OrderT, MapT, scalar_layout_type>
+    (magsq(view), magsq(val0), magsq(val1), true);
+  test_1_expr_helper<scalar_type, OrderT, MapT, scalar_layout_type>
+    (magsq(view), magsq(val0), magsq(val1), false);
 }
 
-
-
-void
-test()
+int
+main(int argc, char** argv)
 {
-  typedef Layout<1, row1_type, dense, interleaved_complex> LP_1rdi;
+  typedef Layout<1, row1_type, dense, array> LP_1rda;
   typedef Layout<1, row1_type, dense, split_complex> LP_1rds;
 
-  typedef Layout<1, Any_type, any_packing, interleaved_complex> LP_1xxi;
-  typedef Layout<1, Any_type, any_packing, split_complex> LP_1xxs;
+  typedef Layout<1, any_type, any_packing, array> LP_1xxa;
+  typedef Layout<1, any_type, any_packing, split_complex> LP_1xxs;
 
-  test_1_ext<float,          Local_map, LP_1rdi, LP_1xxi >(0);
-  test_1_ext<float,          Local_map, LP_1rds, LP_1xxi >(0);
-  test_1_ext<float,          Local_map, LP_1rdi, LP_1xxs >(0);
-  test_1_ext<float,          Local_map, LP_1rds, LP_1xxs >(0);
+  vsipl init(argc, argv);
 
-  test_1_ext<complex<float>, Local_map, LP_1rdi, LP_1xxi >(0);
-  test_1_ext<complex<float>, Local_map, LP_1rds, LP_1xxi >(2);
-  test_1_ext<complex<float>, Local_map, LP_1rdi, LP_1xxs >(2);
+  test_1_ext<float,          Local_map, LP_1rda, LP_1xxa >(0);
+
+  test_1_ext<complex<float>, Local_map, LP_1rda, LP_1xxa >(0);
+  test_1_ext<complex<float>, Local_map, LP_1rds, LP_1xxa >(2);
+  test_1_ext<complex<float>, Local_map, LP_1rda, LP_1xxs >(2);
   test_1_ext<complex<float>, Local_map, LP_1rds, LP_1xxs >(0);
 
   Local_map lmap;
 
-  test_1_expr_1<float,          row1_type, Local_map, LP_1xxi >(lmap);
-  test_1_expr_1<complex<float>, row1_type, Local_map, LP_1xxi >(lmap);
+  test_1_expr_1<float,          row1_type, Local_map, LP_1xxa >(lmap);
+  test_1_expr_1<complex<float>, row1_type, Local_map, LP_1xxa >(lmap);
   test_1_expr_1<complex<float>, row1_type, Local_map, LP_1xxs >(lmap);
 
-  test_1_expr_2<float,          row1_type, Local_map, LP_1xxi >(lmap);
-  test_1_expr_2<complex<float>, row1_type, Local_map, LP_1xxi >(lmap);
+  test_1_expr_2<float,          row1_type, Local_map, LP_1xxa >(lmap);
+  test_1_expr_2<complex<float>, row1_type, Local_map, LP_1xxa >(lmap);
   test_1_expr_2<complex<float>, row1_type, Local_map, LP_1xxs >(lmap);
 
-  test_1_expr_3<float,          row1_type, Local_map, LP_1xxi >(lmap);
-  test_1_expr_3<complex<float>, row1_type, Local_map, LP_1xxi >(lmap);
+  test_1_expr_3<float,          row1_type, Local_map, LP_1xxa >(lmap);
+  test_1_expr_3<complex<float>, row1_type, Local_map, LP_1xxa >(lmap);
   test_1_expr_3<complex<float>, row1_type, Local_map, LP_1xxs >(lmap);
 
 
+#if OVXX_PARALLEL_API == 1
   Replicated_map<1> gmap;
 
-  test_1_dense<float,          row1_type, Replicated_map<1>, LP_1xxi >(gmap);
-  test_1_dense<float,          row1_type, Replicated_map<1>, LP_1xxs >(gmap);
-  test_1_dense<complex<float>, row1_type, Replicated_map<1>, LP_1xxi >(gmap);
+  test_1_dense<float,          row1_type, Replicated_map<1>, LP_1xxa >(gmap);
+  test_1_dense<complex<float>, row1_type, Replicated_map<1>, LP_1xxa >(gmap);
   test_1_dense<complex<float>, row1_type, Replicated_map<1>, LP_1xxs >(gmap);
 
-  test_1_dense_const<float,          row1_type, Replicated_map<1>, LP_1xxi >(gmap);
-  test_1_dense_const<float,          row1_type, Replicated_map<1>, LP_1xxs >(gmap);
-  test_1_dense_const<complex<float>, row1_type, Replicated_map<1>, LP_1xxi >(gmap);
+  test_1_dense_const<float,          row1_type, Replicated_map<1>, LP_1xxa >(gmap);
+  test_1_dense_const<complex<float>, row1_type, Replicated_map<1>, LP_1xxa >(gmap);
   test_1_dense_const<complex<float>, row1_type, Replicated_map<1>, LP_1xxs >(gmap);
 
-  test_1_expr_1<float,          row1_type, Replicated_map<1>, LP_1xxi >(gmap);
-  test_1_expr_1<complex<float>, row1_type, Replicated_map<1>, LP_1xxi >(gmap);
+  test_1_expr_1<float,          row1_type, Replicated_map<1>, LP_1xxa >(gmap);
+  test_1_expr_1<complex<float>, row1_type, Replicated_map<1>, LP_1xxa >(gmap);
   test_1_expr_1<complex<float>, row1_type, Replicated_map<1>, LP_1xxs >(gmap);
 
-  test_1_expr_2<float,          row1_type, Replicated_map<1>, LP_1xxi >(gmap);
-  test_1_expr_2<complex<float>, row1_type, Replicated_map<1>, LP_1xxi >(gmap);
+  test_1_expr_2<float,          row1_type, Replicated_map<1>, LP_1xxa >(gmap);
+  test_1_expr_2<complex<float>, row1_type, Replicated_map<1>, LP_1xxa >(gmap);
   test_1_expr_2<complex<float>, row1_type, Replicated_map<1>, LP_1xxs >(gmap);
 
-  test_1_expr_3<float,          row1_type, Replicated_map<1>, LP_1xxi >(gmap);
-  test_1_expr_3<complex<float>, row1_type, Replicated_map<1>, LP_1xxi >(gmap);
+  test_1_expr_3<float,          row1_type, Replicated_map<1>, LP_1xxa >(gmap);
+  test_1_expr_3<complex<float>, row1_type, Replicated_map<1>, LP_1xxa >(gmap);
   test_1_expr_3<complex<float>, row1_type, Replicated_map<1>, LP_1xxs >(gmap);
 
 
   Map<Block_dist> map(num_processors());
 
-  test_1_dense<float,          row1_type, Map<Block_dist>, LP_1xxi >(map);
-  test_1_dense<float,          row1_type, Map<Block_dist>, LP_1xxs >(map);
-  test_1_dense<complex<float>, row1_type, Map<Block_dist>, LP_1xxi >(map);
+  test_1_dense<float,          row1_type, Map<Block_dist>, LP_1xxa >(map);
+  test_1_dense<complex<float>, row1_type, Map<Block_dist>, LP_1xxa >(map);
   test_1_dense<complex<float>, row1_type, Map<Block_dist>, LP_1xxs >(map);
 
-  test_1_dense_const<float,          row1_type, Map<Block_dist>, LP_1xxi>(map);
-  test_1_dense_const<float,          row1_type, Map<Block_dist>, LP_1xxs>(map);
-  test_1_dense_const<complex<float>, row1_type, Map<Block_dist>, LP_1xxi>(map);
+  test_1_dense_const<float,          row1_type, Map<Block_dist>, LP_1xxa>(map);
+  test_1_dense_const<complex<float>, row1_type, Map<Block_dist>, LP_1xxa>(map);
   test_1_dense_const<complex<float>, row1_type, Map<Block_dist>, LP_1xxs>(map);
 
-  test_1_expr_1<float,          row1_type, Map<Block_dist>, LP_1xxi >(map);
-  test_1_expr_1<complex<float>, row1_type, Map<Block_dist>, LP_1xxi >(map);
+  test_1_expr_1<float,          row1_type, Map<Block_dist>, LP_1xxa >(map);
+  test_1_expr_1<complex<float>, row1_type, Map<Block_dist>, LP_1xxa >(map);
   test_1_expr_1<complex<float>, row1_type, Map<Block_dist>, LP_1xxs >(map);
 
-  test_1_expr_2<float,          row1_type, Map<Block_dist>, LP_1xxi >(map);
-  test_1_expr_2<complex<float>, row1_type, Map<Block_dist>, LP_1xxi >(map);
+  test_1_expr_2<float,          row1_type, Map<Block_dist>, LP_1xxa >(map);
+  test_1_expr_2<complex<float>, row1_type, Map<Block_dist>, LP_1xxa >(map);
   test_1_expr_2<complex<float>, row1_type, Map<Block_dist>, LP_1xxs >(map);
 
-  test_1_expr_3<float,          row1_type, Map<Block_dist>, LP_1xxi >(map);
-  test_1_expr_3<complex<float>, row1_type, Map<Block_dist>, LP_1xxi >(map);
+  test_1_expr_3<float,          row1_type, Map<Block_dist>, LP_1xxa >(map);
+  test_1_expr_3<complex<float>, row1_type, Map<Block_dist>, LP_1xxa >(map);
   test_1_expr_3<complex<float>, row1_type, Map<Block_dist>, LP_1xxs >(map);
-}
-
-
-
-int
-main(int argc, char** argv)
-{
-  vsipl init(argc, argv);
-
-  test();
+#endif
 }

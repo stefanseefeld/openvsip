@@ -11,28 +11,26 @@
 #include <vsip/selgen.hpp>
 #include <vsip/dense.hpp>
 #include <vsip/dda.hpp>
-#include <vsip_csl/strided.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <iostream>
-#include <cassert>
+#include <ovxx/strided.hpp>
+#include <ovxx/type_name.hpp>
+#include <test.hpp>
 
 #ifndef VERBOSE
 #define VERBOSE 0
 #endif
 
-using namespace vsip;
-using vsip_csl::equal;
+using namespace ovxx;
+namespace d = ovxx::dda;
 
 // Sum values in a view via Data interface.
 template <typename T, typename Block>
 T
 dda_sum(const_Vector<T, Block> view)
 {
-  dda::Data<Block, dda::in> raw(view.block());
+  d::Data<Block, d::in> raw(view.block());
 
 #if VERBOSE
-  std::cout << vsip_csl::type_name<typename dda::Data<Block, dda::in>::backend_type>() << std::endl;
+  std::cout << type_name<typename d::Data<Block, d::in>::backend_type>() << std::endl;
 #endif
 
   typename Block::value_type const *data = raw.ptr();
@@ -78,6 +76,8 @@ main(int argc, char** argv)
   vsipl init(argc, argv);
 
   test_sum<Dense<1, float> >();
-  test_sum<vsip_csl::Strided<1, float> >();
+  test_sum<Strided<1, float> >();
+#if OVXX_PARALLEL_API == 1
   test_sum<Dense<1, float, tuple<0,1,2>, Map<> > >();
+#endif
 }

@@ -5,7 +5,6 @@
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
-
 //    This file illustrates how data access may be used to perform
 //    element-wise matrix add, in three different ways:
 //
@@ -24,22 +23,14 @@
 //       traversal vs col-major traversal), and data layout (a single
 //       loop can be used for dense/continguous data). (matrix_add).
 
-#include <iostream>
-#include <cassert>
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/dense.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip_csl/test.hpp>
+#include <ovxx/dda.hpp>
+#include <test.hpp>
 
-using namespace std;
-using namespace vsip;
-using vsip_csl::equal;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 
 /// Element-wise matrix addition, example 1.

@@ -6,12 +6,8 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#ifndef TESTS_EXTDATA_SUBVIEWS_HPP
-#define TESTS_EXTDATA_SUBVIEWS_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef dda_subviews_hpp_
+#define dda_subviews_hpp_
 
 #include <iostream>
 #include <cassert>
@@ -20,23 +16,17 @@
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/tensor.hpp>
-
-#include <vsip_csl/test.hpp>
+#include "test.hpp"
 #include "output.hpp"
 
 using namespace vsip;
-using vsip_csl::equal;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename BlockT>
 void
 dump_access_details()
 {
-  std::cout << "Access details (block_type = " << Type_name<BlockT>::name() << std::endl;
+  std::cout << "Access details (block_type = " << ovxx::type_name<BlockT>() << std::endl;
 
   typedef vsip::dda::dda_block_layout<BlockT> dbl_type;
   typedef typename dbl_type::access_type access_type;
@@ -44,9 +34,9 @@ dump_access_details()
   typedef typename dbl_type::packing   packing;
   typedef typename dbl_type::layout_type layout_type;
 
-  std::cout << "  dbl access_type = " << Type_name<access_type>::name() << std::endl;
-  std::cout << "  dbl order_type  = " << Type_name<order_type>::name() << std::endl;
-  std::cout << "  dbl packing   = " << Type_name<packing>::name() << std::endl;
+  std::cout << "  dbl access_type = " << ovxx::type_name<access_type>() << std::endl;
+  std::cout << "  dbl order_type  = " << ovxx::type_name<order_type>() << std::endl;
+  std::cout << "  dbl packing   = " << ovxx::type_name<packing>() << std::endl;
 
   typedef vsip::get_block_layout<BlockT> bl_type;
   typedef typename bl_type::access_type bl_access_type;
@@ -54,43 +44,18 @@ dump_access_details()
   typedef typename bl_type::packing   bl_packing;
   typedef typename bl_type::layout_type bl_layout_type;
 
-  std::cout << "  bl  access_type = " << Type_name<bl_access_type>::name() << std::endl;
-  std::cout << "  bl  order_type  = " << Type_name<bl_order_type>::name() << std::endl;
-  std::cout << "  bl  packing   = " << Type_name<bl_packing>::name() << std::endl;
+  std::cout << "  bl  access_type = " << ovxx::type_name<bl_access_type>() << std::endl;
+  std::cout << "  bl  order_type  = " << ovxx::type_name<bl_order_type>() << std::endl;
+  std::cout << "  bl  packing   = " << ovxx::type_name<bl_packing>() << std::endl;
 
-  typedef typename vsip::dda::impl::Choose_access<BlockT, layout_type>::type
+  typedef typename ovxx::dda::get_block_access<BlockT, layout_type, vsip::dda::in>::type
     use_access_type;
 
-  std::cout << "  use_access_type = " << Type_name<use_access_type>::name() << std::endl;
+  std::cout << "  use_access_type = " << ovxx::type_name<use_access_type>() << std::endl;
 
-  std::cout << "  cost            = " << vsip::dda::Data<BlockT, dda::in>::ct_cost
+  std::cout << "  cost            = " << vsip::dda::Data<BlockT, vsip::dda::in>::ct_cost
 	    << std::endl;
 }
-
-
-
-template <typename T>
-struct is_complex
-{
-  static bool const value = false;
-};
-
-template <typename T>
-struct is_complex<complex<T> >
-{
-  static bool const value = true;
-};
-
-
-template <bool Value>
-struct Bool_value
-{};
-
-
-
-/***********************************************************************
-  Test vector subviews
-***********************************************************************/
 
 /// Vector subview of a vector.
 
@@ -105,33 +70,31 @@ test_vector_subview(
   typedef typename view_type::subview_type  subview_type;
   typedef typename subview_type::block_type subblock_type;
 
-  typedef typename vsip::dda::Data<subblock_type, dda::in>::storage_type storage_type;
-  typedef typename storage_type::type                          ptr_type;
+  typedef storage_traits<typename subblock_type::value_type, 
+			 get_block_layout<subblock_type>::storage_format>
+    storage;
+  typedef typename storage::ptr_type ptr_type;
 
   view = T();
-
-  test_assert((vsip::dda::Data<BlockT, dda::in>::ct_cost == 0));
-  test_assert((vsip::dda::Data<subblock_type, dda::in>::ct_cost == 0));
+  test_assert((vsip::dda::Data<BlockT, vsip::dda::in>::ct_cost == 0));
+  test_assert((vsip::dda::Data<subblock_type, vsip::dda::in>::ct_cost == 0));
 
   subview_type subv = view(subdom);
 
   {
-    vsip::dda::Data<subblock_type, dda::inout> ext(subv.block());
+    vsip::dda::Data<subblock_type, vsip::dda::inout> data(subv.block());
 
     // This should be direct access
-    test_assert(ext.ct_cost         == 0);
-    // test_assert(ext.CT_Mem_not_req  == true);
-    // test_assert(ext.CT_Xfer_not_req == true);
+    test_assert(data.ct_cost         == 0);
+    test_assert(data.size(0) == subdom[0].size());
 
-    test_assert(ext.size(0) == subdom[0].size());
-
-    ptr_type    ptr     = ext.ptr();
-    stride_type stride0 = ext.stride(0);
+    ptr_type    ptr     = data.ptr();
+    stride_type stride0 = data.stride(0);
     
-    for (index_type i=0; i<ext.size(0); ++i)
+    for (index_type i=0; i<data.size(0); ++i)
     {
-      test_assert(equal(storage_type::get(ptr, i*stride0), T()));
-      storage_type::put(ptr, i*stride0, T(i));
+      test_assert(equal(storage::get(ptr, i*stride0), T()));
+      storage::put(ptr, i*stride0, T(i));
     }
   }
 
@@ -144,21 +107,18 @@ test_vector_subview(
   }
 
   {
-    vsip::dda::Data<subblock_type, dda::inout> ext(subv.block());
+    vsip::dda::Data<subblock_type, vsip::dda::inout> data(subv.block());
 
     // This should be direct access
-    test_assert(ext.ct_cost         == 0);
-    // test_assert(ext.CT_Mem_not_req  == true);
-    // test_assert(ext.CT_Xfer_not_req == true);
+    test_assert(data.ct_cost         == 0);
+    test_assert(data.size(0) == subdom[0].size());
 
-    test_assert(ext.size(0) == subdom[0].size());
-
-    ptr_type    ptr     = ext.ptr();
-    stride_type stride0 = ext.stride(0);
+    ptr_type    ptr     = data.ptr();
+    stride_type stride0 = data.stride(0);
     
-    for (index_type i=0; i<ext.size(0); ++i)
+    for (index_type i=0; i<data.size(0); ++i)
     {
-      test_assert(equal(storage_type::get(ptr, i*stride0), T(i + 100)));
+      test_assert(equal(storage::get(ptr, i*stride0), T(i + 100)));
     }
   }
 }
@@ -187,9 +147,7 @@ test_vector_subview_cases(
 template <typename       T,
 	  typename       BlockT>
 void
-test_vector_realimag(
-  Vector<T, BlockT>,
-  Bool_value<false>)
+test_vector_realimag(Vector<T, BlockT>, false_type)
 {
 }
 
@@ -198,9 +156,7 @@ test_vector_realimag(
 template <typename       T,
 	  typename       BlockT>
 void
-test_vector_realimag(
-  Vector<complex<T>, BlockT> view,
-  Bool_value<true>)
+test_vector_realimag(Vector<complex<T>, BlockT> view, true_type)
 {
   typedef Vector<complex<T>, BlockT>          view_type;
   typedef typename view_type::realview_type   realview_type;
@@ -210,28 +166,25 @@ test_vector_realimag(
 
   view = complex<T>();
 
-  test_assert((vsip::dda::Data<BlockT, dda::inout>::ct_cost == 0));
-  test_assert((vsip::dda::Data<realblock_type, dda::inout>::ct_cost == 0));
-  test_assert((vsip::dda::Data<imagblock_type, dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<BlockT, vsip::dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<realblock_type, vsip::dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<imagblock_type, vsip::dda::inout>::ct_cost == 0));
 
   realview_type real = view.real();
   imagview_type imag = view.imag();
 
   // Initialize the view using DDA on the real subview.
   {
-    vsip::dda::Data<realblock_type, dda::inout> ext(real.block());
+    vsip::dda::Data<realblock_type, vsip::dda::inout> data(real.block());
 
     // This should be direct access
-    test_assert(ext.ct_cost         == 0);
-    // test_assert(ext.CT_Mem_not_req  == true);
-    // test_assert(ext.CT_Xfer_not_req == true);
+    test_assert(data.ct_cost         == 0);
+    test_assert(data.size(0) == view.size(0));
 
-    test_assert(ext.size(0) == view.size(0));
-
-    T* ptr              = ext.ptr();
-    stride_type stride0 = ext.stride(0);
+    T* ptr              = data.ptr();
+    stride_type stride0 = data.stride(0);
     
-    for (index_type i=0; i<ext.size(0); ++i)
+    for (index_type i=0; i<data.size(0); ++i)
     {
       test_assert(equal(ptr[i*stride0], T()));
       ptr[i*stride0] = T(3*i+1);
@@ -240,19 +193,16 @@ test_vector_realimag(
 
   // Initialize the view using DDA on the imag subview.
   {
-    vsip::dda::Data<imagblock_type, dda::inout> ext(imag.block());
+    vsip::dda::Data<imagblock_type, vsip::dda::inout> data(imag.block());
 
     // This should be direct access
-    test_assert(ext.ct_cost         == 0);
-    // test_assert(ext.CT_Mem_not_req  == true);
-    // test_assert(ext.CT_Xfer_not_req == true);
+    test_assert(data.ct_cost         == 0);
+    test_assert(data.size(0) == view.size(0));
 
-    test_assert(ext.size(0) == view.size(0));
-
-    T* ptr              = ext.ptr();
-    stride_type stride0 = ext.stride(0);
+    T* ptr              = data.ptr();
+    stride_type stride0 = data.stride(0);
     
-    for (index_type i=0; i<ext.size(0); ++i)
+    for (index_type i=0; i<data.size(0); ++i)
     {
       test_assert(equal(ptr[i*stride0], T()));
       ptr[i*stride0] = T(4*i+1);
@@ -271,16 +221,16 @@ test_vector_realimag(
 
   // Check and change the view using DDA on the real & imag subviews.
   {
-    vsip::dda::Data<realblock_type, dda::inout> rext(real.block());
-    vsip::dda::Data<imagblock_type, dda::inout> iext(imag.block());
+    vsip::dda::Data<realblock_type, vsip::dda::inout> rdata(real.block());
+    vsip::dda::Data<imagblock_type, vsip::dda::inout> idata(imag.block());
 
-    test_assert(rext.size(0) == view.size(0));
-    test_assert(iext.size(0) == view.size(0));
+    test_assert(rdata.size(0) == view.size(0));
+    test_assert(idata.size(0) == view.size(0));
 
-    T* rptr              = rext.ptr();
-    T* iptr              = iext.ptr();
-    stride_type rstride0 = rext.stride(0);
-    stride_type istride0 = iext.stride(0);
+    T* rptr              = rdata.ptr();
+    T* iptr              = idata.ptr();
+    stride_type rstride0 = rdata.stride(0);
+    stride_type istride0 = idata.stride(0);
     
     for (index_type i=0; i<view.size(0); ++i)
     {
@@ -313,16 +263,13 @@ test_vector(Vector<T, BlockT> view)
   test_vector_subview_cases(view);
   test_vector_subview_cases(view(Domain<1>(size-2)));
 
-  test_vector_realimag(view, Bool_value<is_complex<T>::value>());
+  test_vector_realimag(view,
+		       integral_constant<bool, is_complex<T>::value>());
   test_vector_realimag(view(Domain<1>(size-2)),
-		       Bool_value<is_complex<T>::value>());
+		       integral_constant<bool, is_complex<T>::value>());
 }
 
 
-
-/***********************************************************************
-  Test matrix subviews
-***********************************************************************/
 
 /// Row subviews of matrix.
 
@@ -335,16 +282,17 @@ test_row_subview(
   typedef Matrix<T, BlockT>             view_type;
   typedef typename view_type::row_type  row_type;
   typedef typename row_type::block_type row_block_type;
-  typedef typename vsip::dda::Data<row_block_type, dda::inout>::ptr_type ptr_type;
-  typedef typename vsip::dda::Data<row_block_type, dda::inout>::storage_type storage_type;
+  typedef typename vsip::dda::Data<row_block_type, vsip::dda::inout>::ptr_type ptr_type;
+  typedef storage_traits<typename row_block_type::value_type,
+			 get_block_layout<row_block_type>::storage_format> storage;
 
   length_type rows = mat.size(0);
   length_type cols = mat.size(1);
 
   mat = T();
 
-  test_assert((vsip::dda::Data<BlockT, dda::inout>::ct_cost == 0));
-  test_assert((vsip::dda::Data<row_block_type, dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<BlockT, vsip::dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<row_block_type, vsip::dda::inout>::ct_cost == 0));
 
   // Initialize the matrix using DDA by row subview.
   for (index_type r=0; r<rows; ++r)
@@ -352,21 +300,18 @@ test_row_subview(
     row_type row = mat.row(r);
 
     {
-      vsip::dda::Data<row_block_type, dda::inout> ext(row.block());
+      vsip::dda::Data<row_block_type, vsip::dda::inout> data(row.block());
 
-      test_assert(ext.ct_cost         == 0);
-      // test_assert(ext.CT_Mem_not_req  == true);
-      // test_assert(ext.CT_Xfer_not_req == true);
-      
-      test_assert(ext.size(0) == cols);
+      test_assert(data.ct_cost         == 0);
+      test_assert(data.size(0) == cols);
 
-      ptr_type ptr    = ext.ptr();
-      stride_type  stride = ext.stride(0);
+      ptr_type ptr    = data.ptr();
+      stride_type  stride = data.stride(0);
 
-      for (index_type i=0; i<ext.size(0); ++i)
+      for (index_type i=0; i<data.size(0); ++i)
       {
-	test_assert(equal(storage_type::get(ptr, i*stride), T()));
-	storage_type::put(ptr, i*stride, T(r*cols+i));
+	test_assert(equal(storage::get(ptr, i*stride), T()));
+	storage::put(ptr, i*stride, T(r*cols+i));
       }
     }
   }
@@ -385,19 +330,16 @@ test_row_subview(
     row_type row = mat.row(r);
 
     {
-      vsip::dda::Data<row_block_type, dda::inout> ext(row.block());
+      vsip::dda::Data<row_block_type, vsip::dda::inout> data(row.block());
 
-      test_assert(ext.ct_cost         == 0);
-      // test_assert(ext.CT_Mem_not_req  == true);
-      // test_assert(ext.CT_Xfer_not_req == true);
-      
-      test_assert(ext.size(0) == cols);
+      test_assert(data.ct_cost         == 0);
+      test_assert(data.size(0) == cols);
 
-      ptr_type ptr   = ext.ptr();
-      stride_type stride = ext.stride(0);
+      ptr_type ptr   = data.ptr();
+      stride_type stride = data.stride(0);
 
-      for (index_type i=0; i<ext.size(0); ++i)
-	test_assert(equal(storage_type::get(ptr, i*stride), T(r*cols+i + 1)));
+      for (index_type i=0; i<data.size(0); ++i)
+	test_assert(equal(storage::get(ptr, i*stride), T(r*cols+i + 1)));
     }
   }
 }
@@ -413,16 +355,17 @@ test_col_subview(
   typedef Matrix<T, BlockT>             view_type;
   typedef typename view_type::col_type  col_type;
   typedef typename col_type::block_type col_block_type;
-  typedef typename vsip::dda::Data<col_block_type, dda::inout>::ptr_type ptr_type;
-  typedef typename vsip::dda::Data<col_block_type, dda::inout>::storage_type storage_type;
+  typedef typename vsip::dda::Data<col_block_type, vsip::dda::inout>::ptr_type ptr_type;
+  typedef storage_traits<typename col_block_type::value_type,
+			 get_block_layout<col_block_type>::storage_format> storage;
 
   length_type rows = mat.size(0);
   length_type cols = mat.size(1);
 
   mat = T();
 
-  test_assert((vsip::dda::Data<BlockT, dda::inout>::ct_cost == 0));
-  test_assert((vsip::dda::Data<col_block_type, dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<BlockT, vsip::dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<col_block_type, vsip::dda::inout>::ct_cost == 0));
 
   // Initialize the matrix using DDA by col subview.
   for (index_type c=0; c<cols; ++c)
@@ -430,21 +373,18 @@ test_col_subview(
     col_type col = mat.col(c);
 
     {
-      vsip::dda::Data<col_block_type, dda::inout> ext(col.block());
+      vsip::dda::Data<col_block_type, vsip::dda::inout> data(col.block());
 
-      test_assert(ext.ct_cost         == 0);
-      // test_assert(ext.CT_Mem_not_req  == true);
-      // test_assert(ext.CT_Xfer_not_req == true);
-      
-      test_assert(ext.size(0) == rows);
+      test_assert(data.ct_cost         == 0);
+      test_assert(data.size(0) == rows);
 
-      ptr_type ptr    = ext.ptr();
-      stride_type  stride = ext.stride(0);
+      ptr_type ptr    = data.ptr();
+      stride_type  stride = data.stride(0);
 
-      for (index_type i=0; i<ext.size(0); ++i)
+      for (index_type i=0; i<data.size(0); ++i)
       {
-	test_assert(equal(storage_type::get(ptr, i*stride), T()));
-	storage_type::put(ptr, i*stride, T(c*rows+i));
+	test_assert(equal(storage::get(ptr, i*stride), T()));
+	storage::put(ptr, i*stride, T(c*rows+i));
       }
     }
   }
@@ -463,19 +403,16 @@ test_col_subview(
     col_type col = mat.col(c);
 
     {
-      vsip::dda::Data<col_block_type, dda::inout> ext(col.block());
+      vsip::dda::Data<col_block_type, vsip::dda::inout> data(col.block());
 
-      test_assert(ext.ct_cost         == 0);
-      // test_assert(ext.CT_Mem_not_req  == true);
-      // test_assert(ext.CT_Xfer_not_req == true);
-      
-      test_assert(ext.size(0) == rows);
+      test_assert(data.ct_cost         == 0);
+      test_assert(data.size(0) == rows);
 
-      ptr_type ptr    = ext.ptr();
-      stride_type  stride = ext.stride(0);
+      ptr_type ptr    = data.ptr();
+      stride_type  stride = data.stride(0);
 
-      for (index_type i=0; i<ext.size(0); ++i)
-	test_assert(equal(storage_type::get(ptr, i*stride), T(c*rows+i + 1)));
+      for (index_type i=0; i<data.size(0); ++i)
+	test_assert(equal(storage::get(ptr, i*stride), T(c*rows+i + 1)));
     }
   }
 }
@@ -491,18 +428,19 @@ test_diag_subview(
   typedef Matrix<T, BlockT>                  view_type;
   typedef typename view_type::diag_type      diagview_type;
   typedef typename diagview_type::block_type subblock_type;
-  typedef typename vsip::dda::Data<subblock_type, dda::inout>::ptr_type ptr_type;
-  typedef typename vsip::dda::Data<subblock_type, dda::inout>::storage_type storage_type;
+  typedef typename vsip::dda::Data<subblock_type, vsip::dda::inout>::ptr_type ptr_type;
+  typedef storage_traits<typename subblock_type::value_type,
+			 get_block_layout<subblock_type>::storage_format> storage;
 
   length_type rows = mat.size(0);
   length_type cols = mat.size(1);
 
   mat = T();
 
-  test_assert((dda::Data<BlockT, dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<BlockT, vsip::dda::inout>::ct_cost == 0));
   // If the access cost to diagview_type::block_type is 0,
   // then direct access is being used.
-  test_assert((dda::Data<subblock_type, dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<subblock_type, vsip::dda::inout>::ct_cost == 0));
 
   // Initialize the matrix using put with count
   for (index_type r=0; r<rows; ++r) {
@@ -518,20 +456,20 @@ test_diag_subview(
     diagview_type diagv = mat.diag(d);
     length_type size = diagv.size();
 
-    { // use a block to limit the lifetime of ext object.
-      vsip::dda::Data<subblock_type, dda::inout> ext(diagv.block());
+    { // use a block to limit the lifetime of data object.
+      vsip::dda::Data<subblock_type, vsip::dda::inout> data(diagv.block());
 
-      ptr_type ptr = ext.ptr();
-      stride_type  str = ext.stride(0);
+      ptr_type ptr = data.ptr();
+      stride_type  str = data.stride(0);
 
       for (index_type i = 0; i < size; ++i )
       {
         if ( d >= 0 )
-          test_assert(equal(storage_type::get(ptr, i*str), T(i * cols + i + d) ) );
+          test_assert(equal(storage::get(ptr, i*str), T(i * cols + i + d) ) );
         else
-          test_assert(equal(storage_type::get(ptr, i*str), T(i * cols + i - (d * cols)) ) );
+          test_assert(equal(storage::get(ptr, i*str), T(i * cols + i - (d * cols)) ) );
 
-        storage_type::put(ptr, i*str, T(VSIP_IMPL_PI + i));
+        storage::put(ptr, i*str, T(OVXX_PI + i));
       }
     } 
 
@@ -539,9 +477,9 @@ test_diag_subview(
     for ( index_type i = 0; i < size; i++ )
     {
       if ( d >= 0 )
-        test_assert( equal( mat(i, i + d), T(VSIP_IMPL_PI + i) ) );
+        test_assert( equal( mat(i, i + d), T(OVXX_PI + i) ) );
       else
-        test_assert( equal( mat(i - d, i), T(VSIP_IMPL_PI + i) ) );
+        test_assert( equal( mat(i - d, i), T(OVXX_PI + i) ) );
     }
   }
 }
@@ -559,36 +497,34 @@ test_matrix_subview(
   typedef Matrix<T, BlockT>                 view_type;
   typedef typename view_type::subview_type  subview_type;
   typedef typename subview_type::block_type subblock_type;
-  typedef typename vsip::dda::Data<subblock_type, dda::inout>::ptr_type ptr_type;
-  typedef typename vsip::dda::Data<subblock_type, dda::inout>::storage_type storage_type;
+  typedef typename vsip::dda::Data<subblock_type, vsip::dda::inout>::ptr_type ptr_type;
+  typedef storage_traits<typename subblock_type::value_type,
+			 get_block_layout<subblock_type>::storage_format> storage;
 
   view = T();
 
-  test_assert((vsip::dda::Data<BlockT, dda::inout>::ct_cost == 0));
-  test_assert((vsip::dda::Data<subblock_type, dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<BlockT, vsip::dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<subblock_type, vsip::dda::inout>::ct_cost == 0));
 
   subview_type subv = view(subdom);
 
   {
-    vsip::dda::Data<subblock_type, dda::inout> ext(subv.block());
+    vsip::dda::Data<subblock_type, vsip::dda::inout> data(subv.block());
 
     // This should be direct access
-    test_assert(ext.ct_cost         == 0);
-    // test_assert(ext.CT_Mem_not_req  == true);
-    // test_assert(ext.CT_Xfer_not_req == true);
+    test_assert(data.ct_cost         == 0);
+    test_assert(data.size(0) == subdom[0].size());
+    test_assert(data.size(1) == subdom[1].size());
 
-    test_assert(ext.size(0) == subdom[0].size());
-    test_assert(ext.size(1) == subdom[1].size());
-
-    ptr_type ptr     = ext.ptr();
-    stride_type  stride0 = ext.stride(0);
-    stride_type  stride1 = ext.stride(1);
+    ptr_type ptr     = data.ptr();
+    stride_type  stride0 = data.stride(0);
+    stride_type  stride1 = data.stride(1);
     
-    for (index_type i=0; i<ext.size(0); ++i)
-      for (index_type j=0; j<ext.size(1); ++j)
+    for (index_type i=0; i<data.size(0); ++i)
+      for (index_type j=0; j<data.size(1); ++j)
       {
-	test_assert(equal(storage_type::get(ptr, i*stride0 + j*stride1), T()));
-	storage_type::put(ptr, i*stride0 + j*stride1, T(i*ext.size(1)+j));
+	test_assert(equal(storage::get(ptr, i*stride0 + j*stride1), T()));
+	storage::put(ptr, i*stride0 + j*stride1, T(i*data.size(1)+j));
       }
   }
 
@@ -603,25 +539,22 @@ test_matrix_subview(
     }
 
   {
-    vsip::dda::Data<subblock_type, dda::inout> ext(subv.block());
+    vsip::dda::Data<subblock_type, vsip::dda::inout> data(subv.block());
 
     // This should be direct access
-    test_assert(ext.ct_cost         == 0);
-    // test_assert(ext.CT_Mem_not_req  == true);
-    // test_assert(ext.CT_Xfer_not_req == true);
+    test_assert(data.ct_cost         == 0);
+    test_assert(data.size(0) == subdom[0].size());
+    test_assert(data.size(1) == subdom[1].size());
 
-    test_assert(ext.size(0) == subdom[0].size());
-    test_assert(ext.size(1) == subdom[1].size());
-
-    ptr_type ptr     = ext.ptr();
-    stride_type  stride0 = ext.stride(0);
-    stride_type  stride1 = ext.stride(1);
+    ptr_type ptr     = data.ptr();
+    stride_type  stride0 = data.stride(0);
+    stride_type  stride1 = data.stride(1);
     
-    for (index_type i=0; i<ext.size(0); ++i)
-      for (index_type j=0; j<ext.size(1); ++j)
+    for (index_type i=0; i<data.size(0); ++i)
+      for (index_type j=0; j<data.size(1); ++j)
       {
-	test_assert(equal(storage_type::get(ptr, i*stride0 + j*stride1),
-			  T(i + j*ext.size(0) + 100)));
+	test_assert(equal(storage::get(ptr, i*stride0 + j*stride1),
+			  T(i + j*data.size(0) + 100)));
       }
   }
 }
@@ -654,9 +587,7 @@ test_matrix_subview_cases(
 template <typename       T,
 	  typename       BlockT>
 void
-test_matrix_realimag(
-  Matrix<T, BlockT>,
-  Bool_value<false>)
+test_matrix_realimag(Matrix<T, BlockT>, false_type)
 {
 }
 
@@ -665,9 +596,7 @@ test_matrix_realimag(
 template <typename       T,
 	  typename       BlockT>
 void
-test_matrix_realimag(
-  Matrix<complex<T>, BlockT> view,
-  Bool_value<true>)
+test_matrix_realimag(Matrix<complex<T>, BlockT> view, true_type)
 {
   typedef Matrix<complex<T>, BlockT>          view_type;
   typedef typename view_type::realview_type   realview_type;
@@ -677,33 +606,30 @@ test_matrix_realimag(
 
   view = complex<T>();
 
-  test_assert((vsip::dda::Data<BlockT, dda::inout>::ct_cost == 0));
-  test_assert((vsip::dda::Data<realblock_type, dda::inout>::ct_cost == 0));
-  test_assert((vsip::dda::Data<imagblock_type, dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<BlockT, vsip::dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<realblock_type, vsip::dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<imagblock_type, vsip::dda::inout>::ct_cost == 0));
 
   realview_type real = view.real();
   imagview_type imag = view.imag();
 
   // Initialize the view using DDA on the real subview.
   {
-    vsip::dda::Data<realblock_type, dda::inout> ext(real.block());
+    vsip::dda::Data<realblock_type, vsip::dda::inout> data(real.block());
 
     // This should be direct access
-    test_assert(ext.ct_cost         == 0);
-    // test_assert(ext.CT_Mem_not_req  == true);
-    // test_assert(ext.CT_Xfer_not_req == true);
+    test_assert(data.ct_cost         == 0);
+    test_assert(data.size(0) == view.size(0));
+    test_assert(data.size(1) == view.size(1));
 
-    test_assert(ext.size(0) == view.size(0));
-    test_assert(ext.size(1) == view.size(1));
-
-    T* ptr              = ext.ptr();
-    stride_type stride0 = ext.stride(0);
-    stride_type stride1 = ext.stride(1);
+    T* ptr              = data.ptr();
+    stride_type stride0 = data.stride(0);
+    stride_type stride1 = data.stride(1);
     
-    for (index_type i=0; i<ext.size(0); ++i)
-      for (index_type j=0; j<ext.size(1); ++j)
+    for (index_type i=0; i<data.size(0); ++i)
+      for (index_type j=0; j<data.size(1); ++j)
       {
-	index_type idx = (i*ext.size(1)+j);
+	index_type idx = (i*data.size(1)+j);
 	test_assert(equal(ptr[i*stride0 + j*stride1], T()));
 	ptr[i*stride0 + j*stride1] = T(3*idx+1);
       }
@@ -711,24 +637,21 @@ test_matrix_realimag(
 
   // Initialize the view using DDA on the imag subview.
   {
-    vsip::dda::Data<imagblock_type, dda::inout> ext(imag.block());
+    vsip::dda::Data<imagblock_type, vsip::dda::inout> data(imag.block());
 
     // This should be direct access
-    test_assert(ext.ct_cost         == 0);
-    // test_assert(ext.CT_Mem_not_req  == true);
-    // test_assert(ext.CT_Xfer_not_req == true);
+    test_assert(data.ct_cost         == 0);
+    test_assert(data.size(0) == view.size(0));
+    test_assert(data.size(1) == view.size(1));
 
-    test_assert(ext.size(0) == view.size(0));
-    test_assert(ext.size(1) == view.size(1));
-
-    T* ptr              = ext.ptr();
-    stride_type stride0 = ext.stride(0);
-    stride_type stride1 = ext.stride(1);
+    T* ptr              = data.ptr();
+    stride_type stride0 = data.stride(0);
+    stride_type stride1 = data.stride(1);
     
-    for (index_type i=0; i<ext.size(0); ++i)
-      for (index_type j=0; j<ext.size(1); ++j)
+    for (index_type i=0; i<data.size(0); ++i)
+      for (index_type j=0; j<data.size(1); ++j)
       {
-	index_type idx = (i*ext.size(1)+j);
+	index_type idx = (i*data.size(1)+j);
 	test_assert(equal(ptr[i*stride0 + j*stride1], T()));
 	ptr[i*stride0 + j*stride1] = T(4*idx+1);
       }
@@ -749,15 +672,15 @@ test_matrix_realimag(
 
   // Check and change the view using DDA on the real & imag subviews.
   {
-    vsip::dda::Data<realblock_type, dda::inout> rext(real.block());
-    vsip::dda::Data<imagblock_type, dda::inout> iext(imag.block());
+    vsip::dda::Data<realblock_type, vsip::dda::inout> rdata(real.block());
+    vsip::dda::Data<imagblock_type, vsip::dda::inout> idata(imag.block());
 
-    T* rptr              = rext.ptr();
-    T* iptr              = iext.ptr();
-    stride_type rstride0 = rext.stride(0);
-    stride_type rstride1 = rext.stride(1);
-    stride_type istride0 = iext.stride(0);
-    stride_type istride1 = iext.stride(1);
+    T* rptr              = rdata.ptr();
+    T* iptr              = idata.ptr();
+    stride_type rstride0 = rdata.stride(0);
+    stride_type rstride1 = rdata.stride(1);
+    stride_type istride0 = idata.stride(0);
+    stride_type istride1 = idata.stride(1);
     
     for (index_type i=0; i<view.size(0); ++i)
       for (index_type j=0; j<view.size(1); ++j)
@@ -812,9 +735,10 @@ test_matrix(Matrix<T, BlockT> view)
   test_matrix_subview_cases(view);
   test_matrix_subview_cases(view(Domain<2>(rows-2, cols-2)));
 
-  test_matrix_realimag(view, Bool_value<is_complex<T>::value>());
+  test_matrix_realimag(view,
+		       integral_constant<bool, is_complex<T>::value>());
   test_matrix_realimag(view(Domain<2>(rows-2, cols-2)),
-		       Bool_value<is_complex<T>::value>());
+		       integral_constant<bool, is_complex<T>::value>());
 
   test_diag_subview(view);
 
@@ -826,12 +750,6 @@ test_matrix(Matrix<T, BlockT> view)
   for (index_type i=0; i<view.size(1); ++i)
     test_vector(view.col(i));
 }
-
-
-
-/***********************************************************************
-  Test vector subviews of a tensor
-***********************************************************************/
 
 template <typename       T,
 	  typename       BlockT,
@@ -942,15 +860,16 @@ test_tensor_vector_subview(
   typedef Tensor<T, BlockT>              view_type;
   typedef typename info_type::subv_type  subv_type;
   typedef typename subv_type::block_type subv_block_type;
-  typedef typename vsip::dda::Data<subv_block_type, dda::inout>::ptr_type ptr_type;
-  typedef typename vsip::dda::Data<subv_block_type, dda::inout>::storage_type storage_type;
+  typedef typename vsip::dda::Data<subv_block_type, vsip::dda::inout>::ptr_type ptr_type;
+  typedef storage_traits<typename subv_block_type::value_type,
+			 get_block_layout<subv_block_type>::storage_format> storage;
 
   dimension_type const D1 = info_type::D1;
   dimension_type const D2 = info_type::D2;
 
   view = T();
 
-  test_assert((vsip::dda::Data<BlockT, dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<BlockT, vsip::dda::inout>::ct_cost == 0));
   // test_assert(dda::Data<subv_block_type>::ct_cost == 0);
 
   // dump_access_details<BlockT>();
@@ -963,21 +882,18 @@ test_tensor_vector_subview(
       subv_type subv = info_type::subv(view, j, k);
 
     {
-      vsip::dda::Data<subv_block_type, dda::inout> ext(subv.block());
+      vsip::dda::Data<subv_block_type, vsip::dda::inout> data(subv.block());
 
-      test_assert(ext.ct_cost         == 0);
-      // test_assert(ext.CT_Mem_not_req  == true);
-      // test_assert(ext.CT_Xfer_not_req == true);
-      
-      test_assert(ext.size(0) == view.size(FreeDim));
+      test_assert(data.ct_cost         == 0);
+      test_assert(data.size(0) == view.size(FreeDim));
 
-      ptr_type ptr    = ext.ptr();
-      stride_type  stride = ext.stride(0);
+      ptr_type ptr    = data.ptr();
+      stride_type  stride = data.stride(0);
 
-      for (index_type i=0; i<ext.size(0); ++i)
+      for (index_type i=0; i<data.size(0); ++i)
       {
-	test_assert(equal(storage_type::get(ptr, i*stride), T()));
-	storage_type::put(ptr, i*stride, info_type::value(view, i, j, k));
+	test_assert(equal(storage::get(ptr, i*stride), T()));
+	storage::put(ptr, i*stride, info_type::value(view, i, j, k));
       }
     }
   }
@@ -1000,20 +916,17 @@ test_tensor_vector_subview(
       subv_type subv = info_type::subv(view, j, k);
 
     {
-      vsip::dda::Data<subv_block_type, dda::inout> ext(subv.block());
+      vsip::dda::Data<subv_block_type, vsip::dda::inout> data(subv.block());
 
-      test_assert(ext.ct_cost         == 0);
-      // test_assert(ext.CT_Mem_not_req  == true);
-      // test_assert(ext.CT_Xfer_not_req == true);
-      
-      test_assert(ext.size(0) == view.size(FreeDim));
+      test_assert(data.ct_cost         == 0);
+      test_assert(data.size(0) == view.size(FreeDim));
 
-      ptr_type ptr    = ext.ptr();
-      stride_type  stride = ext.stride(0);
+      ptr_type ptr    = data.ptr();
+      stride_type  stride = data.stride(0);
 
-      for (index_type i=0; i<ext.size(0); ++i)
+      for (index_type i=0; i<data.size(0); ++i)
       {
-	test_assert(equal(storage_type::get(ptr, i*stride),
+	test_assert(equal(storage::get(ptr, i*stride),
 		     info_type::value(view, i, j, k) + T(1) ));
       }
     }
@@ -1034,40 +947,38 @@ test_tensor_subview(
   typedef Tensor<T, BlockT>                 view_type;
   typedef typename view_type::subview_type  subview_type;
   typedef typename subview_type::block_type subblock_type;
-  typedef typename vsip::dda::Data<subblock_type, dda::inout>::ptr_type ptr_type;
-  typedef typename vsip::dda::Data<subblock_type, dda::inout>::storage_type storage_type;
+  typedef typename vsip::dda::Data<subblock_type, vsip::dda::inout>::ptr_type ptr_type;
+  typedef storage_traits<typename subblock_type::value_type,
+			 get_block_layout<subblock_type>::storage_format> storage;
 
   view = T();
 
-  test_assert((vsip::dda::Data<BlockT, dda::inout>::ct_cost == 0));
-  test_assert((vsip::dda::Data<subblock_type, dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<BlockT, vsip::dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<subblock_type, vsip::dda::inout>::ct_cost == 0));
 
   subview_type subv = view(subdom);
 
   {
-    vsip::dda::Data<subblock_type, dda::inout> ext(subv.block());
+    vsip::dda::Data<subblock_type, vsip::dda::inout> data(subv.block());
 
     // This should be direct access
-    test_assert(ext.ct_cost         == 0);
-    // test_assert(ext.CT_Mem_not_req  == true);
-    // test_assert(ext.CT_Xfer_not_req == true);
+    test_assert(data.ct_cost         == 0);
+    test_assert(data.size(0) == subdom[0].size());
+    test_assert(data.size(1) == subdom[1].size());
+    test_assert(data.size(2) == subdom[2].size());
 
-    test_assert(ext.size(0) == subdom[0].size());
-    test_assert(ext.size(1) == subdom[1].size());
-    test_assert(ext.size(2) == subdom[2].size());
-
-    ptr_type ptr     = ext.ptr();
-    stride_type  stride0 = ext.stride(0);
-    stride_type  stride1 = ext.stride(1);
-    stride_type  stride2 = ext.stride(2);
+    ptr_type ptr     = data.ptr();
+    stride_type  stride0 = data.stride(0);
+    stride_type  stride1 = data.stride(1);
+    stride_type  stride2 = data.stride(2);
     
-    for (index_type i=0; i<ext.size(0); ++i)
-      for (index_type j=0; j<ext.size(1); ++j)
-	for (index_type k=0; k<ext.size(2); ++k)
+    for (index_type i=0; i<data.size(0); ++i)
+      for (index_type j=0; j<data.size(1); ++j)
+	for (index_type k=0; k<data.size(2); ++k)
 	{
-	  test_assert(equal(storage_type::get(ptr, i*stride0 + j*stride1 + k*stride2), T()));
-	  storage_type::put(ptr, i*stride0 + j*stride1 + k*stride2,
-			    T(i*ext.size(1)*ext.size(2)+j*ext.size(2)+k));
+	  test_assert(equal(storage::get(ptr, i*stride0 + j*stride1 + k*stride2), T()));
+	  storage::put(ptr, i*stride0 + j*stride1 + k*stride2,
+		       T(i*data.size(1)*data.size(2)+j*data.size(2)+k));
 	}
   }
 
@@ -1089,30 +1000,27 @@ test_tensor_subview(
     }
 
   {
-    vsip::dda::Data<subblock_type, dda::inout> ext(subv.block());
+    vsip::dda::Data<subblock_type, vsip::dda::inout> data(subv.block());
 
     // This should be direct access
-    test_assert(ext.ct_cost         == 0);
-    // test_assert(ext.CT_Mem_not_req  == true);
-    // test_assert(ext.CT_Xfer_not_req == true);
+    test_assert(data.ct_cost         == 0);
+    test_assert(data.size(0) == subdom[0].size());
+    test_assert(data.size(1) == subdom[1].size());
+    test_assert(data.size(2) == subdom[2].size());
 
-    test_assert(ext.size(0) == subdom[0].size());
-    test_assert(ext.size(1) == subdom[1].size());
-    test_assert(ext.size(2) == subdom[2].size());
-
-    ptr_type ptr     = ext.ptr();
-    stride_type  stride0 = ext.stride(0);
-    stride_type  stride1 = ext.stride(1);
-    stride_type  stride2 = ext.stride(2);
+    ptr_type ptr     = data.ptr();
+    stride_type  stride0 = data.stride(0);
+    stride_type  stride1 = data.stride(1);
+    stride_type  stride2 = data.stride(2);
     
-    for (index_type i=0; i<ext.size(0); ++i)
-      for (index_type j=0; j<ext.size(1); ++j)
-	for (index_type k=0; k<ext.size(2); ++k)
+    for (index_type i=0; i<data.size(0); ++i)
+      for (index_type j=0; j<data.size(1); ++j)
+	for (index_type k=0; k<data.size(2); ++k)
 	{
-	  test_assert(equal(storage_type::get(ptr, i*stride0 + j*stride1 + k*stride2),
+	  test_assert(equal(storage::get(ptr, i*stride0 + j*stride1 + k*stride2),
 		       T(i +
-			 j*ext.size(0) +
-			 k*ext.size(0)*ext.size(1) + 100)));
+			 j*data.size(0) +
+			 k*data.size(0)*data.size(1) + 100)));
 	}
   }
 }
@@ -1140,9 +1048,7 @@ test_tensor_subview_cases(Tensor<T, BlockT> view)
 template <typename       T,
 	  typename       BlockT>
 void
-test_tensor_realimag(
-  Tensor<T, BlockT>,
-  Bool_value<false>)
+test_tensor_realimag(Tensor<T, BlockT>, false_type)
 {
 }
 
@@ -1151,9 +1057,7 @@ test_tensor_realimag(
 template <typename       T,
 	  typename       BlockT>
 void
-test_tensor_realimag(
-  Tensor<complex<T>, BlockT> view,
-  Bool_value<true>)
+test_tensor_realimag(Tensor<complex<T>, BlockT> view, true_type)
 {
   typedef Tensor<complex<T>, BlockT>          view_type;
   typedef typename view_type::realview_type   realview_type;
@@ -1163,34 +1067,31 @@ test_tensor_realimag(
 
   view = complex<T>();
 
-  test_assert((vsip::dda::Data<BlockT, dda::inout>::ct_cost == 0));
-  test_assert((vsip::dda::Data<realblock_type, dda::inout>::ct_cost == 0));
-  test_assert((vsip::dda::Data<imagblock_type, dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<BlockT, vsip::dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<realblock_type, vsip::dda::inout>::ct_cost == 0));
+  test_assert((vsip::dda::Data<imagblock_type, vsip::dda::inout>::ct_cost == 0));
 
   realview_type real = view.real();
   imagview_type imag = view.imag();
 
   // Initialize the view using DDA on the real subview.
   {
-    vsip::dda::Data<realblock_type, dda::inout> ext(real.block());
+    vsip::dda::Data<realblock_type, vsip::dda::inout> data(real.block());
 
     // This should be direct access
-    test_assert(ext.ct_cost         == 0);
-    // test_assert(ext.CT_Mem_not_req  == true);
-    // test_assert(ext.CT_Xfer_not_req == true);
+    test_assert(data.ct_cost         == 0);
+    test_assert(data.size(0) == view.size(0));
+    test_assert(data.size(1) == view.size(1));
+    test_assert(data.size(2) == view.size(2));
 
-    test_assert(ext.size(0) == view.size(0));
-    test_assert(ext.size(1) == view.size(1));
-    test_assert(ext.size(2) == view.size(2));
-
-    T* ptr              = ext.ptr();
-    stride_type stride0 = ext.stride(0);
-    stride_type stride1 = ext.stride(1);
-    stride_type stride2 = ext.stride(2);
+    T* ptr              = data.ptr();
+    stride_type stride0 = data.stride(0);
+    stride_type stride1 = data.stride(1);
+    stride_type stride2 = data.stride(2);
     
-    for (index_type i=0; i<ext.size(0); ++i)
-      for (index_type j=0; j<ext.size(1); ++j)
-	for (index_type k=0; k<ext.size(2); ++k)
+    for (index_type i=0; i<data.size(0); ++i)
+      for (index_type j=0; j<data.size(1); ++j)
+	for (index_type k=0; k<data.size(2); ++k)
 	{
 	  index_type idx = (i*view.size(1)*view.size(2)+j*view.size(2)+k);
 	  test_assert(equal(ptr[i*stride0 + j*stride1 + k*stride2], T()));
@@ -1200,25 +1101,22 @@ test_tensor_realimag(
 
   // Initialize the view using DDA on the imag subview.
   {
-    vsip::dda::Data<imagblock_type, dda::inout> ext(imag.block());
+    vsip::dda::Data<imagblock_type, vsip::dda::inout> data(imag.block());
 
     // This should be direct access
-    test_assert(ext.ct_cost         == 0);
-    // test_assert(ext.CT_Mem_not_req  == true);
-    // test_assert(ext.CT_Xfer_not_req == true);
+    test_assert(data.ct_cost         == 0);
+    test_assert(data.size(0) == view.size(0));
+    test_assert(data.size(1) == view.size(1));
+    test_assert(data.size(2) == view.size(2));
 
-    test_assert(ext.size(0) == view.size(0));
-    test_assert(ext.size(1) == view.size(1));
-    test_assert(ext.size(2) == view.size(2));
-
-    T* ptr              = ext.ptr();
-    stride_type stride0 = ext.stride(0);
-    stride_type stride1 = ext.stride(1);
-    stride_type stride2 = ext.stride(2);
+    T* ptr              = data.ptr();
+    stride_type stride0 = data.stride(0);
+    stride_type stride1 = data.stride(1);
+    stride_type stride2 = data.stride(2);
     
-    for (index_type i=0; i<ext.size(0); ++i)
-      for (index_type j=0; j<ext.size(1); ++j)
-	for (index_type k=0; k<ext.size(2); ++k)
+    for (index_type i=0; i<data.size(0); ++i)
+      for (index_type j=0; j<data.size(1); ++j)
+	for (index_type k=0; k<data.size(2); ++k)
 	{
 	  index_type idx = (i*view.size(1)*view.size(2)+j*view.size(2)+k);
 	  test_assert(equal(ptr[i*stride0 + j*stride1 + k*stride2], T()));
@@ -1242,17 +1140,17 @@ test_tensor_realimag(
 
   // Check and change the view using DDA on the real & imag subviews.
   {
-    vsip::dda::Data<realblock_type, dda::inout> rext(real.block());
-    vsip::dda::Data<imagblock_type, dda::inout> iext(imag.block());
+    vsip::dda::Data<realblock_type, vsip::dda::inout> rdata(real.block());
+    vsip::dda::Data<imagblock_type, vsip::dda::inout> idata(imag.block());
 
-    T* rptr              = rext.ptr();
-    T* iptr              = iext.ptr();
-    stride_type rstride0 = rext.stride(0);
-    stride_type rstride1 = rext.stride(1);
-    stride_type rstride2 = rext.stride(2);
-    stride_type istride0 = iext.stride(0);
-    stride_type istride1 = iext.stride(1);
-    stride_type istride2 = iext.stride(2);
+    T* rptr              = rdata.ptr();
+    T* iptr              = idata.ptr();
+    stride_type rstride0 = rdata.stride(0);
+    stride_type rstride1 = rdata.stride(1);
+    stride_type rstride2 = rdata.stride(2);
+    stride_type istride0 = idata.stride(0);
+    stride_type istride1 = idata.stride(1);
+    stride_type istride2 = idata.stride(2);
     
     for (index_type i=0; i<view.size(0); ++i)
       for (index_type j=0; j<view.size(1); ++j)
@@ -1299,9 +1197,10 @@ test_tensor(Tensor<T, BlockT> view)
   test_tensor_subview_cases(view);
   test_tensor_subview_cases(view(Domain<3>(size0-2, size1-2, size2-2)));
 
-  test_tensor_realimag(view, Bool_value<is_complex<T>::value>());
+  test_tensor_realimag(view,
+		       integral_constant<bool, is_complex<T>::value>());
   test_tensor_realimag(view(Domain<3>(size0-2, size1-2, size2-2)),
-		       Bool_value<is_complex<T>::value>());
+		       integral_constant<bool, is_complex<T>::value>());
 
   for (index_type i=0; i<view.size(0); ++i)
     test_matrix(view(i, vsip::whole_domain, vsip::whole_domain));
@@ -1313,4 +1212,4 @@ test_tensor(Tensor<T, BlockT> view)
     test_matrix(view(vsip::whole_domain, vsip::whole_domain, i));
 }
 
-#endif // TESTS_EXTDATA_SUBVIEWS_HPP
+#endif

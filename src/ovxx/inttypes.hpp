@@ -1,23 +1,21 @@
 //
-// Copyright (c) 2006 by CodeSourcery
+// Copyright (c) 2006 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_INTTYPES_HPP
-#define VSIP_CORE_INTTYPES_HPP
+#ifndef ovxx_inttypes_hpp_
+#define ovxx_inttypes_hpp_
 
-#include <vsip/core/config.hpp>
+#include <ovxx/config.hpp>
 
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 #if HAVE_STDINT_H
   typedef int8_t int8_type;
@@ -26,6 +24,7 @@ namespace impl
   typedef uint16_t uint16_type;
   typedef int32_t int32_type;
   typedef uint32_t uint32_type;
+  typedef int64_t int64_type;
   typedef uint64_t uint64_type;
 #else
 
@@ -56,16 +55,18 @@ namespace impl
 # endif
 
 # if SIZEOF_INT == 8
-  typedef int uint64_type;
+  typedef unsigned int uint64_type;
+  typedef int int64_type;
 # elif SIZEOF_LONG == 8
-  typedef long uint64_type;
+  typedef unsigned long uint64_type;
+  typedef long int64_type;
 # elif SIZEOF_LONG_LONG == 8
-  typedef long long uint64_type;
+  typedef unsigned long long uint64_type;
+  typedef long long int64_type;
 # else
 #  error "No 64-bit integer type"
 # endif
 #endif 
-}
-}
+} // namespace ovxx
 
 #endif

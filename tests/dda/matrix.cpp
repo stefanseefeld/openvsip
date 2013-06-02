@@ -14,17 +14,9 @@
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/tensor.hpp>
-
-#include <vsip_csl/test.hpp>
-#include "output.hpp"
 #include "subviews.hpp"
 
 using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
 
 template <typename T,
 	  typename OrderT>
