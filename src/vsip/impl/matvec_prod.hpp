@@ -1,50 +1,35 @@
 //
-// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-/// Description
-///   Matrix-Vector product operations
-
-#ifndef VSIP_CORE_MATVEC_PROD_HPP
-#define VSIP_CORE_MATVEC_PROD_HPP
+#ifndef vsip_impl_matvec_prod_hpp_
+#define vsip_impl_matvec_prod_hpp_
 
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/matvec.hpp>
-#if VSIP_IMPL_CVSIP_FFT
-# include <vsip/core/cvsip/matvec.hpp>
+#include <vsip/impl/matvec.hpp>
+#if OVXX_CVSIP_FFT
+# include <ovxx/cvsip/matvec.hpp>
 #endif
-#ifndef VSIP_IMPL_REF_IMPL
-# ifdef VSIP_IMPL_CBE_SDK
-#  include <vsip/opt/cbe/cml/matvec.hpp>
-# endif
-# ifdef VSIP_IMPL_HAVE_BLAS
-#  include <vsip/opt/lapack/matvec.hpp>
-# endif
-# ifdef VSIP_IMPL_HAVE_SAL
-#  include <vsip/opt/sal/eval_misc.hpp>
-# endif
+#ifdef OVXX_HAVE_BLAS
+# include <ovxx/lapack/blas.hpp>
 #endif
-#include <iostream>
 
-namespace vsip_csl
+namespace ovxx
 {
 namespace dispatcher
 {
 
-#ifndef VSIP_IMPL_REF_IMPL
 template<>
 struct List<op::prod>
 {
-  typedef Make_type_list<be::user,
-			 be::cml,
+  typedef make_type_list<be::user,
 			 be::cuda,
 			 be::blas,
-			 be::mercury_sal, 
 			 be::cvsip,
 			 be::generic>::type type;
 };
@@ -52,15 +37,12 @@ struct List<op::prod>
 template<>
 struct List<op::prodj>
 {
-  typedef Make_type_list<be::user,
-			 be::cml,
+  typedef make_type_list<be::user,
                          be::cuda,
 			 be::blas,
-			 be::mercury_sal, 
 			 be::cvsip,
 			 be::generic>::type type;
 };
-#endif
 
 /// Generic evaluator for matrix-matrix products.
 template <typename Block0,
@@ -68,7 +50,7 @@ template <typename Block0,
 	  typename Block2>
 struct Evaluator<op::prod, be::generic, 
                  void(Block0&, Block1 const&, Block2 const&),
-		 typename enable_if_c<Block1::dim == 2 && Block2::dim == 2>::type>
+		 typename enable_if<Block1::dim == 2 && Block2::dim == 2>::type>
 {
   static bool const ct_valid = true;
   static bool rt_valid(Block0&, Block1 const&, Block2 const&)
@@ -125,7 +107,7 @@ template <typename Block0,
 	  typename Block2>
 struct Evaluator<op::prod, be::generic,
                  void(Block0&, Block1 const&, Block2 const&),
-		 typename enable_if_c<Block1::dim == 2 && Block2::dim == 1>::type>
+		 typename enable_if<Block1::dim == 2 && Block2::dim == 1>::type>
 {
   static bool const ct_valid = true;
   static bool rt_valid(Block0&, Block1 const&, Block2 const&)
@@ -153,7 +135,7 @@ template <typename Block0,
 	  typename Block2>
 struct Evaluator<op::prod, be::generic,
                  void(Block0&, Block1 const&, Block2 const&),
-		 typename enable_if_c<Block1::dim == 1 && Block2::dim == 2>::type>
+		 typename enable_if<Block1::dim == 1 && Block2::dim == 2>::type>
 {
   static bool const ct_valid = true;
   static bool rt_valid(Block0&, Block1 const&, Block2 const&)
@@ -175,8 +157,8 @@ struct Evaluator<op::prod, be::generic,
   }
 };
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
 namespace vsip
 {
@@ -188,14 +170,8 @@ template <typename Block0, typename Block1, typename Block2>
 void
 generic_prod(Block0 const &a, Block1 const &b, Block2 &r)
 {
-  using namespace vsip_csl::dispatcher;
-#ifdef VSIP_IMPL_REF_IMPL
-  Evaluator<op::prod, be::cvsip,
-    void(Block2&, Block0 const&, Block1 const&)>::exec(r, a, b);
-#else
-  vsip_csl::dispatch<op::prod, void,
+  ovxx::dispatch<ovxx::dispatcher::op::prod, void,
     Block2&, Block0 const&, Block1 const&>(r, a, b);
-#endif
 }
 
 /// Generic matrix-matrix conjugate product.
@@ -203,21 +179,15 @@ template <typename Block0, typename Block1, typename Block2>
 void
 generic_prodj(Block0 const &a, Block1 const &b, Block2 &r)
 {
-  using namespace vsip_csl::dispatcher;
-#ifdef VSIP_IMPL_REF_IMPL
-  Evaluator<op::prodj, be::cvsip,
-    void(Block2&, Block0 const&, Block1 const&)>::exec(r, a, b);
-#else
-  vsip_csl::dispatch<vsip_csl::dispatcher::op::prodj, void,
+  ovxx::dispatch<ovxx::dispatcher::op::prodj, void,
     Block2&, Block0 const&, Block1 const&>(r, a, b);
-#endif
 }
 
 template <typename A1, typename A2>
 class Product_base
 {
-  typedef typename View_block_storage<A1>::expr_type arg1_storage;
-  typedef typename View_block_storage<A2>::expr_type arg2_storage;
+  typedef typename ovxx::block_traits<A1>::expr_type arg1_type;
+  typedef typename ovxx::block_traits<A2>::expr_type arg2_type;
 public:
   static dimension_type const dim = (A1::dim == 2 && A2::dim == 2) ? 2 : 1;
   typedef Local_map map_type;
@@ -238,13 +208,30 @@ public:
   }
   vsip::length_type size(vsip::dimension_type block_dim,
 			 vsip::dimension_type d) const
-  { return d == 0 ? arg1_.size(block_dim, 0) : arg2_.size(block_dim, 1);}
+  {
+    OVXX_PRECONDITION(block_dim == 1 || block_dim == 2);
+    if (A1::dim == 2 && A2::dim == 2) // matrix-matrix
+    {
+      if (block_dim == 1)
+        return arg1_.size(2, 0) * arg2_.size(2, 1);
+      else
+        return d == 0 ? arg1_.size(2, 0) : arg2_.size(2, 1);
+    }
+    else 
+    {
+      OVXX_PRECONDITION(block_dim == 1);
+      if (A1::dim == 1) // vector-matrix
+        return arg2_.size(2, 1);
+      else // matrix-vector
+        return arg1_.size(2, 0);
+    }
+  }
   map_type const &map() const { return map_;}
 
 private:
   Local_map map_;
-  arg1_storage arg1_;
-  arg2_storage arg2_;
+  arg1_type arg1_;
+  arg2_type arg2_;
 };
 
 template <typename A1, typename A2>
@@ -275,13 +262,13 @@ template <typename T0,
 	  typename Block0,
 	  typename Block1>
 const_Matrix<typename Promotion<T0, T1>::type,
-	     vsip_csl::expr::Binary<impl::Product, Block0, Block1> const>
+	     ovxx::expr::Binary<impl::Product, Block0, Block1> const>
 prod(const_Matrix<T0, Block0> a, const_Matrix<T1, Block1> b)
 {
   typedef typename Promotion<T0, T1>::type value_type;
-  typedef vsip_csl::expr::Binary<impl::Product, Block0, Block1> block_type;
+  typedef ovxx::expr::Binary<impl::Product, Block0, Block1> block_type;
 
-  assert(a.size(1) == b.size(0));
+  OVXX_PRECONDITION(a.size(1) == b.size(0));
 
   impl::Product<Block0, Block1> operation(a.block(), b.block());
   return const_Matrix<value_type, block_type const>(operation);
@@ -293,13 +280,13 @@ template <typename T0,
 	  typename Block0,
 	  typename Block1>
 const_Vector<typename Promotion<T0, T1>::type,
-	     vsip_csl::expr::Binary<impl::Product, Block0, Block1> const>
+	     ovxx::expr::Binary<impl::Product, Block0, Block1> const>
 prod(const_Matrix<T0, Block0> a, const_Vector<T1, Block1> b)
 {
   typedef typename Promotion<T0, T1>::type value_type;
-  typedef vsip_csl::expr::Binary<impl::Product, Block0, Block1> block_type;
+  typedef ovxx::expr::Binary<impl::Product, Block0, Block1> block_type;
 
-  assert(a.size(1) == b.size());
+  OVXX_PRECONDITION(a.size(1) == b.size());
 
   impl::Product<Block0, Block1> operation(a.block(), b.block());
   return const_Vector<value_type, block_type const>(operation);
@@ -311,13 +298,13 @@ template <typename T0,
 	  typename Block0,
 	  typename Block1>
 const_Vector<typename Promotion<T0, T1>::type,
-	     vsip_csl::expr::Binary<impl::Product, Block0, Block1> const>
+	     ovxx::expr::Binary<impl::Product, Block0, Block1> const>
 prod(const_Vector<T0, Block0> a, const_Matrix<T1, Block1> b)
 {
   typedef typename Promotion<T0, T1>::type value_type;
-  typedef vsip_csl::expr::Binary<impl::Product, Block0, Block1> block_type;
+  typedef ovxx::expr::Binary<impl::Product, Block0, Block1> block_type;
 
-  assert(a.size() == b.size(0));
+  OVXX_PRECONDITION(a.size() == b.size(0));
 
   impl::Product<Block0, Block1> operation(a.block(), b.block());
   return const_Vector<value_type, block_type const>(operation);
@@ -330,13 +317,13 @@ template <typename T0,
 	  typename Block0,
 	  typename Block1>
 const_Matrix<typename Promotion<T0, T1>::type,
-	     vsip_csl::expr::Binary<impl::Product, Block0, Block1> const>
+	     ovxx::expr::Binary<impl::Product, Block0, Block1> const>
 prod3(const_Matrix<T0, Block0> a, const_Matrix<T1, Block1> b)
 {
-  assert(a.size(0) == 3);
-  assert(a.size(1) == 3);
+  OVXX_PRECONDITION(a.size(0) == 3);
+  OVXX_PRECONDITION(a.size(1) == 3);
   typedef typename Promotion<T0, T1>::type value_type;
-  typedef vsip_csl::expr::Binary<impl::Product, Block0, Block1> block_type;
+  typedef ovxx::expr::Binary<impl::Product, Block0, Block1> block_type;
   impl::Product<Block0, Block1> operation(a.block(), b.block());
   return const_Matrix<value_type, block_type const>(operation);
 }
@@ -348,13 +335,13 @@ template <typename T0,
 	  typename Block0,
 	  typename Block1>
 const_Vector<typename Promotion<T0, T1>::type,
-	     vsip_csl::expr::Binary<impl::Product, Block0, Block1> const>
+	     ovxx::expr::Binary<impl::Product, Block0, Block1> const>
 prod3(const_Matrix<T0, Block0> a, const_Vector<T1, Block1> b)
 {
-  assert(a.size(0) == 3);
-  assert(a.size(1) == 3);
+  OVXX_PRECONDITION(a.size(0) == 3);
+  OVXX_PRECONDITION(a.size(1) == 3);
   typedef typename Promotion<T0, T1>::type value_type;
-  typedef vsip_csl::expr::Binary<impl::Product, Block0, Block1> block_type;
+  typedef ovxx::expr::Binary<impl::Product, Block0, Block1> block_type;
   impl::Product<Block0, Block1> operation(a.block(), b.block());
   return const_Vector<value_type, block_type const>(operation);
 }
@@ -366,13 +353,13 @@ template <typename T0,
 	  typename Block0,
 	  typename Block1>
 const_Matrix<typename Promotion<T0, T1>::type,
-	     vsip_csl::expr::Binary<impl::Product, Block0, Block1> const>
+	     ovxx::expr::Binary<impl::Product, Block0, Block1> const>
 prod4(const_Matrix<T0, Block0> a, const_Matrix<T1, Block1> b)
 {
-  assert(a.size(0) == 4);
-  assert(a.size(1) == 4);
+  OVXX_PRECONDITION(a.size(0) == 4);
+  OVXX_PRECONDITION(a.size(1) == 4);
   typedef typename Promotion<T0, T1>::type value_type;
-  typedef vsip_csl::expr::Binary<impl::Product, Block0, Block1> block_type;
+  typedef ovxx::expr::Binary<impl::Product, Block0, Block1> block_type;
   impl::Product<Block0, Block1> operation(a.block(), b.block());
   return const_Matrix<value_type, block_type const>(operation);
 }
@@ -384,13 +371,13 @@ template <typename T0,
 	  typename Block0,
 	  typename Block1>
 const_Vector<typename Promotion<T0, T1>::type,
-	     vsip_csl::expr::Binary<impl::Product, Block0, Block1> const>
+	     ovxx::expr::Binary<impl::Product, Block0, Block1> const>
 prod4(const_Matrix<T0, Block0> a, const_Vector<T1, Block1> b)
 {
-  assert(a.size(0) == 4);
-  assert(a.size(1) == 4);
+  OVXX_PRECONDITION(a.size(0) == 4);
+  OVXX_PRECONDITION(a.size(1) == 4);
   typedef typename Promotion<T0, T1>::type value_type;
-  typedef vsip_csl::expr::Binary<impl::Product, Block0, Block1> block_type;
+  typedef ovxx::expr::Binary<impl::Product, Block0, Block1> block_type;
   impl::Product<Block0, Block1> operation(a.block(), b.block());
   return const_Vector<value_type, block_type const>(operation);
 }
@@ -402,14 +389,14 @@ template <typename T0,
           typename Block0,
           typename Block1>
 const_Matrix<typename Promotion<complex<T0>, complex<T1> >::type,
-  vsip_csl::expr::Binary<impl::Productj, Block0, impl::Transposed_block<Block1> > const>
+  ovxx::expr::Binary<impl::Productj, Block0, ovxx::expr::Transposed<Block1> > const>
 prodh(const_Matrix<complex<T0>, Block0> a,
       const_Matrix<complex<T1>, Block1> b) 
     VSIP_NOTHROW
 {
   typedef typename Promotion<complex<T0>, complex<T1> >::type value_type;
-  typedef impl::Transposed_block<Block1> tblock1_type;
-  typedef vsip_csl::expr::Binary<impl::Productj, Block0, tblock1_type> block_type;
+  typedef ovxx::expr::Transposed<Block1> tblock1_type;
+  typedef ovxx::expr::Binary<impl::Productj, Block0, tblock1_type> block_type;
   impl::Productj<Block0, tblock1_type> operation(a.block(), b.transpose().block());
   return const_Matrix<value_type, block_type const>(operation);
 }
@@ -421,13 +408,13 @@ template <typename T0,
           typename Block0,
           typename Block1>
 const_Matrix<typename Promotion<complex<T0>, complex<T1> >::type,
-  vsip_csl::expr::Binary<impl::Productj, Block0, Block1> const>
+  ovxx::expr::Binary<impl::Productj, Block0, Block1> const>
 prodj(const_Matrix<complex<T0>, Block0> a,
       const_Matrix<complex<T1>, Block1> b)
     VSIP_NOTHROW
 {
   typedef typename Promotion<complex<T0>, complex<T1> >::type value_type;
-  typedef vsip_csl::expr::Binary<impl::Productj, Block0, Block1> block_type;
+  typedef ovxx::expr::Binary<impl::Productj, Block0, Block1> block_type;
   impl::Productj<Block0, Block1> operation(a.block(), b.block());
   return const_Matrix<value_type, block_type const>(operation);
 }
@@ -439,16 +426,16 @@ template <typename T0,
           typename Block0,
           typename Block1>
 const_Matrix<typename Promotion<T0, T1>::type,
-  vsip_csl::expr::Binary<impl::Product, Block0, impl::Transposed_block<Block1> > const>
+  ovxx::expr::Binary<impl::Product, Block0, ovxx::expr::Transposed<Block1> > const>
 prodt(const_Matrix<T0, Block0> a, const_Matrix<T1, Block1> b) VSIP_NOTHROW
 {
   typedef typename Promotion<T0, T1>::type value_type;
-  typedef impl::Transposed_block<Block1> tblock1_type;
-  typedef vsip_csl::expr::Binary<impl::Product, Block0, tblock1_type> block_type;
+  typedef ovxx::expr::Transposed<Block1> tblock1_type;
+  typedef ovxx::expr::Binary<impl::Product, Block0, tblock1_type> block_type;
   impl::Product<Block0, tblock1_type> operation(a.block(), b.transpose().block());
   return const_Matrix<value_type, block_type const>(operation);
 }
 
 } // namespace vsip
 
-#endif // VSIP_IMPL_MATVEC_PROD_HPP
+#endif

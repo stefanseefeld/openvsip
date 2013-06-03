@@ -1,19 +1,19 @@
 //
-// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_VMMUL_HPP
-#define VSIP_CORE_VMMUL_HPP
+#ifndef vsip_impl_vmmul_hpp_
+#define vsip_impl_vmmul_hpp_
 
 #include <ovxx/block_traits.hpp>
+#include <ovxx/expr.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/impl/promotion.hpp>
-#include <vsip/core/expr/vmmul_block.hpp>
 
 namespace vsip
 {
@@ -26,7 +26,7 @@ template <dimension_type Dim,
 	  typename       T1,
 	  typename       Block0,
 	  typename       Block1>
-struct Vmmul_traits
+struct vmmul_traits
 {
   typedef typename vsip::Promotion<T0, T1>::type value_type;
   typedef expr::Vmmul<Dim, Block0, Block1> const block_type;
@@ -59,8 +59,8 @@ struct Evaluator<op::assign<2>, be::op_expr,
   typedef typename MBlock::value_type m_value_type;
 
   static bool const ct_valid = 
-    !impl::is_expr_block<VBlock>::value &&
-    !impl::is_expr_block<MBlock>::value;
+    !is_expr_block<VBlock>::value &&
+    !is_expr_block<MBlock>::value;
 
   static bool rt_valid(LHS &, RHS const &) { return true;}
   
@@ -111,15 +111,15 @@ namespace vsip
 {
 
 /// Vector-matrix element-wise multiplication
-template <dimension_type Dim,
+template <dimension_type D,
 	  typename       T0,
 	  typename       T1,
 	  typename       Block0,
 	  typename       Block1>
-typename vsip::impl::Vmmul_traits<Dim, T0, T1, Block0, Block1>::view_type
+typename impl::vmmul_traits<D, T0, T1, Block0, Block1>::view_type
 vmmul(const_Vector<T0, Block0> v, const_Matrix<T1, Block1> m) VSIP_NOTHROW
 {
-  typedef impl::Vmmul_traits<Dim, T0, T1, Block0, Block1> traits;
+  typedef impl::vmmul_traits<D, T0, T1, Block0, Block1> traits;
   typedef typename traits::block_type block_type;
   typedef typename traits::view_type  view_type;
 

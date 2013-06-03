@@ -19,14 +19,12 @@
 #include <vsip/math.hpp>
 #include <vsip/domain.hpp>
 #include <vsip/signal.hpp>
-#include <vsip/core/domain_utils.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/error_db.hpp>
+#include <vsip/selgen.hpp>
+#include <ovxx/domain_utils.hpp>
+#include <test.hpp>
 #include "test_ramp.hpp"
 
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
 template <dimension_type Dim,
 	  typename       OrderT2,       // input Matrix dim order
@@ -80,9 +78,6 @@ template <typename T,
 	  int      SD>
 struct test_vmmul_subview
 {
-  int ops(length_type rows, length_type cols)
-    { return rows * cols * vsip::impl::Ops_info<T>::mul; }
-
   void operator()(length_type rows, length_type cols)
   {
     // Test with input and output dimension order the same
@@ -113,7 +108,7 @@ struct test_vmmul_subview
     // Compute result
     sub_Z = vmmul<SD>(W, sub_A);
 
-    test_assert(error_db(ref, Z) < -100);
+    test_assert(test::diff(ref, Z) < -100);
   }
 
   test_vmmul_subview(Domain<2> const& dom) { dom_ = dom; }

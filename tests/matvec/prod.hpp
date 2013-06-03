@@ -6,30 +6,13 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#ifndef VSIP_TESTS_TEST_PROD_HPP
-#define VSIP_TESTS_TEST_PROD_HPP
-
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef matvec_prod_hpp_
+#define matvec_prod_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/vector.hpp>
-
-#include <vsip_csl/test-precision.hpp>
-#include <vsip_csl/test.hpp>
-
-
-#if VERBOSE
-#include <iostream>
-#endif
-
-
-/***********************************************************************
-  Reference Definitions
-***********************************************************************/
+#include <test.hpp>
 
 template <typename T0,
 	  typename T1,
@@ -38,18 +21,18 @@ template <typename T0,
           typename Block1,
           typename Block2>
 void
-check_prod(
-  vsip::Matrix<T0, Block0> test,
-  vsip::Matrix<T1, Block1> chk,
-  vsip::Matrix<T2, Block2> gauge,
-  float                    threshold = 10.0)
+check_prod(vsip::Matrix<T0, Block0> test,
+	   vsip::Matrix<T1, Block1> chk,
+	   vsip::Matrix<T2, Block2> gauge,
+	   float                    threshold = 10.0)
 {
+  using namespace ovxx;
   typedef typename vsip::Promotion<T0, T1>::type return_type;
-  typedef typename vsip::impl::scalar_of<return_type>::type scalar_type;
+  typedef typename scalar_of<return_type>::type scalar_type;
 
   vsip::Index<2> idx;
   scalar_type err = vsip::maxval(((mag(chk - test)
-			     / vsip_csl::Precision_traits<scalar_type>::eps)
+			     / test::precision<scalar_type>::eps)
 			    / gauge),
 			   idx);
 
@@ -74,17 +57,17 @@ template <typename T0,
           typename Block1,
           typename Block2>
 void
-check_prod(
-  vsip::Vector<T0, Block0> test,
-  vsip::Vector<T1, Block1> chk,
-  vsip::Vector<T2, Block2> gauge)
+check_prod(vsip::Vector<T0, Block0> test,
+	   vsip::Vector<T1, Block1> chk,
+	   vsip::Vector<T2, Block2> gauge)
 {
+  using namespace ovxx;
   typedef typename vsip::Promotion<T0, T1>::type return_type;
-  typedef typename vsip::impl::scalar_of<return_type>::type scalar_type;
+  typedef typename scalar_of<return_type>::type scalar_type;
 
   vsip::Index<1> idx;
   scalar_type err = vsip::maxval(((mag(chk - test)
-			     / vsip_csl::Precision_traits<scalar_type>::eps)
+			     / test::precision<scalar_type>::eps)
 			    / gauge),
 			   idx);
 
@@ -98,9 +81,4 @@ check_prod(
   test_assert(err < 10.0);
 }
 
-
-template <> float  vsip_csl::Precision_traits<float>::eps = 0.0;
-template <> double vsip_csl::Precision_traits<double>::eps = 0.0;
-
-
-#endif // VSIP_TESTS_TEST_PROD_HPP
+#endif

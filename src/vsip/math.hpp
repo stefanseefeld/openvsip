@@ -16,10 +16,10 @@
 #include <ovxx/view/operators.hpp>
 #include <ovxx/view/fns_elementwise.hpp>
 #include <vsip/impl/fns_userelt.hpp>
-#include <vsip/core/reductions/reductions.hpp>
-#include <vsip/core/reductions/reductions_idx.hpp>
-// #include <vsip/core/matvec.hpp>
-// #include <vsip/core/matvec_prod.hpp>
-// #include <vsip/core/vmmul.hpp>
+#include <vsip/impl/reductions/reductions.hpp>
+#include <vsip/impl/reductions/reductions_idx.hpp>
+#include <vsip/impl/matvec.hpp>
+#include <vsip/impl/matvec_prod.hpp>
+#include <vsip/impl/vmmul.hpp>
 
 #endif

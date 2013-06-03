@@ -12,23 +12,11 @@
 #include <vsip/support.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/math.hpp>
+#include <test/ref/matvec.hpp>
+#include <test.hpp>
+#include "prod.hpp"
 
-#include <vsip_csl/output.hpp>
-#include <vsip_csl/ref_matvec.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-precision.hpp>
-
-#include "test-prod.hpp"
-#include "test-random.hpp"
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Test Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T0,
 	  typename T1>
@@ -36,7 +24,7 @@ void
 test_prod3_rand()
 {
   typedef typename Promotion<T0, T1>::type return_type;
-  typedef typename vsip::impl::scalar_of<return_type>::type scalar_type;
+  typedef typename scalar_of<return_type>::type scalar_type;
   const length_type m = 3;
   const length_type n = 3;
   const length_type k = 3;
@@ -48,8 +36,8 @@ test_prod3_rand()
   Matrix<return_type> chk(m, k);
   Matrix<scalar_type> gauge(m, k);
 
-  randm(a);
-  randm(b);
+  test::randm(a);
+  test::randm(b);
 
   // Test matrix-matrix prod
   res1   = prod3(a, b);
@@ -58,8 +46,8 @@ test_prod3_rand()
   for (index_type i=0; i<k; ++i)
     res2.col(i) = prod3(a, b.col(i));
 
-  chk   = ref::prod(a, b);
-  gauge = ref::prod(mag(a), mag(b));
+  chk   = test::ref::prod(a, b);
+  gauge = test::ref::prod(mag(a), mag(b));
 
   for (index_type i=0; i<gauge.size(0); ++i)
     for (index_type j=0; j<gauge.size(1); ++j)
@@ -85,7 +73,7 @@ void
 test_prod4_rand()
 {
   typedef typename Promotion<T0, T1>::type return_type;
-  typedef typename vsip::impl::scalar_of<return_type>::type scalar_type;
+  typedef typename scalar_of<return_type>::type scalar_type;
   const length_type m = 4;
   const length_type n = 4;
   const length_type k = 4;
@@ -97,8 +85,8 @@ test_prod4_rand()
   Matrix<return_type> chk(m, k);
   Matrix<scalar_type> gauge(m, k);
 
-  randm(a);
-  randm(b);
+  test::randm(a);
+  test::randm(b);
 
   // Test matrix-matrix prod
   res1   = prod4(a, b);
@@ -107,8 +95,8 @@ test_prod4_rand()
   for (index_type i=0; i<k; ++i)
     res2.col(i) = prod4(a, b.col(i));
 
-  chk   = ref::prod(a, b);
-  gauge = ref::prod(mag(a), mag(b));
+  chk   = test::ref::prod(a, b);
+  gauge = test::ref::prod(mag(a), mag(b));
 
   for (index_type i=0; i<gauge.size(0); ++i)
     for (index_type j=0; j<gauge.size(1); ++j)
@@ -146,8 +134,8 @@ main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  Precision_traits<float>::compute_eps();
-  Precision_traits<double>::compute_eps();
+  test::precision<float>::init();
+  test::precision<double>::init();
 
 
   prod_cases<float,  float>();

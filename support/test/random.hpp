@@ -6,12 +6,8 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#ifndef VSIP_TESTS_TEST_RANDOM_HPP
-#define VSIP_TESTS_TEST_RANDOM_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef test_random_hpp_
+#define test_random_hpp_
 
 #define USE_VPP_RANDOM 1
 
@@ -23,12 +19,8 @@
 #  include <vsip/random.hpp>
 #endif
 
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+namespace test
+{
 
 /// Return a random value between -0.5 and +0.5
 
@@ -115,4 +107,6 @@ void randomize(vsip::Vector<T, B> m) { randv(m);}
 template <typename T, typename B>
 void randomize(vsip::Matrix<T, B> m) { randm(m);}
 
-#endif // VSIP_TESTS_TEST_RANDOM_HPP
+} // namespace test
+
+#endif

@@ -156,7 +156,7 @@ conv(
     else
       sub = w_in(Domain<1>(pos, -1, M));
       
-    w_out(i) = dot(kernel, sub);
+    w_out(i) = ref::dot(kernel, sub);
   }
   if (as_local_view<Vector<T, Block3> >::is_copy) parallel::assign_local(out,w_out);
 }

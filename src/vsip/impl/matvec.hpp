@@ -1,21 +1,24 @@
 //
-// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_MATVEC_HPP
-#define VSIP_CORE_MATVEC_HPP
+#ifndef vsip_impl_matvec_hpp_
+#define vsip_impl_matvec_hpp_
 
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/impl/promotion.hpp>
 #include <ovxx/view/fns_elementwise.hpp>
 #include <ovxx/dispatch.hpp>
+#ifdef OVXX_HAVE_BLAS
+# include <ovxx/lapack/blas.hpp>
+#endif
 #if OVXX_HAVE_CVSIP
-# include <vsip/core/cvsip/matvec.hpp>
+# include <ovxx/cvsip/matvec.hpp>
 #endif
 #include <vsip/impl/math_enum.hpp>
 
@@ -48,8 +51,8 @@ struct Evaluator<op::outer, be::generic,
 
   static void exec(Block0& r, T1 alpha, Block1 const& a, Block2 const& b)
   {
-    assert(a.size(1, 0) == r.size(2, 0));
-    assert(b.size(1, 0) == r.size(2, 1));
+    OVXX_PRECONDITION(a.size(1, 0) == r.size(2, 0));
+    OVXX_PRECONDITION(b.size(1, 0) == r.size(2, 1));
 
     // r(i, j) = alpha * a(i) * b(j)
     for ( index_type i = a.size(); i-- > 0; )
@@ -72,8 +75,8 @@ struct Evaluator<op::outer, be::generic,
 
   static void exec(Block0& r, std::complex<T1> alpha, Block1 const& a, Block2 const& b)
   {
-    assert(a.size(1, 0) == r.size(2, 0));
-    assert(b.size(1, 0) == r.size(2, 1));
+    OVXX_PRECONDITION(a.size(1, 0) == r.size(2, 0));
+    OVXX_PRECONDITION(b.size(1, 0) == r.size(2, 1));
 
     // r(i, j) = alpha * a(i) * b(j)
     for ( index_type i = a.size(); i-- > 0; )
@@ -104,7 +107,7 @@ struct Evaluator<op::dot, be::generic,
 
   static T exec(Block0 const& a, Block1 const& b)
   {
-    assert(a.size(1, 0) == b.size(1, 0));
+    OVXX_PRECONDITION(a.size(1, 0) == b.size(1, 0));
 
     T r = T();
     for ( index_type i = 0; i < a.size(); ++i )
@@ -139,9 +142,9 @@ struct Evaluator<op::gemp, be::generic,
   static void exec(Block0& c, T1 alpha, Block1 const& a, 
     Block2 const& b, T2 beta)
   {
-    assert( a.size(2, 0) == c.size(2, 0) );
-    assert( b.size(2, 1) == c.size(2, 1) );
-    assert( a.size(2, 1) == b.size(2, 0) );  
+    OVXX_PRECONDITION( a.size(2, 0) == c.size(2, 0) );
+    OVXX_PRECONDITION( b.size(2, 1) == c.size(2, 1) );
+    OVXX_PRECONDITION( a.size(2, 1) == b.size(2, 0) );  
     
     // c(i,j) = alpha * a(i) * b(j) + beta * c(i,j)
     for ( index_type i = a.size(2, 0); i-- > 0; )
@@ -159,6 +162,12 @@ struct Evaluator<op::gemp, be::generic,
 };
 
 } // namespace ovxx::dispatcher
+} // namespace ovxx
+
+namespace vsip
+{
+namespace impl
+{
 
 /// Outer product dispatch
 template <typename T0,
@@ -173,10 +182,10 @@ outer(T0 alpha,
       const_Vector<T1, Block1> b,
       Matrix<T2, Block2>       r)
 {
-  using namespace dispatcher;
-  assert(r.size(0) == a.size());
-  assert(r.size(1) == b.size());
-  dispatch<op::outer, void,
+  using namespace ovxx::dispatcher;
+  OVXX_PRECONDITION(r.size(0) == a.size());
+  OVXX_PRECONDITION(r.size(1) == b.size());
+  ovxx::dispatch<op::outer, void,
     Block2&, T0, Block0 const&, Block1 const&>
     (r.block(), alpha, a.block(), b.block());
 }
@@ -190,12 +199,10 @@ typename Promotion<T0, T1>::type
 impl_dot(const_Vector<T0, Block0> v,
 	 const_Vector<T1, Block1> w) VSIP_NOTHROW
 {
-  using namespace dispatcher;
-
+  using namespace ovxx::dispatcher;
   typedef typename Promotion<T0, T1>::type return_type;
   return_type r(0);
-
-  r = dispatch<op::dot, return_type,
+  r = ovxx::dispatch<op::dot, return_type,
     Block0 const&, Block1 const&>
     (v.block(), w.block());
   return r;
@@ -209,8 +216,8 @@ template <typename T0,
           typename Block1,
           typename Block2>
 const_Matrix<typename Promotion<T0, typename Promotion<T1, T2>::type>::type>
-impl_kron( T0 alpha, Vector<T1, Block1> v, Vector<T2, Block2> w)
-  VSIP_NOTHROW
+impl_kron(T0 alpha, Vector<T1, Block1> v, Vector<T2, Block2> w)
+    VSIP_NOTHROW
 {
   typedef Matrix<typename Promotion<T0, 
     typename Promotion<T1, T2>::type>::type> return_type;
@@ -231,7 +238,7 @@ template <typename T0,
           typename Block2>
 const_Matrix<typename Promotion<T0, typename Promotion<T1, T2>::type>::type>
 impl_kron( T0 alpha, Matrix<T1, Block1> v, Matrix<T2, Block2> w)
-  VSIP_NOTHROW
+    VSIP_NOTHROW
 {
   typedef Matrix<typename Promotion<T0, 
     typename Promotion<T1, T2>::type>::type> return_type;
@@ -264,12 +271,12 @@ void
 gemp(T0 alpha, const_Matrix<T1, Block1> a,
      const_Matrix<T2, Block2> b, T0 beta, Matrix<T4, Block4> c) 
 {
-  using namespace dispatcher;
+  using namespace ovxx::dispatcher;
 
-  assert(c.size(0) == a.size(0));
-  assert(c.size(1) == b.size(1));
+  OVXX_PRECONDITION(c.size(0) == a.size(0));
+  OVXX_PRECONDITION(c.size(1) == b.size(1));
 
-  dispatch<op::gemp, void,
+  ovxx::dispatch<op::gemp, void,
     Block4&, T0, Block1 const&, Block2 const&, T0> 
     (c.block(), alpha, a.block(), b.block(), beta);
 }
@@ -280,8 +287,8 @@ template <typename T0, typename T1, typename T3, typename T4,
 void 
 gems(T0 alpha, const_Matrix<T1, Block1> A, T3 beta, Matrix<T4, Block4> C) 
 {
-  assert( A.size(0) == C.size(0) );
-  assert( A.size(1) == C.size(1) );
+  OVXX_PRECONDITION( A.size(0) == C.size(0) );
+  OVXX_PRECONDITION( A.size(1) == C.size(1) );
   C = alpha * A + beta * C;
 }
 
@@ -309,10 +316,8 @@ template <typename T,
 	  typename Block>
 struct Trans_or_herm<complex<T>, Block>
 {
-  typedef typename const_Matrix<complex<T>, Block>::transpose_type 
-      transpose_type;
-  typedef impl::Unary_func_view<expr::op::Conj, transpose_type> 
-      functor_type;
+  typedef typename const_Matrix<complex<T>, Block>::transpose_type transpose_type;
+  typedef ovxx::functors::unary_view<ovxx::expr::op::Conj, transpose_type> functor_type;
   typedef typename functor_type::result_type result_type;
 
   static result_type
@@ -349,9 +354,9 @@ struct Apply_mat_op<mat_ntrans, T, Block>
 
   static result_type
   exec(const_Matrix<T, Block> m) VSIP_NOTHROW
-    {
-      return m;
-    }
+  {
+    return m;
+  }
 };
 
 /// 'Transpose' matrix operator
@@ -363,9 +368,9 @@ struct Apply_mat_op<mat_trans, T, Block>
 
   static result_type
   exec(const_Matrix<T, Block> m) VSIP_NOTHROW
-    {
-      return m.transpose();
-    }
+  {
+    return m.transpose();
+  }
 };
 
 /// 'Hermitian' matrix operator for non-complex types (results in transpose)
@@ -377,9 +382,9 @@ struct Apply_mat_op<mat_herm, T, Block>
 
   static result_type
   exec(const_Matrix<T, Block> m) VSIP_NOTHROW
-    {
-      return impl::trans_or_herm(m);
-    }
+  {
+    return impl::trans_or_herm(m);
+  }
 };
 
 /// 'Hermitian' matrix operator for complex types (results in conjugate 
@@ -388,17 +393,15 @@ template <typename T,
           typename Block>
 struct Apply_mat_op<mat_herm, complex<T>, Block>
 {
-  typedef typename const_Matrix<complex<T>, Block>::transpose_type 
-      transpose_type;
-  typedef impl::Unary_func_view<expr::op::Conj, transpose_type> 
-      functor_type;
+  typedef typename const_Matrix<complex<T>, Block>::transpose_type transpose_type;
+  typedef ovxx::functors::unary_view<ovxx::expr::op::Conj, transpose_type> functor_type;
   typedef typename functor_type::result_type result_type;
 
   static result_type
   exec(const_Matrix<complex<T>, Block> m) VSIP_NOTHROW
-    {
-      return impl::trans_or_herm(m);
-    }
+  {
+    return impl::trans_or_herm(m);
+  }
 };
 
 /// 'Conjugate' matrix operator for non-complex types (results in identity)
@@ -410,9 +413,9 @@ struct Apply_mat_op<mat_conj, T, Block>
 
   static result_type
   exec(const_Matrix<T, Block> m) VSIP_NOTHROW
-    {
-      return m;
-    }
+  {
+    return m;
+  }
 };
 
 /// 'Conjugate' matrix operator for complex types
@@ -420,15 +423,15 @@ template <typename T,
           typename Block>
 struct Apply_mat_op<mat_conj, complex<T>, Block>
 {
-  typedef impl::Unary_func_view<expr::op::Conj, 
+  typedef ovxx::functors::unary_view<ovxx::expr::op::Conj, 
     const_Matrix<complex<T>, Block> > functor_type;
   typedef typename functor_type::result_type result_type;
 
   static result_type
   exec(const_Matrix<complex<T>, Block> m) VSIP_NOTHROW
-    {
-      return conj(m);
-    }
+  {
+    return conj(m);
+  }
 };
 
 
@@ -450,20 +453,18 @@ template <dimension_type d,
           typename Block0,
           typename Block1>
 void
-cumsum(
-  const_Vector<T0, Block0> v,
-  Vector<T1, Block1> w) 
-    VSIP_NOTHROW
+cumsum(const_Vector<T0, Block0> v, Vector<T1, Block1> w) 
+  VSIP_NOTHROW
 {
   //  Effects: w has values equaling the cumulative sum of values in v. 
   //
   //  If View is Vector, d is ignored and, for 
   //    0 <= i < v.size(), 
   //      w.get(i) equals the sum over 0 <= j <= i of v.get(j)
-  assert( v.size() == w.size() );
+  OVXX_PRECONDITION( v.size() == w.size() );
 
   T1 sum = T0();
-  for ( index_type i = 0; i < v.size(); ++i )
+  for (index_type i = 0; i < v.size(); ++i)
   {
     sum += v.get(i);
     w.put(i, sum);
@@ -477,12 +478,10 @@ template <dimension_type d,
           typename Block0,
           typename Block1>
 void
-cumsum(
-  const_Matrix<T0, Block0> v,
-  Matrix<T1, Block1> w) 
-    VSIP_NOTHROW
+cumsum(const_Matrix<T0, Block0> v, Matrix<T1, Block1> w) 
+  VSIP_NOTHROW
 {
-  if ( d == 0 )
+  if (d == 0)
   {
     //  If View is Matrix and d == 0, then, for 
     //    0 <= m < v.size(0) and 0 <= i < v.size(1),
@@ -499,16 +498,16 @@ cumsum(
     }
   }
   else
-  if ( d == 1 )
+  if (d == 1)
   {
     //  If View is Matrix and d == 1, then, for 
     //    0 <= i < v.size(0) and 0 <= n < v.size(1), 
     //      w.get(i, n) equals the sum over 0 <= j <= i of v.get(j, n).
 
-    for ( index_type n = 0; n < v.size(1); ++n )
+    for (index_type n = 0; n < v.size(1); ++n)
     {
       T1 sum = T0();
-      for ( index_type i = 0; i < v.size(0); ++i )
+      for (index_type i = 0; i < v.size(0); ++i)
       {
         sum += v.get(i, n);
         w.put(i, n, sum);
@@ -526,27 +525,27 @@ template <typename T0,
           typename Block0,
           typename Block1>
 T1
-modulate(
-  const_Vector<T0, Block0> v,
-  T1 nu,
-  T2 phi,
-  Vector<complex<T3>, Block1> w)
-    VSIP_NOTHROW
+modulate(const_Vector<T0, Block0> v,
+	 T1 nu,
+	 T2 phi,
+	 Vector<complex<T3>, Block1> w)
+  VSIP_NOTHROW
 {
+  using namespace ovxx;
   // Requires: The only specializations which must be supported are those 
   // having T0, T1, T2, and T3 all scalar f or alternatively T0 the same 
   // as cscalar f and T1, T2, and T3 all scalar f.
 
-  assert(v.size() == w.size());
-  assert((is_same<typename impl::scalar_of<T0>::type, T3>::value));
-  assert((is_same<T1, T3>::value));
-  assert((is_same<T2, T3>::value));
+  OVXX_PRECONDITION(v.size() == w.size());
+  OVXX_PRECONDITION((is_same<typename scalar_of<T0>::type, T3>::value));
+  OVXX_PRECONDITION((is_same<T1, T3>::value));
+  OVXX_PRECONDITION((is_same<T2, T3>::value));
 
   // Effects: For 0 <= i < v.size(), w.get(i) has a value equaling 
   // the product of v.get(i) and the exponential of the product of 
   // j (sqrt(-1)) and i * nu + phi
 
-  for ( index_type i = v.size(); i-- > 0; )
+  for (index_type i = v.size(); i-- > 0;)
   {
     complex<T3> phase( 0, i * nu + phi );
     w.put(i, v.get(i) * exp(phase));
@@ -558,10 +557,7 @@ modulate(
   return v.size() * nu + phi;
 }
 
-} // namespace ovxx
-
-namespace vsip
-{
+} // namespace impl
 
 /// dot products  [math.matvec.dot]
 
@@ -570,7 +566,7 @@ template <typename T0, typename T1, typename Block0, typename Block1>
 typename Promotion<T0, T1>::type
 dot(const_Vector<T0, Block0> v, const_Vector<T1, Block1> w) VSIP_NOTHROW
 {
-  return ovxx::impl_dot(v, w);
+  return impl::impl_dot(v, w);
 }
 
 
@@ -580,7 +576,7 @@ typename Promotion<complex<T0>, complex<T1> >::type
 cvjdot(const_Vector<complex<T0>, Block0> v,
        const_Vector<complex<T1>, Block1> w) VSIP_NOTHROW
 {
-  return ovxx::impl_dot(v, conj(w));
+  return impl::impl_dot(v, conj(w));
 }
 
  
@@ -596,14 +592,14 @@ trans(const_Matrix<T, Block> m) VSIP_NOTHROW
 
 /// conjugate transpose
 template <typename T, typename Block>
-typename impl::Unary_func_view<impl::expr::op::Conj,
+typename ovxx::functors::unary_view<ovxx::expr::op::Conj,
   typename const_Matrix<complex<T>,
   Block>::transpose_type>::result_type
 herm(const_Matrix<complex<T>, Block> m) VSIP_NOTHROW
 {
   typedef typename const_Matrix<complex<T>, Block>::transpose_type 
     transpose_type;
-  typedef impl::Unary_func_view<impl::expr::op::Conj, transpose_type> 
+  typedef ovxx::functors::unary_view<ovxx::expr::op::Conj, transpose_type> 
     functor_type;
 
   return functor_type::apply(m.transpose());
@@ -620,10 +616,10 @@ template <typename T0,
           typename Block1,
           typename Block2>
 const_Matrix<typename Promotion<T0, typename Promotion<T1, T2>::type>::type>
-kron( T0 alpha, const_View<T1, Block1> v, const_View<T2, Block2> w )
-    VSIP_NOTHROW
+kron(T0 alpha, const_View<T1, Block1> v, const_View<T2, Block2> w)
+  VSIP_NOTHROW
 {
-  return ovxx::impl_kron( alpha, v, w );
+  return impl::impl_kron( alpha, v, w );
 }
 
 
@@ -636,15 +632,13 @@ template <typename T0,
           typename Block1,
           typename Block2>
 const_Matrix<typename Promotion<T0, typename Promotion<T1, T2>::type>::type>
-outer( T0 alpha, const_Vector<T1, Block1> v, const_Vector<T2, Block2> w )
-    VSIP_NOTHROW
+outer(T0 alpha, const_Vector<T1, Block1> v, const_Vector<T2, Block2> w)
+  VSIP_NOTHROW
 {
   typedef typename Promotion<T1, T2>::type return_type;
 
   Matrix<return_type> r(v.size(), w.size(), return_type());
-
-  ovxx::outer(alpha, v, w, r);
-
+  impl::outer(alpha, v, w, r);
   return r;
 }
 
@@ -672,13 +666,12 @@ gemp(T0 alpha,
 {
   // equivalent to C = alpha * OpA(A) * OpB(B) + beta * C
 
-  ovxx::gemp( alpha, 
-              impl::apply_mat_op<OpA>(A), 
-              impl::apply_mat_op<OpB>(B),
-              beta, 
-              C );
+  impl::gemp(alpha, 
+	     impl::apply_mat_op<OpA>(A), 
+	     impl::apply_mat_op<OpB>(B),
+	     beta, 
+	     C);
 } 
-
 
 /// Generalized matrix sum
 template <mat_op_type OpA,
@@ -689,13 +682,11 @@ template <mat_op_type OpA,
           typename Block1,
           typename Block4>
 void
-gems(T0 alpha,
-     const_Matrix<T1, Block1> A,
-     T3 beta,
-     Matrix<T4, Block4> C) 
+gems(T0 alpha, const_Matrix<T1, Block1> A,
+     T3 beta, Matrix<T4, Block4> C) 
   VSIP_NOTHROW
 {
-  ovxx::gems(alpha, impl::apply_mat_op<OpA>(A), beta, C);
+  impl::gems(alpha, impl::apply_mat_op<OpA>(A), beta, C);
 }
 
 
@@ -710,9 +701,10 @@ template <dimension_type d,
           typename Block0,
           typename Block1>
 void
-cumsum(const_View<T0, Block0> v, View<T1, Block1> w) VSIP_NOTHROW
+cumsum(const_View<T0, Block0> v, View<T1, Block1> w)
+  VSIP_NOTHROW
 {
-  ovxx::cumsum<d>(v, w);
+  impl::cumsum<d>(v, w);
 }
 
 /// modulate
@@ -727,9 +719,9 @@ modulate(const_Vector<T0, Block0> v,
 	 T1 nu,
 	 T2 phi,
 	 Vector<complex<T3>, Block1> w)
-    VSIP_NOTHROW
+  VSIP_NOTHROW
 {
-  return ovxx::modulate(v, nu, phi, w);
+  return impl::modulate(v, nu, phi, w);
 }
 
 } // namespace vsip

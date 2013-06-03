@@ -7,6 +7,8 @@
 
 #include <test/assert.hpp>
 #include <test/diff.hpp>
+#include <test/precision.hpp>
+#include <test/random.hpp>
 #include <ovxx/equal.hpp>
 
 using namespace test;

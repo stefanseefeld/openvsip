@@ -6,29 +6,15 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <iostream>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/math.hpp>
+#include <test.hpp>
+#include <test/ref/matvec.hpp>
+#include "prod.hpp"
 
-#include <vsip_csl/output.hpp>
-#include <vsip_csl/ref_matvec.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-precision.hpp>
-
-#include "test-prod.hpp"
-#include "test-random.hpp"
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Test Definitions
-***********************************************************************/
+using namespace ovxx;
 
 /// Test matrix-matrix products using sub-views
 
@@ -39,7 +25,7 @@ test_mm_prod_subview( const length_type m,
                       const length_type k )
 {
   typedef typename Matrix<T>::subview_type matrix_subview_type;
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   // non-unit strides - dense rows, non-dense columns
   {
@@ -53,12 +39,12 @@ test_mm_prod_subview( const length_type m,
     Matrix<T> chk(m, n);
     Matrix<scalar_type> gauge(m, n);
 
-    randm(a);
-    randm(b);
+    test::randm(a);
+    test::randm(b);
 
     res = prod( a, b );
-    chk = ref::prod( a, b );
-    gauge = ref::prod(mag(a), mag(b));
+    chk = test::ref::prod( a, b );
+    gauge = test::ref::prod(mag(a), mag(b));
 
     for (index_type i=0; i<gauge.size(0); ++i)
       for (index_type j=0; j<gauge.size(1); ++j)
@@ -81,12 +67,12 @@ test_mm_prod_subview( const length_type m,
     Matrix<T> chk(m, n);
     Matrix<scalar_type> gauge(m, n);
 
-    randm(a);
-    randm(b);
+    test::randm(a);
+    test::randm(b);
 
     res = prod( a, b );
-    chk = ref::prod( a, b );
-    gauge = ref::prod(mag(a), mag(b));
+    chk = test::ref::prod( a, b );
+    gauge = test::ref::prod(mag(a), mag(b));
 
     for (index_type i=0; i<gauge.size(0); ++i)
       for (index_type j=0; j<gauge.size(1); ++j)
@@ -106,16 +92,16 @@ test_mm_prod_complex_split(  const length_type m,
                              const length_type n, 
                              const length_type k )
 {
-  typedef vsip::impl::Strided<2, complex<T>,
+  typedef Strided<2, complex<T>,
     vsip::Layout<2, row2_type, vsip::dense, vsip::split_complex> > split_type;
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
   
   Matrix<complex<T>, split_type> a(m, k);
   Matrix<complex<T>, split_type> b(k, n);
   Matrix<complex<T>, split_type> res(m, n, T());
 
-  randm(a);
-  randm(b);
+  test::randm(a);
+  test::randm(b);
 
   // call prod()'s underlying interface directly
   res = prod(a, b);
@@ -128,8 +114,8 @@ test_mm_prod_complex_split(  const length_type m,
 
   Matrix<complex<T> > chk(m, n);
   Matrix<scalar_type> gauge(m, n);
-  chk = ref::prod( aa, bb );
-  gauge = ref::prod( mag(aa), mag(bb) );
+  chk = test::ref::prod( aa, bb );
+  gauge = test::ref::prod( mag(aa), mag(bb) );
 
   for (index_type i=0; i<gauge.size(0); ++i)
     for (index_type j=0; j<gauge.size(1); ++j)
@@ -149,19 +135,13 @@ prod_special_cases()
   test_mm_prod_complex_split<T>(5, 7, 3);
 }
 
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
-
 int
 main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  Precision_traits<float>::compute_eps();
-  Precision_traits<double>::compute_eps();
+  test::precision<float>::init();
+  test::precision<double>::init();
 
   prod_special_cases<float>();
 

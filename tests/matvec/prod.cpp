@@ -6,26 +6,15 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <iostream>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/math.hpp>
+#include <test.hpp>
+#include <test/ref/matvec.hpp>
+#include "prod.hpp"
 
-#include <vsip_csl/error_db.hpp>
-#include <vsip_csl/ref_matvec.hpp>
-
-#include "test-prod.hpp"
-#include "test-random.hpp"
-
-#if VERBOSE
-#include <vsip_csl/output.hpp>
-#endif
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
 // This is a somewhat arbitrary measure, but generally works.  Some
 // platforms using different rounding modes or non-IEEE-compliant math
@@ -48,7 +37,7 @@ void
 test_prod_rand(length_type m, length_type n, length_type k)
 {
   typedef typename Promotion<T0, T1>::type return_type;
-  typedef typename vsip::impl::scalar_of<return_type>::type scalar_type;
+  typedef typename scalar_of<return_type>::type scalar_type;
 
   typedef Dense<2, T0, Order0>          block0_type;
   typedef Dense<2, T1, Order1>          block1_type;
@@ -61,8 +50,8 @@ test_prod_rand(length_type m, length_type n, length_type k)
   Matrix<return_type, blockR_type> res3(m, k);
   Matrix<return_type, blockR_type> chk(m, k);
 
-  randm(a);
-  randm(b);
+  test::randm(a);
+  test::randm(b);
 
   // Test matrix-matrix prod
   res1   = prod(a, b);
@@ -76,7 +65,7 @@ test_prod_rand(length_type m, length_type n, length_type k)
     res3.row(i) = prod(a.row(i), b);
 
   // Compute reference
-  chk   = ref::prod(a, b);
+  chk   = test::ref::prod(a, b);
 
 #if VERBOSE
   cout << "[" << m << "x" << n << "]  [" << 
@@ -85,9 +74,9 @@ test_prod_rand(length_type m, length_type n, length_type k)
   cout << "b     =\n" << b;
 #endif
 
-  test_assert(error_db(res1, chk) < ERROR_DB_THRESHOLD);
-  test_assert(error_db(res2, chk) < ERROR_DB_THRESHOLD);
-  test_assert(error_db(res3, chk) < ERROR_DB_THRESHOLD);
+  test_assert(test::diff(res1, chk) < ERROR_DB_THRESHOLD);
+  test_assert(test::diff(res2, chk) < ERROR_DB_THRESHOLD);
+  test_assert(test::diff(res3, chk) < ERROR_DB_THRESHOLD);
 }
 
 
@@ -130,8 +119,8 @@ main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  Precision_traits<float>::compute_eps();
-  Precision_traits<double>::compute_eps();
+  test::precision<float>::init();
+  test::precision<double>::init();
 
   prod_cases_with_order<float,  float>();
 

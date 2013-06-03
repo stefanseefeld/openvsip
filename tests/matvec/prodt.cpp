@@ -12,23 +12,11 @@
 #include <vsip/support.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/math.hpp>
+#include <test/ref/matvec.hpp>
+#include <test.hpp>
+#include "prod.hpp"
 
-#include <vsip_csl/output.hpp>
-#include <vsip_csl/ref_matvec.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-precision.hpp>
-
-#include "test-prod.hpp"
-#include "test-random.hpp"
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Test Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T0,
           typename T1,
@@ -39,7 +27,7 @@ void
 test_prodt_rand(length_type m, length_type n, length_type k)
 {
   typedef typename Promotion<T0, T1>::type return_type;
-  typedef typename vsip::impl::scalar_of<return_type>::type scalar_type;
+  typedef typename scalar_of<return_type>::type scalar_type;
 
   typedef Dense<2, T0, Order0>          block0_type;
   typedef Dense<2, T1, Order1>          block1_type;
@@ -51,14 +39,14 @@ test_prodt_rand(length_type m, length_type n, length_type k)
   Matrix<return_type, blockR_type> chk(m, k);
   Matrix<scalar_type> gauge(m, k);
 
-  randm(a);
-  randm(b);
+  test::randm(a);
+  test::randm(b);
 
   // Test matrix-matrix prod for transpose
   res1 = prodt(a, b);
 
-  chk   = ref::prod(a, trans(b));
-  gauge = ref::prod(mag(a), mag(trans(b)));
+  chk   = test::ref::prod(a, trans(b));
+  gauge = test::ref::prod(mag(a), mag(trans(b)));
 
   for (index_type i=0; i<gauge.size(0); ++i)
     for (index_type j=0; j<gauge.size(1); ++j)
@@ -110,8 +98,8 @@ main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  Precision_traits<float>::compute_eps();
-  Precision_traits<double>::compute_eps();
+  test::precision<float>::init();
+  test::precision<double>::init();
 
 
   prodt_cases_with_order<float,  float>();

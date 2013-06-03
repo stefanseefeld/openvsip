@@ -13,22 +13,10 @@
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/math.hpp>
+#include <test.hpp>
+#include <test/ref/matvec.hpp>
 
-#include <vsip_csl/test.hpp>
-#include "test-random.hpp"
-#include <vsip_csl/output.hpp>
-#include <vsip_csl/ref_matvec.hpp>
-
-using namespace std;
-using namespace vsip;
-namespace ref = vsip_csl::ref;
-using vsip_csl::equal;
-
-
-
-/***********************************************************************
-  Macros
-***********************************************************************/
+using namespace ovxx;
 
 // 080314: For MCOE csr1610, these macros are not defined by GCC
 //         math.h/cmath (but are defined by GHS math.h/cmath).
@@ -41,13 +29,6 @@ using vsip_csl::equal;
 #  define M_LOG2E    1.442695040888963407
 #endif
 
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-
 // Error metric between two Vectors
 
 template <typename T1,
@@ -55,9 +36,8 @@ template <typename T1,
 	  typename Block1,
 	  typename Block2>
 double
-error_db(
-  const_Vector<T1, Block1> v1,
-  const_Vector<T2, Block2> v2)
+error_db(const_Vector<T1, Block1> v1,
+	 const_Vector<T2, Block2> v2)
 {
   double refmax = 0.0;
   double maxsum = -250;
@@ -91,9 +71,8 @@ template <typename T1,
 	  typename Block1,
 	  typename Block2>
 double
-error_db(
-  const_Matrix<T1, Block1> v1,
-  const_Matrix<T2, Block2> v2)
+error_db(const_Matrix<T1, Block1> v1,
+	 const_Matrix<T2, Block2> v2)
 {
   double maxsum = -250;
   for (unsigned i = 0; i < v1.size(0); ++i)
@@ -108,7 +87,7 @@ error_db(
 
 template <typename T>
 void
-Check_gem_results( Matrix<T> actual, Matrix<T> expected )
+check_gem_results( Matrix<T> actual, Matrix<T> expected )
 {
   test_assert( error_db(actual, expected) < -100 );
 }
@@ -116,7 +95,7 @@ Check_gem_results( Matrix<T> actual, Matrix<T> expected )
 
 template <typename T>
 void
-Test_gemp( T alpha, T beta, length_type M, length_type P, length_type N )
+test_gemp( T alpha, T beta, length_type M, length_type P, length_type N )
 {
   Matrix<T> a (M, P);
   Matrix<T> b (P, N);
@@ -127,9 +106,9 @@ Test_gemp( T alpha, T beta, length_type M, length_type P, length_type N )
   Matrix<T> b_t (N, P);
 
   // fill in unique values for each element of a, b and c
-  randm(a);
-  randm(b);
-  randm(c);
+  test::randm(a);
+  test::randm(b);
+  test::randm(c);
   a_t = a.transpose();
   b_t = b.transpose();
 
@@ -149,7 +128,7 @@ Test_gemp( T alpha, T beta, length_type M, length_type P, length_type N )
   // compute the actual result (updated in c)
   gemp<mat_ntrans, mat_ntrans>(alpha, a, b, beta, c);
 
-  Check_gem_results( c, d );
+  check_gem_results( c, d );
 
 
   // re-compute the result with remaining types
@@ -168,7 +147,7 @@ Test_gemp( T alpha, T beta, length_type M, length_type P, length_type N )
   // compute the actual result (updated in c)
   gemp<mat_trans, mat_ntrans>(alpha, a_t, b, beta, c);
 
-  Check_gem_results( c, d );
+  check_gem_results( c, d );
 
   
   // no trans, trans
@@ -185,7 +164,7 @@ Test_gemp( T alpha, T beta, length_type M, length_type P, length_type N )
   // compute the actual result (updated in c)
   gemp<mat_ntrans, mat_trans>(alpha, a, b_t, beta, c);
 
-  Check_gem_results( c, d );
+  check_gem_results( c, d );
 
 
   // trans, trans
@@ -202,7 +181,7 @@ Test_gemp( T alpha, T beta, length_type M, length_type P, length_type N )
   // compute the actual result (updated in c)
   gemp<mat_trans, mat_trans>(alpha, a_t, b_t, beta, c);
 
-  Check_gem_results( c, d );
+  check_gem_results( c, d );
 
 
   // herm, trans
@@ -212,14 +191,14 @@ Test_gemp( T alpha, T beta, length_type M, length_type P, length_type N )
     {
       T dot = 0;
       for ( index_type i = 0; i < P; ++i )
-        dot += vsip_csl::impl_conj(a_t.get(i, row)) * b_t.get(col, i);
+        dot += math::impl_conj(a_t.get(i, row)) * b_t.get(col, i);
       d.put( row, col, alpha * dot + beta * c(row, col) );
     }
 
   // compute the actual result (updated in c)
   gemp<mat_herm, mat_trans>(alpha, a_t, b_t, beta, c);
 
-  Check_gem_results( c, d );
+  check_gem_results( c, d );
 
 
   // ntrans, conj
@@ -229,20 +208,20 @@ Test_gemp( T alpha, T beta, length_type M, length_type P, length_type N )
     {
       T dot = 0;
       for ( index_type i = 0; i < P; ++i )
-        dot += a.get(row, i) * vsip_csl::impl_conj(b.get(i, col));
+        dot += a.get(row, i) * math::impl_conj(b.get(i, col));
       d.put( row, col, alpha * dot + beta * c(row, col) );
     }
 
   // compute the actual result (updated in c)
   gemp<mat_ntrans, mat_conj>(alpha, a, b, beta, c);
 
-  Check_gem_results( c, d );
+  check_gem_results( c, d );
 }
 
 
 template <typename T>
 void
-Test_gems( T alpha, T beta, length_type M, length_type /*P*/, length_type N )
+test_gems( T alpha, T beta, length_type M, length_type /*P*/, length_type N )
 {
   Matrix<T> a (M, N);
   Matrix<T> b (M, N);
@@ -253,8 +232,8 @@ Test_gems( T alpha, T beta, length_type M, length_type /*P*/, length_type N )
 
 
   // fill in unique values for each element of a and c
-  randm(a);
-  randm(b); // save copy for later
+  test::randm(a);
+  test::randm(b); // save copy for later
   c = b;
 
 
@@ -267,7 +246,7 @@ Test_gems( T alpha, T beta, length_type M, length_type /*P*/, length_type N )
   // compute the actual result (updated in c)
   gems<mat_ntrans>(alpha, a, beta, c);
 
-  Check_gem_results( c, d );
+  check_gem_results( c, d );
 
 
   // create the transposes of a and restore c
@@ -282,7 +261,7 @@ Test_gems( T alpha, T beta, length_type M, length_type /*P*/, length_type N )
   // compute the actual result (updated in c)
   gems<mat_trans>(alpha, a_t, beta, c);
 
-  Check_gem_results( c, d );
+  check_gem_results( c, d );
 
 
   // restore c
@@ -292,12 +271,12 @@ Test_gems( T alpha, T beta, length_type M, length_type /*P*/, length_type N )
   // compute the expected result for d
   for ( index_type row = 0; row < M; ++row )
     for ( index_type col = 0; col < N; ++col )
-      d.put( row, col, alpha * vsip_csl::impl_conj(a_t.get(col, row)) + beta * c(row, col) );
+      d.put( row, col, alpha * math::impl_conj(a_t.get(col, row)) + beta * c(row, col) );
 
   // compute the actual result (updated in c)
   gems<mat_herm>(alpha, a_t, beta, c);
 
-  Check_gem_results( c, d );
+  check_gem_results( c, d );
 
 
   // restore c
@@ -307,38 +286,38 @@ Test_gems( T alpha, T beta, length_type M, length_type /*P*/, length_type N )
   // compute the expected result for d
   for ( index_type row = 0; row < M; ++row )
     for ( index_type col = 0; col < N; ++col )
-      d.put( row, col, alpha * vsip_csl::impl_conj(a.get(row, col)) + beta * c(row, col) );
+      d.put( row, col, alpha * math::impl_conj(a.get(row, col)) + beta * c(row, col) );
 
   // compute the actual result (updated in c)
   gems<mat_conj>(alpha, a, beta, c);
 
-  Check_gem_results( c, d );
+  check_gem_results( c, d );
 }
 
 
 template <typename T>
 void
-Test_gem_types( T alpha, T beta )
+test_gem_types( T alpha, T beta )
 {
   // last 3 params are M, N, P (for M x N and N x P matricies)
 
   // generalized matrix product
-  Test_gemp<T>( alpha, beta, 7, 3, 5 );
-  Test_gemp<T>( alpha, beta, 7, 9, 5 );
-  Test_gemp<T>( alpha, beta, 5, 9, 7 );
-  Test_gemp<T>( alpha, beta, 5, 3, 7 );
+  test_gemp<T>( alpha, beta, 7, 3, 5 );
+  test_gemp<T>( alpha, beta, 7, 9, 5 );
+  test_gemp<T>( alpha, beta, 5, 9, 7 );
+  test_gemp<T>( alpha, beta, 5, 3, 7 );
 
   // generalized matrix sum
-  Test_gems<T>( alpha, beta, 7, 3, 5 );
-  Test_gems<T>( alpha, beta, 7, 9, 5 );
-  Test_gems<T>( alpha, beta, 5, 9, 7 );
-  Test_gems<T>( alpha, beta, 5, 3, 7 );
+  test_gems<T>( alpha, beta, 7, 3, 5 );
+  test_gems<T>( alpha, beta, 7, 9, 5 );
+  test_gems<T>( alpha, beta, 5, 9, 7 );
+  test_gems<T>( alpha, beta, 5, 3, 7 );
 }
 
 
 
 void
-Test_cumsum()
+test_cumsum()
 {
   // simple sum of a vector containing scalars
   length_type const len = 5;
@@ -412,18 +391,18 @@ Test_cumsum()
 template <typename T0,
           typename T3>
 void
-Test_modulate( const length_type m )
+test_modulate( const length_type m )
 {
   index_type rows = 2;
   Matrix<T0> v(rows, m);
   Matrix<complex<T3> > w(rows, m, complex<float>());
   Matrix<complex<T3> > r(rows, m);
 
-  T3 nu = VSIP_IMPL_PI / 2;
+  T3 nu = OVXX_PI / 2;
   T3 phi = 0.123;
   T3 phase = phi;
 
-  randm(v);
+  test::randm(v);
 
   for ( index_type i = 0; i < rows; ++i )
   {
@@ -439,29 +418,27 @@ Test_modulate( const length_type m )
 
 template <typename T>
 void
-Test_outer( T alpha, const length_type m, const length_type n )
+test_outer( T alpha, const length_type m, const length_type n )
 {
-  {
-    Vector<T> a(m, T());
-    Vector<T> b(n, T());
-    Matrix<T> r(m, n, T());
-    Matrix<T> c1(m, n, T(2));
-    Matrix<T, Dense<2, T, col2_type> > c2(m, n, T(2));
+  Vector<T> a(m, T());
+  Vector<T> b(n, T());
+  Matrix<T> r(m, n, T());
+  Matrix<T> c1(m, n, T(2));
+  Matrix<T, Dense<2, T, col2_type> > c2(m, n, T(2));
 
-    randv(a);
-    randv(b);
+  test::randv(a);
+  test::randv(b);
 
-    c1 = outer(alpha, a, b);
-    vsip::impl::outer(alpha, a, b, c2);
-    r = ref::outer(alpha * a, b);
-
-    for ( vsip::index_type i = 0; i < r.size(0); ++i )
-      for ( vsip::index_type j = 0; j < r.size(1); ++j )
-      {
-        test_assert( equal( r.get(i, j), c1.get(i, j) ) );
-        test_assert( equal( r.get(i, j), c2.get(i, j) ) );
-      }
-  }
+  c1 = outer(alpha, a, b);
+  vsip::impl::outer(alpha, a, b, c2);
+  r = test::ref::outer(alpha * a, b);
+  
+  for ( vsip::index_type i = 0; i < r.size(0); ++i )
+    for ( vsip::index_type j = 0; j < r.size(1); ++j )
+    {
+      test_assert( equal( r.get(i, j), c1.get(i, j) ) );
+      test_assert( equal( r.get(i, j), c2.get(i, j) ) );
+    }
 }
 
 
@@ -469,8 +446,8 @@ template <typename T>
 void
 modulate_cases( const length_type m )
 {
-  Test_modulate<T,          T>( m );
-  Test_modulate<complex<T>, T>( m );
+  test_modulate<T,          T>( m );
+  test_modulate<complex<T>, T>( m );
 }
 
 
@@ -517,22 +494,22 @@ main(int argc, char** argv)
   // Test generalized matrix operations
 
   // params: alpha, beta
-  Test_gem_types<float>( M_E, VSIP_IMPL_PI );
+  test_gem_types<float>( M_E, OVXX_PI );
 
-  Test_gem_types<complex<float> >
+  test_gem_types<complex<float> >
     ( complex<float>(M_LN2, -M_SQRT2), complex<float>(M_LOG2E, M_LN10) );
 
 #if VSIP_IMPL_TEST_DOUBLE
-  Test_gem_types<double>( -M_E, -VSIP_IMPL_PI );
+  test_gem_types<double>( -M_E, -OVXX_PI );
 
-  Test_gem_types<complex<double> >
+  test_gem_types<complex<double> >
     ( complex<float>(M_LN2, -M_SQRT2), complex<float>(M_LOG2E, M_LN10) );
 #endif
 
 
   // misc functions
   
-  Test_cumsum();
+  test_cumsum();
 
   modulate_cases<float>(10);
 #if VSIP_IMPL_TEST_DOUBLE
@@ -542,19 +519,19 @@ main(int argc, char** argv)
   modulate_cases<long double>(16);
 #endif
 
-  Test_outer<float>( static_cast<float>(VSIP_IMPL_PI), 3, 3 );
-  Test_outer<float>( static_cast<float>(VSIP_IMPL_PI), 5, 7 );
-  Test_outer<float>( static_cast<float>(VSIP_IMPL_PI), 7, 5 );
-  Test_outer<complex<float> >( complex<float>(VSIP_IMPL_PI, M_E), 3, 3 );
-  Test_outer<complex<float> >( complex<float>(VSIP_IMPL_PI, M_E), 5, 7 );
-  Test_outer<complex<float> >( complex<float>(VSIP_IMPL_PI, M_E), 7, 5 );
-#if VSIP_IMPL_TEST_DOUBLE
-  Test_outer<double>( static_cast<double>(VSIP_IMPL_PI), 3, 3 );
-  Test_outer<double>( static_cast<double>(VSIP_IMPL_PI), 5, 7 );
-  Test_outer<double>( static_cast<double>(VSIP_IMPL_PI), 7, 5 );
-  Test_outer<complex<double> >( complex<double>(VSIP_IMPL_PI, M_E), 3, 3 );
-  Test_outer<complex<double> >( complex<double>(VSIP_IMPL_PI, M_E), 5, 7 );
-  Test_outer<complex<double> >( complex<double>(VSIP_IMPL_PI, M_E), 7, 5 );
+  test_outer<float>( static_cast<float>(OVXX_PI), 3, 3 );
+  test_outer<float>( static_cast<float>(OVXX_PI), 5, 7 );
+  test_outer<float>( static_cast<float>(OVXX_PI), 7, 5 );
+  test_outer<complex<float> >( complex<float>(OVXX_PI, M_E), 3, 3 );
+  test_outer<complex<float> >( complex<float>(OVXX_PI, M_E), 5, 7 );
+  test_outer<complex<float> >( complex<float>(OVXX_PI, M_E), 7, 5 );
+#if OVXX_TEST_DOUBLE
+  test_outer<double>( static_cast<double>(OVXX_PI), 3, 3 );
+  test_outer<double>( static_cast<double>(OVXX_PI), 5, 7 );
+  test_outer<double>( static_cast<double>(OVXX_PI), 7, 5 );
+  test_outer<complex<double> >( complex<double>(OVXX_PI, M_E), 3, 3 );
+  test_outer<complex<double> >( complex<double>(OVXX_PI, M_E), 5, 7 );
+  test_outer<complex<double> >( complex<double>(OVXX_PI, M_E), 7, 5 );
 #endif
 
   return 0;

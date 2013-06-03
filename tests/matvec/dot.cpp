@@ -6,38 +6,16 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <cassert>
-
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/math.hpp>
-
-#include <vsip_csl/ref_matvec.hpp>
-
-#include <vsip_csl/test.hpp>
-#include "test-random.hpp"
-#include <vsip_csl/test-precision.hpp>
+#include <test/ref/matvec.hpp>
+#include <test.hpp>
 
 #define VERBOSE 0
 
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#endif
-
-using namespace std;
-using namespace vsip;
-namespace ref = vsip_csl::ref;
-using vsip_csl::equal;
-using vsip_csl::almost_equal;
-using vsip_csl::Precision_traits;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 /// Test dot product with random values.
 
@@ -47,17 +25,17 @@ void
 test_dot_rand(length_type m)
 {
   typedef typename Promotion<T0, T1>::type return_type;
-  typedef typename vsip::impl::scalar_of<return_type>::type scalar_type;
+  typedef typename scalar_of<return_type>::type scalar_type;
 
   Vector<T0> a(m);
   Vector<T1> b(m);
 
-  randv(a);
-  randv(b);
+  test::randv(a);
+  test::randv(b);
 
   // Test vector-vector prod
   return_type val = dot(a, b);
-  return_type chk = ref::dot(a, b);
+  return_type chk = test::ref::dot(a, b);
 
   // Verify the result using a slightly lower threshold since 'equal(val, chk)'
   //  fails on CELL builds due to small numerical inconsistencies.
@@ -75,18 +53,18 @@ void
 test_cvjdot_rand(length_type m)
 {
   typedef typename Promotion<T0, T1>::type return_type;
-  typedef typename vsip::impl::scalar_of<return_type>::type scalar_type;
+  typedef typename scalar_of<return_type>::type scalar_type;
 
   Vector<T0> a(m);
   Vector<T1> b(m);
 
-  randv(a);
-  randv(b);
+  test::randv(a);
+  test::randv(b);
 
   // Test vector-vector prod
   return_type val  = cvjdot(a, b);
   return_type chk1 = dot(a, conj(b));
-  return_type chk2 = ref::dot(a, conj(b));
+  return_type chk2 = test::ref::dot(a, conj(b));
 
   test_assert(equal(val, chk1));
   test_assert(equal(val, chk2));
@@ -144,22 +122,13 @@ dot_types()
 #endif
 }
 
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
-
-template <> float  Precision_traits<float>::eps = 0.0;
-template <> double Precision_traits<double>::eps = 0.0;
-
 int
 main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  Precision_traits<float>::compute_eps();
-  Precision_traits<double>::compute_eps();
+  test::precision<float>::init();
+  test::precision<double>::init();
 
   test_cvjdot_rand<complex<float>, complex<float> >(16);
 
