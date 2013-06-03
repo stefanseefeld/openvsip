@@ -6,36 +6,17 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <cassert>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/solvers.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-precision.hpp>
-#include <test-random.hpp>
+#include <test.hpp>
 #include "common.hpp"
 
 #define VERBOSE  0
 #define DO_SWEEP 0
 
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#  include <extdata-output.hpp>
-#endif
-
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  covsol function tests
-***********************************************************************/
+using namespace ovxx;
 
 // Description:
 //   Build a diagonal matrix A
@@ -47,10 +28,9 @@ using namespace vsip_csl;
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-test_covsol_diag(
-  length_type m,
-  length_type n,
-  length_type p)
+test_covsol_diag(length_type m,
+		 length_type n,
+		 length_type p)
 {
   test_assert(m >= n);
 
@@ -93,10 +73,9 @@ test_covsol_diag(
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-test_covsol_random(
-  length_type m,
-  length_type n,
-  length_type p)
+test_covsol_random(length_type m,
+		   length_type n,
+		   length_type p)
 {
   test_assert(m >= n);
 
@@ -125,7 +104,7 @@ test_covsol_random(
   cout << "x = " << endl << x << endl;
   cout << "b = " << endl << b << endl;
   cout << "chk = " << endl << chk << endl;
-  cout << "f_covsol<" << Type_name<T>::name()
+  cout << "f_covsol<" << type_name<T>()
        << ">(" << m << ", " << n << ", " << p << "): " << err << endl;
 #endif
 
@@ -142,7 +121,7 @@ test_covsol_random(
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-covsol_cases(vsip::impl::true_type)
+covsol_cases(true_type)
 {
   test_covsol_diag<RtM, T>(1,   1, 2);
   test_covsol_diag<RtM, T>(5,   5, 2);
@@ -185,7 +164,7 @@ covsol_cases(vsip::impl::true_type)
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-covsol_cases(vsip::impl::false_type)
+covsol_cases(false_type)
 {
 }
 
@@ -203,31 +182,18 @@ template <return_mechanism_type RtM,
 void
 covsol_cases()
 {
-  using vsip::impl::integral_constant;
-  using vsip::impl::is_same;
-  using namespace vsip_csl::dispatcher;
+  using namespace ovxx::dispatcher;
   covsol_cases<RtM, T>(
     integral_constant<bool, is_operation_supported<op::qrd, T>::value>());
 }
   
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
-
-template <> float  Precision_traits<float>::eps = 0.0;
-template <> double Precision_traits<double>::eps = 0.0;
-
-
-
 int
 main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  Precision_traits<float>::compute_eps();
-  Precision_traits<double>::compute_eps();
+  test::precision<float>::init();
+  test::precision<double>::init();
 
   covsol_cases<by_value, float>();
   covsol_cases<by_value, double>();

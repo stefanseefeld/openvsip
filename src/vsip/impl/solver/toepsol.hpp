@@ -1,29 +1,18 @@
 //
-// Copyright (c) 2005, 2006 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_SOLVER_TOEPSOL_HPP
-#define VSIP_CORE_SOLVER_TOEPSOL_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef vsip_impl_solver_toepsol_hpp_
+#define vsip_impl_solver_toepsol_hpp_
 
 #include <algorithm>
-
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/math.hpp>
-
-
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
 
 namespace vsip
 {
@@ -61,11 +50,11 @@ toepsol(const_Vector<T, Block0> t,
 	Vector<T, Block3>       x)
 VSIP_THROW((std::bad_alloc, computation_error))
 {
-  typedef typename impl::scalar_of<T>::type scalar_type;
+  typedef typename ovxx::scalar_of<T>::type scalar_type;
 
-  assert(t.size() == b.size());
-  assert(t.size() == y.size());
-  assert(t.size() == x.size());
+  OVXX_PRECONDITION(t.size() == b.size());
+  OVXX_PRECONDITION(t.size() == y.size());
+  OVXX_PRECONDITION(t.size() == x.size());
 
   length_type n = t.size();
 
@@ -74,11 +63,11 @@ VSIP_THROW((std::bad_alloc, computation_error))
   Vector<T> tmpv(n);
 
   scalar_type beta  = 1.0;
-  scalar_type scale = impl::fn::impl_real(t.get(0));
-  T           alpha = impl::fn::impl_conj(-r.get(0)/scale);
+  scalar_type scale = ovxx::math::impl_real(t.get(0));
+  T           alpha = ovxx::math::impl_conj(-r.get(0)/scale);
   T           tmps; 
   
-  alpha = impl::fn::impl_conj(-r.get(0)/scale);
+  alpha = ovxx::math::impl_conj(-r.get(0)/scale);
   
   y.put(0, alpha);
   x.put(0, b.get(0) / scale);
@@ -88,7 +77,7 @@ VSIP_THROW((std::bad_alloc, computation_error))
     beta *= (1.0 - magsq(alpha));
     if (beta == 0.0)
     { 
-      VSIP_IMPL_THROW(computation_error("TOEPSOL: not full rank"));
+      OVXX_DO_THROW(computation_error("TOEPSOL: not full rank"));
     } 
 
     tmps = dot(impl_conj(r(Domain<1>(k))), x(Domain<1>(k-1, -1, k)));
@@ -102,7 +91,7 @@ VSIP_THROW((std::bad_alloc, computation_error))
     if (k < (n - 1))
     {
       tmps  = dot(impl_conj(r(Domain<1>(k))), y(Domain<1>(k-1, -1, k)));
-      alpha = -(tmps + impl::fn::impl_conj(r.get(k))) / (scale*beta);
+      alpha = -(tmps + impl::math::impl_conj(r.get(k))) / (scale*beta);
       
       tmpv(Domain<1>(k)) = alpha * impl_conj(y(Domain<1>(k-1, -1, k))) 
 	                 + y(Domain<1>(k));
@@ -114,11 +103,9 @@ VSIP_THROW((std::bad_alloc, computation_error))
   return x;
 }
 
-
-
 /// Solve a real symmetric or complex Hermetian positive definite Toeplitz
 /// linear system.
-
+///
 /// Solves:
 ///   T x = B
 /// for x, given T and B.
@@ -134,16 +121,14 @@ VSIP_THROW((std::bad_alloc, computation_error))
 /// Throws:
 ///   computation_error if T is ill-formed (non postive definite)
 ///   bad_alloc if allocation fails.
-
 template <typename T,
 	  typename Block0,
 	  typename Block1,
 	  typename Block2>
 const_Vector<T>
-toepsol(
-   const_Vector<T, Block0> t,
-   const_Vector<T, Block1> b,
-   Vector<T, Block2>       y)
+toepsol(const_Vector<T, Block0> t,
+	const_Vector<T, Block1> b,
+	Vector<T, Block2>       y)
 VSIP_THROW((std::bad_alloc, computation_error))
 {
   Vector<T> x(t.size());
@@ -152,4 +137,4 @@ VSIP_THROW((std::bad_alloc, computation_error))
 
 } // namespace vsip
 
-#endif // VSIP_CORE_SOLVER_TOEPSOL_HPP
+#endif

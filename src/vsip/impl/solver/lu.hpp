@@ -1,73 +1,56 @@
 //
-// Copyright (c) 2005, 2006 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef vsip_core_solver_lu_hpp_
-#define vsip_core_solver_lu_hpp_
+#ifndef vsip_impl_solver_lu_hpp_
+#define vsip_impl_solver_lu_hpp_
 
 #include <algorithm>
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/math_enum.hpp>
-#include <vsip/core/temp_buffer.hpp>
-#include <vsip/core/metaprogramming.hpp>
-#ifndef VSIP_IMPL_REF_IMPL
-# include <vsip/opt/dispatch.hpp>
+#include <vsip/impl/math_enum.hpp>
+#include <vsip/impl/solver/common.hpp>
+#include <ovxx/dispatch.hpp>
+#ifdef OVXX_HAVE_LAPACK
+#  include <ovxx/lapack/lu.hpp>
 #endif
-#include <vsip/core/solver/common.hpp>
-#ifdef VSIP_IMPL_HAVE_SAL
-#  include <vsip/opt/sal/lu.hpp>
-#endif
-#ifdef VSIP_IMPL_CBE_SDK
-#  include <vsip/opt/cbe/cml/lu.hpp>
-#endif
-#ifdef VSIP_IMPL_HAVE_LAPACK
-#  include <vsip/opt/lapack/lu.hpp>
-#endif
-#ifdef VSIP_IMPL_HAVE_CVSIP
-#  include <vsip/core/cvsip/lu.hpp>
+#ifdef OVXX_HAVE_CVSIP
+#  include <ovxx/cvsip/lu.hpp>
 #endif
 
-namespace vsip_csl
+namespace ovxx
 {
 namespace dispatcher
 {
-#ifndef VSIP_IMPL_REF_IMPL
 template <>
 struct List<op::lud>
 {
-  typedef Make_type_list<be::user,
-			 be::cml,
-			 be::mercury_sal,
+  typedef make_type_list<be::user,
+			 be::cvsip,
 			 be::lapack>::type type;
 };
-#endif
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
 namespace vsip
 {
 /// LU solver object.
 template <typename = VSIP_DEFAULT_VALUE_TYPE,
-	  return_mechanism_type ReturnMechanism = by_value>
+	  return_mechanism_type R = by_value>
 class lud;
 
 /// LU solver object (by-reference).
 template <typename T>
 class lud<T, by_reference>
 {
-#ifndef VSIP_IMPL_REF_IMPL
-  typedef typename vsip_csl::dispatcher::Dispatcher<
-    vsip_csl::dispatcher::op::lud, T>::type
+  typedef typename ovxx::dispatcher::Dispatcher<
+    ovxx::dispatcher::op::lud, T>::type
   backend_type;
-#else
-  typedef typename impl::cvsip::lu_solver<T> backend_type;
-#endif
 
 public:
   lud(length_type length) VSIP_THROW((std::bad_alloc)) : backend_(length) {}
@@ -89,13 +72,9 @@ private:
 template <typename T>
 class lud<T, by_value>
 {
-#ifndef VSIP_IMPL_REF_IMPL
-  typedef typename vsip_csl::dispatcher::Dispatcher<
-    vsip_csl::dispatcher::op::lud, T>::type
+  typedef typename ovxx::dispatcher::Dispatcher<
+    ovxx::dispatcher::op::lud, T>::type
   backend_type;
-#else
-  typedef impl::cvsip::lu_solver<T> backend_type;
-#endif
 
 public:
   lud(length_type length) VSIP_THROW((std::bad_alloc)) : backend_(length) {}

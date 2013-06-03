@@ -16,28 +16,13 @@
 #include <vsip/random.hpp>
 #include <vsip/map.hpp>
 #include <vsip/parallel.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-precision.hpp>
-#include <test-random.hpp>
+#include <test.hpp>
 #include "common.hpp"
 
 #define VERBOSE  0
 #define DO_FULL  0
 
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#  include <extdata-output.hpp>
-#endif
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  function tests
-***********************************************************************/
+using namespace ovxx;
 
 /// Solve a linear system with the Toeplitz solver.
 
@@ -45,12 +30,11 @@ template <typename T,
 	  typename Block1,
 	  typename Block2>
 void
-test_toepsol(
-  return_mechanism_type rtm,
-  Vector<T, Block1>     a,
-  Vector<T, Block2>     b)
+test_toepsol(return_mechanism_type rtm,
+	     Vector<T, Block1>     a,
+	     Vector<T, Block2>     b)
 {
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   length_type size = a.size();
 
@@ -62,8 +46,8 @@ test_toepsol(
   aa.diag() = a(0);
   for (index_type i=1; i<size; ++i)
   {
-    aa.diag(+i) =                        a(i);
-    aa.diag(-i) = vsip_csl::impl_conj<T>(a(i));
+    aa.diag(+i) = a(i);
+    aa.diag(-i) = impl_conj<T>(a(i));
   }
 
 
@@ -87,7 +71,7 @@ test_toepsol(
 
   Index<1> idx;
   scalar_type err = maxval(((mag(chk - b) / gauge)
-			     / Precision_traits<scalar_type>::eps
+			    / test::precision<scalar_type>::eps
 			     / size),
 			   idx);
 
@@ -109,10 +93,9 @@ test_toepsol(
 
 template <typename T>
 void
-test_toepsol_diag(
-  return_mechanism_type rtm,
-  T                     value,
-  length_type           size)
+test_toepsol_diag(return_mechanism_type rtm,
+		  T                     value,
+		  length_type           size)
 {
   Vector<T> a(size, T());
   Vector<T> b(size);
@@ -160,12 +143,11 @@ struct Toepsol_traits<complex<T> >
 
 template <typename T>
 void
-test_toepsol_rand(
-  return_mechanism_type rtm,
-  length_type           size,
-  length_type           loop)
+test_toepsol_rand(return_mechanism_type rtm,
+		  length_type           size,
+		  length_type           loop)
 {
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   Vector<T> a(size, T());
   Vector<T> b(size);
@@ -194,12 +176,11 @@ test_toepsol_rand(
 template <typename T,
 	  typename MapT>
 void
-test_toepsol_dist(
-  return_mechanism_type rtm,
-  length_type           size,
-  length_type           loop)
+test_toepsol_dist(return_mechanism_type rtm,
+		  length_type           size,
+		  length_type           loop)
 {
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   typedef Dense<1, T, row1_type, MapT> block_type;
   typedef Vector<T, block_type>        view_type;
@@ -218,7 +199,7 @@ test_toepsol_dist(
 
   for (index_type l=0; l<loop; ++l)
   {
-    vsip::impl::assign_local(b, rand.randu(size)); // b = rand.randu(size);
+    parallel::assign_local(b, rand.randu(size)); // b = rand.randu(size);
     test_toepsol(rtm, a, b);
   }
 }
@@ -229,11 +210,10 @@ test_toepsol_dist(
 
 template <typename T>
 void
-test_toepsol_illformed(
-  return_mechanism_type rtm,
-  length_type           size)
+test_toepsol_illformed(return_mechanism_type rtm,
+		       length_type           size)
 {
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   Vector<T> a(size, T());
   Vector<T> b(size);
@@ -282,28 +262,18 @@ toepsol_cases(return_mechanism_type rtm)
 #if VSIP_HAS_EXCEPTIONS
   test_toepsol_illformed<float>      (rtm, 4);
 #endif
-
+#if OVXX_PARALLEL
   test_toepsol_dist<float, Map<Block_dist> >(rtm, 4, 5);
+#endif
 }
   
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
-
-template <> float  Precision_traits<float>::eps = 0.0;
-template <> double Precision_traits<double>::eps = 0.0;
-
-
-
 int
 main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  Precision_traits<float>::compute_eps();
-  Precision_traits<double>::compute_eps();
+  test::precision<float>::init();
+  test::precision<double>::init();
 
   toepsol_cases(by_reference);
   toepsol_cases(by_value);

@@ -6,42 +6,24 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <cassert>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/solvers.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-precision.hpp>
-#include <test-random.hpp>
+#include <test.hpp>
 #include "common.hpp"
 
 #define VERBOSE  0
 #define DO_SWEEP 0
 
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#  include <extdata-output.hpp>
-#endif
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  llsqsol function using rsol tests
-***********************************************************************/
+using namespace ovxx;
 
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-test_llsqsol_diag(
-  length_type m,
-  length_type n,
-  length_type p)
+test_llsqsol_diag(length_type m,
+		  length_type n,
+		  length_type p)
 {
   test_assert(m >= n);
 
@@ -82,10 +64,9 @@ test_llsqsol_diag(
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-test_llsqsol_random(
-  length_type m,
-  length_type n,
-  length_type p)
+test_llsqsol_random(length_type m,
+		    length_type n,
+		    length_type p)
 {
   test_assert(m >= n);
 
@@ -121,11 +102,11 @@ test_llsqsol_random(
   cout << "x = " << endl << x << endl;
   cout << "b = " << endl << b << endl;
   cout << "chk = " << endl << chk << endl;
-  cout << "lsqsol<" << Type_name<T>::name()
+  cout << "lsqsol<" << type_name<T>()
        << ">(" << m << ", " << n << ", " << p << "): " << err << endl;
 #endif
 
-  typedef typename impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 #if NORMAL_EPSILON
   // These are almost_equal()'s normal epsilon.  They work fine for Lapack.
   scalar_type rel_epsilon = 1e-3;
@@ -152,7 +133,7 @@ test_llsqsol_random(
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-llsqsol_cases(vsip::impl::true_type)
+llsqsol_cases(true_type)
 {
   test_llsqsol_diag<RtM, T>(1,   1, 2);
   test_llsqsol_diag<RtM, T>(5,   5, 2);
@@ -195,7 +176,7 @@ llsqsol_cases(vsip::impl::true_type)
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-llsqsol_cases(vsip::impl::false_type)
+llsqsol_cases(false_type)
 {
 }
 
@@ -213,31 +194,18 @@ template <return_mechanism_type RtM,
 void
 llsqsol_cases()
 {
-  using vsip::impl::integral_constant;
-  using vsip::impl::is_same;
-  using namespace vsip_csl::dispatcher;
+  using namespace ovxx::dispatcher;
   llsqsol_cases<RtM, T>(
     integral_constant<bool, is_operation_supported<op::qrd, T>::value>());
 }
-
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
-
-template <> float  Precision_traits<float>::eps = 0.0;
-template <> double Precision_traits<double>::eps = 0.0;
-
-
 
 int
 main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  Precision_traits<float>::compute_eps();
-  Precision_traits<double>::compute_eps();
+  test::precision<float>::init();
+  test::precision<double>::init();
 
   llsqsol_cases<by_reference, float>();
   llsqsol_cases<by_reference, double>();

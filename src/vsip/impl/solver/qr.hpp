@@ -1,92 +1,68 @@
 //
-// Copyright (c) 2005, 2006, 2008 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef vsip_core_solver_qr_hpp_
-#define vsip_core_solver_qr_hpp_
+#ifndef vsip_impl_solver_qr_hpp_
+#define vsip_impl_solver_qr_hpp_
 
 #include <algorithm>
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/math_enum.hpp>
-#include <vsip/core/temp_buffer.hpp>
-#include <vsip/core/working_view.hpp>
-#include <vsip/core/solver/common.hpp>
-#ifndef VSIP_IMPL_REF_IMPL
-# include <vsip/opt/dispatch.hpp>
+#include <vsip/impl/math_enum.hpp>
+#include <vsip/impl/solver/common.hpp>
+#include <ovxx/dispatch.hpp>
+#ifdef OVXX_HAVE_LAPACK
+#  include <ovxx/lapack/qr.hpp>
 #endif
-#ifdef VSIP_IMPL_HAVE_LAPACK
-#  include <vsip/opt/lapack/qr.hpp>
-#endif
-#ifdef VSIP_IMPL_HAVE_SAL
-#  include <vsip/opt/sal/qr.hpp>
-#endif
-#ifdef VSIP_IMPL_CBE_SDK
-#  include <vsip/opt/cbe/cml/qr.hpp>
-#endif
-#ifdef VSIP_IMPL_HAVE_CUDA
-#  include <vsip/opt/cuda/qr.hpp>
-#endif
-#ifdef VSIP_IMPL_HAVE_CVSIP
-#  include <vsip/core/cvsip/qr.hpp>
+#ifdef OVXX_HAVE_CVSIP
+#  include <ovxx/cvsip/qr.hpp>
 #endif
 
-namespace vsip_csl
+namespace ovxx
 {
 namespace dispatcher
 {
-#ifndef VSIP_IMPL_REF_IMPL
 template <>
 struct List<op::qrd>
 {
-  typedef Make_type_list<be::user,
+  typedef make_type_list<be::user,
 			 be::cuda,
-			 be::cml,
-			 be::mercury_sal,
+			 be::cvsip,
 			 be::lapack>::type type;
 };
-#endif
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
 
-namespace vsip
-{
-namespace impl
-{
 // Qrd traits.  Determine which QR types (no-save, skinny, full) are
 // supported.
 template <typename T>
-struct Qrd_traits
+struct qrd_traits
 {
   static bool const supports_qrd_saveq1  = T::backend_type::supports_qrd_saveq1;
   static bool const supports_qrd_saveq   = T::backend_type::supports_qrd_saveq;
   static bool const supports_qrd_nosaveq = T::backend_type::supports_qrd_nosaveq;
 };
+} // namespace ovxx
 
-} // namespace vsip::impl
-
+namespace vsip
+{
 /// QR solver object.
 template <typename = VSIP_DEFAULT_VALUE_TYPE,
-	  return_mechanism_type ReturnMechanism = by_value>
+	  return_mechanism_type R = by_value>
 class qrd;
 
 // QR solver object (by-reference).
 template <typename T>
 class qrd<T, by_reference>
 {
-#ifndef VSIP_IMPL_REF_IMPL
-  typedef typename vsip_csl::dispatcher::Dispatcher<
-    vsip_csl::dispatcher::op::qrd, T>::type
+  typedef typename ovxx::dispatcher::Dispatcher<
+    ovxx::dispatcher::op::qrd, T>::type
   backend_type;
-#else
-  typedef typename impl::cvsip::Qrd<T> backend_type;
-#endif
-  friend struct impl::Qrd_traits<qrd<T, by_reference> >;
+  friend struct ovxx::qrd_traits<qrd<T, by_reference> >;
 
 public:
   qrd(length_type rows, length_type cols, storage_type st) 
@@ -94,8 +70,8 @@ public:
   : backend_(rows, cols, st)
   {}
 
-  length_type  rows()     const VSIP_NOTHROW { return backend_.rows();}
-  length_type  columns()  const VSIP_NOTHROW { return backend_.columns();}
+  length_type rows() const VSIP_NOTHROW { return backend_.rows();}
+  length_type columns() const VSIP_NOTHROW { return backend_.columns();}
   storage_type qstorage() const VSIP_NOTHROW { return backend_.qstorage();}
 
   template <typename Block>
@@ -127,22 +103,18 @@ private:
 template <typename T>
 class qrd<T, by_value>
 {
-#ifndef VSIP_IMPL_REF_IMPL
-  typedef typename vsip_csl::dispatcher::Dispatcher<
-    vsip_csl::dispatcher::op::qrd, T>::type
+  typedef typename ovxx::dispatcher::Dispatcher<
+    ovxx::dispatcher::op::qrd, T>::type
   backend_type;
-#else
-  typedef typename impl::cvsip::Qrd<T> backend_type;
-#endif
-  friend struct impl::Qrd_traits<qrd<T, by_value> >;
+  friend struct ovxx::qrd_traits<qrd<T, by_value> >;
 
 public:
   qrd(length_type rows, length_type cols, storage_type st) VSIP_THROW((std::bad_alloc))
     : backend_(rows, cols, st)
     {}
 
-  length_type  rows()     const VSIP_NOTHROW { return backend_.rows();}
-  length_type  columns()  const VSIP_NOTHROW { return backend_.columns();}
+  length_type rows() const VSIP_NOTHROW { return backend_.rows();}
+  length_type columns() const VSIP_NOTHROW { return backend_.columns();}
   storage_type qstorage() const VSIP_NOTHROW { return backend_.qstorage();}
 
   template <typename Block>

@@ -21,7 +21,7 @@ AC_ARG_WITH([lapack],
 	          using the first one found.  OpenVSIP understands the
 		  following LAPACK library selections: mkl (Intel Math Kernel
 		  Library), acml (AMD Core Math Library), atlas (system
-		  ATLAS/LAPACK installation), generic (system generic
+		  ATLAS/LAPACK installation), lapacke, generic (system generic
 		  LAPACK installation). 
 		  Specifying 'no' disables the search for a LAPACK library.]),,
   [with_lapack=probe])
@@ -91,7 +91,7 @@ if test "$with_lapack" != "no"; then
       lapack_packages="mkl"
     ;;
     yes | probe)
-      lapack_packages="atlas generic_wo_blas generic_with_blas"
+      lapack_packages="atlas lapacke generic_wo_blas generic_with_blas"
     ;;
     generic)
       lapack_packages="generic_wo_blas generic_with_blas"
@@ -222,6 +222,10 @@ if test "$with_lapack" != "no"; then
     sgeqrf_(&m, &n, a, &lda, tau, work, &lwork, &info);]])],
 [lapack_found=$trypkg; AC_MSG_RESULT([found])],
 [lapack_found="no"; AC_MSG_RESULT([not found])])])
+
+    if test "$lapack_found" != "no"; then
+      break
+    fi
   done
 
   if test "$lapack_found" == "no"; then

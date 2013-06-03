@@ -6,19 +6,15 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_SOLVERS_HPP
-#define VSIP_SOLVERS_HPP
+#ifndef vsip_solvers_hpp_
+#define vsip_solvers_hpp_
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#include <vsip/impl/solver/qr.hpp>
+#include <vsip/impl/solver/covsol.hpp>
+#include <vsip/impl/solver/llsqsol.hpp>
+#include <vsip/impl/solver/lu.hpp>
+#include <vsip/impl/solver/cholesky.hpp>
+#include <vsip/impl/solver/svd.hpp>
+#include <vsip/impl/solver/toepsol.hpp>
 
-#include <vsip/core/solver/qr.hpp>
-#include <vsip/core/solver/covsol.hpp>
-#include <vsip/core/solver/llsqsol.hpp>
-#include <vsip/core/solver/lu.hpp>
-#include <vsip/core/solver/cholesky.hpp>
-#include <vsip/core/solver/svd.hpp>
-#include <vsip/core/solver/toepsol.hpp>
-
-#endif // VSIP_SOLVERS_HPP
+#endif

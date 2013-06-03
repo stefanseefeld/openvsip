@@ -9,19 +9,12 @@
 #ifndef solvers_common_hpp_
 #define solvers_common_hpp_
 
-#include <iostream>
-
 #include <vsip/support.hpp>
 #include <vsip/complex.hpp>
 #include <vsip/matrix.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-precision.hpp>
-#include <test_ramp.hpp>
-
-using vsip_csl::equal;
-using vsip_csl::almost_equal;
-using vsip_csl::Precision_traits;
+using namespace ovxx;
 
 template <typename T>
 struct Test_traits
@@ -131,7 +124,7 @@ prod_check(
       }
 
       float err_ij = vsip::mag(tmp - c(i, j)) / 
-        vsip_csl::Precision_traits<scalar_type>::eps;
+        test::precision<scalar_type>::eps;
       if (guage > scalar_type())
 	err_ij = err_ij/guage;
       err = std::max(err, err_ij);
@@ -149,10 +142,9 @@ template <typename T,
 	  typename Block2,
 	  typename Block3>
 void
-prodh(
-  vsip::const_Matrix<T, Block1> a,
-  vsip::const_Matrix<T, Block2> b,
-  vsip::Matrix      <T, Block3> c)
+prodh(vsip::const_Matrix<T, Block1> a,
+      vsip::const_Matrix<T, Block2> b,
+      vsip::Matrix      <T, Block3> c)
 {
   using vsip::index_type;
 

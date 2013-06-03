@@ -6,16 +6,12 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <cassert>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/solvers.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-precision.hpp>
-#include <test-random.hpp>
+#include <ovxx/dispatcher/diagnostics.hpp>
+#include <test.hpp>
 #include "common.hpp"
 
 #define VERBOSE  0
@@ -27,25 +23,12 @@
 #  endif
 #endif
 
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#  include <extdata-output.hpp>
-#endif
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Support
-***********************************************************************/
+using namespace ovxx;
+using vsip::impl::trans_or_herm;
 
 template <typename T,
 	  typename Block>
-typename vsip::impl::scalar_of<T>::type
-norm_1(const_Vector<T, Block> v)
+typename scalar_of<T>::type norm_1(const_Vector<T, Block> v)
 {
   return sumval(mag(v));
 }
@@ -56,10 +39,10 @@ norm_1(const_Vector<T, Block> v)
 
 template <typename T,
 	  typename Block>
-typename vsip::impl::scalar_of<T>::type
+typename scalar_of<T>::type
 norm_1(const_Matrix<T, Block> m)
 {
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
   scalar_type norm = sumval(mag(m.col(0)));
 
   for (index_type j=1; j<m.size(1); ++j)
@@ -76,7 +59,7 @@ norm_1(const_Matrix<T, Block> m)
 
 template <typename T,
 	  typename Block>
-typename vsip::impl::scalar_of<T>::type
+typename scalar_of<T>::type
 norm_inf(const_Matrix<T, Block> m)
 {
   return norm_1(m.transpose());
@@ -86,17 +69,15 @@ template <typename T,
 	  typename Block1,
 	  typename Block2>
 void
-compare_view(
-  vsip::const_Vector<T, Block1>           a,
-  vsip::const_Vector<T, Block2>           b,
-  typename vsip::impl::scalar_of<T>::type thresh
+compare_view(vsip::const_Vector<T, Block1>           a,
+	     vsip::const_Vector<T, Block2>           b,
+	     typename scalar_of<T>::type thresh
   )
 {
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   vsip::Index<1> idx;
-  scalar_type err = vsip::maxval(
-    (mag(a - b) / vsip_csl::Precision_traits<scalar_type>::eps), idx);
+  scalar_type err = vsip::maxval((mag(a - b) / test::precision<scalar_type>::eps), idx);
 
   if (err > thresh)
   {
@@ -111,17 +92,15 @@ template <typename T,
 	  typename Block1,
 	  typename Block2>
 void
-compare_view(
-  vsip::const_Matrix<T, Block1>           a,
-  vsip::const_Matrix<T, Block2>           b,
-  typename vsip::impl::scalar_of<T>::type thresh
+compare_view(vsip::const_Matrix<T, Block1>           a,
+	     vsip::const_Matrix<T, Block2>           b,
+	     typename scalar_of<T>::type thresh
   )
 {
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   vsip::Index<2> idx;
-  scalar_type err = vsip::maxval(
-    (mag(a - b) / vsip_csl::Precision_traits<scalar_type>::eps), idx);
+  scalar_type err = vsip::maxval((mag(a - b) / test::precision<scalar_type>::eps), idx);
 
   if (err > thresh)
   {
@@ -172,12 +151,11 @@ template <typename              T,
 	  typename              Block2,
 	  typename              Block3>
 void
-apply_svd(
-  svd<T, by_value>&        sv,
-  Matrix<T, Block0>        a,
-  Vector<scalar_f, Block1> sv_s,
-  Matrix<T, Block2>        sv_u,
-  Matrix<T, Block3>        sv_v)
+apply_svd(svd<T, by_value>&        sv,
+	  Matrix<T, Block0>        a,
+	  Vector<scalar_f, Block1> sv_s,
+	  Matrix<T, Block2>        sv_u,
+	  Matrix<T, Block3>        sv_v)
 {
   length_type m = sv.rows();
   length_type n = sv.columns();
@@ -200,10 +178,9 @@ template <mat_op_type       tr,
 	  typename          Block0,
 	  typename          Block1>
 void
-apply_svd_produ(
-  svd<T, by_reference>&    sv,
-  const_Matrix<T, Block0>  b,
-  Matrix<T, Block1>        produ)
+apply_svd_produ(svd<T, by_reference>&    sv,
+		const_Matrix<T, Block0>  b,
+		Matrix<T, Block1>        produ)
 {
   sv.template produ<tr, ps>(b, produ);
 }
@@ -216,10 +193,9 @@ template <mat_op_type       tr,
 	  typename          Block0,
 	  typename          Block1>
 void
-apply_svd_produ(
-  svd<T, by_value>&        sv,
-  const_Matrix<T, Block0>  b,
-  Matrix<T, Block1>        produ)
+apply_svd_produ(svd<T, by_value>&        sv,
+		const_Matrix<T, Block0>  b,
+		Matrix<T, Block1>        produ)
 {
   produ = sv.template produ<tr, ps>(b);
 }
@@ -232,10 +208,9 @@ template <mat_op_type       tr,
 	  typename          Block0,
 	  typename          Block1>
 void
-apply_svd_prodv(
-  svd<T, by_reference>&    sv,
-  const_Matrix<T, Block0>  b,
-  Matrix<T, Block1>        prodv)
+apply_svd_prodv(svd<T, by_reference>&    sv,
+		const_Matrix<T, Block0>  b,
+		Matrix<T, Block1>        prodv)
 {
   sv.template prodv<tr, ps>(b, prodv);
 }
@@ -248,10 +223,9 @@ template <mat_op_type       tr,
 	  typename          Block0,
 	  typename          Block1>
 void
-apply_svd_prodv(
-  svd<T, by_value>&        sv,
-  const_Matrix<T, Block0>  b,
-  Matrix<T, Block1>        prodv)
+apply_svd_prodv(svd<T, by_value>&        sv,
+		const_Matrix<T, Block0>  b,
+		Matrix<T, Block1>        prodv)
 {
   prodv = sv.template prodv<tr, ps>(b);
 }
@@ -262,14 +236,12 @@ template <return_mechanism_type RtM,
 	  typename              T,
 	  typename              Block>
 void
-test_svd(
-  storage_type     ustorage,
-  storage_type     vstorage,
-  Matrix<T, Block> a,
-  length_type      loop)
+test_svd(storage_type     ustorage,
+	 storage_type     vstorage,
+	 Matrix<T, Block> a,
+	 length_type      loop)
 {
-  using vsip::impl::trans_or_herm;
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   length_type m = a.size(0);
   length_type n = a.size(1);
@@ -336,7 +308,7 @@ test_svd(
 
       Index<2> idx;
       scalar_type err = maxval((mag(chk - a)
-			      / Precision_traits<scalar_type>::eps),
+				/ test::precision<scalar_type>::eps),
 			     idx);
       scalar_type errx = maxval(mag(chk - a), idx);
       scalar_type norm_est = std::sqrt(norm_1(a) * norm_inf(a));
@@ -352,7 +324,7 @@ test_svd(
       cout << "chk  = " << endl << chk << endl;
       cout << "err = " << err << "   "
 	   << "norm = " << norm_est << endl;
-      cout << "eps = " << Precision_traits<scalar_type>::eps << endl;
+      cout << "eps = " << test::precision<scalar_type>::eps << endl;
       cout << "p:" << p << "   "
 	   << "err = " << err   << "   "
 	   << "errx = " << errx << endl;
@@ -472,12 +444,11 @@ test_svd(
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-test_svd_ident(
-  storage_type ustorage,
-  storage_type vstorage,
-  length_type  m,
-  length_type  n,
-  length_type  loop)
+test_svd_ident(storage_type ustorage,
+	       storage_type vstorage,
+	       length_type  m,
+	       length_type  n,
+	       length_type  loop)
 {
   length_type p = std::min(m, n);
   test_assert(m > 0 && n > 0);
@@ -502,14 +473,13 @@ test_svd_ident(
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-test_svd_rand(
-  storage_type ustorage,
-  storage_type vstorage,
-  length_type  m,
-  length_type  n,
-  length_type  loop)
+test_svd_rand(storage_type ustorage,
+	      storage_type vstorage,
+	      length_type  m,
+	      length_type  n,
+	      length_type  loop)
 {
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   length_type p = std::min(m, n);
   test_assert(m > 0 && n > 0);
@@ -534,7 +504,7 @@ svd_cases(storage_type ustorage,
 	  storage_type vstorage,
 	  length_type  loop,
 	  bool         m_lt_n,
-	  vsip::impl::true_type)
+	  true_type)
 {
   test_svd_ident<RtM, T>(ustorage, vstorage, 1, 1, loop);
   test_svd_ident<RtM, T>(ustorage, vstorage, 9, 1, loop);
@@ -576,7 +546,7 @@ svd_cases(storage_type ustorage,
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-svd_cases(storage_type, storage_type, length_type, bool, vsip::impl::false_type)
+svd_cases(storage_type, storage_type, length_type, bool, false_type)
 {
 }
 
@@ -591,13 +561,10 @@ svd_cases(storage_type ustorage,
 	  storage_type vstorage,
 	  length_type  loop)
 {
-  using vsip::impl::integral_constant;
-  using vsip::impl::is_same;
-  using namespace vsip_csl::dispatcher;
+  using namespace dispatcher;
 
-  // Test m less-than n cases.
-  bool m_lt_n = !is_same<
-    typename Dispatcher<op::svd, T>::backend, be::mercury_sal>::value;
+  // Test m less-than n cases. (SAL backend doesn't support this.)
+  bool m_lt_n = true;
 
   svd_cases<RtM, T>(ustorage, vstorage, loop, m_lt_n,
 		    integral_constant<bool,
@@ -608,10 +575,9 @@ svd_cases(storage_type ustorage,
 
 template <return_mechanism_type RtM>
 void
-svd_types(
-  storage_type ustorage,
-  storage_type vstorage,
-  length_type  loop)
+svd_types(storage_type ustorage,
+	  storage_type vstorage,
+	  length_type  loop)
 {
   svd_cases<RtM, float>(ustorage, vstorage, loop);
   svd_cases<RtM, double>(ustorage, vstorage, loop);
@@ -623,8 +589,7 @@ svd_types(
 
 template <return_mechanism_type RtM>
 void
-svd_storage(
-  length_type  loop)
+svd_storage(length_type  loop)
 {
   svd_types<RtM>(svd_uvfull, svd_uvfull, loop);
   svd_types<RtM>(svd_uvpart, svd_uvfull, loop);
@@ -637,24 +602,13 @@ svd_storage(
   svd_types<RtM>(svd_uvnos,  svd_uvnos, loop);
 }
   
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
-
-template <> float  Precision_traits<float>::eps = 0.0;
-template <> double Precision_traits<double>::eps = 0.0;
-
-
-
 int
 main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  Precision_traits<float>::compute_eps();
-  Precision_traits<double>::compute_eps();
+  test::precision<float>::init();
+  test::precision<double>::init();
 
   length_type loop = 2;
 

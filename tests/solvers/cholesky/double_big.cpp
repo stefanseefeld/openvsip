@@ -10,25 +10,14 @@
 #include <vsip/support.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/solvers.hpp>
-
 #include "cholesky.hpp"
-
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
-
-template <> double Precision_traits<double>::eps = 0.0;
-
-
 
 int
 main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  Precision_traits<double>::compute_eps();
+  test::precision<double>::init();
 
   chold_big_cases<double>          (upper);
   chold_big_cases<complex<double> >(upper);

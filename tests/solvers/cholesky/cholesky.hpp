@@ -6,32 +6,19 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#ifndef TESTS_SOLVERS_CHOLESKY_CHOLESKY_HPP
-#define TESTS_SOLVERS_CHOLESKY_CHOLESKY_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef solvers_cholesky_cholesky_hpp_
+#define solvers_cholesky_cholesky_hpp_
 
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/solvers.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-precision.hpp>
-#include <test-random.hpp>
-#include <solvers/common.hpp>
+#include <test.hpp>
+#include "../common.hpp"
 
 #define VERBOSE      0
 #define DO_SWEEP     0
 #define BAD_MATRIX_A 0
-
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#  include <extdata-output.hpp>
-#endif
 
 enum chold_what
 {
@@ -40,14 +27,7 @@ enum chold_what
   sweep_test
 };
 
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Load_view utility.
-***********************************************************************/
+using namespace ovxx;
 
 // This is nearly same as sarsim LoadView, but doesn't include byte
 // order.  Move this into common location.
@@ -76,7 +56,7 @@ public:
   static unsigned const factor = Load_view_traits<T>::factor;
 
   typedef vsip::Dense<Dim, T> block_t;
-  typedef typename vsip::impl::view_of<block_t>::type view_t;
+  typedef typename view_of<block_t>::type view_t;
 
 public:
   Load_view(char*                    filename,
@@ -257,7 +237,7 @@ test_chold_random(
   cout << "x = " << endl << x << endl;
   cout << "b = " << endl << b << endl;
   cout << "chk = " << endl << chk << endl;
-  cout << "covsol<" << Type_name<T>::name()
+  cout << "covsol<" << type_name<T>()
        << ">(" << n << ", " << ", " << p << "): " << err << endl;
 #endif
 
@@ -336,7 +316,7 @@ test_chold_file(
   cout << "x = " << endl << x << endl;
   cout << "b = " << endl << b << endl;
   cout << "chk = " << endl << chk << endl;
-  cout << "covsol<" << Type_name<T>::name()
+  cout << "covsol<" << type_name<T>()
        << ">(" << n << ", " << ", " << p << "): " << err << endl;
 #endif
 
@@ -358,7 +338,7 @@ test_chold_file(
 // Called by chold_cases front-end function below.
 
 template <typename T>
-void chold_cases(mat_uplo uplo, vsip::impl::true_type)
+void chold_cases(mat_uplo uplo, true_type)
 {
   for (index_type p=1; p<=3; ++p)
   {
@@ -396,7 +376,7 @@ void chold_cases(mat_uplo uplo, vsip::impl::true_type)
 // Called by chold_cases front-end function below.
 
 template <typename T>
-void chold_cases(mat_uplo, vsip::impl::false_type)
+void chold_cases(mat_uplo, false_type)
 {
   // std::cout << "chold_cases " << Type_name<T>::name() << " not supported\n";
 }
@@ -412,8 +392,7 @@ void chold_cases(mat_uplo, vsip::impl::false_type)
 template <typename T>
 void chold_cases(mat_uplo uplo)
 {
-  using vsip::impl::integral_constant;
-  using namespace vsip_csl::dispatcher;
+  using namespace ovxx::dispatcher;
 
   chold_cases<T>(uplo,
     integral_constant<bool, is_operation_supported<op::chold, T>::value>());
@@ -429,7 +408,7 @@ void chold_cases(mat_uplo uplo)
 // Called by chold_cases front-end function below.
 
 template <typename T>
-void chold_big_cases(mat_uplo uplo, vsip::impl::true_type)
+void chold_big_cases(mat_uplo uplo, true_type)
 {
   test_chold_random<T>(uplo, 97,   5+1);
   test_chold_random<T>(uplo, 97+1, 5);
@@ -442,7 +421,7 @@ void chold_big_cases(mat_uplo uplo, vsip::impl::true_type)
 // Called by chold_cases front-end function below.
 
 template <typename T>
-void chold_big_cases(mat_uplo, vsip::impl::false_type)
+void chold_big_cases(mat_uplo, false_type)
 {
   // std::cout << "chold_cases " << Type_name<T>::name() << " not supported\n";
 }
@@ -458,11 +437,10 @@ void chold_big_cases(mat_uplo, vsip::impl::false_type)
 template <typename T>
 void chold_big_cases(mat_uplo uplo)
 {
-  using vsip::impl::integral_constant;
-  using namespace vsip_csl::dispatcher;
+  using namespace ovxx::dispatcher;
 
   chold_big_cases<T>(uplo,
     integral_constant<bool, is_operation_supported<op::chold, T>::value>());
 }
 
-#endif // TESTS_SOLVERS_CHOLESKY_CHOLESKY_HPP
+#endif

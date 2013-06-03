@@ -6,55 +6,29 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <cassert>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/solvers.hpp>
 #include <vsip/map.hpp>
 #include <vsip/parallel.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/load_view.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-precision.hpp>
-
-#include <test-random.hpp>
+#include <test.hpp>
 #include "common.hpp"
 
 #define VERBOSE       0
 #define DO_ASSERT     1
 #define DO_SWEEP      0
 #define DO_BIG        1
-#define FILE_MATRIX_1 0
 
-#if VERBOSE > 0
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#  include <extdata-output.hpp>
-#endif
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Support Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T,
 	  typename Block>
-typename vsip::impl::scalar_of<T>::type
+typename scalar_of<T>::type
 norm_2(const_Vector<T, Block> v)
 {
   return sqrt(sumval(magsq(v)));
 }
-
-
-
-/***********************************************************************
-  LU tests
-***********************************************************************/
 
 double max_err1 = 0.0;
 double max_err2 = 0.0;
@@ -122,9 +96,9 @@ solve_lu(
 
   prod(a, x1, chk1);
   prod(trans(a), x2, chk2);
-  prod(trans_or_herm(a), x3, chk3);
+  prod(impl::trans_or_herm(a), x3, chk3);
 
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   Vector<float> sv_s(n);
   svd<T, by_reference> sv(n, n, svd_uvnos, svd_uvnos);
@@ -146,12 +120,12 @@ solve_lu(
   //   eps is machine precision
   //   p is usually less than 10
 
-  scalar_type eps     = Precision_traits<scalar_type>::eps;
+  scalar_type eps     = test::precision<scalar_type>::eps;
   scalar_type p_limit = scalar_type(20);
 
 #if VERBOSE >= 1
   scalar_type cond = sv_s(0) / sv_s(n-1);
-  cout << "solve_lu<" << Type_name<T>::name() << ">("
+  cout << "solve_lu<" << type_name<T>() << ">("
        << "rtm, "
        << "a = (" << a.size(0) << ", " << a.size(1) << "), "
        << "b = (" << b.size(0) << ", " << b.size(1) << ")):"
@@ -255,9 +229,9 @@ solve_lu_dist(
     test_assert(success);
 
     // 2. Solve A X = B.
-    impl::assign_local(x1, lu.template solve<mat_ntrans>(b));
-    impl::assign_local(x2, lu.template solve<mat_trans>(b));
-    impl::assign_local(x3, lu.template solve<Test_traits<T>::trans>(b));
+    parallel::assign_local(x1, lu.template solve<mat_ntrans>(b));
+    parallel::assign_local(x2, lu.template solve<mat_trans>(b));
+    parallel::assign_local(x3, lu.template solve<Test_traits<T>::trans>(b));
   }
 
 
@@ -269,9 +243,9 @@ solve_lu_dist(
 
   prod(a, x1, chk1);
   prod(trans(a), x2, chk2);
-  prod(trans_or_herm(a), x3, chk3);
+  prod(impl::trans_or_herm(a), x3, chk3);
 
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   Vector<float> sv_s(n);
   svd<T, by_reference> sv(n, n, svd_uvnos, svd_uvnos);
@@ -293,12 +267,12 @@ solve_lu_dist(
   //   eps is machine precision
   //   p is usually less than 10
 
-  scalar_type eps     = Precision_traits<scalar_type>::eps;
+  scalar_type eps     = test::precision<scalar_type>::eps;
   scalar_type p_limit = scalar_type(20);
 
 #if VERBOSE >= 1
   scalar_type cond = sv_s(0) / sv_s(n-1);
-  cout << "solve_lu_dist<" << Type_name<T>::name() << ">("
+  cout << "solve_lu_dist<" << type_name<T>() << ">("
        << "rtm, "
        << "a = (" << a.size(0) << ", " << a.size(1) << "), "
        << "b = (" << b.size(0) << ", " << b.size(1) << ")):"
@@ -427,39 +401,11 @@ test_lud_dist(
   solve_lu_dist<MapT>(rtm, a, b);
 }
 
-
-
-// Chold test w/matrix from file.
-
-template <typename FileT,
-	  typename T>
-void
-test_lud_file(
-  return_mechanism_type rtm,
-  char*                 afilename,
-  char*                 bfilename,
-  length_type           n,
-  length_type           p)
-{
-  vsip_csl::Load_view<2, FileT> load_a(afilename, Domain<2>(n, n));
-  vsip_csl::Load_view<2, FileT> load_b(bfilename, Domain<2>(n, p));
-
-  Matrix<T> a(n, n);
-  Matrix<T> b(n, p);
-
-  a = load_a.view();
-  b = load_b.view();
-
-  solve_lu(rtm, a, b);
-}
-
-
-
 // Run LU tests when type T is supported.
 // Called by lud_cases front-end function below.
 
 template <typename T>
-void lud_cases(return_mechanism_type rtm, vsip::impl::integral_constant<bool, true>)
+void lud_cases(return_mechanism_type rtm, integral_constant<bool, true>)
 {
   for (index_type p=1; p<=3; ++p)
   {
@@ -503,7 +449,7 @@ void lud_cases(return_mechanism_type rtm, vsip::impl::integral_constant<bool, tr
 // Called by lud_cases front-end function below.
 
 template <typename T>
-void lud_cases(return_mechanism_type, vsip::impl::integral_constant<bool, false>)
+void lud_cases(return_mechanism_type, integral_constant<bool, false>)
 {
   // std::cout << "lud_cases " << Type_name<T>::name() << " not supported\n";
 }
@@ -519,8 +465,7 @@ void lud_cases(return_mechanism_type, vsip::impl::integral_constant<bool, false>
 template <typename T>
 void lud_cases(return_mechanism_type rtm)
 {
-  using vsip::impl::integral_constant;
-  using namespace vsip_csl::dispatcher;
+  using namespace ovxx::dispatcher;
   lud_cases<T>(rtm,
 	       integral_constant<bool,
 	       is_operation_supported<op::lud, T>::value &&
@@ -541,39 +486,21 @@ dist_lud_cases()
   test_lud_dist<T, map1_type, map2_type, map3_type>(by_value,     5, 7);
 }
 
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
-
-template <> float  Precision_traits<float>::eps = 0.0;
-template <> double Precision_traits<double>::eps = 0.0;
-
-
-
 int
 main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  Precision_traits<float>::compute_eps();
-  Precision_traits<double>::compute_eps();
+  test::precision<float>::init();
+  test::precision<double>::init();
 
 #if VERBOSE >= 1
-  std::cout << "Precision_traits<float>::eps = "
-	    << Precision_traits<float>::eps 
+  std::cout << "test::precision<float>::eps = "
+	    << test::precision<float>::eps 
 	    << std::endl;
-  std::cout << "Precision_traits<double>::eps = "
-	    << Precision_traits<double>::eps 
+  std::cout << "test::precision<double>::eps = "
+	    << test::precision<double>::eps 
 	    << std::endl;
-#endif
-
-#if FILE_MATRIX_1
-  test_lud_file<complex<float>, complex<double> >(
-    "lu-a-complex-float-99x99.dat", "lu-b-complex-float-99x7.dat", 99, 7);
-  test_lud_file<complex<float>, complex<float> >(
-    "lu-a-complex-float-99x99.dat", "lu-b-complex-float-99x7.dat", 99, 7);
 #endif
 
   test_lud_diag<complex<float> >(by_reference, 17, 3);
@@ -587,6 +514,7 @@ main(int argc, char** argv)
   lud_cases<double>          (by_value);
   lud_cases<complex<float> > (by_value);
   lud_cases<complex<double> >(by_value);
-
+#if OVXX_PARALLEL
   dist_lud_cases<float>      ();
+#endif
 }

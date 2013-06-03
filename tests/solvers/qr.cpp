@@ -6,18 +6,13 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <cassert>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/solvers.hpp>
 #include <vsip/parallel.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-precision.hpp>
-#include <vsip_csl/test-storage.hpp>
-#include <test-random.hpp>
+#include <test.hpp>
+#include <storage.hpp>
 #include "common.hpp"
 
 #define VERBOSE        0
@@ -30,19 +25,7 @@
 #  define EXPECT_FULL_COVERAGE 0
 #endif
 
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#  include <extdata-output.hpp>
-#endif
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Covsol tests
-***********************************************************************/
+using namespace ovxx;
 
 // Simple covsol test
 
@@ -157,7 +140,7 @@ test_covsol_random(
 
 
 template <typename T>
-void covsol_cases(storage_type st, vsip::impl::true_type)
+void covsol_cases(storage_type st, true_type)
 {
   test_covsol_diag<T>(1,   1, 2, st);
   test_covsol_diag<T>(5,   5, 2, st);
@@ -198,7 +181,7 @@ void covsol_cases(storage_type st, vsip::impl::true_type)
 
 
 template <typename T>
-void covsol_cases(storage_type, vsip::impl::false_type)
+void covsol_cases(storage_type, false_type)
 {
   test_assert(!EXPECT_FULL_COVERAGE);
 }
@@ -214,19 +197,7 @@ void covsol_cases(storage_type, vsip::impl::false_type)
 template <typename T>
 void covsol_cases(storage_type st)
 {
-  using vsip::impl::integral_constant;
-  using vsip::impl::is_same;
-  using namespace vsip_csl::dispatcher;
-
-  // Qrd doesn't support full QR when using SAL (060507).
-  if (is_same<typename Dispatcher<op::qrd, T>::backend, be::mercury_sal>::value &&
-      st == qrd_saveq)
-    return;
-
-  // Qrd doesn't support thin QR when using CML (080630).
-  if (is_same<typename Dispatcher<op::qrd, T>::backend, be::cml>::value &&
-      st == qrd_saveq1)
-    return;
+  using namespace ovxx::dispatcher;
 
   covsol_cases<T>(st, 
     integral_constant<bool, is_operation_supported<op::qrd, T>::value>());
@@ -290,11 +261,10 @@ test_lsqsol_diag(
 template <typename T,
 	  typename MapT>
 void
-test_lsqsol_random(
-  length_type  m,
-  length_type  n,
-  length_type  p,
-  storage_type st)
+test_lsqsol_random(length_type  m,
+		   length_type  n,
+		   length_type  p,
+		   storage_type st)
 {
   test_assert(m >= n);
 
@@ -347,7 +317,7 @@ test_lsqsol_random(
        << ">(" << m << ", " << n << ", " << p << "): " << err << endl;
 #endif
 
-  typedef typename impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 #if NORMAL_EPSILON
   // These are almost_equal()'s normal epsilon.  They work fine for Lapack.
   scalar_type rel_epsilon = 1e-3;
@@ -374,7 +344,7 @@ test_lsqsol_random(
 
 
 template <typename T>
-void lsqsol_cases(storage_type st, vsip::impl::true_type)
+void lsqsol_cases(storage_type st, true_type)
 {
   test_lsqsol_diag<T>(1,   1, 2, st);
   test_lsqsol_diag<T>(5,   5, 2, st);
@@ -415,7 +385,7 @@ void lsqsol_cases(storage_type st, vsip::impl::true_type)
 
 
 template <typename T>
-void lsqsol_cases(storage_type, vsip::impl::false_type)
+void lsqsol_cases(storage_type, false_type)
 {
   test_assert(!EXPECT_FULL_COVERAGE);
 }
@@ -427,19 +397,7 @@ void lsqsol_cases(storage_type, vsip::impl::false_type)
 template <typename T>
 void lsqsol_cases(storage_type st)
 {
-  using vsip::impl::integral_constant;
-  using vsip::impl::is_same;
-  using namespace vsip_csl::dispatcher;
-
-  // Qrd doesn't support full QR when using SAL (060507).
-  if (is_same<typename Dispatcher<op::qrd, T>::backend, be::mercury_sal>::value &&
-      st == qrd_saveq)
-    return;
-
-  // Qrd doesn't support thin QR when using CML (080630).
-  if (is_same<typename Dispatcher<op::qrd, T>::backend, be::cml>::value &&
-      st == qrd_saveq1)
-    return;
+  using namespace ovxx::dispatcher;
 
   lsqsol_cases<T>(st,
     integral_constant<bool, is_operation_supported<op::qrd, T>::value>());
@@ -454,11 +412,10 @@ void lsqsol_cases(storage_type st)
 template <typename T,
 	  typename MapT>
 void
-test_rsol_diag(
-  length_type  m,
-  length_type  n,
-  length_type  p,
-  storage_type st)
+test_rsol_diag(length_type  m,
+	       length_type  n,
+	       length_type  p,
+	       storage_type st)
 {
   test_assert(m >= n);
 
@@ -572,7 +529,7 @@ test_rsol_diag(
 
 template <typename T>
 void
-rsol_cases(storage_type st, vsip::impl::true_type)
+rsol_cases(storage_type st, true_type)
 {
   test_rsol_diag<T, Local_map>( 1,   1, 2, st);
   test_rsol_diag<T, Local_map>( 5,   4, 2, st);
@@ -591,7 +548,7 @@ rsol_cases(storage_type st, vsip::impl::true_type)
 
 template <typename T>
 void
-rsol_cases(storage_type, vsip::impl::false_type)
+rsol_cases(storage_type, false_type)
 {
   test_assert(!EXPECT_FULL_COVERAGE);
 }
@@ -603,19 +560,7 @@ rsol_cases(storage_type, vsip::impl::false_type)
 template <typename T>
 void rsol_cases(storage_type st)
 {
-  using vsip::impl::integral_constant;
-  using vsip::impl::is_same;
-  using namespace vsip_csl::dispatcher;
-
-  // Qrd doesn't support full QR when using SAL (060507).
-  if (is_same<typename Dispatcher<op::qrd, T>::backend, be::mercury_sal>::value &&
-      st == qrd_saveq)
-    return;
-
-  // Qrd doesn't support thin QR when using CML (080630).
-  if (is_same<typename Dispatcher<op::qrd, T>::backend, be::cml>::value &&
-      st == qrd_saveq1)
-    return;
+  using namespace ovxx::dispatcher;
 
   rsol_cases<T>(st,
     integral_constant<bool, is_operation_supported<op::qrd, T>::value>());
@@ -639,16 +584,15 @@ struct Covsol_class<by_reference>
 	    typename Block1,
 	    typename Block2>
   static Matrix<T, Block2>
-  covsol(
-    Matrix<T, Block0>       a,
-    const_Matrix<T, Block1> b,
-    Matrix<T, Block2>       x)
+  covsol(Matrix<T, Block0>       a,
+	 const_Matrix<T, Block1> b,
+	 Matrix<T, Block2>       x)
   {
     length_type m = a.size(0);
     length_type n = a.size(1);
     length_type p = b.size(1);
     
-    mat_op_type const tr = impl::is_complex<T>::value ? mat_herm : mat_trans;
+    mat_op_type const tr = is_complex<T>::value ? mat_herm : mat_trans;
     
     // b should be (n, p)
     test_assert(b.size(0) == n);
@@ -685,16 +629,15 @@ struct Covsol_class<by_value>
 	    typename Block1,
 	    typename Block2>
   static Matrix<T, Block2>
-  covsol(
-    Matrix<T, Block0>       a,
-    const_Matrix<T, Block1> b,
-    Matrix<T, Block2>       x)
+  covsol(Matrix<T, Block0>       a,
+	 const_Matrix<T, Block1> b,
+	 Matrix<T, Block2>       x)
   {
     length_type m = a.size(0);
     length_type n = a.size(1);
     length_type p = b.size(1);
     
-    mat_op_type const tr = impl::is_complex<T>::value ? mat_herm : mat_trans;
+    mat_op_type const tr = is_complex<T>::value ? mat_herm : mat_trans;
     
     // b should be (n, p)
     test_assert(b.size(0) == n);
@@ -735,10 +678,9 @@ template <return_mechanism_type RtM,
 	  typename              Block1,
 	  typename              Block2>
 Matrix<T, Block2>
-f_covsol(
-  Matrix<T, Block0>       a,
-  const_Matrix<T, Block1> b,
-  Matrix<T, Block2>       x)
+f_covsol(Matrix<T, Block0>       a,
+	 const_Matrix<T, Block1> b,
+	 Matrix<T, Block2>       x)
 {
   return Covsol_class<RtM>::covsol(a, b, x);
 }
@@ -790,10 +732,9 @@ test_f_covsol_diag(
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-test_f_covsol_random(
-  length_type m,
-  length_type n,
-  length_type p)
+test_f_covsol_random(length_type m,
+		     length_type n,
+		     length_type p)
 {
   test_assert(m >= n);
 
@@ -835,7 +776,7 @@ test_f_covsol_random(
 
 template <return_mechanism_type RtM,
 	  typename              T>
-void f_covsol_cases(vsip::impl::true_type)
+void f_covsol_cases(true_type)
 {
   test_f_covsol_diag<RtM, T>(1,   1, 2);
   test_f_covsol_diag<RtM, T>(5,   5, 2);
@@ -877,7 +818,7 @@ void f_covsol_cases(vsip::impl::true_type)
 
 template <return_mechanism_type RtM,
 	  typename              T>
-void f_covsol_cases(vsip::impl::false_type)
+void f_covsol_cases(false_type)
 {
   test_assert(!EXPECT_FULL_COVERAGE);
 }
@@ -890,13 +831,7 @@ template <return_mechanism_type RtM,
 	  typename              T>
 void f_covsol_cases()
 {
-  using vsip::impl::integral_constant;
-  using vsip::impl::is_same;
-  using namespace vsip_csl::dispatcher;
-
-  // Qrd doesn't support thin QR when using CML (080630).
-  if (is_same<typename Dispatcher<op::qrd, T>::backend, be::cml>::value)
-    return;
+  using namespace ovxx::dispatcher;
 
   f_covsol_cases<RtM, T>(
     integral_constant<bool, is_operation_supported<op::qrd, T>::value>());
@@ -922,10 +857,9 @@ struct Lsqsol_class<by_reference>
 	    typename Block1,
 	    typename Block2>
   static Matrix<T, Block2>
-  llsqsol(
-    Matrix<T, Block0>       a,
-    const_Matrix<T, Block1> b,
-    Matrix<T, Block2>       x)
+  llsqsol(Matrix<T, Block0>       a,
+	  const_Matrix<T, Block1> b,
+	  Matrix<T, Block2>       x)
   {
     length_type m = a.size(0);
     length_type n = a.size(1);
@@ -944,7 +878,7 @@ struct Lsqsol_class<by_reference>
     
     qr.decompose(a);
     
-    mat_op_type const tr = impl::is_complex<T>::value ? mat_herm : mat_trans;
+    mat_op_type const tr = is_complex<T>::value ? mat_herm : mat_trans;
     
     Matrix<T> c(m, p);
     
@@ -969,10 +903,9 @@ struct Lsqsol_class<by_value>
 	    typename Block1,
 	    typename Block2>
   static Matrix<T, Block2>
-  llsqsol(
-    Matrix<T, Block0>       a,
-    const_Matrix<T, Block1> b,
-    Matrix<T, Block2>       x)
+  llsqsol(Matrix<T, Block0>       a,
+	  const_Matrix<T, Block1> b,
+	  Matrix<T, Block2>       x)
   {
     length_type m = a.size(0);
     length_type n = a.size(1);
@@ -991,7 +924,7 @@ struct Lsqsol_class<by_value>
     
     qr.decompose(a);
     
-    mat_op_type const tr = impl::is_complex<T>::value ? mat_herm : mat_trans;
+    mat_op_type const tr = is_complex<T>::value ? mat_herm : mat_trans;
     
     
     // 1. compute C = Q'B:     R X = C
@@ -1021,10 +954,9 @@ template <return_mechanism_type RtM,
 	  typename              Block1,
 	  typename              Block2>
 Matrix<T, Block2>
-f_llsqsol(
-  Matrix<T, Block0>       a,
-  const_Matrix<T, Block1> b,
-  Matrix<T, Block2>       x)
+f_llsqsol(Matrix<T, Block0>       a,
+	  const_Matrix<T, Block1> b,
+	  Matrix<T, Block2>       x)
 {
   return Lsqsol_class<RtM>::llsqsol(a, b, x);
 }
@@ -1034,10 +966,9 @@ f_llsqsol(
 template <return_mechanism_type RtM,
 	  typename              T>
 void
-test_f_lsqsol_diag(
-  length_type m,
-  length_type n,
-  length_type p)
+test_f_lsqsol_diag(length_type m,
+		   length_type n,
+		   length_type p)
 {
   test_assert(m >= n);
 
@@ -1078,10 +1009,9 @@ template <return_mechanism_type RtM,
 	  typename              T,
 	  typename              MapT>
 void
-test_f_lsqsol_random(
-  length_type m,
-  length_type n,
-  length_type p)
+test_f_lsqsol_random(length_type m,
+		     length_type n,
+		     length_type p)
 {
   test_assert(m >= n);
 
@@ -1178,7 +1108,7 @@ void f_lsqsol_cases(vsip::impl::true_type)
 
 template <return_mechanism_type RtM,
 	  typename              T>
-void f_lsqsol_cases(vsip::impl::false_type)
+void f_lsqsol_cases(false_type)
 {
   test_assert(!EXPECT_FULL_COVERAGE);
 }
@@ -1191,38 +1121,21 @@ template <return_mechanism_type RtM,
 	  typename              T>
 void f_lsqsol_cases()
 {
-  using vsip::impl::integral_constant;
-  using vsip::impl::is_same;
-  using namespace vsip_csl::dispatcher;
-
-  // Qrd doesn't support full Q when using SAL (060507).
-  if (is_same<typename Dispatcher<op::qrd, T>::backend, be::mercury_sal>::value)
-    return;
+  using namespace ovxx::dispatcher;
 
   f_lsqsol_cases<RtM, T>(
     integral_constant<bool, is_operation_supported<op::qrd, T>::value>());
 }
 
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
-
-template <> float  Precision_traits<float>::eps = 0.0;
-template <> double Precision_traits<double>::eps = 0.0;
-
-
-
 int
 main(int argc, char** argv)
 {
-  using namespace vsip_csl::dispatcher;
+  using namespace ovxx::dispatcher;
 
   vsipl init(argc, argv);
 
-  Precision_traits<float>::compute_eps();
-  Precision_traits<double>::compute_eps();
+  test::precision<float>::init();
+  test::precision<double>::init();
 
   storage_type st[3];
   st[0] = qrd_nosaveq;
@@ -1272,23 +1185,11 @@ main(int argc, char** argv)
   f_lsqsol_cases<by_value, double>();
   f_lsqsol_cases<by_value, complex<float> >();
   f_lsqsol_cases<by_value, complex<double> >();
+#if OVXX_PARALLEL
+  test_covsol_random<float, Map<> >(5, 5, 2, qrd_saveq1);
+  test_lsqsol_random<float, Map<> >(5, 5, 2, qrd_saveq1);
+  test_rsol_diag<float, Map<> >( 5,   5, 2, qrd_saveq1);
 
-  // Distributed tests
-  // CML doesn't have thin QR, so we use full QR in that case. (080630).
-  if (vsip::impl::is_same<Dispatcher<op::qrd, float>::backend,be::cml>::value)
-  {
-    test_covsol_random<float, Map<> >(5, 5, 2, qrd_saveq);
-    test_lsqsol_random<float, Map<> >(5, 5, 2, qrd_saveq);
-    test_rsol_diag<float, Map<> >( 5,   5, 2, qrd_saveq);
-  }
-  else  
-  {
-    test_covsol_random<float, Map<> >(5, 5, 2, qrd_saveq1);
-    test_lsqsol_random<float, Map<> >(5, 5, 2, qrd_saveq1);
-    test_rsol_diag<float, Map<> >( 5,   5, 2, qrd_saveq1);
-  }
-
-  // f_lsqsol requires full QR, which isn't supported when using SAL (060507).
-  if (!vsip::impl::is_same<Dispatcher<op::qrd, float>::backend,be::mercury_sal>::value)
-    test_f_lsqsol_random<by_reference, float, Map<> >(5,   5, 2);
+  test_f_lsqsol_random<by_reference, float, Map<> >(5,   5, 2);
+#endif
 }

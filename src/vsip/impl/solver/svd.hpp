@@ -1,61 +1,51 @@
 //
-// Copyright (c) 2005, 2006 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef vsip_core_solver_svd_hpp_
-#define vsip_core_solver_svd_hpp_
+#ifndef vsip_impl_solver_svd_hpp_
+#define vsip_impl_solver_svd_hpp_
 
 #include <algorithm>
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/math.hpp>
-#include <vsip/core/math_enum.hpp>
-#include <vsip/core/temp_buffer.hpp>
-#ifndef VSIP_IMPL_REF_IMPL
-# include <vsip/opt/dispatch.hpp>
-#endif
-#ifdef VSIP_IMPL_HAVE_LAPACK
-#  include <vsip/opt/lapack/bindings.hpp>
-#  include <vsip/opt/lapack/svd.hpp>
-#endif
-#ifdef VSIP_IMPL_HAVE_SAL
-#  include <vsip/opt/sal/svd.hpp>
+#include <vsip/impl/math_enum.hpp>
+#include <ovxx/dispatch.hpp>
+#ifdef OVXX_HAVE_LAPACK
+#  include <ovxx/lapack/svd.hpp>
 #endif
 
-namespace vsip_csl
+namespace ovxx
 {
 namespace dispatcher
 {
-#ifndef VSIP_IMPL_REF_IMPL
 template <>
 struct List<op::svd>
 {
-  typedef Make_type_list<be::user,
-			 be::mercury_sal,
+  typedef make_type_list<be::user,
 			 be::lapack>::type type;
 };
-#endif
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
 namespace vsip
 {
 
 /// SVD solver object.
 template <typename = VSIP_DEFAULT_VALUE_TYPE,
-	  return_mechanism_type ReturnMechanism = by_value>
+	  return_mechanism_type R = by_value>
 class svd;
 
 template <typename T>
 class svd<T, by_reference>
 {
-  typedef typename vsip_csl::dispatcher::Dispatcher<
-    vsip_csl::dispatcher::op::svd, T>::type
+  typedef typename ovxx::dispatcher::Dispatcher<
+    ovxx::dispatcher::op::svd, T>::type
   backend_type;
 
 public:
@@ -64,8 +54,8 @@ public:
     : backend_(rows, cols, ust, vst)
   {}
 
-  length_type  rows()     const VSIP_NOTHROW { return backend_.rows();}
-  length_type  columns()  const VSIP_NOTHROW { return backend_.columns();}
+  length_type rows() const VSIP_NOTHROW { return backend_.rows();}
+  length_type columns() const VSIP_NOTHROW { return backend_.columns();}
   storage_type ustorage() const VSIP_NOTHROW { return backend_.ustorage();}
   storage_type vstorage() const VSIP_NOTHROW { return backend_.vstorage();}
 
@@ -102,8 +92,8 @@ private:
 template <typename T>
 class svd<T, by_value>
 {
-  typedef typename vsip_csl::dispatcher::Dispatcher<
-    vsip_csl::dispatcher::op::svd, T>::type
+  typedef typename ovxx::dispatcher::Dispatcher<
+    ovxx::dispatcher::op::svd, T>::type
   backend_type;
 
 public:
@@ -111,8 +101,8 @@ public:
     VSIP_THROW((std::bad_alloc))
     : backend_(rows, cols, ust, vst)
   {}
-  length_type  rows()     const VSIP_NOTHROW { return backend_.rows();}
-  length_type  columns()  const VSIP_NOTHROW { return backend_.columns();}
+  length_type rows() const VSIP_NOTHROW { return backend_.rows();}
+  length_type columns() const VSIP_NOTHROW { return backend_.columns();}
   storage_type ustorage() const VSIP_NOTHROW { return backend_.ustorage();}
   storage_type vstorage() const VSIP_NOTHROW { return backend_.vstorage();}
   template <typename Block0>
@@ -121,7 +111,7 @@ public:
   {
     Vector<scalar_f> dest(backend_.order());
     if (!backend_.decompose(m, dest))
-      VSIP_IMPL_THROW(computation_error("svd::decompose"));
+      OVXX_DO_THROW(computation_error("svd::decompose"));
     return dest;
   }
 
@@ -178,22 +168,22 @@ public:
   Matrix<T>
   u(index_type low, index_type high) VSIP_THROW((std::bad_alloc, computation_error))
   {
-    assert((ustorage() == svd_uvpart && high <= backend_.order()) ||
-	   (ustorage() == svd_uvfull && high <= rows()));
+    OVXX_PRECONDITION((ustorage() == svd_uvpart && high <= backend_.order()) ||
+		      (ustorage() == svd_uvfull && high <= rows()));
 
     Matrix<T> dest(rows(), high - low + 1);
-    if (!backend_.u(low, high, dest)) VSIP_IMPL_THROW(computation_error("svd::u"));
+    if (!backend_.u(low, high, dest)) OVXX_DO_THROW(computation_error("svd::u"));
     return dest;
   }
 
   Matrix<T>
   v(index_type low, index_type high) VSIP_THROW((std::bad_alloc, computation_error))
   {
-    assert((vstorage() == svd_uvpart && high <= backend_.order()) ||
-	   (vstorage() == svd_uvfull && high <= columns()));
+    OVXX_PRECONDITION((vstorage() == svd_uvpart && high <= backend_.order()) ||
+		      (vstorage() == svd_uvfull && high <= columns()));
 
     Matrix<T> dest(columns(), high - low + 1);
-    if (!backend_.v(low, high, dest)) VSIP_IMPL_THROW(computation_error("svd::v"));
+    if (!backend_.v(low, high, dest)) OVXX_DO_THROW(computation_error("svd::v"));
     return dest;
   }
 

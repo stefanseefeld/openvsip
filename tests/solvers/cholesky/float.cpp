@@ -13,22 +13,12 @@
 
 #include "cholesky.hpp"
 
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
-
-template <> float  Precision_traits<float>::eps = 0.0;
-
-
-
 int
 main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  Precision_traits<float>::compute_eps();
+  test::precision<float>::init();
 
 #if BAD_MATRIX_A
   test_chold_file<float>(upper, "cholesky-bad-float-42.dat", 42, 1);
