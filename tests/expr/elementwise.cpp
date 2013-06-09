@@ -58,7 +58,7 @@ template <typename T>
 void 
 Test_split_add( complex<T> a, complex<T> b)
 {
-  typedef vsip::impl::Strided<1, complex<T>,
+  typedef Strided<1, complex<T>,
     vsip::Layout<1, row1_type,
     vsip::dense,
     vsip::split_complex> > split_type;
@@ -119,7 +119,7 @@ template <typename T>
 void 
 Test_split_sub( complex<T> a, complex<T> b)
 {
-  typedef vsip::impl::Strided<1, complex<T>,
+  typedef Strided<1, complex<T>,
     vsip::Layout<1, row1_type,
     vsip::dense,
     vsip::split_complex> > split_type;
@@ -181,7 +181,7 @@ template <typename T>
 void 
 Test_split_mul( complex<T> a, complex<T> b)
 {
-  typedef vsip::impl::Strided<1, complex<T>,
+  typedef Strided<1, complex<T>,
     vsip::Layout<1, row1_type,
     vsip::dense,
     vsip::split_complex> > split_type;
@@ -242,7 +242,7 @@ template <typename T>
 void 
 Test_split_div( complex<T> a, complex<T> b )
 {
-  typedef vsip::impl::Strided<1, complex<T>,
+  typedef Strided<1, complex<T>,
     vsip::Layout<1, row1_type,
     vsip::dense,
     vsip::split_complex> > split_type;

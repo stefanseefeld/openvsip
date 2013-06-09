@@ -1,33 +1,22 @@
 //
-// Copyright (c) 2005, 2006 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_IMPL_COPY_CHAIN_HPP
-#define VSIP_IMPL_COPY_CHAIN_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef ovxx_parallel_copy_chain_hpp_
+#define ovxx_parallel_copy_chain_hpp_
 
 #include <iterator>
 #include <vector>
 #include <algorithm>
 #include <cassert>
 
-
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
-
-namespace vsip
+namespace ovxx
 {
-
-namespace impl
+namespace parallel
 {
 
 class Copy_chain
@@ -45,18 +34,13 @@ class Copy_chain
     {}
   };
 
-  typedef std::vector<Record>      rec_list;
-  typedef rec_list::const_iterator rec_iterator;
+  typedef std::vector<Record>::const_iterator iterator;
 
-  // Constructors.
 public:
   Copy_chain()
     : data_size_ (0),
       chain_     () 
   {}
-
-  // Accessors.
-public:
 
   // Add a new copy record.
   void add(void* start, size_t elem_size, int stride, unsigned length)
@@ -90,14 +74,12 @@ public:
   size_t data_size() const
   { return data_size_; }
 
-  // Member data.
 private:
   size_t              data_size_;
   std::vector<Record> chain_;
 };
 
+} // namespace ovxx::parallel
+} // namespace ovxx
 
-} // namespace vsip::impl
-} // namespace vsip
-
-#endif // VSIP_IMPL_COPY_CHAIN_HPP
+#endif

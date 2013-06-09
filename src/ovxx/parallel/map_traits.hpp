@@ -60,6 +60,20 @@ bool has_same_map(M const &map, B const &b)
   return is_same_map<D>(map, b.map());
 };
 
+template <typename M>
+bool
+processor_has_block(M const &map, processor_type proc, index_type sb)
+{
+  typedef typename M::processor_iterator iterator;
+
+  for (iterator i = map.processor_begin(sb); i != map.processor_end(sb); ++i)
+  {
+    if (*i == proc)
+      return true;
+  }
+  return false;
+}
+
 } // namespace ovxx::parallel
 } // namespace ovxx
 

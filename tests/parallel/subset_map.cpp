@@ -15,77 +15,45 @@
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/parallel.hpp>
-#include <vsip/core/metaprogramming.hpp>
-
-#include <vsip_csl/matlab_utils.hpp>
-#include <vsip_csl/test.hpp>
-
-#include "util-par.hpp"
+#include <test.hpp>
+#include "util.hpp"
 
 #define VERBOSE 1
 
-#if VERBOSE
-#  include <iostream>
-#  include <typeinfo>
-#  include <vsip_csl/output.hpp>
-
-// pull in operator<<'s
-using namespace vsip_csl;
-#endif
-
-
-
-using namespace std;
-using namespace vsip;
-
-using vsip_csl::equal;
-using vsip::impl::Int_type;
-
-
-
-/***********************************************************************
-  Assignment algorithms
-***********************************************************************/
+using namespace ovxx;
+namespace p = ovxx::parallel;
 
 // 1: Standard dispatch
 
 template <typename DstViewT,
 	  typename SrcViewT>
 void
-assign(
-  DstViewT dst,
-  SrcViewT src,
-  Int_type<1>)
+assign(DstViewT dst, SrcViewT src, integral_constant<int, 1>)
 {
   dst = src;
 }
 
 
 
-// 2: Par_assign
+// 2: Assignment
 
 template <typename DstViewT,
 	  typename SrcViewT>
 void
-assign(
-  DstViewT dst,
-  SrcViewT src,
-  Int_type<2>)
+assign(DstViewT dst, SrcViewT src, integral_constant<int, 2>)
 {
-  using vsip::impl::Choose_par_assign_impl;
-  using vsip::impl::Par_assign;
+  using p::choose_par_assign_impl;
+  using p::Assignment;
 
   dimension_type const dim = DstViewT::dim;
   typedef typename DstViewT::block_type dst_block_type;
   typedef typename SrcViewT::block_type src_block_type;
 
   typedef typename
-    Choose_par_assign_impl<dim, dst_block_type, src_block_type, false>::type
+    choose_par_assign_impl<dim, dst_block_type, src_block_type, false>::type
     par_assign_type;
 
-  Par_assign<dim,
-    typename DstViewT::block_type::value_type,
-    typename SrcViewT::block_type::value_type,
+  Assignment<dim,
     typename DstViewT::block_type,
     typename SrcViewT::block_type,
     par_assign_type> pa(dst, src);
@@ -100,10 +68,7 @@ assign(
 template <typename DstViewT,
 	  typename SrcViewT>
 void
-assign(
-  DstViewT dst,
-  SrcViewT src,
-  Int_type<3>)
+assign(DstViewT dst, SrcViewT src, integral_constant<int, 3>)
 {
   // The then and else cases are equivalent.
 #if 0
@@ -113,7 +78,7 @@ assign(
   typedef typename DstViewT::block_type dst_block_type;
   typedef typename SrcViewT::block_type src_block_type;
 
-  vsip::impl::Par_expr<dim, dst_block_type, src_block_type> pe(dst, src);
+  p::Expression<dim, dst_block_type, src_block_type> pe(dst, src);
 
   pe();
 #endif
@@ -126,9 +91,7 @@ assign(
 ***********************************************************************/
 
 bool
-in_domain(
-  Index<1> const&  idx,
-  Domain<1> const& dom)
+in_domain(Index<1> const&  idx, Domain<1> const& dom)
 {
   return   (idx[0] >= dom.first())
       &&  ((idx[0] - dom.first()) % dom.stride() == 0)
@@ -136,9 +99,7 @@ in_domain(
 }
 
 bool
-in_domain(
-  Index<2> const&  idx,
-  Domain<2> const& dom)
+in_domain(Index<2> const&  idx, Domain<2> const& dom)
 {
   return in_domain(idx[0], dom[0]) && in_domain(idx[1], dom[1]);
 }
@@ -154,12 +115,11 @@ template <typename T,
 	  typename SrcMapT,
 	  typename DstMapT>
 void
-test_src(
-  SrcMapT&         src_map,
-  DstMapT&         dst_map,
-  length_type      rows,
-  length_type      cols,
-  Domain<2> const& src_dom)
+test_src(SrcMapT&         src_map,
+	 DstMapT&         dst_map,
+	 length_type      rows,
+	 length_type      cols,
+	 Domain<2> const& src_dom)
 {
   typedef Dense<2, T, row2_type, SrcMapT> src_block_type;
   typedef Dense<2, T, row2_type, DstMapT> dst_block_type;
@@ -181,7 +141,7 @@ test_src(
       }
   }
 
-  assign(dst, src(src_dom), Int_type<Impl>());
+  assign(dst, src(src_dom), integral_constant<int, Impl>());
 
   // checkout output.
   if (subblock(dst) != no_subblock)
@@ -223,12 +183,11 @@ template <typename T,
 	  typename SrcMapT,
 	  typename DstMapT>
 void
-test_dst(
-  SrcMapT&         src_map,
-  DstMapT&         dst_map,
-  length_type      rows,
-  length_type      cols,
-  Domain<2> const& dst_dom)
+test_dst(SrcMapT&         src_map,
+	 DstMapT&         dst_map,
+	 length_type      rows,
+	 length_type      cols,
+	 Domain<2> const& dst_dom)
 {
   typedef Dense<2, T, row2_type, SrcMapT> src_block_type;
   typedef Dense<2, T, row2_type, DstMapT> dst_block_type;
@@ -250,7 +209,7 @@ test_dst(
       }
   }
 
-  assign(dst(dst_dom), src, Int_type<Impl>());
+  assign(dst(dst_dom), src, integral_constant<int, Impl>());
 
   // checkout output.
   if (subblock(dst) != no_subblock)
@@ -296,12 +255,11 @@ template <typename T,
 	  typename SrcMapT,
 	  typename DstMapT>
 void
-test_src_dst(
-  SrcMapT&         src_map,
-  DstMapT&         dst_map,
-  length_type      size,
-  Domain<1> const& src_dom,
-  Domain<1> const& dst_dom)
+test_src_dst(SrcMapT&         src_map,
+	     DstMapT&         dst_map,
+	     length_type      size,
+	     Domain<1> const& src_dom,
+	     Domain<1> const& dst_dom)
 {
   typedef Dense<1, T, row1_type, SrcMapT> src_block_type;
   typedef Dense<1, T, row1_type, DstMapT> dst_block_type;
@@ -323,7 +281,7 @@ test_src_dst(
     }
   }
 
-  assign(dst(dst_dom), src(src_dom), Int_type<Impl>());
+  assign(dst(dst_dom), src(src_dom), integral_constant<int, Impl>());
 
   // checkout output.
   if (subblock(dst) != no_subblock)
@@ -369,13 +327,12 @@ template <typename T,
 	  typename SrcMapT,
 	  typename DstMapT>
 void
-test_src_dst(
-  SrcMapT&         src_map,
-  DstMapT&         dst_map,
-  length_type      rows,
-  length_type      cols,
-  Domain<2> const& src_dom,
-  Domain<2> const& dst_dom)
+test_src_dst(SrcMapT&         src_map,
+	     DstMapT&         dst_map,
+	     length_type      rows,
+	     length_type      cols,
+	     Domain<2> const& src_dom,
+	     Domain<2> const& dst_dom)
 {
   typedef Dense<2, T, row2_type, SrcMapT> src_block_type;
   typedef Dense<2, T, row2_type, DstMapT> dst_block_type;
@@ -399,7 +356,7 @@ test_src_dst(
       }
   }
 
-  assign(dst(dst_dom), src(src_dom), Int_type<Impl>());
+  assign(dst(dst_dom), src(src_dom), integral_constant<int, Impl>());
 
   // checkout output.
   if (subblock(dst) != no_subblock)
@@ -449,13 +406,12 @@ template <typename T,
 	  typename SrcMapT,
 	  typename DstMapT>
 void
-test_type(
-  SrcTag,
-  SrcMapT&         src_map,
-  DstMapT&         dst_map,
-  length_type      rows,
-  length_type      cols,
-  Domain<2> const& src_dom)
+test_type(SrcTag,
+	  SrcMapT&         src_map,
+	  DstMapT&         dst_map,
+	  length_type      rows,
+	  length_type      cols,
+	  Domain<2> const& src_dom)
 {
   test_src<T, 1>(src_map, dst_map, rows, cols, src_dom);
   test_src<T, 2>(src_map, dst_map, rows, cols, src_dom);
@@ -468,13 +424,12 @@ template <typename T,
 	  typename SrcMapT,
 	  typename DstMapT>
 void
-test_type(
-  DstTag,
-  SrcMapT&         src_map,
-  DstMapT&         dst_map,
-  length_type      rows,
-  length_type      cols,
-  Domain<2> const& dst_dom)
+test_type(DstTag,
+	  SrcMapT&         src_map,
+	  DstMapT&         dst_map,
+	  length_type      rows,
+	  length_type      cols,
+	  Domain<2> const& dst_dom)
 {
   test_dst<T, 1>(src_map, dst_map, rows, cols, dst_dom);
   test_dst<T, 2>(src_map, dst_map, rows, cols, dst_dom);
@@ -546,13 +501,12 @@ template <typename T,
 	  typename SrcMapT,
 	  typename DstMapT>
 void
-test_src_dst_type(
-  SrcMapT&         src_map,
-  DstMapT&         dst_map,
-  length_type      rows,
-  length_type      cols,
-  Domain<2> const& src_dom,
-  Domain<2> const& dst_dom)
+test_src_dst_type(SrcMapT&         src_map,
+		  DstMapT&         dst_map,
+		  length_type      rows,
+		  length_type      cols,
+		  Domain<2> const& src_dom,
+		  Domain<2> const& dst_dom)
 {
   test_src_dst<T, 1>(src_map, dst_map, rows, cols, src_dom, dst_dom);
   test_src_dst<T, 2>(src_map, dst_map, rows, cols, src_dom, dst_dom);
@@ -579,7 +533,7 @@ main(int argc, char** argv)
 
 #if 0
   // Enable this section for easier debugging.
-  impl::Communicator& comm = impl::default_communicator();
+  p::Communicator& comm = p::default_communicator();
   pid_t pid = getpid();
 
   cout << "rank: "   << comm.rank()

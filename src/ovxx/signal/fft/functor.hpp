@@ -79,12 +79,12 @@ struct fft
       length_type cols = output_size_[1].size();
       if (BE::axis == 0)
       {
-	cols = block_subblock_domain<2>(arg_)[1].size();
+	cols = parallel::subblock_domain<2>(arg_)[1].size();
 	rows = (cols == 0) ? 0 : rows;
       }
       else
       {
-	rows = block_subblock_domain<2>(arg_)[0].size();
+	rows = parallel::subblock_domain<2>(arg_)[0].size();
 	cols = (rows == 0) ? 0 : cols;
       }
       Domain<2> l_output_size(rows, cols);

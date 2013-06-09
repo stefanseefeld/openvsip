@@ -6,37 +6,18 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#ifndef VSIP_TESTS_UTIL_PAR_HPP
-#define VSIP_TESTS_UTIL_PAR_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
-
-#include <iostream>
-#include <string>
+#ifndef parallel_util_hpp_
+#define parallel_util_hpp_
 
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/parallel.hpp>
 #include <vsip/domain.hpp>
 
-#include <vsip_csl/output.hpp>
-#include <vsip_csl/diagnostics.hpp>
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-/// Organize processors as a 2-D grid (roughly)
-
 void
-get_np_square(
-  vsip::length_type& np,
-  vsip::length_type& nr,
-  vsip::length_type& nc)
+get_np_square(vsip::length_type& np,
+	      vsip::length_type& nr,
+	      vsip::length_type& nc)
 {
   np = vsip::num_processors();
   nr = (vsip::length_type)floor(sqrt((double)np));
@@ -48,11 +29,10 @@ get_np_square(
 
 
 void
-get_np_cube(
-  vsip::length_type& np,
-  vsip::length_type& n1,
-  vsip::length_type& n2,
-  vsip::length_type& n3)
+get_np_cube(vsip::length_type& np,
+	    vsip::length_type& n1,
+	    vsip::length_type& n2,
+	    vsip::length_type& n3)
 {
   np = vsip::num_processors();
   // cbrt() may not be available, so do it manually.
@@ -68,10 +48,9 @@ get_np_cube(
 /// Divide the number of processors in half (roughly)
 
 void
-get_np_half(
-  vsip::length_type& np,
-  vsip::length_type& nr,
-  vsip::length_type& nc)
+get_np_half(vsip::length_type& np,
+	    vsip::length_type& nr,
+	    vsip::length_type& nc)
 {
   np = vsip::num_processors();
 
@@ -98,11 +77,9 @@ template <vsip::dimension_type                Dim,
 	  typename                            T,
 	  typename                            BlockT>
 inline void
-check_local_view(
-  ViewT<T, BlockT> view)
+check_local_view(ViewT<T, BlockT> view)
 {
-  typedef typename vsip::impl::Distributed_local_block<BlockT>::type
-          local_block_t;
+  typedef typename ovxx::distributed_local_block<BlockT>::type local_block_type;
 
   typename BlockT::map_type const& map = view.block().map();
   typename ViewT<T, BlockT>::local_type lview = view.local();
@@ -110,7 +87,7 @@ check_local_view(
   vsip::index_type sb = map.subblock();
 
   vsip::Domain<Dim> dom = subblock_domain(view, sb);
-  test_assert(lview.size() == vsip::impl::size(dom));
+  test_assert(lview.size() == ovxx::size(dom));
   for (vsip::dimension_type d=0; d<Dim; ++d)
     test_assert(lview.size(d) == dom[d].size());
 
@@ -126,7 +103,7 @@ template <typename Map>
 void
 msg(Map& map, std::string str)
 {
-  vsip::impl::Communicator comm = map.impl_comm();
+  ovxx::parallel::Communicator comm = map.impl_comm();
   comm.barrier();
   if (comm.rank() == 0) std::cout << str;
   comm.barrier();
@@ -141,34 +118,28 @@ template <typename T,
 void
 dump_view(char const *name, vsip::Vector<T, Block> view)
 {
-  using vsip::index_type;
-  using vsip::no_subblock;
-  using vsip::impl::Distributed_local_block;
+  using namespace ovxx;
+  typedef typename Block::map_type map_type;
+  typedef typename distributed_local_block<Block>::type local_block_type;
 
-  typedef typename Block::map_type map_t;
-  typedef typename Distributed_local_block<Block>::type local_block_t;
-
-  map_t const& am     = view.block().map();
+  map_type const& am     = view.block().map();
 
   msg(am, std::string(name) + " ------------------------------------------\n");
-  std::cout << "(" << vsip::local_processor() << "): dump_view(" << name
-	    << ")\n";
-  std::cout << "(" << vsip::local_processor() << "):    map   "
-	    << vsip_csl::type_name<map_t>() << "\n";
-  std::cout << "(" << vsip::local_processor() << "):    block "
-	    << vsip_csl::type_name<Block>() << "\n";
+  std::cout << "(" << local_processor() << "): dump_view(" << name << ")\n";
+  std::cout << "(" << local_processor() << "): map   " << type_name<map_type>() << "\n";
+  std::cout << "(" << local_processor() << "): block " << type_name<Block>() << "\n";
 
   index_type sb = am.subblock();
   if (sb != no_subblock)
   {
-    vsip::Vector<T, local_block_t> local_view = view.local();
+    Vector<T, local_block_type> local_view = view.local();
 
     for (index_type p=0; p<am.num_patches(sb); ++p)
     {
       std::cout << "  subblock: " << sb
 		<< "  patch: " << p << std::endl;
-      vsip::Domain<1> ldom = am.template local_domain<1>(sb, p);
-      vsip::Domain<1> gdom = am.template global_domain<1>(sb, p);
+      Domain<1> ldom = am.template local_domain<1>(sb, p);
+      Domain<1> gdom = am.template global_domain<1>(sb, p);
 
       for (index_type i=0; i<ldom.length(); ++i) 
       {
@@ -196,47 +167,38 @@ template <typename T,
 void
 dump_view(char const *name, vsip::const_Matrix<T, Block> view)
 {
-  using vsip::index_type;
-  using vsip::dimension_type;
-  using vsip::processor_type;
-  using vsip::no_subblock;
-  using vsip::impl::Distributed_local_block;
-
+  using namespace ovxx;
   dimension_type const dim = 2;
-  typedef typename Block::map_type map_t;
-  typedef typename Distributed_local_block<Block>::type local_block_t;
+  typedef typename Block::map_type map_type;
+  typedef typename distributed_local_block<Block>::type local_block_type;
 
-  map_t const& am    = view.block().map();
-  vsip::impl::Communicator comm = am.impl_comm();
-  vsip::Vector<processor_type> pset = vsip::processor_set();
+  map_type const& am    = view.block().map();
+  parallel::Communicator comm = am.impl_comm();
+  Vector<processor_type> pset = processor_set();
 
   msg(am, std::string(name) + " ------------------------------------------\n");
 
   for (index_type i=0; i<pset.size(); i++)
   {
     comm.barrier();
-    if (vsip::local_processor() == pset.get(i))
+    if (local_processor() == pset.get(i))
     {
 
       index_type sb = am.subblock();
       if (sb != no_subblock)
       {
-	vsip::Matrix<T, local_block_t> local_view = view.local();
+	Matrix<T, local_block_type> local_view = view.local();
 
 	for (index_type p=0; p<num_patches(view, sb); ++p)
 	{
-	  char str[256];
-	  sprintf(str, "  lblock: %08lx",
-		  (unsigned long)&(local_view.block()));
-
-	  std::cout << "(" << vsip::local_processor() << "): dump_view(Matrix "
+	  std::cout << "(" << local_processor() << "): dump_view(Matrix "
 		    << name << ") "
 		    << "  subblock: " << sb
 		    << "  patch: " << p
-		    << str
+		    << "  lblock: " << &local_view.block()
 		    << std::endl;
-	  vsip::Domain<dim> ldom = local_domain(view, sb, p);
-	  vsip::Domain<dim> gdom = global_domain(view, sb, p);
+	  Domain<dim> ldom = local_domain(view, sb, p);
+	  Domain<dim> gdom = global_domain(view, sb, p);
 
 	  for (index_type r=0; r<ldom[0].length(); ++r) 
 	    for (index_type c=0; c<ldom[1].length(); ++c) 
@@ -247,7 +209,7 @@ dump_view(char const *name, vsip::const_Matrix<T, Block> view)
 	      index_type gr = gdom[0].impl_nth(r);
 	      index_type gc = gdom[1].impl_nth(c);
 	      
-	      std::cout << "(" << vsip::local_processor() << ") "
+	      std::cout << "(" << local_processor() << ") "
 			<< sb << "/" << p
 			<< "    ["
 			<< lr << "," << lc << ":"
@@ -259,7 +221,7 @@ dump_view(char const *name, vsip::const_Matrix<T, Block> view)
       }
       else
       {
-	std::cout << "(" << vsip::local_processor() << "): dump_view(Matrix "
+	std::cout << "(" << local_processor() << "): dump_view(Matrix "
 		  << name << ") no subblock\n";
       }
     }
@@ -275,19 +237,20 @@ template <vsip::dimension_type Dim,
 void
 dump_map(MapT const& map)
 {
+  using namespace ovxx;
   typedef typename MapT::processor_iterator p_iter_t;
-  vsip::processor_type rank = vsip::local_processor();
+  processor_type rank = local_processor();
 
   std::ostringstream s;
   s << map.impl_proc_from_rank(0);
-  for (vsip::index_type i=1; i<map.num_processors(); ++i)
+  for (index_type i=1; i<map.num_processors(); ++i)
     s << "," << map.impl_proc_from_rank(i);
 
-  std::cout << rank << ": " << vsip_csl::type_name<MapT>()
+  std::cout << rank << ": " << type_name<MapT>()
 	    << " [" << s.str() << "]"
 	    << std::endl;
 
-  for (vsip::index_type sb=0; sb<map.num_subblocks(); ++sb)
+  for (index_type sb=0; sb<map.num_subblocks(); ++sb)
   {
     std::cout << "  sub " << sb << ": ";
     // if (map.impl_is_applied())
@@ -451,4 +414,4 @@ private:
   bool        good_;
 };
 
-#endif // VSIP_TESTS_UTIL_PAR_HPP
+#endif

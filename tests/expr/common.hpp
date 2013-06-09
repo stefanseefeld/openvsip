@@ -436,7 +436,7 @@ template <typename       Test_class,
 	  typename       Stor3,
 	  vsip::dimension_type Dim>
 void
-do_case3_left_ip_helper(vsip::Domain<Dim> dom, vsip::impl::true_type)
+do_case3_left_ip_helper(vsip::Domain<Dim> dom, true_type)
 {
   Stor1 stor1(dom);
   Stor2 stor2(dom);
@@ -451,7 +451,7 @@ template <typename       Test_class,
 	  typename       Stor3,
 	  vsip::dimension_type Dim>
 void
-do_case3_left_ip_helper(vsip::Domain<Dim>, vsip::impl::false_type)
+do_case3_left_ip_helper(vsip::Domain<Dim>, false_type)
 {
 }
 
@@ -469,7 +469,7 @@ do_case3_left_ip(vsip::Domain<Dim> dom)
 {
   do_case3_left_ip_helper<Test_class, Stor1, Stor2, Stor3, Dim>(
 	dom,
-	vsip::impl::integral_constant<bool, vsip::impl::is_same<Stor1, Stor3>::value>());
+	integral_constant<bool, is_same<Stor1, Stor3>::value>());
 }
 
 
@@ -480,7 +480,7 @@ template <typename       Test_class,
 	  typename       Stor3,
 	  vsip::dimension_type Dim>
 void
-do_case3_right_ip_helper(vsip::Domain<Dim> dom, vsip::impl::true_type)
+do_case3_right_ip_helper(vsip::Domain<Dim> dom, true_type)
 {
   Stor1 stor1(dom);
   Stor2 stor2(dom);
@@ -495,7 +495,7 @@ template <typename       Test_class,
 	  typename       Stor3,
 	  vsip::dimension_type Dim>
 void
-do_case3_right_ip_helper(vsip::Domain<Dim>, vsip::impl::false_type)
+do_case3_right_ip_helper(vsip::Domain<Dim>, false_type)
 {
 }
 
@@ -513,7 +513,7 @@ do_case3_right_ip(vsip::Domain<Dim> dom)
 {
   do_case3_right_ip_helper<Test_class, Stor1, Stor2, Stor3, Dim>(
 	dom,
-	vsip::impl::integral_constant<bool, vsip::impl::is_same<Stor2, Stor3>::value>());
+	integral_constant<bool, is_same<Stor2, Stor3>::value>());
 }
 
 

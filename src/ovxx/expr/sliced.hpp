@@ -160,7 +160,7 @@ public:
   typedef typename storage::ptr_type ptr_type;
   typedef typename storage::const_ptr_type const_ptr_type;
 
-  ovxx::parallel::par_ll_pbuf_type impl_ll_pbuf() VSIP_NOTHROW
+  ovxx::parallel::ll_pbuf_type impl_ll_pbuf() VSIP_NOTHROW
   { return block_->impl_ll_pbuf(); }
 
   stride_type offset() VSIP_NOTHROW
@@ -338,7 +338,7 @@ public:
   typedef typename storage::ptr_type ptr_type;
   typedef typename storage::const_ptr_type const_ptr_type;
 
-  ovxx::parallel::par_ll_pbuf_type impl_ll_pbuf() VSIP_NOTHROW
+  ovxx::parallel::ll_pbuf_type impl_ll_pbuf() VSIP_NOTHROW
   { return block_->impl_ll_pbuf(); }
 
   stride_type offset() VSIP_NOTHROW
@@ -594,27 +594,27 @@ void assert_local(expr::Sliced2<B, D1, D2> const &, index_type) {}
 } // namespace ovxx::detail
 
 template <typename B, dimension_type D>
-struct lvalue_factory_type<expr::Sliced<B, D> >
+struct lvalue_factory_type<expr::Sliced<B, D>, D>
 {
-  typedef typename lvalue_factory_type<B>
+  typedef typename lvalue_factory_type<B, D>
     ::template rebind<expr::Sliced<B, D> >::type type;
   template <typename O>
   struct rebind 
   {
-    typedef typename lvalue_factory_type<B>::
+    typedef typename lvalue_factory_type<B, D>::
       template rebind<O>::type type;
   };
 };
 
 template <typename B, dimension_type D1, dimension_type D2>
-struct lvalue_factory_type<expr::Sliced2<B, D1, D2> >
+struct lvalue_factory_type<expr::Sliced2<B, D1, D2>, 1>
 {
-  typedef typename lvalue_factory_type<B>
+  typedef typename lvalue_factory_type<B, 2>
   ::template rebind<expr::Sliced2<B, D1, D2> >::type type;
   template <typename O>
   struct rebind 
   {
-    typedef typename lvalue_factory_type<B>::
+    typedef typename lvalue_factory_type<B, 2>::
       template rebind<O>::type type;
   };
 };

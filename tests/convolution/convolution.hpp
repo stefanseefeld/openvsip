@@ -213,7 +213,7 @@ test_conv_base(
 
     conv(in, out);
 
-    ref::conv(symmetry, support, coeff, in, exp, D);
+    test::ref::conv(symmetry, support, coeff, in, exp, D);
 
     // Check result
     Index<1> idx;

@@ -1,50 +1,43 @@
 //
-// Copyright (c) 2005 by CodeSourcery
+// Copyright (c) 2005 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
+#include <ovxx/support.hpp>
+#include <ovxx/ct_assert.hpp>
+#include <ovxx/parallel/copy_chain.hpp>
 #include <cstring>
 #include <cassert>
-#include <vsip/core/static_assert.hpp>
-#include <vsip/core/parallel/copy_chain.hpp>
 
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-namespace vsip
+namespace ovxx
 {
-
-namespace impl
+namespace parallel
 {
 
 void inline
 incr_ptr(void*& ptr, size_t offset)
 {
-  VSIP_IMPL_STATIC_ASSERT(sizeof(void*) == sizeof(size_t));
+  OVXX_CT_ASSERT(sizeof(void*) == sizeof(size_t));
   ptr = reinterpret_cast<void*>(reinterpret_cast<size_t>(ptr) + offset);
 }
 
 inline void*
 add_ptr(void* ptr1, void* ptr2)
 {
-  VSIP_IMPL_STATIC_ASSERT(sizeof(void*) == sizeof(size_t));
+  OVXX_CT_ASSERT(sizeof(void*) == sizeof(size_t));
   return reinterpret_cast<void*>(reinterpret_cast<size_t>(ptr1) +
 				 reinterpret_cast<size_t>(ptr2));
 }
 
-
-  // Append records from an existing chain, w/offset.
+// Append records from an existing chain, w/offset.
 void
 Copy_chain::append_offset(void* offset, Copy_chain chain)
 {
-  rec_iterator cur = chain.chain_.begin();
-  rec_iterator end = chain.chain_.end();
+  iterator cur = chain.chain_.begin();
+  iterator end = chain.chain_.end();
 
   for (; cur != end; ++cur)
   {
@@ -64,10 +57,10 @@ Copy_chain::append_offset(void* offset, Copy_chain chain)
 void
 Copy_chain::copy_into(void* dest, size_t size) const
 {
-  rec_iterator cur = chain_.begin();
-  rec_iterator end = chain_.end();
+  iterator cur = chain_.begin();
+  iterator end = chain_.end();
 
-  assert(size == this->data_size());
+  OVXX_PRECONDITION(size == this->data_size());
   
   for (; cur != end; ++cur)
   {
@@ -76,24 +69,23 @@ Copy_chain::copy_into(void* dest, size_t size) const
 
     if ((*cur).stride_ == 1)
     {
-      assert(size >= (*cur).length_ * elem_size);
+      OVXX_PRECONDITION(size >= (*cur).length_ * elem_size);
       memcpy(dest, src, (*cur).length_ * elem_size);
       incr_ptr(dest, (*cur).length_ * elem_size);
       size -= (*cur).length_ * elem_size;
     }
     else
     {
-	for (unsigned i=0; i<(*cur).length_; ++i)
-	{
-	  assert(size >= elem_size);
-	  memcpy(dest, src, elem_size);
-	  incr_ptr(dest, elem_size);
-	  incr_ptr(src,  (*cur).stride_ * elem_size);
-	  size -= elem_size;
-	}
+      for (unsigned i=0; i<(*cur).length_; ++i)
+      {
+	OVXX_PRECONDITION(size >= elem_size);
+	memcpy(dest, src, elem_size);
+	incr_ptr(dest, elem_size);
+	incr_ptr(src,  (*cur).stride_ * elem_size);
+	size -= elem_size;
+      }
     }
   }
-
   assert(size == 0);
 }
 
@@ -106,11 +98,11 @@ Copy_chain::copy_into(void* dest, size_t size) const
 void
 Copy_chain::copy_into(Copy_chain dst_chain) const
 {
-  rec_iterator src     = this->chain_.begin();
-  rec_iterator src_end = this->chain_.end();
+  iterator src     = this->chain_.begin();
+  iterator src_end = this->chain_.end();
   
-  rec_iterator dst     = dst_chain.chain_.begin();
-  rec_iterator dst_end = dst_chain.chain_.end();
+  iterator dst     = dst_chain.chain_.begin();
+  iterator dst_end = dst_chain.chain_.end();
   
   void*  src_ptr    = (*src).start_;
   size_t src_i      = 0;
@@ -118,7 +110,7 @@ Copy_chain::copy_into(Copy_chain dst_chain) const
   size_t dst_i      = 0;
   
   size_t elem_size  = (*src).elem_size_;
-  assert((*dst).elem_size_ == elem_size);
+  OVXX_PRECONDITION((*dst).elem_size_ == elem_size);
   
   while (src != src_end && dst != dst_end)
   {
@@ -141,22 +133,22 @@ Copy_chain::copy_into(Copy_chain dst_chain) const
     
     if (src_i == (*src).length_ && ++src != src_end)
     {
-      assert((*src).elem_size_ == elem_size);
+      OVXX_PRECONDITION((*src).elem_size_ == elem_size);
       src_ptr    = (*src).start_;
       src_i      = 0;
     }
     
     if (dst_i == (*dst).length_ && ++dst != dst_end)
     {
-      assert((*dst).elem_size_ == elem_size);
+      OVXX_PRECONDITION((*dst).elem_size_ == elem_size);
       dst_ptr    = (*dst).start_;
       dst_i      = 0;
     }
   }
 
   // If both chains have same data_size, then both should be exhausted.
-  assert(src == src_end && dst == dst_end);
+  OVXX_PRECONDITION(src == src_end && dst == dst_end);
 }
 
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::parallel
+} // namespace ovxx

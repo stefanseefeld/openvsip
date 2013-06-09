@@ -160,15 +160,15 @@ template <typename B, typename O>
 struct is_modifiable_block<expr::Permuted<B, O> > : is_modifiable_block<B>
 {};
 
-template <typename B, typename O>
-struct lvalue_factory_type<expr::Permuted<B, O> >
+template <typename B, typename O, dimension_type D>
+struct lvalue_factory_type<expr::Permuted<B, O>, D>
 {
-  typedef typename lvalue_factory_type<B>::
+  typedef typename lvalue_factory_type<B, D>::
    template rebind<expr::Permuted<B, O> >::type type;
   template <typename B1>
   struct rebind 
   {
-    typedef typename lvalue_factory_type<B>::
+    typedef typename lvalue_factory_type<B, D>::
       template rebind<B1>::type type;
   };
 };

@@ -10,26 +10,20 @@
 #include <vsip/support.hpp>
 #include <vsip/map.hpp>
 #include <vsip/initfin.hpp>
-#include <vsip_csl/test.hpp>
+#include <test.hpp>
 
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
+namespace p = ovxx::parallel;
 
 // Check a distribution against expected type, num_subblocks, and
 // contiguity.
 
 template <typename Dist>
 void
-check_distribution(
-  Dist const& dist,
-  distribution_type type,
-  length_type num_subblocks,
-  length_type contiguity)
+check_distribution(Dist const& dist,
+		   distribution_type type,
+		   length_type num_subblocks,
+		   length_type contiguity)
 {
   test_assert(dist.distribution()      == type);
   test_assert(dist.num_subblocks()     == num_subblocks);
@@ -164,9 +158,8 @@ test_map_basic()
 
 template <typename SubblockIterator>
 length_type
-count_subblocks(
-  SubblockIterator begin,
-  SubblockIterator end)
+count_subblocks(SubblockIterator begin,
+		SubblockIterator end)
 {
   int count = 0;
   for (SubblockIterator cur = begin; cur != end; ++cur)
@@ -182,10 +175,7 @@ count_subblocks(
 
 template <typename Map>
 void
-check_subblock(
-  Map const&	                  map,
-  processor_type                  pr,
-  index_type                      sb)
+check_subblock(Map const &map, processor_type pr, index_type sb)
 {
   typedef typename Map::processor_iterator processor_iterator;
 
@@ -217,8 +207,7 @@ check_subblock(
 //   Vector with NUM_PROC processors.
 
 Vector<processor_type>
-create_pvec(
-  length_type num_proc)
+create_pvec(length_type num_proc)
 {
   Vector<processor_type> pvec(num_proc);
 
@@ -238,10 +227,7 @@ create_pvec(
 template <typename Dist0,
 	  typename Dist1>
 void
-tc_map_subblocks(
-  length_type num_proc,
-  Dist0       dist0,
-  Dist1       dist1)
+tc_map_subblocks(length_type num_proc, Dist0 dist0, Dist1 dist1)
 {
   typedef Map<Dist0, Dist1> map_t;
 
@@ -306,68 +292,66 @@ test_segment_size()
   // should be the same size.
   for (index_type i=0; i<5; ++i)
   {
-    test_assert(vsip::impl::segment_size(10, 5, i) == 2);
-    test_assert(vsip::impl::segment_size(10, 5, 1, i) == 2);
+    test_assert(p::segment_size(10, 5, i) == 2);
+    test_assert(p::segment_size(10, 5, 1, i) == 2);
   }
 
   // Extra elements should be spread across the first segements.
-  test_assert(vsip::impl::segment_size(11, 5, 0) == 3);
-  test_assert(vsip::impl::segment_size(11, 5, 1) == 2);
-  test_assert(vsip::impl::segment_size(11, 5, 2) == 2);
-  test_assert(vsip::impl::segment_size(11, 5, 3) == 2);
-  test_assert(vsip::impl::segment_size(11, 5, 4) == 2);
+  test_assert(p::segment_size(11, 5, 0) == 3);
+  test_assert(p::segment_size(11, 5, 1) == 2);
+  test_assert(p::segment_size(11, 5, 2) == 2);
+  test_assert(p::segment_size(11, 5, 3) == 2);
+  test_assert(p::segment_size(11, 5, 4) == 2);
 
   // Extra elements should be spread across the first segements.
-  test_assert(vsip::impl::segment_size(13, 5, 0) == 3);
-  test_assert(vsip::impl::segment_size(13, 5, 1) == 3);
-  test_assert(vsip::impl::segment_size(13, 5, 2) == 3);
-  test_assert(vsip::impl::segment_size(13, 5, 3) == 2);
-  test_assert(vsip::impl::segment_size(13, 5, 4) == 2);
+  test_assert(p::segment_size(13, 5, 0) == 3);
+  test_assert(p::segment_size(13, 5, 1) == 3);
+  test_assert(p::segment_size(13, 5, 2) == 3);
+  test_assert(p::segment_size(13, 5, 3) == 2);
+  test_assert(p::segment_size(13, 5, 4) == 2);
 
   // Extra elements should be spread across the first segements.
-  test_assert(vsip::impl::segment_size(13, 5, 1, 0) == 3);
-  test_assert(vsip::impl::segment_size(13, 5, 1, 1) == 3);
-  test_assert(vsip::impl::segment_size(13, 5, 1, 2) == 3);
-  test_assert(vsip::impl::segment_size(13, 5, 1, 3) == 2);
-  test_assert(vsip::impl::segment_size(13, 5, 1, 4) == 2);
+  test_assert(p::segment_size(13, 5, 1, 0) == 3);
+  test_assert(p::segment_size(13, 5, 1, 1) == 3);
+  test_assert(p::segment_size(13, 5, 1, 2) == 3);
+  test_assert(p::segment_size(13, 5, 1, 3) == 2);
+  test_assert(p::segment_size(13, 5, 1, 4) == 2);
 
   // Check how chunksize of 2 is handled
-  test_assert(vsip::impl::segment_size(16, 5, 2, 0) == 4);
-  test_assert(vsip::impl::segment_size(16, 5, 2, 1) == 4);
-  test_assert(vsip::impl::segment_size(16, 5, 2, 2) == 4);
-  test_assert(vsip::impl::segment_size(16, 5, 2, 3) == 2);
-  test_assert(vsip::impl::segment_size(16, 5, 2, 4) == 2);
+  test_assert(p::segment_size(16, 5, 2, 0) == 4);
+  test_assert(p::segment_size(16, 5, 2, 1) == 4);
+  test_assert(p::segment_size(16, 5, 2, 2) == 4);
+  test_assert(p::segment_size(16, 5, 2, 3) == 2);
+  test_assert(p::segment_size(16, 5, 2, 4) == 2);
 
-  test_assert(vsip::impl::segment_size(14, 5, 2, 0) == 4);
-  test_assert(vsip::impl::segment_size(14, 5, 2, 1) == 4);
-  test_assert(vsip::impl::segment_size(14, 5, 2, 2) == 2);
-  test_assert(vsip::impl::segment_size(14, 5, 2, 3) == 2);
-  test_assert(vsip::impl::segment_size(14, 5, 2, 4) == 2);
+  test_assert(p::segment_size(14, 5, 2, 0) == 4);
+  test_assert(p::segment_size(14, 5, 2, 1) == 4);
+  test_assert(p::segment_size(14, 5, 2, 2) == 2);
+  test_assert(p::segment_size(14, 5, 2, 3) == 2);
+  test_assert(p::segment_size(14, 5, 2, 4) == 2);
 
   // Check how odd partial chunk is handled:
-  test_assert(vsip::impl::segment_size(15, 5, 2, 0) == 4);
-  test_assert(vsip::impl::segment_size(15, 5, 2, 1) == 4);
-  test_assert(vsip::impl::segment_size(15, 5, 2, 2) == 3);
-  test_assert(vsip::impl::segment_size(15, 5, 2, 3) == 2);
-  test_assert(vsip::impl::segment_size(15, 5, 2, 4) == 2);
+  test_assert(p::segment_size(15, 5, 2, 0) == 4);
+  test_assert(p::segment_size(15, 5, 2, 1) == 4);
+  test_assert(p::segment_size(15, 5, 2, 2) == 3);
+  test_assert(p::segment_size(15, 5, 2, 3) == 2);
+  test_assert(p::segment_size(15, 5, 2, 4) == 2);
 
-  test_assert(vsip::impl::segment_size(15, 4, 4, 0) == 4);
-  test_assert(vsip::impl::segment_size(15, 4, 4, 1) == 4);
-  test_assert(vsip::impl::segment_size(15, 4, 4, 2) == 4);
-  test_assert(vsip::impl::segment_size(15, 4, 4, 3) == 3);
+  test_assert(p::segment_size(15, 4, 4, 0) == 4);
+  test_assert(p::segment_size(15, 4, 4, 1) == 4);
+  test_assert(p::segment_size(15, 4, 4, 2) == 4);
+  test_assert(p::segment_size(15, 4, 4, 3) == 3);
 
-  test_assert(vsip::impl::segment_size(11, 4, 4, 0) == 4);
-  test_assert(vsip::impl::segment_size(11, 4, 4, 1) == 4);
-  test_assert(vsip::impl::segment_size(11, 4, 4, 2) == 3);
-  test_assert(vsip::impl::segment_size(11, 4, 4, 3) == 0);
+  test_assert(p::segment_size(11, 4, 4, 0) == 4);
+  test_assert(p::segment_size(11, 4, 4, 1) == 4);
+  test_assert(p::segment_size(11, 4, 4, 2) == 3);
+  test_assert(p::segment_size(11, 4, 4, 3) == 0);
 
-  test_assert(vsip::impl::segment_size(6, 4, 4, 0) == 4);
-  test_assert(vsip::impl::segment_size(6, 4, 4, 1) == 2);
-  test_assert(vsip::impl::segment_size(6, 4, 4, 2) == 0);
-  test_assert(vsip::impl::segment_size(6, 4, 4, 3) == 0);
+  test_assert(p::segment_size(6, 4, 4, 0) == 4);
+  test_assert(p::segment_size(6, 4, 4, 1) == 2);
+  test_assert(p::segment_size(6, 4, 4, 2) == 0);
+  test_assert(p::segment_size(6, 4, 4, 3) == 0);
 }
-
-
 
 int
 main(int argc, char** argv)

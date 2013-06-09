@@ -1,16 +1,14 @@
 //
-// Copyright (c) 2010 by CodeSourcery
+// Copyright (c) 2010 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#include <vsip/core/mpi/group.hpp>
+#include <ovxx/mpi/group.hpp>
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace mpi
 {
@@ -20,9 +18,9 @@ struct group_free
   void operator()(MPI_Group* comm) const
   {
     int finalized;
-    VSIP_IMPL_MPI_CHECK_RESULT(MPI_Finalized, (&finalized));
+    OVXX_MPI_CHECK_RESULT(MPI_Finalized, (&finalized));
     if (!finalized)
-      VSIP_IMPL_MPI_CHECK_RESULT(MPI_Group_free, (comm));
+      OVXX_MPI_CHECK_RESULT(MPI_Group_free, (comm));
     delete comm;
   }
 };
@@ -37,7 +35,5 @@ Group::Group(MPI_Group const &g, bool adopt)
   }
 }
 
-
-} // namespace vsip::impl::mpi
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::mpi
+} // namespace ovxx

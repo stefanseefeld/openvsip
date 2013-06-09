@@ -10,9 +10,13 @@
 #define ovxx_parallel_subset_map_decl_hpp_
 
 #include <vsip/impl/view_fwd.hpp>
+#include <vsip/impl/map_fwd.hpp>
 #include <ovxx/length.hpp>
 #include <ovxx/ct_assert.hpp>
 #include <ovxx/parallel/service.hpp>
+#include <ovxx/parallel/map_traits.hpp>
+#include <ovxx/value_iterator.hpp>
+#include <ovxx/domain_utils.hpp>
 
 namespace ovxx
 {
@@ -153,7 +157,7 @@ public:
     return Domain<D>();
   }
 
-  par_ll_pset_type impl_ll_pset() const VSIP_NOTHROW
+  ll_pset_type impl_ll_pset() const VSIP_NOTHROW
   { return ll_pset_;}
   Communicator &impl_comm() const
   { return default_communicator();}
@@ -192,7 +196,7 @@ private:
 
   impl_pvec_type          pvec_;	// Grid function.
   Domain<D>               dom_;		// Applied domain.
-  par_ll_pset_type        ll_pset_;
+  ll_pset_type        ll_pset_;
 };
 
 template <dimension_type D>

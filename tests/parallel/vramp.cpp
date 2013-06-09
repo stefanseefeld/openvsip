@@ -14,18 +14,11 @@
 #include <vsip/map.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/selgen.hpp>
-#include <vsip_csl/test.hpp>
+#include <test.hpp>
 
-
-using namespace vsip;
-using namespace vsip::impl;
+using namespace ovxx;
 
 #define DEBUG 0
-
-#if DEBUG==1
-#include <vsip_csl/output.hpp>
-using namespace vsip_csl;
-#endif
 
 template <int test_num>
 struct do_test;
@@ -188,7 +181,7 @@ int test_vramp(Domain<ViewT::dim> sz)
 
   const dimension_type                                    dim = ViewT::dim;
   typedef typename ViewT::value_type                      T;
-  typedef Dense<dim,T,typename Row_major<dim>::type,MapT> block_type;
+  typedef Dense<dim,T,typename row_major<dim>::type,MapT> block_type;
   typedef typename view_of<block_type>::type  view_type;
 
   test_assert(dim == 1); // ramp only works for vectors

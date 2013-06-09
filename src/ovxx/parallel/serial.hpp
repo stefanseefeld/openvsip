@@ -24,8 +24,8 @@ namespace ovxx
 namespace parallel
 {
 
-typedef int par_ll_pbuf_type;
-typedef int par_ll_pset_type;
+typedef int ll_pbuf_type;
+typedef int ll_pset_type;
 
 class Communicator 
 {
@@ -33,20 +33,16 @@ public:
   typedef std::vector<vsip::processor_type> pvec_type;
   pvec_type const &pvec() const { return pvec_;}
 
-  par_ll_pset_type impl_ll_pset() const VSIP_NOTHROW
-  { return par_ll_pset_type();}
+  ll_pset_type impl_ll_pset() const VSIP_NOTHROW { return ll_pset_type();}
 private:
   pvec_type pvec_;
 };
 
 inline void 
-create_ll_pset(std::vector<vsip::processor_type> const&,
-	       par_ll_pset_type&)
-{}
+create_ll_pset(std::vector<vsip::processor_type> const&, ll_pset_type&) {}
 
 inline void
-destroy_ll_pset(par_ll_pset_type&)
-{}
+destroy_ll_pset(ll_pset_type&) {}
 
 inline Communicator &default_communicator()
 {

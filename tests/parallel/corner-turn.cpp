@@ -6,33 +6,20 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <iostream>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/map.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/parallel.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
+#include <test.hpp>
 #include "util.hpp"
-#include "util-par.hpp"
 
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T>
 void
-corner_turn(
-  length_type rows,
-  length_type cols)
+corner_turn(length_type rows,
+	    length_type cols)
 {
   typedef Map<Block_dist, Block_dist>      map_type;
   typedef Dense<2, T, row2_type, map_type> block_type;

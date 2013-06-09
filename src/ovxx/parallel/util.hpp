@@ -48,10 +48,10 @@ foreach_patch(V<T, B> view, F fcn)
   {
     V<T, local_block_type> local_view = ovxx::get_local_view(view, sb);
 
-    for (index_type p = 0; p < num_patches(view, sb); ++p)
+    for (index_type p = 0; p < ovxx::num_patches(view, sb); ++p)
     {
-      Domain<dim> ldom = local_domain(view, sb, p);
-      Domain<dim> gdom = global_domain(view, sb, p);
+      Domain<dim> ldom = ovxx::local_domain(view, sb, p);
+      Domain<dim> gdom = ovxx::global_domain(view, sb, p);
 
       fcn(local_view.get(ldom), gdom);
     }
@@ -85,10 +85,10 @@ void foreach_point(V view, F fcn)
   {
     typename V::local_type local_view = ovxx::get_local_view(view);
 
-    for (index_type p = 0; p < num_patches(view, sb); ++p)
+    for (index_type p = 0; p < ovxx::num_patches(view, sb); ++p)
     {
-      Domain<dim> ldom = local_domain(view, sb, p);
-      Domain<dim> gdom = global_domain(view, sb, p);
+      Domain<dim> ldom = ovxx::local_domain(view, sb, p);
+      Domain<dim> gdom = ovxx::global_domain(view, sb, p);
 
       Length<dim> ext = extent(ldom);
       for (Index<dim> idx; valid(ext,idx); next(ext, idx))

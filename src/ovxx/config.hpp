@@ -56,7 +56,7 @@
 #endif
 
 #ifdef OVXX_HAVE_MPI
-# define OVXX_PARALLEL
+# define OVXX_PARALLEL 1
 #endif
 
 #ifndef OVXX_TUNE_MODE

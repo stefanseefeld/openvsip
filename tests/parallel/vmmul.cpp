@@ -9,8 +9,6 @@
 /// Description
 ///   Unit tests for parallel vector-matrix multiply.
 
-#include <iostream>
-
 #include <vsip/support.hpp>
 #include <vsip/initfin.hpp>
 #include <vsip/vector.hpp>
@@ -19,15 +17,11 @@
 #include <vsip/math.hpp>
 #include <vsip/domain.hpp>
 #include <vsip/signal.hpp>
-#include <vsip/core/domain_utils.hpp>
+#include <ovxx/domain_utils.hpp>
+#include <test.hpp>
+#include "util.hpp"
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/error_db.hpp>
-#include "test_ramp.hpp"
-#include "util-par.hpp"
-
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
 template <dimension_type VecDim,
 	  dimension_type Dim>

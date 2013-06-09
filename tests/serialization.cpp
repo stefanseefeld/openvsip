@@ -78,7 +78,7 @@ void serialize_and_validate(P data, s::Descriptor const &info, B const &referenc
   test_assert(s::is_compatible<block_type>(info));
   block.rebind(data, make_domain<B::dim>::create(info));
   block.admit();
-  test_assert(view_equal(output, typename view_of<B>::type(const_cast<B &>(reference))));
+  test_assert(equal(output, typename view_of<B>::type(const_cast<B &>(reference))));
 }
 
 // Construct a block of the given type and size, then serialize it via DDA.
@@ -108,8 +108,8 @@ void test_serialize_data(length_type N, length_type M)
 // Construct a user-storage block of the given type and size,
 // then serialize its user storage.
 // Validate the serialized data against the original block.
-template <typename B>
-void test_serialize_user_storage(Domain<B::dim> const dom)
+template <typename B, dimension_type D>
+void test_serialize_user_storage(Domain<D> const &dom)
 {
   typedef allocator_<typename B::value_type, B::storage_format> alloc;
   typedef typename B::value_type value_type;

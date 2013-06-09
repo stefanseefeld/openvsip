@@ -10,6 +10,7 @@
 #define ovxx_parallel_transpose_map_decl_hpp_
 
 #include <vsip/impl/view_fwd.hpp>
+#include <ovxx/parallel/service.hpp>
 #include <vector>
 
 namespace ovxx
@@ -21,7 +22,7 @@ template <typename M>
 class transpose_map
 {
   // Translate tranpose dimension to parent map dimension.
-  dimension_type parent_dim(dimension_type dim)
+  dimension_type parent_dim(dimension_type dim) const
   {
     return (dim == 0) ? 1 : (dim == 1) ? 0 : dim;
   }
@@ -153,9 +154,9 @@ public:
     return Domain<dim>(p_ldom[1], p_ldom[0]);
   }
 
-#if OVXX_PARALLEL
+#ifdef OVXX_PARALLEL
 
-  ovxx::parallel::par_ll_pset_type impl_ll_pset() const VSIP_NOTHROW
+  ovxx::parallel::ll_pset_type impl_ll_pset() const VSIP_NOTHROW
   { return map_.impl_ll_pset();}
 
   ovxx::parallel::Communicator &impl_comm() const

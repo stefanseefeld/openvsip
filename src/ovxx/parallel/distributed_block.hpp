@@ -59,7 +59,6 @@ public:
     Domain<dim> sb_dom = 
       (sb_ != no_subblock) ? map_.template impl_subblock_domain<dim>(sb_)
                            : empty_domain<dim>();
-
     subblock_ = new local_block_type(sb_dom);
   }
 

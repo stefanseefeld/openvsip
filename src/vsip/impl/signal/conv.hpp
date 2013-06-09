@@ -17,7 +17,7 @@
 #include <vsip/impl/signal/types.hpp>
 #include <ovxx/signal/conv.hpp>
 #if OVXX_HAVE_CVSIP
-# include <vsip/core/cvsip/conv.hpp>
+# include <ovxx/cvsip/conv.hpp>
 #endif
 
 namespace ovxx

@@ -10,12 +10,13 @@
 #define vsip_map_hpp_
 
 #include <vsip/support.hpp>
+#include <ovxx/parallel/service.hpp>
+#include <ovxx/parallel/subset_map.hpp>
 #include <vsip/impl/vector.hpp>
 #include <vsip/impl/map_fwd.hpp>
 #include <vsip/impl/replicated_map.hpp>
 #include <vsip/impl/dist.hpp>
 #include <ovxx/value_iterator.hpp>
-#include <ovxx/parallel/service.hpp>
 #include <ovxx/domain_utils.hpp>
 #include <ovxx/block_traits.hpp>
 #include <ovxx/length.hpp>
@@ -224,7 +225,7 @@ public:
   Domain<D> applied_domain() const VSIP_NOTHROW;
 
   // Implementation functions.
-  ovxx::parallel::par_ll_pset_type impl_ll_pset() const VSIP_NOTHROW
+  ovxx::parallel::ll_pset_type impl_ll_pset() const VSIP_NOTHROW
   { OVXX_PRECONDITION(this->impl_is_applied()); return applied_pset_;}
   impl_pvec_type const& impl_pvec() const { return data_->pvec;}
   ovxx::parallel::Communicator &impl_comm() const { return data_->comm;}
@@ -284,7 +285,7 @@ private:
   ovxx::shared_ptr<Data> data_;
   Domain<3>	         dom_;		  // Applied domain.
   dimension_type         dim_;		  // Dimension of applied domain.
-  ovxx::parallel::par_ll_pset_type applied_pset_;
+  ovxx::parallel::ll_pset_type applied_pset_;
 };
 
 // Apply a map to a domain.

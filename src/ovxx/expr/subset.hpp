@@ -196,7 +196,7 @@ public:
 		       dom_[2].impl_nth(k));
   }
 
-  parallel::par_ll_pbuf_type impl_ll_pbuf() VSIP_NOTHROW
+  parallel::ll_pbuf_type impl_ll_pbuf() VSIP_NOTHROW
   { return block_->impl_ll_pbuf();}
 
   stride_type offset() VSIP_NOTHROW
@@ -306,15 +306,15 @@ void assert_local(expr::Subset<B> const &, index_type) {}
 
 } // namespace ovxx::expr
 
-template <typename B>
-struct lvalue_factory_type<expr::Subset<B> >
+template <typename B, dimension_type D>
+struct lvalue_factory_type<expr::Subset<B>, D>
 {
-  typedef typename lvalue_factory_type<B>::
+  typedef typename lvalue_factory_type<B, D>::
     template rebind<expr::Subset<B> >::type type;
   template <typename O>
   struct rebind 
   {
-    typedef typename lvalue_factory_type<B>::
+    typedef typename lvalue_factory_type<B, D>::
       template rebind<O>::type type;
   };
 };

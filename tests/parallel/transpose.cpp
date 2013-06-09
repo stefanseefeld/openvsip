@@ -9,8 +9,6 @@
 /// Description
 ///   Unit tests for parallel matrix transpose.
 
-#include <iostream>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/vector.hpp>
@@ -18,23 +16,16 @@
 #include <vsip/domain.hpp>
 #include <vsip/random.hpp>
 #include <vsip/signal.hpp>
+#include <vsip/selgen.hpp>
+#include <test.hpp>
+#include "util.hpp"
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
-
-#include "util-par.hpp"
-
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
 // Test, exercising subviews
 template <typename MapT>
 void
-test(
-  MapT&       map,
-  length_type rows,
-  length_type cols,
-  int         verbose)
+test_subviews(MapT &map, length_type rows, length_type cols, bool verbose)
 {
   length_type row, col;
 
@@ -70,12 +61,13 @@ test(
   tp4 = in1.transpose()(Domain<2>(cols, rows));
   tp5(Domain<2>(cols, rows)) = in1.transpose()(Domain<2>(cols, rows));
   tp6(Domain<2>(cols, rows)) = in1.transpose()(Domain<2>(cols, rows)) +
-                               in2.transpose();
+    in2.transpose();
 
   if (verbose)
   {
     dump_view("in1", in1);
     dump_view("in2", in2);
+    dump_view("tp1", tp1);
     dump_view("tp2", tp2);
   }
 
@@ -88,14 +80,13 @@ test(
       test_assert(in2.get(row, col).imag() == -(1.0*row + 100.0*col));
 
       test_assert(tp1.get(col, row) == in1.get(row, col));
-      test_assert(tp2.get(col, row) == 
-		  (in1.get(row, col) + in2.get(row, col)));
+      test_assert(tp2.get(col, row) == (in1.get(row, col) + in2.get(row, col)));
       test_assert(tp3.get(col, row) == 
-		  (tp1.get(col, row) + in1.get(row, col) + in2.get(row, col)));
+       	          (tp1.get(col, row) + in1.get(row, col) + in2.get(row, col)));
       test_assert(tp4.get(col, row) == in1.get(row, col));
       test_assert(tp5.get(col, row) == in1.get(row, col));
       test_assert(tp6.get(col, row) == 
-		  (in1.get(row, col) + in2.get(row, col)));
+                  (in1.get(row, col) + in2.get(row, col)));
     }
 }
 
@@ -105,10 +96,7 @@ test(
 
 template <typename MapT>
 void
-test_wo_subviews(
-  MapT&       map,
-  length_type rows,
-  length_type cols)
+test_wo_subviews(MapT &map, length_type rows, length_type cols)
 {
   length_type row, col;
 
@@ -142,18 +130,15 @@ test_wo_subviews(
     {
       test_assert(tp1.get(col, row) == in1.get(row, col));
       test_assert(tp2.get(col, row) == 
-		  (in1.get(row, col) + in2.get(row, col)));
+                  (in1.get(row, col) + in2.get(row, col)));
       test_assert(tp3.get(col, row) == 
-		  (tp1.get(col, row) + in1.get(row, col) + in2.get(row, col)));
+       	          (tp1.get(col, row) + in1.get(row, col) + in2.get(row, col)));
     }
 }
 
 template <typename MapT>
 void
-test_x(
-  MapT&       map,
-  length_type rows,
-  length_type cols)
+test_x(MapT &map, length_type rows, length_type cols)
 {
   length_type row, col;
 
@@ -209,23 +194,20 @@ main(int argc, char** argv)
   comm.barrier();
   std::cout << "start\n";
 #endif
-
   Map<> m;
   // Block-cylic maps ---------------------------------------------------
   {
     msg(m, "block-cyclic - 1\n");
     typedef Map<Block_dist, Whole_dist> map_type;
     map_type map = map_type(num_processors(), 1);
-    test(map, 4, 8, 0);
+    test_subviews(map, 4, 8, true);
   }
-
   {
     msg(m, "block-cyclic - 2\n");
     typedef Map<Whole_dist, Block_dist> map_type;
     map_type map = map_type(1, num_processors());
-    test(map, 4, 8, 0);
+    test_subviews(map, 4, 8, true);
   }
-
   {
     msg(m, "block-cyclic - 3\n");
     length_type np = num_processors();
@@ -233,9 +215,8 @@ main(int argc, char** argv)
     get_np_square(np, npr, npc);
     typedef Map<Block_dist, Block_dist> map_type;
     map_type map = map_type(npr, npc);
-    test(map, 4, 8, 0);
+    test_subviews(map, 4, 8, false);
   }
-
   {
     msg(m, "block-cyclic - 4\n");
     length_type np = num_processors();
@@ -247,18 +228,18 @@ main(int argc, char** argv)
   }
 
   // Local map ----------------------------------------------------------
-  {
-    msg(m, "local\n");
-    typedef Local_map map_type;
-    map_type map;
-    test(map, 4, 8, 0);
-  }
+  // {
+  //   msg(m, "local\n");
+  //   typedef Local_map map_type;
+  //   map_type map;
+  //   test_subviews(map, 4, 8, 0);
+  // }
 
   // Replicated map ---------------------------------------------------------
   {
     msg(m, "replicated\n");
     typedef Replicated_map<2> map_type;
     map_type map;
-    test(map, 4, 8, 0);
+    test_subviews(map, 4, 8, false);
   }
 }

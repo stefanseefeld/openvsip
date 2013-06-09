@@ -9,35 +9,24 @@
 /// Description
 ///   Unit tests for distributed subviews.
 
-#include <iostream>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/map.hpp>
 #include <vsip/math.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/parallel.hpp>
-
-#include <vsip/opt/profile.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
+#include <test.hpp>
 #include "util.hpp"
-#include "util-par.hpp"
+#include <cstring>
 
-using namespace vsip;
-
-/***********************************************************************
-  Test row-subviews of distributed matrix
-***********************************************************************/
-
+using namespace ovxx;
+namespace p = ovxx::parallel;
 
 template <typename T,
 	  typename MapT>
 void
-test_row_sum(
-  Domain<2> const& dom,
-  MapT const&      map)
+test_row_sum(Domain<2> const& dom,
+	     MapT const&      map)
 {
   typedef Map<>                              root_map_t;
   typedef Dense<1, T, row1_type, root_map_t> root_block1_t;
@@ -50,7 +39,7 @@ test_row_sum(
 
   typedef Vector<T, Dense<1, T, row1_type, Replicated_map<1> > > replicated_view1_t;
 
-  impl::Communicator& comm = impl::default_communicator();
+  p::Communicator& comm = p::default_communicator();
 
   length_type sum_size = dom[1].size();
 
@@ -60,7 +49,7 @@ test_row_sum(
   // Initialize matrix on root processor
 
   root_map_t   root_map(Block_dist(1),Block_dist(1),Block_dist(1));
-  root_view2_t root_view(create_view<root_view2_t>(dom, root_map));
+  root_view2_t root_view(test::create_view<root_view2_t>(dom, root_map));
   root_view1_t root_sum (sum_size, T(), root_map);
 
   if (root_map.subblock() != no_subblock)
@@ -80,7 +69,7 @@ test_row_sum(
   // ------------------------------------------------------------------ 
   // Distribute matrix and answer
 
-  view2_t view(create_view<view2_t>(dom, map));
+  view2_t view(test::create_view<view2_t>(dom, map));
   view = root_view;
 
   replicated_view1_t chk_sum(sum_size);
@@ -148,9 +137,7 @@ cases_row_sum(Domain<2> const& dom)
 template <typename T,
 	  typename MapT>
 void
-test_col_sum(
-  Domain<2> const& dom,
-  MapT const&      map)
+test_col_sum(Domain<2> const& dom, MapT const&      map)
 {
   typedef Map<>                              root_map_t;
   typedef Dense<1, T, row1_type, root_map_t> root_block1_t;
@@ -163,7 +150,7 @@ test_col_sum(
 
   typedef Vector<T, Dense<1, T, row1_type, Replicated_map<1> > > replicated_view1_t;
 
-  impl::Communicator& comm = impl::default_communicator();
+  p::Communicator& comm = p::default_communicator();
 
   length_type sum_size = dom[0].size();
 
@@ -173,7 +160,7 @@ test_col_sum(
   // Initialize matrix on root processor
 
   root_map_t   root_map(Block_dist(1),Block_dist(1),Block_dist(1));
-  root_view2_t root_view(create_view<root_view2_t>(dom, root_map));
+  root_view2_t root_view(test::create_view<root_view2_t>(dom, root_map));
   root_view1_t root_sum (sum_size, T(), root_map);
 
   if (root_map.subblock() != no_subblock)
@@ -193,7 +180,7 @@ test_col_sum(
   // ------------------------------------------------------------------ 
   // Distribute matrix and answer
 
-  view2_t view(create_view<view2_t>(dom, map));
+  view2_t view(test::create_view<view2_t>(dom, map));
   view = root_view;
 
   replicated_view1_t chk_sum(sum_size);
@@ -306,9 +293,8 @@ template <typename       T,
 	  dimension_type Slice,
 	  typename       MapT>
 void
-test_tensor_v_sum(
-  Domain<3> const& dom,
-  MapT const&      map)
+test_tensor_v_sum(Domain<3> const& dom,
+		  MapT const&      map)
 {
   typedef Map<>                              root_map_t;
   typedef Dense<1, T, row1_type, root_map_t> root_block1_t;
@@ -323,7 +309,7 @@ test_tensor_v_sum(
 
   V_slice<Slice> slice;
 
-  impl::Communicator& comm = impl::default_communicator();
+  p::Communicator& comm = p::default_communicator();
 
   length_type sum_size = slice.sum_size(dom);
 
@@ -334,7 +320,7 @@ test_tensor_v_sum(
   // Initialize matrix on root processor
 
   root_map_t   root_map(Block_dist(1),Block_dist(1),Block_dist(1));
-  root_view3_t root_view(create_view<root_view3_t>(dom, root_map));
+  root_view3_t root_view(test::create_view<root_view3_t>(dom, root_map));
   root_view1_t root_sum (sum_size, T(), root_map);
 
   if (root_map.subblock() != no_subblock)
@@ -356,7 +342,7 @@ test_tensor_v_sum(
   // ------------------------------------------------------------------ 
   // Distribute view and answer
 
-  view3_t view(create_view<view3_t>(dom, map));
+  view3_t view(test::create_view<view3_t>(dom, map));
   view = root_view;
 
   replicated_view1_t chk_sum(sum_size);
@@ -490,9 +476,8 @@ template <typename       T,
 	  dimension_type Slice,
 	  typename       MapT>
 void
-test_tensor_m_sum(
-  Domain<3> const& dom,
-  MapT const&      map)
+test_tensor_m_sum(Domain<3> const& dom,
+		  MapT const&      map)
 {
   typedef Map<>                              root_map_t;
   typedef Dense<2, T, row1_type, root_map_t> root_block2_t;
@@ -507,7 +492,7 @@ test_tensor_m_sum(
 
   M_slice<Slice> slice;
 
-  impl::Communicator& comm = impl::default_communicator();
+  p::Communicator& comm = p::default_communicator();
 
   length_type sum_rows = slice.sum_rows(dom);
   length_type sum_cols = slice.sum_cols(dom);
@@ -518,7 +503,7 @@ test_tensor_m_sum(
   // Initialize matrix on root processor
 
   root_map_t   root_map(Block_dist(1),Block_dist(1),Block_dist(1));
-  root_view3_t root_view(create_view<root_view3_t>(dom, root_map));
+  root_view3_t root_view(test::create_view<root_view3_t>(dom, root_map));
   root_view2_t root_sum (sum_rows, sum_cols, T(), root_map);
 
   if (root_map.subblock() != no_subblock)
@@ -539,7 +524,7 @@ test_tensor_m_sum(
   // ------------------------------------------------------------------ 
   // Distribute view and answer
 
-  view3_t view(create_view<view3_t>(dom, map));
+  view3_t view(test::create_view<view3_t>(dom, map));
   view = root_view;
 
   replicated_view2_t chk_sum(sum_rows, sum_cols);
@@ -644,7 +629,7 @@ main(int argc, char** argv)
 
 #if 0
   // Enable this section for easier debugging.
-  impl::Communicator& comm = impl::default_communicator();
+  p::Communicator& comm = p::default_communicator();
   pid_t pid = getpid();
 
   std::cout << "rank: "   << comm.rank()

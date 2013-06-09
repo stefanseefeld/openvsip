@@ -9,10 +9,10 @@
 #ifndef vsip_impl_parallel_hpp_
 #define vsip_impl_parallel_hpp_
 
-#include <ovxx/parallel/service.hpp>
 #include <vsip/support.hpp>
 #include <vsip/impl/vector.hpp>
 #include <ovxx/domain_utils.hpp>
+#include <ovxx/parallel/support.hpp>
 
 namespace vsip
 {
@@ -38,73 +38,6 @@ inline const_Vector<processor_type> processor_set()
   return Vector<processor_type>(*pset_block_);
 }
 
-namespace impl
-{
-using namespace ovxx;
-namespace psf_detail
-{
-
-// Return the subdomain of a view/map pair for a subblock.
-
-template <typename V>
-inline Domain<V::dim>
-subblock_domain(V const &view, Local_map const &, index_type sb)
-{
-  assert(sb == 0 || sb == no_subblock);
-  return (sb == 0) ? block_domain<V::dim>(view.block())
-                   : empty_domain<V::dim>();
-}
-
-template <typename V, typename M>
-inline Domain<V::dim>
-subblock_domain(V const &, M const &map, index_type sb)
-{
-  return map.template impl_subblock_domain<V::dim>(sb);
-}
-
-
-
-// Return the local domain of a view/map pair for a subblock/patch.
-
-template <typename V>
-inline Domain<V::dim>
-local_domain(V const &view, Local_map const &, index_type sb, index_type p)
-{
-  assert((sb == 0 && p == 0) || sb == no_subblock);
-  return (sb == 0) ? block_domain<V::dim>(view.block())
-                   : empty_domain<V::dim>();
-}
-
-template <typename V, typename M>
-inline Domain<V::dim>
-local_domain(V const &, M const &map, index_type sb, index_type p)
-{
-  return map.template impl_local_domain<V::dim>(sb, p);
-}
-
-
-
-// Return the global domain of a view/map pair for a subblock/patch.
-
-template <typename V>
-inline Domain<V::dim>
-global_domain(V const &view, Local_map const &, index_type sb, index_type p OVXX_UNUSED)
-{
-  assert((sb == 0 && p == 0) || sb == no_subblock);
-  return (sb == 0) ? block_domain<V::dim>(view.block())
-                   : empty_domain<V::dim>();
-}
-
-template <typename V, typename M>
-inline Domain<V::dim>
-global_domain(V const &, M const &map, index_type sb, index_type p)
-{
-  return map.template impl_global_domain<V::dim>(sb, p);
-}
-
-} // namespace vsip::impl::psf_detail
-} // namespace vsip::impl
-
 // [view.support.fcn] parallel support functions
 
 /// Return the domain of VIEW's subblock SB.
@@ -117,10 +50,10 @@ global_domain(V const &, M const &map, index_type sb, index_type p)
 ///   The domain of VIEW's subblock SB if SB is valid, the empty
 ///   domain if SB == no_subblock.
 template <typename V>
-Domain<V::dim>
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, Domain<V::dim> >::type
 subblock_domain(V const &view, index_type sb)
 {
-  return impl::psf_detail::subblock_domain(view, view.block().map(), sb);
+  return ovxx::parallel::subblock_domain<V::dim>(view.block(), sb);
 }
 
 /// Return the domain of VIEW's subblock held by the local processor.
@@ -131,14 +64,11 @@ subblock_domain(V const &view, index_type sb)
 /// Returns
 ///   The domain of VIEW's subblock held by the local processor.
 template <typename V>
-Domain<V::dim>
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, Domain<V::dim> >::type
 subblock_domain(V const &view)
 {
-  return impl::psf_detail::subblock_domain(view, view.block().map(),
-					   view.block().map().subblock());
+  return ovxx::parallel::subblock_domain<V::dim>(view.block());
 }
-
-
 
 /// Return the local domain of VIEW's subblock SB patch P
 
@@ -151,13 +81,11 @@ subblock_domain(V const &view)
 ///   The local domain of VIEW's subblock SB patch P if SB is valid,
 ///   the empty domain if SB == no_subblock.
 template <typename V>
-Domain<V::dim>
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, Domain<V::dim> >::type
 local_domain(V const &view, index_type sb, index_type p)
 {
-  return impl::psf_detail::local_domain(view, view.block().map(), sb, p);
+  return ovxx::parallel::local_domain<V::dim>(view.block(), sb, p);
 }
-
-
 
 /// Return the local domain of VIEW's patch P on the local processor's subblock
 
@@ -170,15 +98,11 @@ local_domain(V const &view, index_type sb, index_type p)
 ///     if the local processor holds a subblock,
 ///   The empty domain otherwise.
 template <typename V>
-Domain<V::dim>
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, Domain<V::dim> >::type
 local_domain(V const &view, index_type p=0)
 {
-  return impl::psf_detail::local_domain(view, view.block().map(),
-					view.block().map().subblock(),
-					p);
+  return ovxx::parallel::local_domain<V::dim>(view.block(), p);
 }
-
-
 
 /// Return the global domain of VIEW's subblock SB patch P
 
@@ -191,13 +115,11 @@ local_domain(V const &view, index_type p=0)
 ///   The global domain of VIEW's subblock SB patch P if SB is valid,
 ///   the empty domain if SB == no_subblock.
 template <typename V>
-Domain<V::dim>
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, Domain<V::dim> >::type
 global_domain(V const &view, index_type sb, index_type p)
 {
-  return impl::psf_detail::global_domain(view, view.block().map(), sb, p);
+  return ovxx::parallel::global_domain<V::dim>(view.block(), sb, p);
 }
-
-
 
 /// Return the global domain of VIEW's local subblock patch P
 
@@ -210,26 +132,22 @@ global_domain(V const &view, index_type sb, index_type p)
 ///     if the local processor holds a subblock,
 ///   The empty domain otherwise.
 template <typename V>
-Domain<V::dim>
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, Domain<V::dim> >::type
 global_domain(V const &view, index_type p=0)
 {
-  return impl::psf_detail::global_domain(view, view.block().map(), 
-					 view.block().map().subblock(),
-					 p);
+  return ovxx::parallel::global_domain<V::dim>(view.block(), p);
 }
-
 
 /// Return the number of subblocks VIEW is distrubted over.
 
 /// Requires
 ///   VIEW to be a view
 template <typename V>
-length_type num_subblocks(V const &view)
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, length_type>::type
+num_subblocks(V const &view)
 {
   return view.block().map().num_subblocks();
 }
-
-
 
 /// Return the number of patches in VIEW's subblock SB.
 
@@ -237,25 +155,22 @@ length_type num_subblocks(V const &view)
 ///   VIEW to be a view.
 ///   SB to either be a valid subblock of VIEW, or the value no_subblock.
 template <typename V>
-length_type
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, length_type>::type
 num_patches(V const &view, index_type sb)
 {
-  return view.block().map().impl_num_patches(sb);
+  return ovxx::parallel::block_num_patches(view.block(), sb);
 }
-
-
 
 /// Return the number of patches in VIEW's subblock held on the local
 /// processor.
 
 /// Requires
 ///   VIEW to be a view.
-
 template <typename V>
-length_type
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, length_type>::type
 num_patches(V const &view)
 {
-  return view.block().map().impl_num_patches(view.block().map().subblock());
+  return ovxx::parallel::block_num_patches(view.block());
 }
 
 
@@ -270,7 +185,7 @@ num_patches(V const &view)
 ///   The subblock rank of VIEW held by processor PR if it holds a subblock,
 ///   NO_SUBBLOCK otherwise.
 template <typename V>
-index_type
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, index_type>::type
 subblock(V const &view, processor_type pr)
 {
   return view.block().map().subblock(pr);
@@ -285,7 +200,7 @@ subblock(V const &view, processor_type pr)
 ///   The subblock rank of VIEW held by local processor,
 ///   or NO_SUBBLOCK if it does not hold a subblock.
 template <typename V>
-index_type
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, index_type>::type
 subblock(V const &view)
 {
   return view.block().map().subblock();
@@ -293,17 +208,11 @@ subblock(V const &view)
 
 /// Determine which subblock holds VIEW's global index IDX
 template <typename V>
-index_type
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, index_type>::type
 subblock_from_global_index(V const &view, Index<V::dim> const &idx)
 {
-  for (dimension_type d=0; d<V::dim; ++d)
-    assert(idx[d] < view.size(d));
-
-  return view.block().
-    map().template impl_subblock_from_global_index<V::dim>(idx);
+  return ovxx::parallel::block_subblock_from_global_index(view.block(), idx);
 }
-
-
 
 /// Determine which patch holds VIEW's global index IDX
 
@@ -311,21 +220,11 @@ subblock_from_global_index(V const &view, Index<V::dim> const &idx)
 ///   This patch is only valid in the subblock returned by
 ///   subblock_from_global_index.
 template <typename V>
-index_type
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, index_type>::type
 patch_from_global_index(V const &view, Index<V::dim> const &idx)
 {
-  for (dimension_type d=0; d<V::dim; ++d)
-    assert(idx[d] < view.size(d));
-
-  return view.block().
-    map().template impl_subblock_from_global_index<V::dim>(idx);
+  return ovxx::parallel::block_patch_from_global_index(view.block(), idx);
 }
-
-
-
-/***********************************************************************
-  local_from_global_index
-***********************************************************************/
 
 /// Determine the local index corresponding to VIEW's global index G_IDX.
 
@@ -333,110 +232,61 @@ patch_from_global_index(V const &view, Index<V::dim> const &idx)
 ///   This local index is only valid in processors hold the subblock
 ///   returned by subblock_from_global_index.
 template <typename V>
-Index<V::dim>
-local_from_global_index(V const &view, Index<V::dim> const &g_idx)
-  VSIP_NOTHROW
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, Index<V::dim> >::type
+local_from_global_index(V const &view, Index<V::dim> const &idx) VSIP_NOTHROW
 {
-  Index<V::dim> l_idx;
-
-  for (dimension_type d=0; d<V::dim; ++d)
-    l_idx[d] = local_from_global_index(view, d, g_idx[d]);
-
-  return l_idx;
+  return ovxx::parallel::block_local_from_global_index(view.block(), idx);
 }
-
-
 
 /// Determine the local index corresponding to VIEW's global index
 /// G_IDX for dimension DIM.
 template <typename V>
-index_type
-local_from_global_index(V const &view, dimension_type dim, index_type g_idx)
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, index_type>::type
+local_from_global_index(V const &view, dimension_type dim, index_type idx)
   VSIP_NOTHROW
 {
-  return view.block().map().impl_local_from_global_index(dim, g_idx);
+  return ovxx::parallel::block_local_from_global_index(view.block(), dim, idx);
 }
-
-
-
-/***********************************************************************
-  global_from_local_index
-***********************************************************************/
-/// Determine BLOCKS's global index corresponding to local index L_IDX
-
-template <typename B, dimension_type D>
-inline
-Index<D>
-global_from_local_index_blk(B const &b, Index<D> const &l_idx)
-{
-  Index<D> g_idx;
-
-  for (dimension_type d=0; d<D; ++d)
-    g_idx[d] = 
-      b.map().impl_global_from_local_index(d, b.map().subblock(), l_idx[d]);
-
-  return g_idx;
-}
-
 
 /// Determine VIEW's global index corresponding to local index L_IDX
 /// of subblock SB.
 template <typename V>
 inline
-Index<V::dim>
-global_from_local_index(V const &view, index_type sb, Index<V::dim> const &l_idx)
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, Index<V::dim> >::type
+global_from_local_index(V const &view, index_type sb, Index<V::dim> const &idx)
 {
-  Index<V::dim> g_idx;
-
-  for (dimension_type d=0; d<V::dim; ++d)
-    g_idx[d] = global_from_local_index(view, d, sb, l_idx[d]);
-
-  return g_idx;
+  return ovxx::parallel::block_global_from_local_index(view.block(), sb, idx);
 }
 
 /// Determine VIEW's global index corresponding to local index L_IDX
 /// of the subblock held on the local processor.
 template <typename V>
 inline
-Index<V::dim>
-global_from_local_index(V const &view, Index<V::dim> const &l_idx)
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, Index<V::dim> >::type
+global_from_local_index(V const &view, Index<V::dim> const &idx)
 {
-  Index<V::dim> g_idx;
-
-  for (dimension_type d=0; d<V::dim; ++d)
-    g_idx[d] = global_from_local_index(view, d, l_idx[d]);
-
-  return g_idx;
+  return ovxx::parallel::block_global_from_local_index(view.block(), idx);
 }
-
-
 
 /// Determine VIEW's global index corresponding to local index L_IDX
 /// for dimension DIM of subblock SB.
 template <typename V>
 inline
-index_type
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, index_type>::type
 global_from_local_index(V const &view, dimension_type dim,
-			index_type sb, index_type l_idx)
+			index_type sb, index_type idx)
 {
-  return view.block().map().impl_global_from_local_index(dim, sb, l_idx);
+  return ovxx::parallel::block_global_from_local_index(view, dim, sb, idx);
 }
-
-
 
 /// Determine VIEW's global index corresponding to local index L_IDX
 /// for dimension DIM of the subblock held on the local processor.
 template <typename V>
 inline
-index_type
-global_from_local_index(V const &view, dimension_type dim, index_type l_idx)
+typename ovxx::enable_if<ovxx::is_view_type<V>::value, index_type>::type
+global_from_local_index(V const &view, dimension_type dim, index_type idx)
 {
-  index_type sb = view.block().map().subblock();
-
-  if (sb != no_subblock)
-    return view.block().map().impl_global_from_local_index(dim, sb, l_idx);
-  else
-    return no_index;
+  return ovxx::parallel::block_global_from_local_index(view.block(), dim, idx);
 }
 
 } // namespace vsip

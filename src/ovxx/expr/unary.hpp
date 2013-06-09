@@ -236,20 +236,20 @@ bool has_same_map(M const &map, expr::Unary<O, B, false> const &block)
 {
   return has_same_map<D>(map, block.operation());
 };
-} // namespace ovxx::parallel
 
 template <template <typename> class O, typename B>
-struct is_par_reorg_ok<expr::Unary<O, B, true> const>
+struct is_reorg_ok<expr::Unary<O, B, true> const>
 {
-  static bool const value = is_par_reorg_ok<B>::value;
+  static bool const value = is_reorg_ok<B>::value;
 };
 
 template <template <typename> class O, typename B>
-struct is_par_reorg_ok<expr::Unary<O, B, false> const>
+struct is_reorg_ok<expr::Unary<O, B, false> const>
 {
   static bool const value = false;
 };
 
+} // namespace ovxx::parallel
 } // namespace ovxx
 
 namespace vsip 

@@ -22,7 +22,6 @@
 #include <vsip/selgen.hpp>
 #include <ovxx/domain_utils.hpp>
 #include <test.hpp>
-#include "test_ramp.hpp"
 
 using namespace ovxx;
 
@@ -45,7 +44,7 @@ test_vmmul(
     for (index_type c=0; c<cols; ++c)
       m(r, c) = T2(r*cols+c);
 
-  v = test_ramp(T1(), T1(1), v.size());
+  v = test::ramp(T1(), T1(1), v.size());
 
   typedef Dense<2, result_type, OrderT3> output_block_type;
   Matrix<result_type, output_block_type> res1 =  vmmul<Dim>(      v,       m);

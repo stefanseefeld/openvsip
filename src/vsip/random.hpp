@@ -18,9 +18,7 @@
 #include <vsip/matrix.hpp>
 #include <vsip/tensor.hpp>
 #include <ovxx/expr/generator.hpp>
-#ifdef OVXX_PARALLEL
-# include <vsip/map.hpp>
-#endif
+#include <vsip/map.hpp>
 
 namespace vsip
 {
@@ -423,14 +421,14 @@ public:
   randu(length_type len) VSIP_NOTHROW
   {
     Uniform_generator gen(*this);
-    uniform1d_block_type block(impl::Length<1>(len), gen);
+    uniform1d_block_type block(ovxx::Length<1>(len), gen);
     return const_Vector<T, uniform1d_block_type>(block);
   }
   uniform_matrix_type 
   randu(length_type rows, length_type columns) VSIP_NOTHROW
   {
     Uniform_generator gen(*this);
-    uniform2d_block_type block(impl::Length<2>(rows, columns), gen);
+    uniform2d_block_type block(ovxx::Length<2>(rows, columns), gen);
     return const_Matrix<T, uniform2d_block_type>(block);
   }
 
@@ -438,7 +436,7 @@ public:
   randu(length_type z, length_type y, length_type x) VSIP_NOTHROW
   {
     Uniform_generator gen(*this);
-    uniform3d_block_type block(impl::Length<3>(z, y, x), gen);
+    uniform3d_block_type block(ovxx::Length<3>(z, y, x), gen);
     return const_Tensor<T, uniform3d_block_type>(block);
   }
 
@@ -446,7 +444,7 @@ public:
   randn(length_type len) VSIP_NOTHROW
   {
     Normal_generator gen(*this);
-    normal1d_block_type block(impl::Length<1>(len), gen);
+    normal1d_block_type block(ovxx::Length<1>(len), gen);
     return const_Vector<T, normal1d_block_type>(block);
   }
 
@@ -454,7 +452,7 @@ public:
   randn(length_type rows, length_type columns) VSIP_NOTHROW
   {
     Normal_generator gen(*this);
-    normal2d_block_type block(impl::Length<2>(rows, columns), gen);
+    normal2d_block_type block(ovxx::Length<2>(rows, columns), gen);
     return const_Matrix<T, normal2d_block_type>(block);
   }
 
@@ -462,7 +460,7 @@ public:
   randn(length_type z, length_type y, length_type x) VSIP_NOTHROW
   {
     Normal_generator gen(*this);
-    normal3d_block_type block(impl::Length<3>(z, y, x), gen);
+    normal3d_block_type block(ovxx::Length<3>(z, y, x), gen);
     return const_Tensor<T, normal3d_block_type>(block);
   }
 };
@@ -470,5 +468,5 @@ public:
 
 } // namespace vsip
 
-#endif // VSIP_RANDOM_HPP
+#endif
 

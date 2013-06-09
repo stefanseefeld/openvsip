@@ -9,22 +9,16 @@
 /// Description
 ///   Test Maxval of distributed expression.
 
-#include <algorithm>
-#include <iostream>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/math.hpp>
 #include <vsip/parallel.hpp>
+#include <test.hpp>
+#include <storage.hpp>
+#include "../test_common.hpp"
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-storage.hpp>
-
-#include "test_common.hpp"
-
-using namespace vsip;
-using vsip_csl::equal;
+using namespace ovxx;
 
 template <typename MapT>
 void

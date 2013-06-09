@@ -11,9 +11,11 @@
 
 #include <vsip/vector.hpp>
 
+namespace test
+{
 template <typename T>
 vsip::const_Vector<T>
-test_ramp(T a, T b, vsip::length_type len)
+ramp(T a, T b, vsip::length_type len)
 {
   vsip::Vector<T> r(len);
   for (vsip::index_type i = 0; i < len; ++i)
@@ -23,11 +25,12 @@ test_ramp(T a, T b, vsip::length_type len)
 
 template <typename T, typename B>
 vsip::Vector<T, B>
-test_ramp(vsip::Vector<T, B> view, T a, T b)
+ramp(vsip::Vector<T, B> view, T a, T b)
 {
   for (vsip::index_type i=0; i<view.size(); ++i)
     view.put(i, a + T(i)*b);
   return view;
 }
+} // namespace test
 
 #endif

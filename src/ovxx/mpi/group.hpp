@@ -1,23 +1,21 @@
 //
-// Copyright (c) 2010 by CodeSourcery
+// Copyright (c) 2010 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef vsip_core_mpi_group_hpp_
-#define vsip_core_mpi_group_hpp_
+#ifndef ovxx_mpi_group_hpp_
+#define ovxx_mpi_group_hpp_
 
-#include <vsip/support.hpp>
-#include <vsip/core/mpi/exception.hpp>
-#include <vsip/core/c++0x.hpp>
+#include <ovxx/support.hpp>
+#include <ovxx/mpi/exception.hpp>
+#include <ovxx/c++11.hpp>
 #include <vector>
 #include <mpi.h>
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace mpi
 {
@@ -38,7 +36,7 @@ public:
   {
     if (!impl_.get()) return no_rank;
     int r;
-    VSIP_IMPL_MPI_CHECK_RESULT(MPI_Group_rank, (*this, &r));
+    OVXX_MPI_CHECK_RESULT(MPI_Group_rank, (*this, &r));
     return r == MPI_UNDEFINED ? no_rank : r;
   }
   /// Determine the number of processes in the group.
@@ -46,7 +44,7 @@ public:
   {
     if (!impl_.get()) return 0;
     int s;
-    VSIP_IMPL_MPI_CHECK_RESULT(MPI_Group_size, (*this, &s));
+    OVXX_MPI_CHECK_RESULT(MPI_Group_size, (*this, &s));
     return s;
   }
 
@@ -65,7 +63,7 @@ public:
                                  Group const &, OutputIterator out);
 
 private:
-  shared_ptr<MPI_Group> impl_;
+  ovxx::shared_ptr<MPI_Group> impl_;
 };
 
 template<typename InputIterator>
@@ -74,7 +72,7 @@ Group Group::include(InputIterator first, InputIterator last)
   if (first == last) return Group();
   std::vector<int> ranks(first, last);
   MPI_Group g;
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Group_incl, (*this, ranks.size(), &ranks[0], &g));
+  OVXX_MPI_CHECK_RESULT(MPI_Group_incl, (*this, ranks.size(), &ranks[0], &g));
   return Group(g);
 }
 
@@ -83,7 +81,7 @@ inline Group
 Group::include(int *first, int *last)
 {
   MPI_Group g;
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Group_incl, (*this, last - first, first, &g));
+  OVXX_MPI_CHECK_RESULT(MPI_Group_incl, (*this, last - first, first, &g));
   return Group(g);
 }
 
@@ -93,7 +91,7 @@ Group Group::exclude(InputIterator first, InputIterator last)
   if (first == last) return Group();
   std::vector<int> ranks(first, last);
   MPI_Group g;
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Group_excl, (*this, ranks.size(), &ranks[0], &g));
+  OVXX_MPI_CHECK_RESULT(MPI_Group_excl, (*this, ranks.size(), &ranks[0], &g));
   return Group(g);
 }
 
@@ -102,7 +100,7 @@ inline Group
 Group::exclude(int *first, int *last)
 {
   MPI_Group g;
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Group_excl, (*this, last - first, first, &g));
+  OVXX_MPI_CHECK_RESULT(MPI_Group_excl, (*this, last - first, first, &g));
   return Group(g);
 }
 
@@ -116,9 +114,9 @@ Group::translate_ranks(InputIterator first, InputIterator last,
     return out;
 
   std::vector<int> out_array(in_array.size());
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Group_translate_ranks,
-			     (*this, in_array.size(), &in_array[0],
-			      to_group, &out_array[0]));
+  OVXX_MPI_CHECK_RESULT(MPI_Group_translate_ranks,
+			(*this, in_array.size(), &in_array[0],
+			 to_group, &out_array[0]));
   for (std::vector<int>::size_type i = 0, n = out_array.size(); i < n; ++i)
     *out++ = out_array[i];
   return out;
@@ -128,34 +126,33 @@ template<>
 inline int*
 Group::translate_ranks(int *first, int *last, Group const &to_group, int *out)
 {
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Group_translate_ranks,
-			     (*this, last-first, first, to_group, out));
+  OVXX_MPI_CHECK_RESULT(MPI_Group_translate_ranks,
+			(*this, last-first, first, to_group, out));
   return out + (last - first);
 }
 
 inline Group operator|(Group const &g1, Group const &g2)
 {
   MPI_Group result;
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Group_union, (g1, g2, &result));
+  OVXX_MPI_CHECK_RESULT(MPI_Group_union, (g1, g2, &result));
   return Group(result);
 }
 
 inline Group operator&(Group const &g1, Group const &g2)
 {
   MPI_Group result;
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Group_intersection, (g1, g2, &result));
+  OVXX_MPI_CHECK_RESULT(MPI_Group_intersection, (g1, g2, &result));
   return Group(result);
 }
 
 inline Group operator-(Group const &g1, Group const &g2)
 {
   MPI_Group result;
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Group_difference, (g1, g2, &result));
+  OVXX_MPI_CHECK_RESULT(MPI_Group_difference, (g1, g2, &result));
   return Group(result);
 }
 
-} // namespace vsip::impl::mpi
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::mpi
+} // namespace ovxx
 
 #endif

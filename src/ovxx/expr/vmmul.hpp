@@ -149,15 +149,15 @@ bool has_same_map(M const &map, expr::Vmmul<VecDim, Block0, Block1> const &block
 		     block.get_vblk()) &&
      has_same_map<D>(map, block.get_mblk()));
 }
-} // namespace ovxx::parallel
 
 template <dimension_type VecDim,
 	  typename       Block0,
 	  typename       Block1>
-struct is_par_reorg_ok<expr::Vmmul<VecDim, Block0, Block1> const>
+struct is_reorg_ok<expr::Vmmul<VecDim, Block0, Block1> const>
 {
   static bool const value = false;
 };
+} // namespace ovxx::parallel
 } // namespace ovxx
 
 #endif

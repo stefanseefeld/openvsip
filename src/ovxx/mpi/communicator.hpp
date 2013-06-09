@@ -1,25 +1,23 @@
 //
-// Copyright (c) 2010 by CodeSourcery
+// Copyright (c) 2010 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef vsip_core_mpi_communicator_hpp_
-#define vsip_core_mpi_communicator_hpp_
+#ifndef ovxx_mpi_communicator_hpp_
+#define ovxx_mpi_communicator_hpp_
 
-#include <vsip/support.hpp>
-#include <vsip/core/reductions/types.hpp>
-#include <vsip/core/mpi/exception.hpp>
-#include <vsip/core/mpi/datatype.hpp>
-#include <vsip/core/mpi/group.hpp>
-#include <vsip/core/c++0x.hpp>
+#include <ovxx/support.hpp>
+#include <ovxx/reductions/types.hpp>
+#include <ovxx/mpi/exception.hpp>
+#include <ovxx/mpi/datatype.hpp>
+#include <ovxx/mpi/group.hpp>
+#include <ovxx/c++11.hpp>
 #include <mpi.h>
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace mpi
 {
@@ -52,14 +50,14 @@ public:
   processor_type rank() const
   {
     int r;
-    VSIP_IMPL_MPI_CHECK_RESULT(MPI_Comm_rank, (*this, &r));
+    OVXX_MPI_CHECK_RESULT(MPI_Comm_rank, (*this, &r));
     return static_cast<processor_type>(r);
   }
   /// Determine the number of processes in a communicator.
   length_type size() const
   {
     int s;
-    VSIP_IMPL_MPI_CHECK_RESULT(MPI_Comm_size, (*this, &s));
+    OVXX_MPI_CHECK_RESULT(MPI_Comm_size, (*this, &s));
     return static_cast<length_type>(s);
   }
   /// This routine constructs a new group whose members are the
@@ -67,7 +65,7 @@ public:
   Group group() const 
   {
     MPI_Group g;
-    VSIP_IMPL_MPI_CHECK_RESULT(MPI_Comm_group, (*this, &g));
+    OVXX_MPI_CHECK_RESULT(MPI_Comm_group, (*this, &g));
     return Group(g);
   }
   pvec_type const& pvec() const { return pvec_;}
@@ -75,7 +73,7 @@ public:
   Communicator split(int color, int key) const
   {
     MPI_Comm c;
-    VSIP_IMPL_MPI_CHECK_RESULT(MPI_Comm_split, (*this, color, key, &c));
+    OVXX_MPI_CHECK_RESULT(MPI_Comm_split, (*this, color, key, &c));
     return Communicator(c, comm_take_ownership);
   }
   Communicator split(int color) const { return split(color, rank());}
@@ -105,13 +103,13 @@ public:
   T allreduce(reduction_type rdx, T value);
 
   int impl_ll_pset() const VSIP_NOTHROW { return 0;}
-  // { return par_ll_pset_type(); }
+  // { return ll_pset_type(); }
 
 
   friend bool operator==(Communicator const&, Communicator const&);
 
 private:
-  shared_ptr<MPI_Comm> impl_;
+  ovxx::shared_ptr<MPI_Comm> impl_;
   pvec_type pvec_;
 };
 
@@ -119,7 +117,7 @@ inline bool
 operator==(Communicator const &comm1, Communicator const &comm2)
 {
   int result;
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Comm_compare, (comm1, comm2, &result));
+  OVXX_MPI_CHECK_RESULT(MPI_Comm_compare, (comm1, comm2, &result));
   return result == MPI_IDENT;
 }
 
@@ -133,7 +131,7 @@ template <typename T>
 inline void
 Communicator::buf_send(processor_type dest_proc, T *data, length_type size)
 {
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Bsend, 
+  OVXX_MPI_CHECK_RESULT(MPI_Bsend, 
     (data, size, Datatype<T>::value(), dest_proc, 0, *this));
 }
 
@@ -144,14 +142,14 @@ Communicator::send(processor_type dest_proc,
 		   length_type size,
 		   request_type &req)
 {
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Isend, 
+  OVXX_MPI_CHECK_RESULT(MPI_Isend, 
     (data, size, Datatype<T>::value(), dest_proc, 0, *this, &req));
 }
 
 inline void
 Communicator::send(processor_type dest_proc, chain_type &chain, request_type &req)
 {
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Isend,
+  OVXX_MPI_CHECK_RESULT(MPI_Isend,
     (MPI_BOTTOM, 1, chain, dest_proc, 0, *this, &req));
 }
 
@@ -160,7 +158,7 @@ inline void
 Communicator::recv(processor_type src_proc, T *data, length_type size)
 {
   MPI_Status status;
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Recv, 
+  OVXX_MPI_CHECK_RESULT(MPI_Recv, 
     (data, size, Datatype<T>::value(), src_proc, 0, *this, &status));
 }
 
@@ -168,7 +166,7 @@ inline void
 Communicator::recv(processor_type src_proc, chain_type &chain)
 {
   MPI_Status status;
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Recv, 
+  OVXX_MPI_CHECK_RESULT(MPI_Recv, 
     (MPI_BOTTOM, 1, chain, src_proc, 0, *this, &status));
 }
 
@@ -185,7 +183,7 @@ template <typename T>
 inline void
 Communicator::broadcast(processor_type root_proc, T* data, length_type size)
 {
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Bcast,
+  OVXX_MPI_CHECK_RESULT(MPI_Bcast,
     (data, size, Datatype<T>::value(), root_proc, *this));
 }
 
@@ -205,16 +203,17 @@ Communicator::allreduce(reduction_type rtype, T value)
   case reduce_any_true:		op = MPI_LOR; break;
   case reduce_any_true_bool:	op = MPI_BOR; break;
   case reduce_sum:		op = MPI_SUM; break;
-  default: assert(false);
+  case reduce_min:		op = MPI_MIN; break;
+  case reduce_max:		op = MPI_MAX; break;
+  default: OVXX_UNREACHABLE("invalid reduction type");
   }
 
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Allreduce, 
+  OVXX_MPI_CHECK_RESULT(MPI_Allreduce, 
     (&value, &result, 1, Datatype<T>::value(), op, *this));
   return result;
 }
 
-} // namespace vsip::impl::mpi
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::mpi
+} // namespace ovxx
 
 #endif

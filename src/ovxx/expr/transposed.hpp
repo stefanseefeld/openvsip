@@ -145,15 +145,15 @@ struct distributed_local_block<expr::Transposed<B> >
   typedef expr::Transposed<typename distributed_local_block<B>::proxy_type> proxy_type;
 };
 
-template <typename B>
-struct lvalue_factory_type<expr::Transposed<B> >
+template <typename B, dimension_type D>
+struct lvalue_factory_type<expr::Transposed<B>, D>
 {
-  typedef typename lvalue_factory_type<B>
+  typedef typename lvalue_factory_type<B, D>
     ::template rebind<expr::Transposed<B> >::type type;
   template <typename O>
   struct rebind 
   {
-    typedef typename lvalue_factory_type<B>
+    typedef typename lvalue_factory_type<B, D>
       ::template rebind<O>::type type;
   };
 };

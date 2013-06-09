@@ -15,19 +15,16 @@
 #include <vsip/support.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/parallel.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
+using namespace ovxx;
 
-using namespace vsip;
-using vsip_csl::equal;
-
-template <typename MapT,
-	  typename T>
+template <typename M, typename T>
 void
 test_subset()
 {
 
-  typedef Dense<1, T, row1_type, MapT> block_type;
+  typedef Dense<1, T, row1_type, M> block_type;
   typedef Vector<T, block_type> view_type;
 
   typedef typename view_type::subview_type    subset1_type;
@@ -46,15 +43,6 @@ test_subset()
     test_assert(equal(sub2.get(i), T(4+2+i)));
 }
 
-
-
-
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
-
 int
 main(int argc, char** argv)
 {
@@ -64,8 +52,8 @@ main(int argc, char** argv)
   //     for the subset.
 
   test_subset<Local_map, float>(); // OK
+#if OVXX_PARALLEL
   test_subset<Map<>, float>(); // [1]
   test_subset<Replicated_map<1>, float>(); // OK
-
-  return 0;
+#endif
 }

@@ -19,7 +19,6 @@
 #include <vsip/map.hpp>
 #include <ovxx/dda.hpp>
 #include <test.hpp>
-#include "../util.hpp"
 
 using namespace ovxx;
 
@@ -95,7 +94,7 @@ t_rtex(Domain<Dim> const& dom,
   typedef Strided<Dim, T, LayoutT> block_type;
   typedef typename view_of<block_type>::type view_type;
 
-  view_type view = create_view<view_type>(dom);
+  view_type view = test::create_view<view_type>(dom);
 
   Rt_layout<Dim> blk_rtl = block_layout<Dim>(view.block());
   test_layout<LayoutT>(blk_rtl);
@@ -170,22 +169,21 @@ template <typename       T,
 	  vsip::dda::sync_policy Sync,
 	  dimension_type Dim>
 void
-t_rtex_c(
-  Domain<Dim> const& dom,
-  Rt_tuple           order,
-  pack_type       pack,
-  storage_format_type    cformat,
-  int                cost,
-  bool               alloc,
-  bool force_copy = false)
+t_rtex_c(Domain<Dim> const& dom,
+	 Rt_tuple           order,
+	 pack_type       pack,
+	 storage_format_type    cformat,
+	 int                cost,
+	 bool               alloc,
+	 bool force_copy = false)
 {
 #if VERBOSE
   std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
-  typedef Strided<Dim, T, LayoutT>              block_type;
+  typedef Strided<Dim, T, LayoutT> block_type;
   typedef typename view_of<block_type>::type view_type;
 
-  view_type view = create_view<view_type>(dom);
+  view_type view = test::create_view<view_type>(dom);
 
   Rt_layout<Dim> blk_rtl = block_layout<Dim>(view.block());
   test_layout<LayoutT>(blk_rtl);

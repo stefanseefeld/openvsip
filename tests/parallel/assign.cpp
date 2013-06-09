@@ -9,25 +9,18 @@
 /// Description
 ///   Unit tests for parallel assignment.
 
-#include <iostream>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/map.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/parallel.hpp>
-#include <vsip/core/length.hpp>
-#include <vsip/core/domain_utils.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
+#include <ovxx/length.hpp>
+#include <ovxx/domain_utils.hpp>
+#include <ovxx/view/utils.hpp>
+#include <test.hpp>
 #include "util.hpp"
-#include "util-par.hpp"
 
-using namespace vsip;
-
-using vsip::impl::Length;
-using vsip::impl::extent;
+using namespace ovxx;
 
 // Test a single parallel assignment.
 
@@ -43,13 +36,13 @@ test_par_assign(
   int         loop)
 
 {
-  typedef typename impl::Row_major<Dim>::type order_type;
+  typedef typename row_major<Dim>::type order_type;
 
   typedef Dense<Dim, T, order_type, Map1>   dist_block1_t;
   typedef Dense<Dim, T, order_type, Map2>   dist_block2_t;
 
-  typedef typename impl::view_of<dist_block1_t>::type view1_t;
-  typedef typename impl::view_of<dist_block2_t>::type view2_t;
+  typedef typename view_of<dist_block1_t>::type view1_t;
+  typedef typename view_of<dist_block2_t>::type view2_t;
 
   view1_t view1(create_view<view1_t>(dom, T(), map1));
   view2_t view2(create_view<view2_t>(dom, T(), map2));

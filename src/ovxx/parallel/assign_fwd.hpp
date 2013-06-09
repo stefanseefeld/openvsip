@@ -22,24 +22,16 @@ struct Chained_assign;
 struct Blkvec_assign;
 
 // Parallel assignment.
-template <dimension_type Dim,
-	  typename       T1,
-	  typename       T2,
-	  typename       Block1,
-	  typename       Block2,
-	  typename       ImplTag>
-class Par_assign;
+template <dimension_type D, typename LHS, typename RHS, typename ImplTag>
+class Assignment;
 
-template <dimension_type Dim,
-	  typename       Block1,
-	  typename       Block2,
-	  bool           EarlyBinding>
+template <dimension_type D, typename LHS, typename RHS, bool EarlyBinding>
 struct choose_par_assign_impl
 {
-  typedef typename Block1::map_type map1_type;
-  typedef typename Block2::map_type map2_type;
+  typedef typename LHS::map_type map1_type;
+  typedef typename RHS::map_type map2_type;
 
-  static int const  is_blkvec = (Dim == 1) &&
+  static int const  is_blkvec = (D == 1) &&
     is_block_dist<0, map1_type>::value &&
     is_block_dist<0, map2_type>::value;
 

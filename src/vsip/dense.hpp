@@ -415,10 +415,10 @@ struct distributed_local_block<vsip::Dense<D, T, O, M> >
 };
 
 template <dimension_type D, typename T, typename O>
-struct lvalue_factory_type<Dense<D, T, O, Local_map> >
-  : detail::strided_lvalue_factory_type<Dense<D, T, O> >
+struct lvalue_factory_type<Dense<D, T, O>, D>
+  : detail::strided_lvalue_factory_type<Dense<D, T, O>, D>
 {};
 
-}
+} // namespace ovxx
 
 #endif

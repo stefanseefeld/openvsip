@@ -29,7 +29,7 @@ template <dimension_type Dim,
 struct vmmul_traits
 {
   typedef typename vsip::Promotion<T0, T1>::type value_type;
-  typedef expr::Vmmul<Dim, Block0, Block1> const block_type;
+  typedef ovxx::expr::Vmmul<Dim, Block0, Block1> const block_type;
   typedef Matrix<value_type, block_type> view_type;
 };
 

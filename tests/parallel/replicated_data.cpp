@@ -11,20 +11,15 @@
 
 #define VERBOSE 0
 
-#if VERBOSE
-#  include <iostream>
-#endif
-#include <algorithm>
-
 #include <vsip/support.hpp>
 #include <vsip/map.hpp>
 #include <vsip/initfin.hpp>
+#include <test.hpp>
+#include "util.hpp"
+#include <stdio.h>
+#include <unistd.h>
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
-
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
 // Test comm using replicated view as source (to non-replicated view)
 
@@ -39,7 +34,6 @@ test_src(int modulo)
 
   Vector<processor_type> full_pset = processor_set();
   Vector<processor_type> pset(1+(np-1)/modulo);
-
   for (index_type i=0; i<np; i+=modulo)
     pset(i/modulo) = full_pset(i);
 
@@ -54,6 +48,8 @@ test_src(int modulo)
 
   typedef Vector<T, rep_block_type> rep_view_type;
   typedef Matrix<T, dst_block_type> dst_view_type;
+  index_type rank = parallel::default_communicator().rank();
+  index_type sb = dst_map.subblock(rank);
 
   rep_view_type rep_view(size, rep_map);
   dst_view_type dst_view(rows, size, dst_map);
@@ -66,12 +62,16 @@ test_src(int modulo)
     rep_view.local().put(0, T(local_processor()));
   }
 
+  dump_view("dst_view", dst_view);
   for (index_type r=0; r<rows; ++r)
     dst_view.row(r) = rep_view;
 
   // Check the results
   typename dst_view_type::local_type l_dst_view = dst_view.local();
   test_assert(l_dst_view.size(0) == 1);
+
+  // dump_view("rep_view", rep_view);
+  dump_view("dst_view", dst_view);
 
   for (index_type i=1; i<size; ++i)
     test_assert(l_dst_view.get(0, i) == T(i));
@@ -90,11 +90,10 @@ template <typename T,
 	  typename SrcMapT,
 	  typename DstMapT>
 void
-test_msg(
-  length_type    size,
-  SrcMapT const& src_map,
-  DstMapT const& dst_map,
-  bool           mark_first_element = true)
+test_msg(length_type    size,
+	 SrcMapT const& src_map,
+	 DstMapT const& dst_map,
+	 bool           mark_first_element = true)
 {
   typedef Dense<1, T, row1_type, SrcMapT> src_block_type;
   typedef Dense<1, T, row1_type, DstMapT> dst_block_type;
@@ -104,7 +103,6 @@ test_msg(
 
   src_view_type src_view(size, src_map);
   dst_view_type dst_view(size, dst_map);
-
   for (index_type i=0; i<size; ++i)
     src_view.put(i, T(i));
 
@@ -149,7 +147,9 @@ test_global_to_repl(int modulo)
 
   length_type size = 16;
 
-  Global_map<1>     src_map;
+  // src has replica on all processors...
+  Replicated_map<1> src_map;
+  // ...while dst does not.
   Replicated_map<1> dst_map(pset);
 
   test_msg<T>(size, src_map, dst_map);
@@ -171,8 +171,10 @@ test_repl_to_global(int modulo)
 
   length_type size = 16;
 
+  // src has replica only on some processors...
   Replicated_map<1> src_map(pset);
-  Global_map<1>     dst_map;
+  // ...while dst has replica on all.
+  Replicated_map<1> dst_map;
 
   test_msg<T>(size, src_map, dst_map);
 }

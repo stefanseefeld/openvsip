@@ -1,16 +1,14 @@
 //
-// Copyright (c) 2010 by CodeSourcery
+// Copyright (c) 2010 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#include <vsip/core/mpi/communicator.hpp>
+#include <ovxx/mpi/communicator.hpp>
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace mpi
 {
@@ -20,9 +18,9 @@ struct comm_free
   void operator()(MPI_Comm* comm) const
   {
     int finalized;
-    VSIP_IMPL_MPI_CHECK_RESULT(MPI_Finalized, (&finalized));
+    OVXX_MPI_CHECK_RESULT(MPI_Finalized, (&finalized));
     if (!finalized)
-      VSIP_IMPL_MPI_CHECK_RESULT(MPI_Comm_free, (comm));
+      OVXX_MPI_CHECK_RESULT(MPI_Comm_free, (comm));
     delete comm;
   }
 };
@@ -42,9 +40,9 @@ Communicator::Communicator(MPI_Comm const & comm, comm_create_kind kind)
     case comm_duplicate:
     {
       MPI_Comm newcomm;
-      VSIP_IMPL_MPI_CHECK_RESULT(MPI_Comm_dup, (comm, &newcomm));
+      OVXX_MPI_CHECK_RESULT(MPI_Comm_dup, (comm, &newcomm));
       impl_.reset(new MPI_Comm(newcomm), comm_free());
-      MPI_Errhandler_set(newcomm, MPI_ERRORS_RETURN);
+      MPI_Comm_set_errhandler(newcomm, MPI_ERRORS_RETURN);
       break;
     }
 
@@ -65,7 +63,7 @@ Communicator::Communicator(MPI_Comm const & comm, comm_create_kind kind)
 Communicator::Communicator(Communicator const &comm, Group const &subgroup)
 {
   MPI_Comm newcomm;
-  VSIP_IMPL_MPI_CHECK_RESULT(MPI_Comm_create, (comm, subgroup, &newcomm));
+  OVXX_MPI_CHECK_RESULT(MPI_Comm_create, (comm, subgroup, &newcomm));
   if (newcomm != MPI_COMM_NULL)
     impl_.reset(new MPI_Comm(newcomm), comm_free());
 
@@ -78,6 +76,5 @@ Communicator::Communicator(Communicator const &comm, Group const &subgroup)
   }
 }
 
-} // namespace vsip::impl::mpi
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::mpi
+} // namespace ovxx

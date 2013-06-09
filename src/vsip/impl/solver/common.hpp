@@ -9,6 +9,8 @@
 #ifndef vsip_impl_solver_common_hpp_
 #define vsip_impl_solver_common_hpp_
 
+#include <vsip/impl/math_enum.hpp>
+
 namespace vsip
 {
 // Common enums

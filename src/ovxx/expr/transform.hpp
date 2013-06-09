@@ -16,6 +16,23 @@ namespace expr
 {
 namespace transform
 {
+template <typename F, typename B> struct return_type;
+
+// FIXME: For some reason this forward-declaration is required
+//        for overload resolution to work a little later in this file.
+//        Without it, the parallel/expr.cpp test fails with a compile-time
+//        failure.
+template <typename F,
+	  template <typename, typename, typename> class O,
+	  typename B1, typename B2, typename B3, bool E>
+typename return_type<F, Ternary<O, B1, B2, B3, E> const>::type
+combine(F const &, Ternary<O, B1, B2, B3, E> const &);
+
+template <typename F,
+	  template <typename, typename, typename> class O,
+	  typename B1, typename B2, typename B3, bool E>
+void
+apply(F const &, Ternary<O, B1, B2, B3, E> const &);
 
 template <typename F, typename B>
 struct return_type

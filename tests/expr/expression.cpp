@@ -34,7 +34,7 @@ test_unary_expr_1d()
 
   ramp(o);
 
-  impl::expr::Unary<Operation, Block, true> expr(o);
+  expr::Unary<Operation, Block, true> expr(o);
 
   for (index_type i = 0; i != size; ++i)
     test_assert(equal(expr.get(i),
@@ -58,7 +58,7 @@ test_binary_expr_1d()
   ramp(d1);
   ramp(d2, 2);
 
-  impl::expr::Binary<Operation, LBlock, RBlock, true> expr(d1, d2);
+  expr::Binary<Operation, LBlock, RBlock, true> expr(d1, d2);
 
   for (index_type i = 0; i != size; ++i)
     test_assert(equal(expr.get(i),
@@ -80,8 +80,6 @@ evaluate(Dense<1>& result,
 void
 test_1d()
 {
-  using namespace impl;
-
   Dense<1> d1(Domain<1>(3));
   d1.put(0, 0);
   d1.put(1, 1);

@@ -223,7 +223,7 @@ template <typename T, dimension_type D>
 struct input_creator
 {
   typedef typename T::I I;
-  static typename vsip::impl::view_of<Dense<D, I> >::type
+  static typename view_of<Dense<D, I> >::type
   create(Domain<D> const &dom) { return ramp<I>(dom);}
 };
 
@@ -232,7 +232,7 @@ template <typename T, storage_format_type F, int A, dimension_type D>
 struct input_creator<rfft_type<T, F, fft_inv, A>, D>
 {
   typedef typename rfft_type<T, F, fft_inv, A>::I I;
-  static typename vsip::impl::view_of<Dense<D, I> >::type
+  static typename view_of<Dense<D, I> >::type
   create(Domain<D> const &dom) 
     { return ramp<I>(rfft_type<T, F, fft_inv, A>::in_dom(dom));}
 };
@@ -333,10 +333,10 @@ void fft_by_ref(Domain<D> const &dom)
   typedef typename vsip::Layout<D, order_type, vsip::dense, T::o_format> o_layout_type;
   return_mechanism_type const r = by_reference;
 
-  typedef vsip::impl::Strided<D, I, i_layout_type> Iblock;
-  typedef vsip::impl::Strided<D, O, o_layout_type> Oblock;
-  typedef typename vsip::impl::view_of<Iblock>::type Iview;
-  typedef typename vsip::impl::view_of<Oblock>::type Oview;
+  typedef Strided<D, I, i_layout_type> Iblock;
+  typedef Strided<D, O, o_layout_type> Oblock;
+  typedef typename view_of<Iblock>::type Iview;
+  typedef typename view_of<Oblock>::type Oview;
 
   Domain<D> in_dom = T::in_dom(dom);
   Domain<D> out_dom = T::out_dom(dom);

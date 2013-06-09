@@ -108,7 +108,7 @@ test_complex_by_ref(int set, length_type N)
   test_assert(i_fft.input_size().size() == N);
   test_assert(i_fft.output_size().size() == N);
 
-  typedef vsip::impl::Strided<1, CT,
+  typedef Strided<1, CT,
     vsip::Layout<1, row1_type,
     vsip::dense, Complex_format> >
     block_type;
@@ -157,7 +157,7 @@ test_complex_by_val(int set, length_type N)
   test_assert(i_fft.input_size().size() == N);
   test_assert(i_fft.output_size().size() == N);
 
-  typedef vsip::impl::Strided<1, CT,
+  typedef Strided<1, CT,
     vsip::Layout<1, row1_type, vsip::dense, Complex_format> >
     block_type;
 

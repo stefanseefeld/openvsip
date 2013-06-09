@@ -455,7 +455,7 @@ check_in_place(
   ViewT3<T,Block2> const&  ref,
   double scalei)
 {
-  typename vsip::impl::view_of<Block1>::type  inout(
+  typename view_of<Block1>::type  inout(
     force_copy_init(in));
 
   fwd(inout);
@@ -502,7 +502,7 @@ template <unsigned InBlockType,
 void 
 test_fft()
 {
-  bool const isReal = !vsip::impl::is_complex<InT>::value;
+  bool const isReal = !is_complex<InT>::value;
 
   typedef InT  in_elt_type;
   typedef OutT out_elt_type;

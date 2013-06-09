@@ -77,7 +77,7 @@ class Replicated_map
     void init_ll_pset() { ovxx::parallel::create_ll_pset(pset.vector(), ll_pset);}
 
     impl::pset_block pset;
-    ovxx::parallel::par_ll_pset_type ll_pset;
+    ovxx::parallel::ll_pset_type ll_pset;
   };
 
 public:
@@ -189,7 +189,7 @@ public:
     return dom;
   }
 
-  ovxx::parallel::par_ll_pset_type impl_ll_pset() const VSIP_NOTHROW
+  ovxx::parallel::ll_pset_type impl_ll_pset() const VSIP_NOTHROW
   { return data_->ll_pset;}
   ovxx::parallel::Communicator &impl_comm() const
   { return ovxx::parallel::default_communicator();}

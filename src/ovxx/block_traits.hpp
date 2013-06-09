@@ -191,12 +191,6 @@ template <typename B>
 struct block_traits : by_ref_traits<B> {};
 
 template <typename B>
-struct is_par_reorg_ok
-{
-  static bool const value = true;
-};
-
-template <typename B>
 inline typename B::value_type
 get(B const &block, Index<1> const &idx)
 {
@@ -256,6 +250,9 @@ struct peb_remap;
 /// a block type. By default, blocks should be reorganized.
 template <typename B>
 struct choose_peb { typedef peb_reorg type;};
+
+template <typename B>
+struct is_reorg_ok { static bool const value = true;};
 
 } // namespace ovxx::parallel
 

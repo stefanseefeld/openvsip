@@ -133,15 +133,15 @@ struct block_traits<expr::Diag<B> > : by_value_traits<expr::Diag<B> >
 template <typename B>
 struct is_modifiable_block<expr::Diag<B> > : is_modifiable_block<B> {};
 
-template <typename B>
-struct lvalue_factory_type<expr::Diag<B> >
+template <typename B, dimension_type D>
+struct lvalue_factory_type<expr::Diag<B>, D>
 {
-  typedef typename lvalue_factory_type<B>
+  typedef typename lvalue_factory_type<B, D>
     ::template rebind<expr::Diag<B> >::type type;
   template <typename O>
   struct rebind 
   {
-    typedef typename lvalue_factory_type<B>
+    typedef typename lvalue_factory_type<B, D>
       ::template rebind<O>::type type;
   };
 };

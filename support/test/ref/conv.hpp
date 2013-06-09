@@ -116,8 +116,6 @@ conv(
   using vsip::unbiased;
   using namespace ovxx;
 
-  using vsip::impl::convert_to_local;
-
   typedef typename scalar_of<T>::type scalar_type;
 
   typename as_local_view<const_Vector<T, Block1> >::type 

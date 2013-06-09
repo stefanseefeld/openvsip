@@ -14,6 +14,9 @@
 #include <ovxx/signal/fft/util.hpp>
 #include <ovxx/signal/fft/workspace.hpp>
 #include <ovxx/dispatch.hpp>
+#if OVXX_CVSIP_FFT
+# include <ovxx/cvsip/fft.hpp>
+#endif
 #if OVXX_DFT_FFT
 # include <ovxx/signal/fft/dft.hpp>
 #endif

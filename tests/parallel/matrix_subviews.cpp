@@ -14,30 +14,20 @@
 #include <vsip/map.hpp>
 #include <vsip/math.hpp>
 #include <vsip/parallel.hpp>
-
-#include <vsip_csl/test.hpp>
+#include <test.hpp>
 #include "util.hpp"
-#include "util-par.hpp"
-#include "test_common.hpp"
+#include "../test_common.hpp"
 
-using namespace vsip;
-using namespace vsip_csl;
-
-
-
-/***********************************************************************
-  Test subviews of distributed matrix
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T,
 	  typename MapT,
 	  typename SubMapT>
 void
-test_matrix_subview(
-  Domain<2> const& dom,
-  Domain<2> const& sub_dom,
-  MapT const&      map,
-  SubMapT const&   sub_map)
+test_matrix_subview(Domain<2> const& dom,
+		    Domain<2> const& sub_dom,
+		    MapT const&      map,
+		    SubMapT const&   sub_map)
 {
   typedef Dense<2, T, row2_type, MapT>    block_t;
   typedef Matrix<T, block_t>              view_t;
@@ -48,8 +38,8 @@ test_matrix_subview(
   int k = 1;
 
   // Setup.
-  view_t     view   (create_view<view_t>    (dom,     map));
-  sub_view_t subview(create_view<sub_view_t>(sub_dom, sub_map));
+  view_t     view   (test::create_view<view_t>    (dom,     map));
+  sub_view_t subview(test::create_view<sub_view_t>(sub_dom, sub_map));
 
   setup(view, k);
 

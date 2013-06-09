@@ -1,46 +1,45 @@
 //
-// Copyright (c) 2010 by CodeSourcery
+// Copyright (c) 2010 CodeSourcery
 // Copyright (c) 2013 Stefan Seefeld
 // All rights reserved.
 //
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef vsip_core_mpi_datatype_hpp_
-#define vsip_core_mpi_datatype_hpp_
+#ifndef ovxx_mpi_datatype_hpp_
+#define ovxx_mpi_datatype_hpp_
 
-#include <vsip/support.hpp>
+#include <ovxx/support.hpp>
 #include <vsip/domain.hpp>
 #include <mpi.h>
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace mpi
 {
+
 /// Provide a mapping from C++ types to MPI types.
 template <typename T> struct Datatype;
 
-#define VSIP_IMPL_DATATYPE(CTYPE, MPITYPE)		\
+#define OVXX_DATATYPE(CTYPE, MPITYPE)			\
 template <>			       			\
 struct Datatype<CTYPE>		       			\
 {					       		\
   static MPI_Datatype value() { return MPITYPE;}       	\
 };
 
-VSIP_IMPL_DATATYPE(char,           MPI_CHAR)
-VSIP_IMPL_DATATYPE(short,          MPI_SHORT)
-VSIP_IMPL_DATATYPE(int,            MPI_INT)
-VSIP_IMPL_DATATYPE(long,           MPI_LONG)
-VSIP_IMPL_DATATYPE(signed char,    MPI_CHAR)
-VSIP_IMPL_DATATYPE(unsigned char,  MPI_UNSIGNED_CHAR)
-VSIP_IMPL_DATATYPE(unsigned short, MPI_UNSIGNED_SHORT)
-VSIP_IMPL_DATATYPE(unsigned int,   MPI_UNSIGNED)
-VSIP_IMPL_DATATYPE(unsigned long,  MPI_UNSIGNED_LONG)
-VSIP_IMPL_DATATYPE(float,          MPI_FLOAT)
-VSIP_IMPL_DATATYPE(double,         MPI_DOUBLE)
-VSIP_IMPL_DATATYPE(long double,    MPI_LONG_DOUBLE)
+OVXX_DATATYPE(char,           MPI_CHAR)
+OVXX_DATATYPE(short,          MPI_SHORT)
+OVXX_DATATYPE(int,            MPI_INT)
+OVXX_DATATYPE(long,           MPI_LONG)
+OVXX_DATATYPE(signed char,    MPI_CHAR)
+OVXX_DATATYPE(unsigned char,  MPI_UNSIGNED_CHAR)
+OVXX_DATATYPE(unsigned short, MPI_UNSIGNED_SHORT)
+OVXX_DATATYPE(unsigned int,   MPI_UNSIGNED)
+OVXX_DATATYPE(unsigned long,  MPI_UNSIGNED_LONG)
+OVXX_DATATYPE(float,          MPI_FLOAT)
+OVXX_DATATYPE(double,         MPI_DOUBLE)
+OVXX_DATATYPE(long double,    MPI_LONG_DOUBLE)
 
 template <dimension_type D>
 struct Datatype<Index<D> >
@@ -105,10 +104,9 @@ struct Datatype<bool>
   }
 };
 
-#undef VSIP_IMPL_DATATYPE
+#undef OVXX_DATATYPE
 
-} // namespace vsip::impl::mpi
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::mpi
+} // namespace ovxx
 
 #endif

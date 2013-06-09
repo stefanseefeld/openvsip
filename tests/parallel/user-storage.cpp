@@ -6,23 +6,15 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <iostream>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/dense.hpp>
 #include <vsip/map.hpp>
 #include <vsip/parallel.hpp>
-#include <vsip_csl/assignment.hpp>
-#include <vsip_csl/test.hpp>
-#include "util.hpp"
+#include <ovxx/view/utils.hpp>
+#include <test.hpp>
 
-using namespace vsip;
-using vsip_csl::equal;
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 // test1: 
 //  - Create distribute user-storage block with NULL ptr,
@@ -40,25 +32,22 @@ test1(
 {
   typedef Map<Block_dist, Block_dist> root_map_t;
 
-  typedef typename impl::Row_major<Dim>::type order_type;
+  typedef typename row_major<Dim>::type order_type;
 
   typedef Dense<Dim, T, order_type, root_map_t> root_block_t;
   typedef Dense<Dim, T, order_type, MapT>       dist_block_t;
 
-  typedef typename impl::view_of<root_block_t>::type root_view_t;
-  typedef typename impl::view_of<dist_block_t>::type dist_view_t;
+  typedef typename view_of<root_block_t>::type root_view_t;
+  typedef typename view_of<dist_block_t>::type dist_view_t;
 
 
   root_map_t  root_map(Block_dist(1), Block_dist(1));
 
   // root: root view.
-  root_view_t root(create_view<root_view_t>(dom, T(0), root_map));
+  root_view_t root(test::create_view<root_view_t>(dom, T(0), root_map));
 
   // dist: distributed view, w/user-storage.
-  dist_view_t dist(create_view<dist_view_t>(dom, static_cast<T*>(0),dist_map));
-
-  vsip_csl::Assignment root_dist(root, dist);
-  vsip_csl::Assignment dist_root(dist, root);
+  dist_view_t dist(test::create_view<dist_view_t>(dom, static_cast<T*>(0),dist_map));
 
   // Initially, dist is not admitted.
   test_assert(dist.block().admitted() == false);
@@ -103,11 +92,7 @@ test1(
     dist.block().admit(true);
     test_assert(dist.block().admitted() == true);
 
-    // assign to root
-    if (use_sa)
-      root_dist();
-    else
-      root = dist;
+    root = dist;
 
     // On the root processor ...
     if (root_map.subblock() != no_subblock)
@@ -123,11 +108,7 @@ test1(
 	l_root(i) = T(iter*i+1);
     }
 
-    // assign back to dist
-    if (use_sa)
-      dist_root();
-    else
-      dist = root;
+    dist = root;
 
     // release the block
     dist.block().release(true);

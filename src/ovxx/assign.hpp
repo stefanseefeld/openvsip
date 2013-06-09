@@ -14,7 +14,13 @@
 #include <ovxx/assign/diagnostics.hpp>
 #include <ovxx/block_traits.hpp>
 #include <ovxx/parallel/assign_fwd.hpp>
+#include <ovxx/dda.hpp>
 #include <ovxx/assign/loop_fusion.hpp>
+#ifdef OVXX_PARALLEL
+# include <ovxx/parallel/map_traits.hpp>
+# include <ovxx/parallel/expr.hpp>
+# include <ovxx/parallel/assign.hpp>
+#endif
 
 namespace ovxx
 {
@@ -44,10 +50,13 @@ struct trait
     parallel::is_local_map<rhs_map_type>::value;
   static bool const is_rhs_expr   = is_expr_block<RHS>::value;
   static bool const is_rhs_simple = is_simple_distributed_block<RHS>::value;
-  static bool const is_rhs_reorg  = is_par_reorg_ok<RHS>::value;
+  static bool const is_rhs_reorg  = parallel::is_reorg_ok<RHS>::value;
 
   static bool const is_lhs_split  = is_split_block<LHS>::value;
   static bool const is_rhs_split  = is_split_block<RHS>::value;
+
+  static int const  lhs_cost      = dda::Data<LHS, dda::out>::ct_cost;
+  static int const  rhs_cost      = dda::Data<RHS, dda::in>::ct_cost;
 
   typedef typename
   parallel::choose_par_assign_impl<D, LHS, RHS, EarlyBinding>::type par_assign_type;

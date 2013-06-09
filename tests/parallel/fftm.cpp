@@ -6,24 +6,15 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <iostream>
-#include <iomanip>
-#include <cmath>
-#include <complex>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/math.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/map.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
+#include <test.hpp>
 #include "util.hpp"
-#include "util-par.hpp"
-#include <vsip_csl/error_db.hpp>
-#include <vsip_csl/ref_dft.hpp>
+#include <test/ref/dft.hpp>
 
 #define VERBOSE 0
 
@@ -35,39 +26,30 @@
 #  define TEST_NON_POWER_OF_2  1
 #endif
 
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
+using namespace ovxx;
+namespace p = ovxx::parallel;
 
 int number_of_processors;
-
 
 template <typename Block>
 void 
 dump_matrix(Block& block, unsigned n, int axis)
 {
-  vsip::impl::Communicator comm = vsip::impl::default_communicator();
+  p::Communicator comm = p::default_communicator();
   int dummy1;
   int dummy2;
 
   if (comm.rank() != 0)
     comm.recv(0, &dummy1, 1);
 
-  cout << "\n";
+  std::cout << "\n";
   for (unsigned i = 0; i < n; ++i)
   {
     for (unsigned j = 0; j < block.get_local_block().size(2,axis); ++j) 
-      { cout << block.get_local_block().get(i,j)  << " "; }
-    cout << "\n";
+      { std::cout << block.get_local_block().get(i,j)  << " "; }
+    std::cout << "\n";
   }
-  cout << "\n";
+  std::cout << "\n";
 
   if (comm.rank() == 0)
   {
@@ -163,7 +145,7 @@ test_by_ref_x(length_type N)
   dist_matrix_type inv(inv_block);
 
   setup_data_x(in);
-  ref::dft_x(in, ref, -1);
+  test::ref::dft_x(in, ref, -1);
 
   f_fftm(in, out);
   i_fftm(out, inv);
@@ -241,7 +223,7 @@ test_by_val_x(length_type N)
 
   setup_data_x(in);
 
-  ref::dft_x(in, ref, -1);
+  test::ref::dft_x(in, ref, -1);
   out = f_fftm(in);
   inv = i_fftm(out);
 
@@ -322,11 +304,11 @@ test_by_ref_y(length_type N)
   dist_matrix_type inv(inv_block);
 
   setup_data_y(in);
-  ref::dft_y(in, ref, -1);
+  test::ref::dft_y(in, ref, -1);
 
 #if VERBOSE >= 2
-  cout.precision(3);
-  cout.setf(ios_base::fixed);
+  std::cout.precision(3);
+  std::cout.setf(std::ios_base::fixed);
 #endif
 
 #if VERBOSE >= 2
@@ -399,7 +381,7 @@ test_by_val_y(length_type N)
 
   setup_data_y(in);
 
-  ref::dft_y(in, ref, -1);
+  test::ref::dft_y(in, ref, -1);
   out = f_fftm(in);
   inv = i_fftm(out);
 
@@ -471,7 +453,7 @@ test_real(const int set, const length_type N)
 
 template <typename T>
 void
-test()
+test_cases()
 {
   // Test powers-of-2
   test_by_ref_x<complex<T> >(64);
@@ -521,26 +503,26 @@ main(int argc, char** argv)
   // debug_stub();
 #if 0
   // Enable this section for easier debugging.
-  vsip::impl::Communicator& comm = vsip::impl::default_communicator();
+  p::Communicator& comm = p::default_communicator();
   pid_t pid = getpid();
 
-  cout << "rank: "   << comm.rank()
-       << "  size: " << comm.size()
-       << "  pid: "  << pid
-       << endl;
+  std::cout << "rank: "   << comm.rank()
+	    << "  size: " << comm.size()
+	    << "  pid: "  << pid
+	    << std::endl;
 
   // Stop each process, allow debugger to be attached.
   if (comm.rank() == 0) fgetc(stdin);
   comm.barrier();
-  cout << "start\n";
+  std::cout << "start\n";
 #endif
 
 #if defined(VSIP_IMPL_FFT_USE_FLOAT)
-  test<float>();
+  test_cases<float>();
 #endif
 
 #if defined(VSIP_IMPL_FFT_USE_DOUBLE) && VSIP_IMPL_TEST_DOUBLE
-  test<double>();
+  test_cases<double>();
 #endif
 
   return 0;

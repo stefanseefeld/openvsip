@@ -109,7 +109,7 @@ public:
     return dom;
   }
 
-  par_ll_pset_type impl_ll_pset() const VSIP_NOTHROW
+  ll_pset_type impl_ll_pset() const VSIP_NOTHROW
   { return default_communicator().impl_ll_pset();}
   Communicator &impl_comm() const
   { return default_communicator();}

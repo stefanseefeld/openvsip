@@ -9,6 +9,7 @@
 #include <test/diff.hpp>
 #include <test/precision.hpp>
 #include <test/random.hpp>
+#include <test/ramp.hpp>
+#include <test/create_view.hpp>
 #include <ovxx/equal.hpp>
-
-using namespace test;
+#include <ovxx/output.hpp>

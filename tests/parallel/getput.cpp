@@ -11,20 +11,10 @@
 #include <vsip/map.hpp>
 #include <vsip/tensor.hpp>
 #include <vsip/parallel.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
+#include <test.hpp>
 #include "util.hpp"
-#include "util-par.hpp"
 
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T>
 void
@@ -133,7 +123,7 @@ main(int argc, char** argv)
 
 #if 0
   // Enable this section for easier debugging.
-  impl::Communicator comm = impl::default_communicator();
+  p::Communicator comm = p::default_communicator();
   pid_t pid = getpid();
 
   cout << "rank: "   << comm.rank()

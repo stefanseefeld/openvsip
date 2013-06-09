@@ -347,24 +347,24 @@ bool has_same_map(M const &map, expr::Ternary<O, B1, B2, B3, false> const &block
 {
   return has_same_map<D>(map, block.operation());
 };
-} // namespace ovxx::parallel
 
 template <template <typename, typename, typename> class O,
 	  typename B1, typename B2, typename B3>
-struct is_par_reorg_ok<expr::Ternary<O, B1, B2, B3, true> const>
+struct is_reorg_ok<expr::Ternary<O, B1, B2, B3, true> const>
 {
-  static bool const value = is_par_reorg_ok<B1>::value &&
-                            is_par_reorg_ok<B2>::value &&
-                            is_par_reorg_ok<B3>::value;
+  static bool const value = is_reorg_ok<B1>::value &&
+                            is_reorg_ok<B2>::value &&
+                            is_reorg_ok<B3>::value;
 };
 
 template <template <typename, typename, typename> class O,
 	  typename B1, typename B2, typename B3>
-struct is_par_reorg_ok<expr::Ternary<O, B1, B2, B3, false> const>
+struct is_reorg_ok<expr::Ternary<O, B1, B2, B3, false> const>
 {
   static bool const value = false;
 };
 
+} // namespace ovxx::parallel
 } // namespace ovxx
 
 namespace vsip 

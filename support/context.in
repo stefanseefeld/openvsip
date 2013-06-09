@@ -7,12 +7,17 @@ CompilerTable.cplusplus_options= -I@abs_top_builddir@/src -I@abs_top_srcdir@/src
 CompilerTable.cplusplus_ldflags= @LDFLAGS@ -L@abs_top_builddir@/lib/ -l@OVXXLIB@ @LIBS@ @MPI_LIBS@
 
 CompilationTest.target=@QMTEST_TARGET@
+# Time to wait for a test to finish
 CompilerTest.execution_timeout=600
+# Whether or not to remove binaries after a successful run
+CompilerTest.cleanup_executable=true
+# Whether or not to run the compiled binaries
+CompilationTest.execute=true
 
 par_service.boot=@MPI_BOOT@
 par_service.halt=@MPI_HALT@
 par_service.run=@MPI_RUN@
-par_service.num_processors=1
+par_service.num_processors=2
 
 cvsip.c_options=@CPPFLAGS@ -I@abs_top_builddir@/cvsip -I@abs_top_builddir@/src -I@abs_top_srcdir@/cvsip -I@abs_top_srcdir@/src -I@abs_top_srcdir@/tests @CFLAGS@
 cvsip.c_ldflags=@LDFLAGS@ -L@abs_top_builddir@/lib/ -l@OVXXLIB@ @LIBS@ -lstdc++

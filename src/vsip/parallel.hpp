@@ -9,13 +9,14 @@
 #ifndef vsip_parallel_hpp_
 #define vsip_parallel_hpp_
 
+#include <ovxx/parallel/service.hpp>
+#include <vsip/map.hpp>
 #include <vsip/impl/vector.hpp>
-//#include <vsip/core/working_view.hpp>
 #include <vsip/impl/parallel.hpp>
 #include <vsip/impl/replicated_map.hpp>
 #include <ovxx/parallel/scalar_map.hpp>
+#include <ovxx/parallel/map_utils.hpp>
 #ifdef OVXX_PARALLEL
-# include <vsip/map.hpp>
 # include <ovxx/parallel/util.hpp>
 #endif
 

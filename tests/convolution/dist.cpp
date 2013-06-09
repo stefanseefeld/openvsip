@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 
 #if 0
   // Enable this section for easier debugging.
-  vsip::impl::Communicator comm = vsip::impl::default_communicator();
+  ovxx::parallel::Communicator comm = ovxx::parallel::default_communicator();
   pid_t pid = getpid();
 
   cout << "rank: "   << comm.rank()

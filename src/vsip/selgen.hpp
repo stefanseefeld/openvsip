@@ -78,7 +78,7 @@ index_type
 first(index_type begin, Predicate p, 
       const_Vector<T1, B1> v, const_Vector<T2, B2> w) VSIP_NOTHROW
 {
-  assert(impl::view_domain(v).element_conformant(impl::view_domain(w)));
+  assert(view_domain(v).element_conformant(view_domain(w)));
   if (begin > v.size()) 
     return begin;
   for (index_type i = begin, end = v.size(); i != end; ++i)
@@ -194,7 +194,7 @@ struct Clip_return_type
 {
   typedef
     const_View<Tout,
-	       expr::Unary<clip_wrapper<Tout, Tin1>::template clip_functor,
+	       ovxx::expr::Unary<clip_wrapper<Tout, Tin1>::template clip_functor,
 			   Block, true> const>
     type;
 };
@@ -206,7 +206,7 @@ struct Invclip_return_type
 {
   typedef
     const_View<Tout,
-	       expr::Unary<clip_wrapper<Tout, Tin1>::template invclip_functor,
+	       ovxx::expr::Unary<clip_wrapper<Tout, Tin1>::template invclip_functor,
 			   Block, true> const>
     type;
 };
@@ -220,7 +220,7 @@ typename impl::Clip_return_type<Tout, Tin0, Tin1, const_View, Block>::type
 clip(const_View<Tin0, Block> v, Tin1 lower_threshold, Tin1 upper_threshold,
      Tout lower_clip_value, Tout upper_clip_value)
 {
-  typedef impl::expr::Unary<impl::clip_wrapper<Tout, Tin1>::template clip_functor,
+  typedef ovxx::expr::Unary<impl::clip_wrapper<Tout, Tin1>::template clip_functor,
     Block, true> block_type;
 
   typename impl::clip_wrapper<Tout, Tin1>::template clip_functor<Tin0> functor;
@@ -240,7 +240,7 @@ invclip(const_View<Tin0, Block> v,
 	Tin1 lower_threshold, Tin1 middle_threshold, Tin1 upper_threshold,
 	Tout lower_clip_value, Tout upper_clip_value)
 {
-  typedef impl::expr::Unary<impl::clip_wrapper<Tout, Tin1>::template invclip_functor,
+  typedef ovxx::expr::Unary<impl::clip_wrapper<Tout, Tin1>::template invclip_functor,
     Block, true> block_type;
 
   typename impl::clip_wrapper<Tout, Tin1>::template invclip_functor<Tin0> functor;
