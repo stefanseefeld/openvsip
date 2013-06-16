@@ -6,27 +6,22 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_CVSIP_SOLVER_HPP
-#define VSIP_CORE_CVSIP_SOLVER_HPP
+#ifndef ovxx_cvsip_solver_hpp_
+#define ovxx_cvsip_solver_hpp_
 
-#include <vsip/core/cvsip/common.hpp>
-extern "C" {
-#include <vsip.h>
-}
+#include <ovxx/cvsip/common.hpp>
 #include <complex>
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace cvsip
 {
 
 template <typename T>
-struct Solver_traits { static bool const valid = false;};
+struct solver_traits { static bool const valid = false;};
 
-#ifdef VSIP_IMPL_CVSIP_HAVE_FLOAT
-template<> struct Solver_traits<float>
+#if OVXX_CVSIP_HAVE_FLOAT
+template<> struct solver_traits<float>
 {
   static bool const valid = true;
 
@@ -73,7 +68,7 @@ template<> struct Solver_traits<float>
   { return vsip_cholsol_f(s, m);}
 };
 
-template<> struct Solver_traits<std::complex<float> >
+template<> struct solver_traits<std::complex<float> >
 {
   static bool const valid = true;
 
@@ -126,8 +121,8 @@ template<> struct Solver_traits<std::complex<float> >
 };
 #endif
 
-#ifdef VSIP_IMPL_CVSIP_HAVE_DOUBLE
-template<> struct Solver_traits<double>
+#if OVXX_CVSIP_HAVE_DOUBLE
+template<> struct solver_traits<double>
 {
   static bool const valid = true;
 
@@ -175,7 +170,7 @@ template<> struct Solver_traits<double>
   { return vsip_cholsol_d(s, m);}
 };
 
-template<> struct Solver_traits<std::complex<double> >
+template<> struct solver_traits<std::complex<double> >
 {
   static bool const valid = true;
 
@@ -228,8 +223,7 @@ template<> struct Solver_traits<std::complex<double> >
 };
 #endif
 
-}
-}
-}
+} // namespace ovxx::cvsip
+} // namespace ovxx
 
 #endif

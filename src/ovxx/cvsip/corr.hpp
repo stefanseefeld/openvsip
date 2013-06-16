@@ -6,44 +6,30 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_CVSIP_CORR_HPP
-#define VSIP_CORE_CVSIP_CORR_HPP
+#ifndef ovxx_cvsip_corr_hpp_
+#define ovxx_cvsip_corr_hpp_
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
-
-#include <vsip/core/config.hpp>
+#include <ovxx/config.hpp>
 #include <vsip/support.hpp>
 #include <vsip/domain.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/domain_utils.hpp>
-#include <vsip/core/signal/corr_common.hpp>
-#include <vsip/core/cvsip/block.hpp>
-#include <vsip/core/cvsip/view.hpp>
-#include <vsip/core/cvsip/common.hpp>
-extern "C" 
-{
-#include <vsip.h>
-}
+#include <ovxx/domain_utils.hpp>
+#include <ovxx/signal/corr.hpp>
+#include <ovxx/cvsip/block.hpp>
+#include <ovxx/cvsip/view.hpp>
+#include <ovxx/cvsip/common.hpp>
 
-/***********************************************************************
-  Declarations
-***********************************************************************/
-
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace cvsip
 {
 
-template <dimension_type D, typename T> struct Corr_traits;
+template <dimension_type D, typename T> struct corr_traits;
 
 #if HAVE_VSIP_CORR1D_CREATE_F == 1
 template <>
-struct Corr_traits<1, float>
+struct corr_traits<1, float>
 {
   typedef vsip_corr1d_f corr_type;
   typedef vsip_vview_f view_type;
@@ -52,7 +38,7 @@ struct Corr_traits<1, float>
                            support_region_type s, unsigned n, alg_hint_type a)
   {
     corr_type *c = vsip_corr1d_create_f(r, i, support(s), n, hint(a));
-    if (!c) VSIP_IMPL_THROW(std::bad_alloc());
+    if (!c) OVXX_DO_THROW(std::bad_alloc());
     return c;
   }
   static void destroy(corr_type *c) 
@@ -66,7 +52,7 @@ struct Corr_traits<1, float>
 };
 
 template <>
-struct Corr_traits<1, std::complex<float> >
+struct corr_traits<1, complex<float> >
 {
   typedef vsip_ccorr1d_f corr_type;
   typedef vsip_cvview_f view_type;
@@ -75,7 +61,7 @@ struct Corr_traits<1, std::complex<float> >
                            support_region_type s, unsigned n, alg_hint_type a)
   {
     corr_type *c = vsip_ccorr1d_create_f(r, i, support(s), n, hint(a));
-    if (!c) VSIP_IMPL_THROW(std::bad_alloc());
+    if (!c) OVXX_DO_THROW(std::bad_alloc());
     return c;
   }
   static void destroy(corr_type *c) 
@@ -91,7 +77,7 @@ struct Corr_traits<1, std::complex<float> >
 #endif
 #if HAVE_VSIP_CORR2D_CREATE_F == 1
 template <>
-struct Corr_traits<2, float>
+struct corr_traits<2, float>
 {
   typedef vsip_corr2d_f corr_type;
   typedef vsip_mview_f view_type;
@@ -101,7 +87,7 @@ struct Corr_traits<2, float>
                            support_region_type r, unsigned n, alg_hint_type a)
   {
     corr_type *c = vsip_corr2d_create_f(a, b, p, q, support(r), n, hint(a));
-    if (!c) VSIP_IMPL_THROW(std::bad_alloc());
+    if (!c) OVXX_DO_THROW(std::bad_alloc());
     return c;
   }
   static void destroy(corr_type *c) 
@@ -115,7 +101,7 @@ struct Corr_traits<2, float>
 };
 
 template <>
-struct Corr_traits<2, std::complex<float> >
+struct corr_traits<2, complex<float> >
 {
   typedef vsip_ccorr2d_f corr_type;
   typedef vsip_cmview_f view_type;
@@ -125,7 +111,7 @@ struct Corr_traits<2, std::complex<float> >
                            support_region_type r, unsigned n, alg_hint_type a)
   {
     corr_type *c = vsip_corr2d_create_f(a, b, p, q, support(r), n, hint(a));
-    if (!c) VSIP_IMPL_THROW(std::bad_alloc());
+    if (!c) OVXX_DO_THROW(std::bad_alloc());
     return c;
   }
   static void destroy(corr_type *c) 
@@ -140,7 +126,7 @@ struct Corr_traits<2, std::complex<float> >
 #endif
 #if HAVE_VSIP_CORR1D_CREATE_D == 1
 template <>
-struct Corr_traits<1, double>
+struct corr_traits<1, double>
 {
   typedef vsip_corr1d_d corr_type;
   typedef vsip_vview_d view_type;
@@ -149,7 +135,7 @@ struct Corr_traits<1, double>
                            support_region_type s, unsigned n, alg_hint_type a)
   {
     corr_type *c = vsip_corr1d_create_d(r, i, support(s), n, hint(a));
-    if (!c) VSIP_IMPL_THROW(std::bad_alloc());
+    if (!c) OVXX_DO_THROW(std::bad_alloc());
     return c;
   }
   static void destroy(corr_type *c) 
@@ -163,7 +149,7 @@ struct Corr_traits<1, double>
 };
 
 template <>
-struct Corr_traits<1, std::complex<double> >
+struct corr_traits<1, complex<double> >
 {
   typedef vsip_ccorr1d_d corr_type;
   typedef vsip_cvview_d view_type;
@@ -172,7 +158,7 @@ struct Corr_traits<1, std::complex<double> >
                            support_region_type s, unsigned n, alg_hint_type a)
   {
     corr_type *c = vsip_ccorr1d_create_d(r, i, support(s), n, hint(a));
-    if (!c) VSIP_IMPL_THROW(std::bad_alloc());
+    if (!c) OVXX_DO_THROW(std::bad_alloc());
     return c;
   }
   static void destroy(corr_type *c) 
@@ -187,7 +173,7 @@ struct Corr_traits<1, std::complex<double> >
 #endif
 #if HAVE_VSIP_CORR2D_CREATE_D == 1
 template <>
-struct Corr_traits<2, double>
+struct corr_traits<2, double>
 {
   typedef vsip_corr2d_d corr_type;
   typedef vsip_mview_d view_type;
@@ -197,7 +183,7 @@ struct Corr_traits<2, double>
                            support_region_type r, unsigned n, alg_hint_type a)
   {
     corr_type *c = vsip_corr2d_create_f(a, b, p, q, support(r), n, hint(a));
-    if (!c) VSIP_IMPL_THROW(std::bad_alloc());
+    if (!c) OVXX_DO_THROW(std::bad_alloc());
     return c;
   }
   static void destroy(corr_type *c) 
@@ -211,7 +197,7 @@ struct Corr_traits<2, double>
 };
 
 template <>
-struct Corr_traits<2, std::complex<double> >
+struct corr_traits<2, complex<double> >
 {
   typedef vsip_ccorr2d_d corr_type;
   typedef vsip_cmview_d view_type;
@@ -221,7 +207,7 @@ struct Corr_traits<2, std::complex<double> >
                            support_region_type r, unsigned n, alg_hint_type a)
   {
     corr_type *c = vsip_corr2d_create_f(a, b, p, q, support(r), n, hint(a));
-    if (!c) VSIP_IMPL_THROW(std::bad_alloc());
+    if (!c) OVXX_DO_THROW(std::bad_alloc());
     return c;
   }
   static void destroy(corr_type *c) 
@@ -247,7 +233,7 @@ public:
   Correlation_base(Domain<D> const &ref_size, Domain<D> const &input_size)
   : ref_size_(normalize(ref_size)),
     input_size_(normalize(input_size)),
-    output_size_(conv_output_size(S, ref_size_, input_size_, 1))
+    output_size_(signal::conv_output_size(S, ref_size_, input_size_, 1))
   {}
 
   Domain<D> const &reference_size() const VSIP_NOTHROW { return ref_size_;}
@@ -273,7 +259,7 @@ template <support_region_type R,
           alg_hint_type       H>
 class Correlation<1, R, T, N, H> : public Correlation_base<1, T, R>
 {
-  typedef impl::cvsip::Corr_traits<1, T> traits;
+  typedef corr_traits<1, T> traits;
 
 public:
   Correlation(Domain<1> const& ref_size, Domain<1> const& input_size)
@@ -283,10 +269,10 @@ public:
   ~Correlation() VSIP_NOTHROW {traits::destroy(impl_);}
 
   template <typename Block0, typename Block1, typename Block2>
-  void impl_correlate(bias_type b,
-                      const_Vector<T, Block0> ref,
-                      const_Vector<T, Block1> in,
-                      Vector<T, Block2> out) VSIP_NOTHROW
+  void correlate(bias_type b,
+		 const_Vector<T, Block0> ref,
+		 const_Vector<T, Block1> in,
+		 Vector<T, Block2> out) VSIP_NOTHROW
   {
     dda::Data<Block0, dda::in> data_ref(ref.block());
     dda::Data<Block1, dda::in> data_in(in.block());
@@ -297,7 +283,7 @@ public:
 			   data_in.stride(0), data_in.size(0));
     View<1, T> oview(data_out.ptr(), 0,
 		     data_out.stride(0), data_out.size(0));
-    traits::call(impl_, impl::cvsip::bias(b),
+    traits::call(impl_, cvsip::bias(b),
 		 rview.ptr(), iview.ptr(), oview.ptr());
   }
 
@@ -311,7 +297,7 @@ template <support_region_type R,
           alg_hint_type       H>
 class Correlation<2, R, T, N, H> : public Correlation_base<2, T, R>
 {
-  typedef impl::cvsip::Corr_traits<2, T> traits;
+  typedef corr_traits<2, T> traits;
 public:
 
   Correlation(Domain<2> const& ref_size, Domain<2> const& input_size)
@@ -323,10 +309,10 @@ public:
   ~Correlation() VSIP_NOTHROW {traits::destroy(impl_);}
 
   template <typename Block0, typename Block1, typename Block2>
-  void impl_correlate(bias_type b,
-                      const_Matrix<T, Block0> ref,
-                      const_Matrix<T, Block1> in,
-                      Matrix<T, Block2> out) VSIP_NOTHROW
+  void correlate(bias_type b,
+		 const_Matrix<T, Block0> ref,
+		 const_Matrix<T, Block1> in,
+		 Matrix<T, Block2> out) VSIP_NOTHROW
   {
     dda::Data<Block0, dda::in> ref_data(ref.block());
     dda::Data<Block1, dda::in> in_data(in.block());
@@ -340,7 +326,7 @@ public:
     View<1, T> oview(out_data.ptr(), 0,
 		     out_data.stride(0), out_data.size(0),
 		     out_data.stride(1), out_data.size(1));
-    traits::call(impl_, impl::cvsip::bias(b),
+    traits::call(impl_, cvsip::bias(b),
 		 rview.ptr(), iview.ptr(), oview.ptr());
   }
 
@@ -348,14 +334,8 @@ private:
   typename traits::corr_type *impl_;
 };
 
-} // namespace vsip::impl::cvsip
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::cvsip
 
-#if !VSIP_IMPL_REF_IMPL
-
-namespace vsip_csl
-{
 namespace dispatcher
 {
 # if HAVE_VSIP_CORR1D_CREATE_F == 1
@@ -365,15 +345,15 @@ template <support_region_type R,
 struct Evaluator<op::corr<1, R, float, N, H>, be::cvsip>
 {
   static bool const ct_valid = true;
-  typedef vsip::impl::cvsip::Correlation<1, R, float, N, H> backend_type;
+  typedef cvsip::Correlation<1, R, float, N, H> backend_type;
 };
 template <support_region_type R,
 	  unsigned            N,
           alg_hint_type       H>
-struct Evaluator<op::corr<1, R, std::complex<float>, N, H>, be::cvsip>
+struct Evaluator<op::corr<1, R, complex<float>, N, H>, be::cvsip>
 {
   static bool const ct_valid = true;
-  typedef vsip::impl::cvsip::Correlation<1, R, std::complex<float>, N, H> backend_type;
+  typedef cvsip::Correlation<1, R, complex<float>, N, H> backend_type;
 };
 # endif
 # if HAVE_VSIP_CORR2D_CREATE_F == 1
@@ -383,15 +363,15 @@ template <support_region_type R,
 struct Evaluator<op::corr<2, R, float, N, H>, be::cvsip>
 {
   static bool const ct_valid = true;
-  typedef vsip::impl::cvsip::Correlation<2, R, float, N, H> backend_type;
+  typedef cvsip::Correlation<2, R, float, N, H> backend_type;
 };
 template <support_region_type R,
 	  unsigned            N,
           alg_hint_type       H>
-struct Evaluator<op::corr<2, R, std::complex<float>, N, H>, be::cvsip>
+struct Evaluator<op::corr<2, R, complex<float>, N, H>, be::cvsip>
 {
   static bool const ct_valid = true;
-  typedef vsip::impl::cvsip::Correlation<2, R, std::complex<float>, N, H> backend_type;
+  typedef cvsip::Correlation<2, R, complex<float>, N, H> backend_type;
 };
 # endif
 # if HAVE_VSIP_CORR1D_CREATE_D == 1
@@ -401,15 +381,15 @@ template <support_region_type R,
 struct Evaluator<op::corr<1, R, double, N, H>, be::cvsip>
 {
   static bool const ct_valid = true;
-  typedef vsip::impl::cvsip::Correlation<1, R, double, N, H> backend_type;
+  typedef cvsip::Correlation<1, R, double, N, H> backend_type;
 };
 template <support_region_type R,
 	  unsigned            N,
           alg_hint_type       H>
-struct Evaluator<op::corr<1, R, std::complex<double>, N, H>, be::cvsip>
+struct Evaluator<op::corr<1, R, complex<double>, N, H>, be::cvsip>
 {
   static bool const ct_valid = true;
-  typedef vsip::impl::cvsip::Correlation<1, R, std::complex<double>, N, H> backend_type;
+  typedef cvsip::Correlation<1, R, complex<double>, N, H> backend_type;
 };
 # endif
 # if HAVE_VSIP_CORR2D_CREATE_D == 1
@@ -419,21 +399,19 @@ template <support_region_type R,
 struct Evaluator<op::corr<2, R, double, N, H>, be::cvsip>
 {
   static bool const ct_valid = true;
-  typedef vsip::impl::cvsip::Correlation<2, R, double, N, H> backend_type;
+  typedef cvsip::Correlation<2, R, double, N, H> backend_type;
 };
 template <support_region_type R,
 	  unsigned            N,
           alg_hint_type       H>
-struct Evaluator<op::corr<2, R, std::complex<double>, N, H>, be::cvsip>
+struct Evaluator<op::corr<2, R, complex<double>, N, H>, be::cvsip>
 {
   static bool const ct_valid = true;
-  typedef vsip::impl::cvsip::Correlation<2, R, std::complex<double>, N, H> backend_type;
+  typedef cvsip::Correlation<2, R, complex<double>, N, H> backend_type;
 };
 # endif
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
-#endif // !VSIP_IMPL_REF_IMPL
-
-#endif // VSIP_CORE_CVSIP_CORR_HPP
+#endif

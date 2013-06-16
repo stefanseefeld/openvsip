@@ -6,14 +6,14 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_CVSIP_VIEW_HPP
-#define VSIP_CORE_CVSIP_VIEW_HPP
+#ifndef ovxx_cvsip_view_hpp_
+#define ovxx_cvsip_view_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/domain.hpp>
 #include <vsip/dda.hpp>
-#include <vsip/core/noncopyable.hpp>
-#include <vsip/core/cvsip/block.hpp>
+#include <ovxx/detail/noncopyable.hpp>
+#include <ovxx/cvsip/block.hpp>
 extern "C" {
 #include <vsip.h>
 
@@ -21,9 +21,7 @@ extern "C" {
 void vsip_vcopy_bl_bl(vsip_vview_bl const*, vsip_vview_bl const*); 
 }
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace cvsip
 {
@@ -34,12 +32,12 @@ namespace cvsip
 //     below commented out with a '[1]' label are not implemented
 //     in TVCPP.
 
-#if VSIP_IMPL_CVSIP_HAVE_BOOL
+template <dimension_type D, typename T> struct view_traits;
 
-template <dimension_type D, typename T> struct View_traits;
+#if OVXX_CVSIP_HAVE_BOOL
 
 template <>
-struct View_traits<1, bool>
+struct view_traits<1, bool>
 {
   typedef bool value_type;
   typedef vsip_block_bl block_type;
@@ -78,7 +76,7 @@ struct View_traits<1, bool>
 };
 
 template <>
-struct View_traits<2, bool>
+struct view_traits<2, bool>
 {
   typedef bool value_type;
   typedef vsip_block_bl block_type;
@@ -95,7 +93,7 @@ struct View_traits<2, bool>
                          vsip_stride s_r, vsip_length rows,
                          vsip_stride s_c, vsip_length cols)
   {
-    view_type* v = vsip_mbind_bl(b, o, s_r, rows, s_c, cols);
+    view_type* v = vsip_mbind_bl(const_cast<block_type*>(b), o, s_r, rows, s_c, cols);
     if (!v) VSIP_THROW(std::bad_alloc());
     return v;
   }
@@ -120,10 +118,10 @@ struct View_traits<2, bool>
 };
 
 #endif
-#if VSIP_IMPL_CVSIP_HAVE_INT
+#if OVXX_CVSIP_HAVE_INT
 
 template <>
-struct View_traits<1, int>
+struct view_traits<1, int>
 {
   typedef int value_type;
   typedef vsip_block_i block_type;
@@ -157,7 +155,7 @@ struct View_traits<1, int>
 };
 
 template <>
-struct View_traits<2, int>
+struct view_traits<2, int>
 {
   typedef int value_type;
   typedef vsip_block_i block_type;
@@ -174,7 +172,7 @@ struct View_traits<2, int>
                          vsip_stride s_r, vsip_length rows,
                          vsip_stride s_c, vsip_length cols)
   {
-    view_type* v = vsip_mbind_i(b, o, s_r, rows, s_c, cols);
+    view_type* v = vsip_mbind_i(const_cast<block_type*>(b), o, s_r, rows, s_c, cols);
     if (!v) VSIP_THROW(std::bad_alloc());
     return v;
   }
@@ -195,10 +193,10 @@ struct View_traits<2, int>
 };
 
 #endif
-#if VSIP_IMPL_CVSIP_HAVE_FLOAT
+#if OVXX_CVSIP_HAVE_FLOAT
 
 template <>
-struct View_traits<1, float>
+struct view_traits<1, float>
 {
   typedef float value_type;
   typedef vsip_block_f block_type;
@@ -213,7 +211,8 @@ struct View_traits<1, float>
   static view_type *bind(block_type const *b,
                          vsip_offset o, vsip_stride s, vsip_length l)
   {
-    view_type *v = vsip_vbind_f(b, o, s, l);
+    // TODO: Remove const-cast once AXISLIB is fixed.
+    view_type *v = vsip_vbind_f(const_cast<block_type*>(b), o, s, l);
     if (!v) VSIP_THROW(std::bad_alloc());
     return v;
   }
@@ -237,7 +236,7 @@ struct View_traits<1, float>
 };
 
 template <>
-struct View_traits<1, std::complex<float> >
+struct view_traits<1, std::complex<float> >
 {
   typedef std::complex<float> value_type;
   typedef vsip_cblock_f block_type;
@@ -252,7 +251,7 @@ struct View_traits<1, std::complex<float> >
   static view_type *bind(block_type const *b,
                          vsip_offset o, vsip_stride s, vsip_length l)
   {
-    view_type *v = vsip_cvbind_f(b, o, s, l);
+    view_type *v = vsip_cvbind_f(const_cast<block_type*>(b), o, s, l);
     if (!v) VSIP_THROW(std::bad_alloc());
     return v;
   }
@@ -271,7 +270,7 @@ struct View_traits<1, std::complex<float> >
 };
 
 template <>
-struct View_traits<2, float>
+struct view_traits<2, float>
 {
   typedef float value_type;
   typedef vsip_block_f block_type;
@@ -288,7 +287,7 @@ struct View_traits<2, float>
                          vsip_stride s_r, vsip_length rows,
                          vsip_stride s_c, vsip_length cols)
   {
-    view_type *v = vsip_mbind_f(b, o, s_r, rows, s_c, cols);
+    view_type *v = vsip_mbind_f(const_cast<block_type*>(b), o, s_r, rows, s_c, cols);
     if (!v) VSIP_THROW(std::bad_alloc());
     return v;
   }
@@ -309,7 +308,7 @@ struct View_traits<2, float>
 };
 
 template <>
-struct View_traits<2, std::complex<float> >
+struct view_traits<2, std::complex<float> >
 {
   typedef std::complex<float> value_type;
   typedef vsip_cblock_f block_type;
@@ -325,7 +324,7 @@ struct View_traits<2, std::complex<float> >
                          vsip_stride s_r, vsip_length rows,
                          vsip_stride s_c, vsip_length cols)
   {
-    view_type *v = vsip_cmbind_f(b, o, s_r, rows, s_c, cols);
+    view_type *v = vsip_cmbind_f(const_cast<block_type*>(b), o, s_r, rows, s_c, cols);
     if (!v) VSIP_THROW(std::bad_alloc());
     return v;
   }
@@ -346,10 +345,10 @@ struct View_traits<2, std::complex<float> >
 };
 
 #endif
-#if VSIP_IMPL_CVSIP_HAVE_DOUBLE
+#if OVXX_CVSIP_HAVE_DOUBLE
 
 template <>
-struct View_traits<1, double>
+struct view_traits<1, double>
 {
   typedef double value_type;
   typedef vsip_block_d block_type;
@@ -364,7 +363,7 @@ struct View_traits<1, double>
   static view_type *bind(block_type const *b,
                          vsip_offset o, vsip_stride s, vsip_length l)
   {
-    view_type *v = vsip_vbind_d(b, o, s, l);
+    view_type *v = vsip_vbind_d(const_cast<block_type*>(b), o, s, l);
     if (!v) VSIP_THROW(std::bad_alloc());
     return v;
   }
@@ -388,7 +387,7 @@ struct View_traits<1, double>
 };
 
 template <>
-struct View_traits<1, std::complex<double> >
+struct view_traits<1, std::complex<double> >
 {
   typedef std::complex<double> value_type;
   typedef vsip_cblock_d block_type;
@@ -403,7 +402,7 @@ struct View_traits<1, std::complex<double> >
   static view_type *bind(block_type const *b,
                          vsip_offset o, vsip_stride s, vsip_length l)
   {
-    view_type *v = vsip_cvbind_d(b, o, s, l);
+    view_type *v = vsip_cvbind_d(const_cast<block_type*>(b), o, s, l);
     if (!v) VSIP_THROW(std::bad_alloc());
     return v;
   }
@@ -422,7 +421,7 @@ struct View_traits<1, std::complex<double> >
 };
 
 template <>
-struct View_traits<2, double>
+struct view_traits<2, double>
 {
   typedef double value_type;
   typedef vsip_block_d block_type;
@@ -439,7 +438,7 @@ struct View_traits<2, double>
                          vsip_stride s_r, vsip_length rows,
                          vsip_stride s_c, vsip_length cols)
   {
-    view_type *v = vsip_mbind_d(b, o, s_r, rows, s_c, cols);
+    view_type *v = vsip_mbind_d(const_cast<block_type*>(b), o, s_r, rows, s_c, cols);
     if (!v) VSIP_THROW(std::bad_alloc());
     return v;
   }
@@ -460,7 +459,7 @@ struct View_traits<2, double>
 };
 
 template <>
-struct View_traits<2, std::complex<double> >
+struct view_traits<2, std::complex<double> >
 {
   typedef std::complex<double> value_type;
   typedef vsip_cblock_d block_type;
@@ -477,7 +476,7 @@ struct View_traits<2, std::complex<double> >
                          vsip_stride s_r, vsip_length rows,
                          vsip_stride s_c, vsip_length cols)
   {
-    view_type *v = vsip_cmbind_d(b, o, s_r, rows, s_c, cols);
+    view_type *v = vsip_cmbind_d(const_cast<block_type*>(b), o, s_r, rows, s_c, cols);
     if (!v) VSIP_THROW(std::bad_alloc());
     return v;
   }
@@ -505,9 +504,9 @@ template <dimension_type D, // dimension
 class View;
 
 template <typename T>
-class View<1, T, false> : Non_copyable
+class View<1, T, false> : ovxx::detail::noncopyable
 {
-  typedef View_traits<1, T>           traits;
+  typedef view_traits<1, T>           traits;
   typedef Block<T>                    block_type;
   typedef typename block_type::traits block_traits;
   friend class View<1, T, true>; // Needed for operator=
@@ -526,10 +525,10 @@ protected:
 };
 
 template <typename T>
-class View<1, T, true> : Non_copyable
+class View<1, T, true> : ovxx::detail::noncopyable
 {
-  typedef View_traits<1, T>           traits;
-  typedef Us_block<T>                 block_type;
+  typedef view_traits<1, T>           traits;
+  typedef Block<T, true>              block_type;
   typedef typename block_type::traits block_traits;
   friend class View<1, T, false>; // Needed for operator=
 
@@ -552,10 +551,10 @@ protected:
 };
 
 template <typename T>
-class View<1, std::complex<T>, true> : Non_copyable
+class View<1, std::complex<T>, true> : ovxx::detail::noncopyable
 {
-  typedef View_traits<1, std::complex<T> >  traits;
-  typedef Us_block<std::complex<T> >        block_type;
+  typedef view_traits<1, std::complex<T> >  traits;
+  typedef Block<std::complex<T>, true>      block_type;
   typedef typename block_type::traits       block_traits;
   friend class View<1, std::complex<T>, false>; // Needed for operator=
 
@@ -585,6 +584,7 @@ protected:
   typename traits::view_type *impl_;
 };
 
+#if OVXX_CVSIP_HAVE_BOOL
 
 // Specialize View to avoid using admit/release for user-storage
 // bool vectors.  Perform copy instead.
@@ -593,14 +593,13 @@ protected:
 // vsip_scalar_bl is usually an int (4 bytes), while C++ bool is 1
 // byte).
 //
-
 template <>
 class View<1, bool, true> : public View<1, bool, false>
 {
   typedef bool T;
   typedef View<1, bool, false>        base_type;
-  typedef View_traits<1, T>           traits;
-  typedef Us_block<T>                 block_type;
+  typedef view_traits<1, T>           traits;
+  typedef Block<T, true>              block_type;
   typedef block_type::traits          block_traits;
   friend class View<1, T, false>; // Needed for operator=
 
@@ -637,10 +636,12 @@ private:
   stride_type stride_;
 };
 
+#endif
+
 template <typename T>
-class View<2, T, false> : Non_copyable
+class View<2, T, false> : ovxx::detail::noncopyable
 {
-  typedef View_traits<2, T>           traits;
+  typedef view_traits<2, T>           traits;
   typedef Block<T>                    block_type;
   typedef typename block_type::traits block_traits;
   friend class View<2, T, true>; // Needed for operator=
@@ -659,10 +660,10 @@ protected:
 };
 
 template <typename T>
-class View<2, T, true> : Non_copyable
+class View<2, T, true> : ovxx::detail::noncopyable
 {
-  typedef View_traits<2, T>           traits;
-  typedef Us_block<T>                 block_type;
+  typedef view_traits<2, T>           traits;
+  typedef Block<T, true>              block_type;
   typedef typename block_type::traits block_traits;
   friend class View<2, T, false>; // Needed for operator=
 
@@ -689,10 +690,10 @@ protected:
 };
 
 template <typename T>
-class View<2, std::complex<T>, true> : Non_copyable
+class View<2, std::complex<T>, true> : ovxx::detail::noncopyable
 {
-  typedef View_traits<2, std::complex<T> >  traits;
-  typedef Us_block<std::complex<T> >        block_type;
+  typedef view_traits<2, std::complex<T> >  traits;
+  typedef Block<std::complex<T>, true>      block_type;
   typedef typename block_type::traits       block_traits;
   friend class View<2, std::complex<T>, false>; // Needed for operator=
 
@@ -729,20 +730,20 @@ protected:
   typename traits::view_type *impl_;
 };
 
+#if OVXX_CVSIP_HAVE_BOOL
 
 // Specialize View to avoid using admit/release for user-storage
 // bool matrices.  Perform copy instead.
 //
 // See View<1, bool, true> specialization for details.
 //
-
 template <>
 class View<2, bool, true> : public View<2, bool, false>
 {
   typedef bool T;
   typedef View<2, bool, false>        base_type;
-  typedef View_traits<2, T>           traits;
-  typedef Us_block<T>                 block_type;
+  typedef view_traits<2, T>           traits;
+  typedef Block<T, true>              block_type;
   typedef block_type::traits          block_traits;
   friend class View<2, T, false>; // Needed for operator=
 
@@ -787,6 +788,8 @@ private:
   stride_type stride0_;
   stride_type stride1_;
 };
+
+#endif
 
 template <dimension_type D, // dimension
           typename T>       // type
@@ -867,33 +870,33 @@ public:
 // Construct view directly from dda::Data API
 
 template <dimension_type D, typename T, dda::sync_policy>
-struct View_from_data;
+struct view_from_data;
 
 template <typename T, dda::sync_policy S>
-struct View_from_data<1, T, S>
+struct view_from_data<1, T, S>
 {
   template <typename DDA>
-  View_from_data(DDA &data)
+  view_from_data(DDA &data)
     : view(data.ptr(), 0, data.stride(0), data.size(0)) {}
 
   View<1, T, true> view;
 };
 
 template <typename T>
-struct View_from_data<1, T, dda::in>
+struct view_from_data<1, T, dda::in>
 {
   template <typename DDA>
-  View_from_data(DDA &data)
+  view_from_data(DDA &data)
     : view(data.ptr(), 0, data.stride(0), data.size(0)) {}
 
   const_View<1, T> view;
 };
 
 template <typename T, dda::sync_policy S>
-struct View_from_data<2, T, S>
+struct view_from_data<2, T, S>
 {
   template <typename DDA>
-  View_from_data(DDA &data)
+  view_from_data(DDA &data)
     : view(data.ptr(), 0, data.stride(0), data.size(0),
 	   data.stride(1), data.size(1))
   {}
@@ -902,10 +905,10 @@ struct View_from_data<2, T, S>
 };
 
 template <typename T>
-struct View_from_data<2, T, dda::in>
+struct view_from_data<2, T, dda::in>
 {
   template <typename DDA>
-  View_from_data(DDA &data)
+  view_from_data(DDA &data)
     : view(data.ptr(), 0, data.stride(0), data.size(0),
 	   data.stride(1), data.size(1))
   {}
@@ -913,8 +916,7 @@ struct View_from_data<2, T, dda::in>
   const_View<2, T> view;
 };
 
-} // namespace vsip::impl::cvsip
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::cvsip
+} // namespace ovxx
 
 #endif

@@ -6,63 +6,49 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef vsip_core_cvsip_lu_hpp_
-#define vsip_core_cvsip_lu_hpp_
+#ifndef ovxx_cvsip_lu_hpp_
+#define ovxx_cvsip_lu_hpp_
 
 #include <algorithm>
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/math_enum.hpp>
-#include <vsip/core/temp_buffer.hpp>
-#include <vsip/core/solver/common.hpp>
-#include <vsip/core/cvsip/solver.hpp>
-#include <vsip/core/cvsip/view.hpp>
+#include <vsip/impl/math_enum.hpp>
+#include <vsip/impl/solver/common.hpp>
+#include <ovxx/cvsip/solver.hpp>
+#include <ovxx/cvsip/view.hpp>
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace cvsip
 {
-/// LU factorization implementation class.  Common functionality
-/// for lud by-value and by-reference classes.
 template <typename T>
-class Lu_solver : Compile_time_assert<Solver_traits<T>::valid>
+class lu_solver : ct_assert<solver_traits<T>::valid>
 {
-  typedef Solver_traits<T> traits;
-  typedef Layout<2, row2_type, dense, interleaved_complex> data_LP;
-  typedef Strided<2, T, data_LP> data_block_type;
+  typedef solver_traits<T> traits;
+  typedef Layout<2, row2_type, dense, interleaved_complex> data_layout_type;
+  typedef Strided<2, T, data_layout_type> data_block_type;
 
 public:
-  Lu_solver(length_type length)
+  lu_solver(length_type length)
     : length_(length),
       data_(length_, length_),
       cvsip_data_(data_.block().ptr(), length_, length_, true),
       lu_(traits::lu_create(length_))
-  { assert(length_ > 0);}
-  Lu_solver(Lu_solver const& lu)
-    : length_(lu.length_),
+  { OVXX_PRECONDITION(length_ > 0);}
+  lu_solver(lu_solver const &other)
+    : length_(other.length_),
       data_(length_, length_),
       cvsip_data_(data_.block().ptr(), length_, length_, true),
       lu_(traits::lu_create(length_))
-  { data_ = lu.data_;}
-  ~Lu_solver() VSIP_NOTHROW { traits::lu_destroy(lu_);}
+  { data_ = other.data_;}
+  ~lu_solver() VSIP_NOTHROW { traits::lu_destroy(lu_);}
 
   length_type length()const VSIP_NOTHROW { return length_;}
 
-  /// Form LU factorization of matrix A
-  ///
-  /// Requires
-  ///   A to be a square matrix, either
-  ///
-  /// FLOPS:
-  ///   real   : UPDATE
-  ///   complex: UPDATE
-  //
   template <typename Block>
   bool decompose(Matrix<T, Block> m) VSIP_NOTHROW
   {
-    assert(m.size(0) == length_ && m.size(1) == length_);
+    OVXX_PRECONDITION(m.size(0) == length_ && m.size(1) == length_);
 
     cvsip_data_.block().release(false);
     assign_local(data_, m);
@@ -71,19 +57,6 @@ public:
     return success;
   }
 
-  /// Solve Op(A) x = b (where A previously given to decompose)
-  ///
-  /// Op(A) is
-  ///   A   if tr == mat_ntrans
-  ///   A^T if tr == mat_trans
-  ///   A'  if tr == mat_herm (valid for T complex only)
-  ///
-  /// Requires
-  ///   B to be a (length, P) matrix
-  ///   X to be a (length, P) matrix
-  ///
-  /// Effects:
-  ///   X contains solution to Op(A) X = B
   template <mat_op_type tr, typename Block0, typename Block1>
   bool solve(const_Matrix<T, Block0> b, Matrix<T, Block1> x)
   {
@@ -92,8 +65,8 @@ public:
     typedef Layout<2, order_type, dense, storage_format> data_LP;
     typedef Strided<2, T, data_LP, Local_map> block_type;
 
-    assert(b.size(0) == length_);
-    assert(b.size(0) == x.size(0) && b.size(1) == x.size(1));
+    OVXX_PRECONDITION(b.size(0) == length_);
+    OVXX_PRECONDITION(b.size(0) == x.size(0) && b.size(1) == x.size(1));
 
     Matrix<T, block_type> b_int(b.size(0), b.size(1));
     assign_local(b_int, b);
@@ -119,30 +92,26 @@ public:
   }
 
 private:
-  Lu_solver &operator=(Lu_solver const&) VSIP_NOTHROW;
+  lu_solver &operator=(lu_solver const&) VSIP_NOTHROW;
 
-  length_type  length_;			// Order of A.
-  Matrix<T, data_block_type> data_;	// Factorized Cholesky matrix (A)
+  length_type  length_;
+  Matrix<T, data_block_type> data_;
   cvsip::View<2,T,true>      cvsip_data_;
   typename traits::lud_type *lu_;
 };
 
-} // namespace vsip::impl::cvsip
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::cvsip
 
-namespace vsip_csl
-{
 namespace dispatcher
 {
 template <typename T>
 struct Evaluator<op::lud, be::cvsip, T>
 {
   // The CVSIP LU solver supports all CVSIP types.
-  static bool const ct_valid = impl::cvsip::Solver_traits<T>::valid;
-  typedef impl::cvsip::Lu_solver<T> backend_type;
+  static bool const ct_valid = cvsip::solver_traits<T>::valid;
+  typedef cvsip::lu_solver<T> backend_type;
 };
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
 #endif

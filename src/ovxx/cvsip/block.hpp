@@ -6,41 +6,31 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_CVSIP_BLOCK_HPP
-#define VSIP_CORE_CVSIP_BLOCK_HPP
+#ifndef ovxx_cvsip_block_hpp_
+#define ovxx_cvsip_block_hpp_
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
-
-#include <vsip/core/config.hpp>
-#include <vsip/support.hpp>
+#include <ovxx/support.hpp>
 #include <vsip/domain.hpp>
 extern "C" {
 #include <vsip.h>
 }
-/***********************************************************************
-  Declarations
-***********************************************************************/
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace cvsip
 {
 
-template <typename T> struct Block_traits;
+template <typename T> struct block_traits;
 
 template <>
-struct Block_traits<bool>
+struct block_traits<bool>
 {
   typedef bool value_type;
   typedef vsip_block_bl block_type;
 
-  static block_type* create(size_t s)
+  static block_type *create(size_t s)
   {
-    block_type* b = vsip_blockcreate_bl(s, VSIP_MEM_NONE);
+    block_type *b = vsip_blockcreate_bl(s, VSIP_MEM_NONE);
     if (!b) VSIP_THROW(std::bad_alloc());
     return b;
   }
@@ -52,7 +42,7 @@ struct Block_traits<bool>
 };
 
 template <>
-struct Block_traits<int>
+struct block_traits<int>
 {
   typedef int value_type;
   typedef vsip_block_i block_type;
@@ -79,9 +69,9 @@ struct Block_traits<int>
   { (void) vsip_blockrelease_i(b, s);}  
 };
 
-#if VSIP_IMPL_CVSIP_HAVE_FLOAT
+#if OVXX_CVSIP_HAVE_FLOAT
 template <>
-struct Block_traits<float>
+struct block_traits<float>
 {
   typedef float value_type;
   typedef vsip_block_f block_type;
@@ -109,7 +99,7 @@ struct Block_traits<float>
 };
 
 template <>
-struct Block_traits<std::complex<float> >
+struct block_traits<std::complex<float> >
 {
   typedef float value_type;
   typedef vsip_cblock_f block_type;
@@ -156,10 +146,10 @@ struct Block_traits<std::complex<float> >
 };
 
 #endif
-#if VSIP_IMPL_CVSIP_HAVE_DOUBLE
+#if OVXX_CVSIP_HAVE_DOUBLE
 
 template <>
-struct Block_traits<double>
+struct block_traits<double>
 {
   typedef double value_type;
   typedef vsip_block_d block_type;
@@ -187,7 +177,7 @@ struct Block_traits<double>
 };
 
 template <>
-struct Block_traits<std::complex<double> >
+struct block_traits<std::complex<double> >
 {
   typedef double value_type;
   typedef vsip_cblock_d block_type;
@@ -235,12 +225,16 @@ struct Block_traits<std::complex<double> >
 
 #endif
 
-// Wrapper class for C-VSIPL block with C-VSIPL allocated storage.
+template <typename T, bool UserStorage = false>
+class Block;
+
+// Wrapper class for VSIPL block with 
+// library-allocated storage.
 template <typename T>
-class Block
+class Block<T, false>
 {
 public:
-  typedef Block_traits<T> traits;
+  typedef block_traits<T> traits;
 
   Block(length_type size) VSIP_THROW((std::bad_alloc))
     : impl_(traits::create(size)), owner_(true) {}
@@ -255,19 +249,20 @@ private:
   mutable bool owner_;
 };
 
-// Wrapper class for C-VSIPL block with user allocated storage.
+// Wrapper class for VSIPL block with 
+// user-allocated storage.
 template <typename T> 
-class Us_block
+class Block<T, true>
 {
 public:
-  typedef Block_traits<T> traits;
+  typedef block_traits<T> traits;
   
-  Us_block(T *data, length_type size) VSIP_THROW((std::bad_alloc))
+  Block(T *data, length_type size) VSIP_THROW((std::bad_alloc))
     : impl_(traits::bind(data, size)), owner_(true) {}
-  Us_block(typename traits::block_type *b) : impl_(b), owner_(false) {}
-  Us_block(Us_block<T> const &b)
+  Block(typename traits::block_type *b) : impl_(b), owner_(false) {}
+  Block(Block<T, true> const &b)
     : impl_(b.impl_), owner_(b.owner_) { b.owner_ = false;}
-  ~Us_block() { if (owner_) traits::destroy(impl_);}
+  ~Block() { if (owner_) traits::destroy(impl_);}
   void rebind(T *data) { traits::rebind(impl_, data);}
   void admit(bool sync) { traits::admit(impl_, sync);}
   void release(bool sync) { traits::release(impl_, sync);}
@@ -279,21 +274,21 @@ private:
 };
 
 template <typename T>
-class Us_block<std::complex<T> >
+class Block<std::complex<T>, true>
 {
 public:
-  typedef Block_traits<std::complex<T> > traits;
+  typedef block_traits<std::complex<T> > traits;
   
-  Us_block(std::complex<T> *data, length_type size) VSIP_THROW((std::bad_alloc))
+  Block(std::complex<T> *data, length_type size) VSIP_THROW((std::bad_alloc))
     : impl_(traits::bind(data, size)), owner_(true)
   {}
-  Us_block(typename traits::block_type *b) : impl_(b), owner_(false) {}
-  Us_block(std::pair<T *, T *> data, length_type size) VSIP_THROW((std::bad_alloc))
+  Block(typename traits::block_type *b) : impl_(b), owner_(false) {}
+  Block(std::pair<T *, T *> data, length_type size) VSIP_THROW((std::bad_alloc))
     : impl_(traits::bind(data, size)), owner_(true)
   {}
-  Us_block(Us_block<std::complex<T> > const &b)
+    Block(Block<std::complex<T>, true> const &b)
     : impl_(b.impl_), owner_(b.owner_) { b.owner_ = false;}
-  ~Us_block() { if (owner_) traits::destroy(impl_);}
+  ~Block() { if (owner_) traits::destroy(impl_);}
   void rebind(std::complex<T> *data) { traits::rebind(impl_, data);}
   void rebind(std::pair<T *, T *> data) { traits::rebind(impl_, data);}
   void admit(bool sync) { traits::admit(impl_, sync);}
@@ -305,8 +300,7 @@ private:
   mutable bool owner_;
 };
 
-} // namespace vsip::impl::cvsip
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::cvsip
+} // namespace ovxx
 
 #endif

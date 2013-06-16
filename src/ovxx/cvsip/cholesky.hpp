@@ -6,76 +6,56 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-/// Description:
-///   VSIPL++ Library: Cholesky linear system solver using cvsip.
-
-#ifndef VSIP_CORE_CVSIP_CHOLESKY_HPP
-#define VSIP_CORE_CVSIP_CHOLESKY_HPP
-
-#include <algorithm>
+#ifndef ovxx_cvsip_cholesky_hpp_
+#define ovxx_cvsip_cholesky_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/math_enum.hpp>
-#include <vsip/core/temp_buffer.hpp>
-#include <vsip/core/working_view.hpp>
-#include <vsip/core/expr/fns_elementwise.hpp>
-#include <vsip/core/solver/common.hpp>
-#include <vsip/core/cvsip/solver.hpp>
-#include <vsip/core/cvsip/view.hpp>
+#include <vsip/impl/math_enum.hpp>
+#include <ovxx/view_utils.hpp>
+#include <vsip/impl/fns_elementwise.hpp>
+#include <vsip/impl/solver/common.hpp>
+#include <ovxx/cvsip/solver.hpp>
+#include <ovxx/cvsip/view.hpp>
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace cvsip
 {
-/// Cholesky factorization implementation class.  Common functionality
-/// for chold by-value and by-reference classes.
 template <typename T>
-class Chold : Compile_time_assert<Solver_traits<T>::valid>
+class chold : ct_assert<solver_traits<T>::valid>
 {
-  typedef Solver_traits<T> traits;
-  static storage_format_type const storage_format = dense_complex_format;
-  typedef Layout<2, row2_type, dense, storage_format> data_LP;
-  typedef Strided<2, T, data_LP> data_block_type;
+  typedef solver_traits<T> traits;
+  static storage_format_type const storage_format = vsip::impl::dense_complex_format;
+  typedef Layout<2, row2_type, dense, storage_format> data_layout_type;
+  typedef Strided<2, T, data_layout_type> data_block_type;
 
 public:
-  Chold(mat_uplo uplo, length_type length)
+  chold(mat_uplo uplo, length_type length)
     : uplo_(uplo),
       length_(length),
       data_(length_, length_),
       cvsip_data_(data_.block().ptr(), length_, length_, true),
       chol_(traits::chol_create(length_, uplo_))
-  { assert(length_ > 0);}
+  { OVXX_PRECONDITION(length_ > 0);}
 
-  Chold(Chold const &chol)
-    : uplo_(chol.uplo_),
-    length_(chol.length_),
+  chold(chold const &other)
+    : uplo_(other.uplo_),
+    length_(other.length_),
     data_(length_, length_),
     cvsip_data_(data_.block().ptr(), length_, length_, true),
     chol_(traits::chol_create(length_, uplo_))
-  { data_ = chol.data_;}
+  { data_ = other.data_;}
 
-  ~Chold() { traits::chol_destroy(chol_);}
+  ~chold() { traits::chol_destroy(chol_);}
 
   mat_uplo    uplo()  const VSIP_NOTHROW { return uplo_;}
   length_type length()const VSIP_NOTHROW { return length_;}
 
-  /// Form Cholesky factorization of matrix A
-  ///
-  /// Requires
-  ///   A to be a square matrix, either
-  ///     symmetric positive definite (T real), or
-  ///     hermitian positive definite (T complex).
-  ///
-  /// FLOPS:
-  ///   real   : (1/3) n^3
-  ///   complex: (4/3) n^3
   template <typename Block>
   bool decompose(Matrix<T, Block> m) VSIP_NOTHROW
   {
-    assert(m.size(0) == length_ && m.size(1) == length_);
+    OVXX_PRECONDITION(m.size(0) == length_ && m.size(1) == length_);
 
     cvsip_data_.block().release(false);
     assign_local(data_, m);
@@ -92,8 +72,8 @@ public:
     typedef Layout<2, order_type, dense, storage_format> data_LP;
     typedef Strided<2, T, data_LP, Local_map> block_type;
 
-    assert(b.size(0) == length_);
-    assert(b.size(0) == x.size(0) && b.size(1) == x.size(1));
+    OVXX_PRECONDITION(b.size(0) == length_);
+    OVXX_PRECONDITION(b.size(0) == x.size(0) && b.size(1) == x.size(1));
 
     Matrix<T, block_type> b_int(b.size(0), b.size(1));
     assign_local(b_int, b);
@@ -112,9 +92,7 @@ public:
   }
 
 private:
-  typedef std::vector<float, Aligned_allocator<float> > vector_type;
-
-  Chold &operator=(Chold const&) VSIP_NOTHROW;
+  chold &operator=(chold const&) VSIP_NOTHROW;
 
   mat_uplo     uplo_;			// A upper/lower triangular
   length_type  length_;			// Order of A.
@@ -124,21 +102,17 @@ private:
   typename traits::chol_type *chol_;
 };
 
-} // namespace vsip::impl::cvsip
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::cvsip
 
-namespace vsip_csl
-{
 namespace dispatcher
 {
 template <typename T>
 struct Evaluator<op::chold, be::cvsip, T>
 {
-  static bool const ct_valid = impl::cvsip::Solver_traits<T>::valid;
-  typedef impl::cvsip::Chold<T> backend_type;
+  static bool const ct_valid = cvsip::solver_traits<T>::valid;
+  typedef cvsip::chold<T> backend_type;
 };
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
 #endif

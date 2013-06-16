@@ -6,28 +6,19 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_CVSIP_CONV_HPP
-#define VSIP_CORE_CVSIP_CONV_HPP
+#ifndef ovxx_cvsip_conv_hpp_
+#define ovxx_cvsip_conv_hpp_
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
-
-#include <vsip/core/config.hpp>
+#include <ovxx/config.hpp>
 #include <vsip/support.hpp>
 #include <vsip/domain.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/domain_utils.hpp>
-#include <vsip/core/profile.hpp>
-#include <vsip/core/signal/conv_common.hpp>
-#include <vsip/core/cvsip/block.hpp>
-#include <vsip/core/cvsip/view.hpp>
-#include <vsip/core/cvsip/common.hpp>
-extern "C" 
-{
-#include <vsip.h>
-}
+#include <ovxx/domain_utils.hpp>
+#include <ovxx/signal/conv.hpp>
+#include <ovxx/cvsip/block.hpp>
+#include <ovxx/cvsip/view.hpp>
+#include <ovxx/cvsip/common.hpp>
 
 // Define this to 1 to fix the convolution results returned from
 // C-VSIP.  This works around incorrect results produced by the
@@ -38,27 +29,19 @@ extern "C"
 // Defining this to 1 will produce results consistent with the
 // other Convolution implementations (Ext, IPP, and SAL).
 
-#define VSIP_IMPL_FIX_CVSIP_CONV 1
+#define OVXX_FIX_CVSIP_CONV 1
 
-
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
-
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace cvsip
 {
 
-template <dimension_type D, typename T> struct Conv_traits
+template <dimension_type D, typename T> struct conv_traits
 { static bool const valid = false; };
 
 #if HAVE_VSIP_CONV1D_CREATE_F == 1
 template <>
-struct Conv_traits<1, float>
+struct conv_traits<1, float>
 {
   static bool const valid = true;
 
@@ -71,7 +54,7 @@ struct Conv_traits<1, float>
   {
     conv_type *c = vsip_conv1d_create_f(h, symmetry(s), l, d,
                                         support(r), n, hint(a));
-    if (!c) VSIP_IMPL_THROW(std::bad_alloc());
+    if (!c) OVXX_DO_THROW(std::bad_alloc());
     return c;
   }
   static void destroy(conv_type *c) 
@@ -85,7 +68,7 @@ struct Conv_traits<1, float>
 #endif
 #if HAVE_VSIP_CONV2D_CREATE_F == 1
 template <>
-struct Conv_traits<2, float>
+struct conv_traits<2, float>
 {
   static bool const valid = true;
 
@@ -98,7 +81,7 @@ struct Conv_traits<2, float>
                            alg_hint_type a)
   {
     conv_type *c = vsip_conv2d_create_f(h, symmetry(s), p, q, d, support(r), n, a);
-    if (!c) VSIP_IMPL_THROW(std::bad_alloc());
+    if (!c) OVXX_DO_THROW(std::bad_alloc());
     return c;
   }
   static void destroy(conv_type *c) 
@@ -112,7 +95,7 @@ struct Conv_traits<2, float>
 #endif
 #if HAVE_VSIP_CONV1D_CREATE_D == 1
 template <>
-struct Conv_traits<1, double>
+struct conv_traits<1, double>
 {
   static bool const valid = true;
 
@@ -125,7 +108,7 @@ struct Conv_traits<1, double>
   {
     conv_type *c = vsip_conv1d_create_d(h, symmetry(s), l, d,
                                         support(r), n, hint(a));
-    if (!c) VSIP_IMPL_THROW(std::bad_alloc());
+    if (!c) OVXX_DO_THROW(std::bad_alloc());
     return c;
   }
   static void destroy(conv_type *c) 
@@ -139,7 +122,7 @@ struct Conv_traits<1, double>
 #endif
 #if HAVE_VSIP_CONV2D_CREATE_D == 1
 template <>
-struct Conv_traits<2, double>
+struct conv_traits<2, double>
 {
   static bool const valid = true;
 
@@ -152,7 +135,7 @@ struct Conv_traits<2, double>
                            alg_hint_type a)
   {
     conv_type *c = vsip_conv2d_create_d(h, symmetry(s), p, q, d, support(r), n, a);
-    if (!c) VSIP_IMPL_THROW(std::bad_alloc());
+    if (!c) OVXX_DO_THROW(std::bad_alloc());
     return c;
   }
   static void destroy(conv_type *c) 
@@ -177,9 +160,9 @@ public:
   static support_region_type const supprt  = R;
 
   Convolution_base(Domain<D> const &c, Domain<D> const &i, length_type d)
-    : kernel_size_(conv_kernel_size<S>(c)),
+    : kernel_size_(signal::conv_kernel_size<S>(c)),
       input_size_(i),
-      output_size_(conv_output_size(R, kernel_size_, input_size_, d)),
+      output_size_(signal::conv_output_size(R, kernel_size_, input_size_, d)),
       decimation_(d)
   {}
 
@@ -203,7 +186,7 @@ protected:
 // Bogus type name to encapsulate error message.
 
 template <typename T>
-struct Conv_cvsip_backend_does_not_support_type;
+struct conv_cvsip_backend_does_not_support_type;
 
 template <dimension_type      D,
           symmetry_type       S,
@@ -220,10 +203,10 @@ template <symmetry_type       S,
           alg_hint_type       H>
 class Convolution<1, S, R, T, N, H>
   : public Convolution_base<1, T, S, R>,
-    Compile_time_assert_msg<Conv_traits<1, T>::valid,
-                            Conv_cvsip_backend_does_not_support_type<T> >
+    ct_assert_msg<conv_traits<1, T>::valid,
+		  conv_cvsip_backend_does_not_support_type<T> >
 {
-  typedef Conv_traits<1, T> traits;
+  typedef conv_traits<1, T> traits;
 
 public:
   template <typename Block>
@@ -255,11 +238,11 @@ protected:
     }
 
 
-#if VSIP_IMPL_FIX_CVSIP_CONV
+#if OVXX_FIX_CVSIP_CONV
     // Fixup C-VSIP results.
     if (S == vsip::sym_even_len_even && R == vsip::support_same)
     {
-      typedef View_traits<1, T> traits;
+      typedef view_traits<1, T> traits;
 
       T sum = T();
       length_type coeff_size = traits::length(coeffs_.ptr());
@@ -284,7 +267,7 @@ protected:
 
     if (S == vsip::sym_even_len_even && R  == vsip::support_full)
     {
-      typedef View_traits<1, T> traits;
+      typedef view_traits<1, T> traits;
       length_type coeff_size = traits::length(coeffs_.ptr());
       index_type D = this->decimation();
 
@@ -312,7 +295,7 @@ protected:
 
     if (S == vsip::nonsym && R == vsip::support_same)
     {
-      typedef View_traits<1, T> traits;
+      typedef view_traits<1, T> traits;
 
       T sum = T();
       length_type coeff_size = traits::length(coeffs_.ptr());
@@ -333,7 +316,7 @@ protected:
 
     if (S == vsip::nonsym && R == vsip::support_full)
     {
-      typedef View_traits<1, T> traits;
+      typedef view_traits<1, T> traits;
       length_type coeff_size = traits::length(coeffs_.ptr());
       index_type D = this->decimation();
 
@@ -369,10 +352,10 @@ template <symmetry_type       S,
           alg_hint_type       H>
 class Convolution<2, S, R, T, N, H>
   : public Convolution_base<2, T, S, R>,
-    Compile_time_assert_msg<Conv_traits<2, T>::valid,
-			    Conv_cvsip_backend_does_not_support_type<T> >
+    ct_assert_msg<conv_traits<2, T>::valid,
+		  conv_cvsip_backend_does_not_support_type<T> >
 {
-  typedef Conv_traits<2, T> traits;
+  typedef conv_traits<2, T> traits;
 public:
 
   template <typename Block>
@@ -413,14 +396,8 @@ private:
   typename traits::conv_type *impl_;
 };
 
-} // namespace vsip::impl::cvsip
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::cvsip
 
-#if !VSIP_IMPL_REF_IMPL
-
-namespace vsip_csl
-{
 namespace dispatcher
 {
 # if HAVE_VSIP_CONV1D_CREATE_F == 1
@@ -431,7 +408,7 @@ template <symmetry_type       S,
 struct Evaluator<op::conv<1, S, R, float, N, H>, be::cvsip>
 {
   static bool const ct_valid = true;
-  typedef impl::cvsip::Convolution<1, S, R, float, N, H> backend_type;
+  typedef cvsip::Convolution<1, S, R, float, N, H> backend_type;
 };
 # endif
 # if HAVE_VSIP_CONV2D_CREATE_F == 1
@@ -442,7 +419,7 @@ template <symmetry_type       S,
 struct Evaluator<op::conv<2, S, R, float, N, H>, be::cvsip>
 {
   static bool const ct_valid = true;
-  typedef impl::cvsip::Convolution<2, float, S, R> backend_type;
+  typedef cvsip::Convolution<2, float, S, R> backend_type;
 };
 # endif
 # if HAVE_VSIP_CONV1D_CREATE_D == 1
@@ -453,7 +430,7 @@ template <symmetry_type       S,
 struct Evaluator<op::conv<1, S, R, double, N, H>, be::cvsip>
 {
   static bool const ct_valid = true;
-  typedef impl::cvsip::Convolution<1, S, R, double, N, H> backend_type;
+  typedef cvsip::Convolution<1, S, R, double, N, H> backend_type;
 };
 # endif
 # if HAVE_VSIP_CONV2D_CREATE_D == 1
@@ -464,13 +441,11 @@ template <symmetry_type       S,
 struct Evaluator<op::conv<2, S, R, double, N, H>, be::cvsip>
 {
   static bool const ct_valid = true;
-  typedef impl::cvsip::Convolution<2, S, R, double, N, H> backend_type;
+  typedef cvsip::Convolution<2, S, R, double, N, H> backend_type;
 };
 # endif
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
-#endif // !VSIP_IMPL_REF_IMPL
-
-#endif // VSIP_CORE_CVSIP_CONV_HPP
+#endif

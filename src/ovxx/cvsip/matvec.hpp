@@ -6,35 +6,24 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_CVSIP_MATVEC_HPP
-#define VSIP_CORE_CVSIP_MATVEC_HPP
+#ifndef ovxx_cvsip_matvec_hpp_
+#define ovxx_cvsip_matvec_hpp_
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#include <ovxx/config.hpp>
+#include <ovxx/order_traits.hpp>
+#include <ovxx/cvsip/block.hpp>
+#include <ovxx/cvsip/view.hpp>
 
-#include <vsip/core/config.hpp>
-#include <vsip/core/order_traits.hpp>
-#include <vsip/core/cvsip/block.hpp>
-#include <vsip/core/cvsip/view.hpp>
-#include <vsip/core/coverage.hpp>
-extern "C" {
-#include <vsip.h>
-}
-
-namespace vsip
+namespace ovxx
 {
-namespace impl
-{
-
 namespace cvsip
 {
 
-template <typename T> struct Op_traits { static bool const valid = false;};
+template <typename T> struct op_traits { static bool const valid = false;};
 
-#if VSIP_IMPL_CVSIP_HAVE_FLOAT
+#if OVXX_CVSIP_HAVE_FLOAT
 template <>
-struct Op_traits<float>
+struct op_traits<float>
 {
   typedef float value_type;
   typedef vsip_vview_f vector_type;
@@ -57,7 +46,7 @@ struct Op_traits<float>
 };
 
 template <>
-struct Op_traits<std::complex<float> >
+struct op_traits<std::complex<float> >
 {
   typedef std::complex<float> value_type;
   typedef vsip_cvview_f vector_type;
@@ -94,9 +83,9 @@ struct Op_traits<std::complex<float> >
   { vsip_cmvprod_f(a, x, y);}
 };
 #endif
-#if VSIP_IMPL_CVSIP_HAVE_DOUBLE
+#if OVXX_CVSIP_HAVE_DOUBLE
 template <>
-struct Op_traits<double>
+struct op_traits<double>
 {
   typedef double value_type;
   typedef vsip_vview_d vector_type;
@@ -119,7 +108,7 @@ struct Op_traits<double>
 };
 
 template <>
-struct Op_traits<std::complex<double> >
+struct op_traits<std::complex<double> >
 {
   typedef std::complex<double> value_type;
   typedef vsip_cvview_d vector_type;
@@ -157,12 +146,8 @@ struct Op_traits<std::complex<double> >
 };
 #endif
 
-} // namespace vsip::impl::cvsip
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::cvsip
 
-namespace vsip_csl
-{
 namespace dispatcher
 {
 
@@ -172,15 +157,13 @@ template <typename T,
 struct Evaluator<op::dot, be::cvsip,
                  T(Block0 const&, Block1 const&)>
 {
-  typedef impl::cvsip::Op_traits<T> traits;
+  typedef cvsip::op_traits<T> traits;
 
   // Note: C-VSIPL backends set ct_valid to false if the block types don't 
   // allow direct data access (i.e. dda::Data<>::ct_cost > 0), which occurs when
   // an operator like conj() is used (see cvjdot()).  This prevents this
   // evaluator from being used if invoked through the normal dispatch 
-  // mechanism.  For the reference implementation, we call the backend 
-  // explicitly, which is ok, since the dda::Data handles the layout 
-  // adjustments.
+  // mechanism.
 
   static bool const ct_valid = 
     traits::valid &&
@@ -194,14 +177,13 @@ struct Evaluator<op::dot, be::cvsip,
 
   static T exec(Block0 const& a, Block1 const& b)
   {
-    using namespace vsip::impl::cvsip;
-    VSIP_IMPL_COVER_FCN("op::dot/cvsip", exec);
-    assert(a.size(1, 0) == b.size(1, 0));
+    namespace c = cvsip;
+    OVXX_PRECONDITION(a.size(1, 0) == b.size(1, 0));
 
     dda::Data<Block0, dda::in> a_data(a);
     dda::Data<Block1, dda::in> b_data(b);
-    const_View<1, T> aview(a_data.ptr(), 0, a_data.stride(0), a.size(1, 0));
-    const_View<1, T> bview(b_data.ptr(), 0, b_data.stride(0), b.size(1, 0));
+    c::const_View<1, T> aview(a_data.ptr(), 0, a_data.stride(0), a.size(1, 0));
+    c::const_View<1, T> bview(b_data.ptr(), 0, b_data.stride(0), b.size(1, 0));
     return traits::dot(aview.ptr(), bview.ptr());
   }
 };
@@ -214,7 +196,7 @@ struct Evaluator<op::dot, be::cvsip,
                  std::complex<T>(Block0 const&, 
 				 expr::Unary<expr::op::Conj, Block1, true> const&)>
 {
-  typedef impl::cvsip::Op_traits<std::complex<T> > traits;
+  typedef cvsip::op_traits<std::complex<T> > traits;
   typedef expr::Unary<expr::op::Conj, Block1, true> block1_type;
 
   static bool const ct_valid = 
@@ -230,20 +212,17 @@ struct Evaluator<op::dot, be::cvsip,
 
   static complex<T> exec(Block0 const& a, block1_type const& b)
   {
-    using namespace vsip::impl::cvsip;
-    VSIP_IMPL_COVER_FCN("op::dot(conj)/cvsip", exec);
-    assert(a.size(1, 0) == b.size(1, 0));
-
+    namespace c = cvsip;
+    OVXX_PRECONDITION(a.size(1, 0) == b.size(1, 0));
     dda::Data<Block0, dda::in> a_data(a);
     dda::Data<Block1, dda::in> b_data(b.arg());
-    const_View<1, std::complex<T> >
+    c::const_View<1, std::complex<T> >
       aview(a_data.ptr(), 0, a_data.stride(0), a.size(1, 0));
-    const_View<1, std::complex<T> >
+    c::const_View<1, std::complex<T> >
       bview(b_data.ptr(), 0, b_data.stride(0), b.size(1, 0));
     return traits::cvjdot(aview.ptr(), bview.ptr());
   }
 };
-
 
 template <typename T,
           typename Block0,
@@ -252,7 +231,7 @@ template <typename T,
 struct Evaluator<op::outer, be::cvsip,
                  void(Block0&, T, Block1 const&, Block2 const&)>
 {
-  typedef impl::cvsip::Op_traits<T> traits;
+  typedef cvsip::op_traits<T> traits;
 
   static bool const ct_valid = 
     traits::valid &&
@@ -268,23 +247,21 @@ struct Evaluator<op::outer, be::cvsip,
 
   static void exec(Block0& r, T s, Block1 const& a, Block2 const& b)
   {
-    using namespace vsip::impl::cvsip;
-    VSIP_IMPL_COVER_FCN("op::outer/cvsip", exec);
+    namespace c = cvsip;
     typedef typename get_block_layout<Block0>::order_type order0_type;
-    VSIP_IMPL_STATIC_ASSERT((impl::Is_order_valid<2, order0_type>::value));
 
-    assert(a.size(1, 0) == r.size(2, 0));
-    assert(b.size(1, 0) == r.size(2, 1));
+    OVXX_PRECONDITION(a.size(1, 0) == r.size(2, 0));
+    OVXX_PRECONDITION(b.size(1, 0) == r.size(2, 1));
 
     dda::Data<Block0, dda::out> r_data(r);
     dda::Data<Block1, dda::in> a_data(a);
     dda::Data<Block2, dda::in> b_data(b);
 
-    const_View<1, T> aview(a_data.ptr(), 0, a_data.stride(0), a.size(1, 0));
-    const_View<1, T> bview(b_data.ptr(), 0, b_data.stride(0), b.size(1, 0));
-    View<2, T> rview(r_data.ptr(), 0,
-		     r_data.stride(0), r.size(2, 0),
-		     r_data.stride(1), r.size(2, 1));
+    c::const_View<1, T> aview(a_data.ptr(), 0, a_data.stride(0), a.size(1, 0));
+    c::const_View<1, T> bview(b_data.ptr(), 0, b_data.stride(0), b.size(1, 0));
+    c::View<2, T> rview(r_data.ptr(), 0,
+			r_data.stride(0), r.size(2, 0),
+			r_data.stride(1), r.size(2, 1));
 
     traits::outer(s, aview.ptr(), bview.ptr(), rview.ptr());
   }
@@ -296,10 +273,10 @@ template <typename Block0,
           typename Block2>
 struct Evaluator<op::prod, be::cvsip,
                  void(Block0&, Block1 const&, Block2 const&),
-		 typename enable_if_c<Block1::dim == 1 && Block2::dim == 2>::type>
+		 typename enable_if<Block1::dim == 1 && Block2::dim == 2>::type>
 {
   typedef typename Block0::value_type T;
-  typedef impl::cvsip::Op_traits<T> traits;
+  typedef cvsip::op_traits<T> traits;
 
   static bool const ct_valid = 
     traits::valid &&
@@ -316,20 +293,19 @@ struct Evaluator<op::prod, be::cvsip,
 
   static void exec(Block0& y, Block1 const& x, Block2 const& a)
   {
-    using namespace vsip::impl::cvsip;
-    VSIP_IMPL_COVER_FCN("op::prod/cvsip", exec);
-    assert(x.size(1, 0) == a.size(2, 0));
+    namespace c = cvsip;
+    OVXX_PRECONDITION(x.size(1, 0) == a.size(2, 0));
 
     dda::Data<Block0, dda::out> y_data(y);
     dda::Data<Block1, dda::in> x_data(x);
     dda::Data<Block2, dda::in> a_data(a);
 
-    View<1, T> yview(y_data.ptr(), 0, y_data.stride(0), y.size(1, 0));
-    const_View<1, T> xview(x_data.ptr(), 0, x_data.stride(0), x.size(1, 0));
-    const_View<2, T> aview(a_data.ptr(), 0,
-			   a_data.stride(1), a.size(2, 1),
-			   a_data.stride(0), a.size(2, 0));
-
+    c::View<1, T> yview(y_data.ptr(), 0, y_data.stride(0), y.size(1, 0));
+    c::const_View<1, T> xview(x_data.ptr(), 0, x_data.stride(0), x.size(1, 0));
+    c::const_View<2, T> aview(a_data.ptr(), 0,
+			      a_data.stride(1), a.size(2, 1),
+			      a_data.stride(0), a.size(2, 0));
+    
     traits::prod(aview.ptr(), xview.ptr(), yview.ptr());
   }
 };
@@ -340,11 +316,11 @@ template <typename Block0,
           typename Block2>
 struct Evaluator<op::prod, be::cvsip, 
                  void(Block0&, Block1 const&, Block2 const&),
-		 typename enable_if_c<Block1::dim == 2 && Block2::dim == 1>::type>
+		 typename enable_if<Block1::dim == 2 && Block2::dim == 1>::type>
 {
   typedef typename Block0::value_type T;
   typedef typename get_block_layout<Block1>::order_type order1_type;
-  typedef impl::cvsip::Op_traits<T> traits;
+  typedef cvsip::op_traits<T> traits;
 
   static bool const ct_valid = 
     traits::valid &&
@@ -361,19 +337,18 @@ struct Evaluator<op::prod, be::cvsip,
 
   static void exec(Block0& y, Block1 const& a, Block2 const& x)
   {
-    using namespace vsip::impl::cvsip;
-    VSIP_IMPL_COVER_FCN("op::prod/cvsip", exec);
-    assert(x.size(1, 0) == a.size(2, 1));
+    namespace c = cvsip;
+    OVXX_PRECONDITION(x.size(1, 0) == a.size(2, 1));
 
     dda::Data<Block0, dda::out> y_data(y);
     dda::Data<Block1, dda::in> a_data(a);
     dda::Data<Block2, dda::in> x_data(x);
 
-    View<1, T> yview(y_data.ptr(), 0, y_data.stride(0), y.size(1, 0));
-    const_View<2, T> aview(a_data.ptr(), 0,
-			   a_data.stride(0), a.size(2, 0),
-			   a_data.stride(1), a.size(2, 1));
-    const_View<1, T> xview(x_data.ptr(), 0, x_data.stride(0), x.size(1, 0));
+    c::View<1, T> yview(y_data.ptr(), 0, y_data.stride(0), y.size(1, 0));
+    c::const_View<2, T> aview(a_data.ptr(), 0,
+			      a_data.stride(0), a.size(2, 0),
+			      a_data.stride(1), a.size(2, 1));
+    c::const_View<1, T> xview(x_data.ptr(), 0, x_data.stride(0), x.size(1, 0));
 
     traits::prod(aview.ptr(), xview.ptr(), yview.ptr());
   }
@@ -385,10 +360,10 @@ template <typename Block0,
           typename Block2>
 struct Evaluator<op::prod, be::cvsip,
                  void(Block0&, Block1 const&, Block2 const&),
-		 typename enable_if_c<Block1::dim == 2 && Block2::dim == 2>::type>
+		 typename enable_if<Block1::dim == 2 && Block2::dim == 2>::type>
 {
   typedef typename Block0::value_type T;
-  typedef impl::cvsip::Op_traits<T> traits;
+  typedef cvsip::op_traits<T> traits;
 
   static bool const ct_valid = 
     traits::valid &&
@@ -404,21 +379,20 @@ struct Evaluator<op::prod, be::cvsip,
 
   static void exec(Block0& c, Block1 const& a, Block2 const& b)
   {
-    using namespace vsip::impl::cvsip;
-    VSIP_IMPL_COVER_FCN("op::prod/cvsip", exec);
+    namespace cc = cvsip;
     dda::Data<Block0, dda::out> c_data(c);
     dda::Data<Block1, dda::in> a_data(a);
     dda::Data<Block2, dda::in> b_data(b);
 
-    View<2, T> cview(c_data.ptr(), 0,
-		     c_data.stride(0), c.size(2, 0),
-		     c_data.stride(1), c.size(2, 1));
-    const_View<2, T> aview(a_data.ptr(), 0,
-			   a_data.stride(0), a.size(2, 0),
-			   a_data.stride(1), a.size(2, 1));
-    const_View<2, T> bview(b_data.ptr(), 0,
-			   b_data.stride(0), b.size(2, 0),
-			   b_data.stride(1), b.size(2, 1));
+    cc::View<2, T> cview(c_data.ptr(), 0,
+			 c_data.stride(0), c.size(2, 0),
+			 c_data.stride(1), c.size(2, 1));
+    cc::const_View<2, T> aview(a_data.ptr(), 0,
+			       a_data.stride(0), a.size(2, 0),
+			       a_data.stride(1), a.size(2, 1));
+    cc::const_View<2, T> bview(b_data.ptr(), 0,
+			       b_data.stride(0), b.size(2, 0),
+			       b_data.stride(1), b.size(2, 1));
     traits::prod(aview.ptr(), bview.ptr(), cview.ptr());
   }
 };
@@ -430,7 +404,7 @@ template <typename T,
 struct Evaluator<op::gemp, be::cvsip,
                  void(Block0&, T, Block1 const&, Block2 const&, T)>
 {
-  typedef impl::cvsip::Op_traits<T> traits;
+  typedef cvsip::op_traits<T> traits;
 
   static bool const ct_valid = 
     traits::valid &&
@@ -447,26 +421,25 @@ struct Evaluator<op::gemp, be::cvsip,
   static void exec(Block0& c, T alpha,
                    Block1 const& a, Block2 const& b, T beta)
   {
-    using namespace vsip::impl::cvsip;
-    VSIP_IMPL_COVER_FCN("op::gemp/cvsip", exec);
+    namespace cc = cvsip;
     dda::Data<Block0, dda::inout> c_data(c);
     dda::Data<Block1, dda::in> a_data(a);
     dda::Data<Block2, dda::in> b_data(b);
 
-    View<2, T> cview(c_data.ptr(), 0,
-		     c_data.stride(0), c.size(2, 0),
-		     c_data.stride(1), c.size(2, 1));
-    const_View<2, T> aview(a_data.ptr(), 0,
-			   a_data.stride(0), a.size(2, 0),
-			   a_data.stride(1), a.size(2, 1));
-    const_View<2, T> bview(b_data.ptr(), 0,
-			   b_data.stride(0), b.size(2, 0),
-			   b_data.stride(1), b.size(2, 1));
+    cc::View<2, T> cview(c_data.ptr(), 0,
+			 c_data.stride(0), c.size(2, 0),
+			 c_data.stride(1), c.size(2, 1));
+    cc::const_View<2, T> aview(a_data.ptr(), 0,
+			       a_data.stride(0), a.size(2, 0),
+			       a_data.stride(1), a.size(2, 1));
+    cc::const_View<2, T> bview(b_data.ptr(), 0,
+			       b_data.stride(0), b.size(2, 0),
+			       b_data.stride(1), b.size(2, 1));
     traits::gemp(cview.ptr(), alpha, aview.ptr(), bview.ptr(), beta);
   }
 };
 
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
 #endif

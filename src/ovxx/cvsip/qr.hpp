@@ -6,55 +6,39 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_CVSIP_SOLVER_QR_HPP
-#define VSIP_CORE_CVSIP_SOLVER_QR_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef ovxx_cvsip_qr_hpp_
+#define ovxx_cvsip_qr_hpp_
 
 #include <algorithm>
 
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
-#include <vsip/core/math_enum.hpp>
-#include <vsip/core/temp_buffer.hpp>
-#include <vsip/core/working_view.hpp>
-#include <vsip/core/expr/fns_elementwise.hpp>
-#include <vsip/core/solver/common.hpp>
-#include <vsip/core/cvsip/solver.hpp>
-#include <vsip/core/cvsip/view.hpp>
+#include <vsip/impl/math_enum.hpp>
+#include <ovxx/view_utils.hpp>
+#include <vsip/impl/fns_elementwise.hpp>
+#include <vsip/impl/solver/common.hpp>
+#include <ovxx/cvsip/solver.hpp>
+#include <ovxx/cvsip/view.hpp>
 
-
-/***********************************************************************
-  Declarations
-***********************************************************************/
-
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace cvsip
 {
 
-/// Qrd implementation using CVSIP
-
-/// Requires:
-///   T to be a value type supported by SAL's QR routines
 template <typename T>
-class Qrd
+class qrd
 {
-  typedef Solver_traits<T> traits;
+  typedef solver_traits<T> traits;
   static storage_format_type const storage_format = vsip::impl::dense_complex_format;
-  typedef Layout<2, row2_type, dense, storage_format> data_LP;
-  typedef Strided<2, T, data_LP> data_block_type;
+  typedef Layout<2, row2_type, dense, storage_format> data_layout_type;
+  typedef Strided<2, T, data_layout_type> data_block_type;
 
+public:
   static bool const supports_qrd_saveq1  = true;
   static bool const supports_qrd_saveq   = false;
   static bool const supports_qrd_nosaveq = true;
 
-public:
-  Qrd(length_type rows, length_type cols, storage_type st) VSIP_THROW((std::bad_alloc))
+  qrd(length_type rows, length_type cols, storage_type st) VSIP_THROW((std::bad_alloc))
   : m_          (rows),
     n_          (cols),
     st_         (st),
@@ -62,10 +46,10 @@ public:
     cvsip_data_ (data_.block().ptr(), m_, n_,true),
     qr_(traits::qr_create(m_, n_, st_))
   {
-    assert(m_ > 0 && n_ > 0 && m_ >= n_);
-    assert(st_ == qrd_nosaveq || st_ == qrd_saveq || st_ == qrd_saveq1);
+    OVXX_PRECONDITION(m_ > 0 && n_ > 0 && m_ >= n_);
+    OVXX_PRECONDITION(st_ == qrd_nosaveq || st_ == qrd_saveq || st_ == qrd_saveq1);
   }
-  Qrd(Qrd const &qr) VSIP_THROW((std::bad_alloc))
+  qrd(qrd const &qr) VSIP_THROW((std::bad_alloc))
   : m_          (qr.m_),
     n_          (qr.n_),
     st_         (qr.st_),
@@ -76,20 +60,16 @@ public:
     data_ = qr.data_;
   }
 
-  ~Qrd() VSIP_NOTHROW { traits::qr_destroy(qr_);}
+  ~qrd() VSIP_NOTHROW { traits::qr_destroy(qr_);}
 
-  length_type  rows()     const VSIP_NOTHROW { return m_; }
-  length_type  columns()  const VSIP_NOTHROW { return n_; }
-  storage_type qstorage() const VSIP_NOTHROW { return st_; }
+  length_type  rows()     const VSIP_NOTHROW { return m_;}
+  length_type  columns()  const VSIP_NOTHROW { return n_;}
+  storage_type qstorage() const VSIP_NOTHROW { return st_;}
 
-  /// Decompose matrix M into QR form.
-  ///
-  /// Requires
-  ///   M to be a full rank, modifiable matrix of ROWS x COLS.
   template <typename Block>
   bool decompose(Matrix<T, Block> m) VSIP_NOTHROW
   {
-    assert(m.size(0) == m_ && m.size(1) == n_);
+    OVXX_PRECONDITION(m.size(0) == m_ && m.size(1) == n_);
 
     cvsip_data_.block().release(false);
     assign_local(data_, m);
@@ -118,9 +98,7 @@ public:
   bool lsqsol(const_Matrix<T, Block0>, Matrix<T, Block1>) VSIP_NOTHROW;
 
 private:
-  typedef std::vector<T, Aligned_allocator<T> > vector_type;
-
-  Qrd& operator=(Qrd const&) VSIP_NOTHROW;
+  qrd& operator=(qrd const&) VSIP_NOTHROW;
 
   length_type  m_;			// Number of rows.
   length_type  n_;			// Number of cols.
@@ -131,34 +109,13 @@ private:
   typename traits::qr_type *qr_;
 };
 
-/// Compute product of Q and b
-/// 
-/// If qstorage == qrd_saveq1, Q is MxN.
-/// If qstorage == qrd_saveq,  Q is MxM.
-///
-/// qstoarge   | ps        | tr         | product | b (in) | x (out)
-/// qrd_saveq1 | mat_lside | mat_ntrans | Q b     | (n, p) | (m, p)
-/// qrd_saveq1 | mat_lside | mat_trans  | Q' b    | (m, p) | (n, p)
-/// qrd_saveq1 | mat_lside | mat_herm   | Q* b    | (m, p) | (n, p)
-///
-/// qrd_saveq1 | mat_rside | mat_ntrans | b Q     | (p, m) | (p, n)
-/// qrd_saveq1 | mat_rside | mat_trans  | b Q'    | (p, n) | (p, m)
-/// qrd_saveq1 | mat_rside | mat_herm   | b Q*    | (p, n) | (p, m)
-///
-/// qrd_saveq  | mat_lside | mat_ntrans | Q b     | (m, p) | (m, p)
-/// qrd_saveq  | mat_lside | mat_trans  | Q' b    | (m, p) | (m, p)
-/// qrd_saveq  | mat_lside | mat_herm   | Q* b    | (m, p) | (m, p)
-///
-/// qrd_saveq  | mat_rside | mat_ntrans | b Q     | (p, m) | (p, m)
-/// qrd_saveq  | mat_rside | mat_trans  | b Q'    | (p, m) | (p, m)
-/// qrd_saveq  | mat_rside | mat_herm   | b Q*    | (p, m) | (p, m)
 template <typename T>
 template <mat_op_type       tr,
 	  product_side_type ps,
 	  typename          Block0,
 	  typename          Block1>
 bool
-Qrd<T>::prodq(const_Matrix<T, Block0> b,
+qrd<T>::prodq(const_Matrix<T, Block0> b,
 	      Matrix<T, Block1>       x) VSIP_NOTHROW
 {
   typedef typename get_block_layout<Block0>::order_type order_type;
@@ -166,7 +123,7 @@ Qrd<T>::prodq(const_Matrix<T, Block0> b,
   typedef Layout<2, order_type, dense, storage_format> data_LP;
   typedef Strided<2, T, data_LP, Local_map> block_type;
 
-  assert(this->qstorage() == qrd_saveq1 || this->qstorage() == qrd_saveq);
+  OVXX_PRECONDITION(this->qstorage() == qrd_saveq1 || this->qstorage() == qrd_saveq);
   length_type q_rows;
   length_type q_cols;
   if (qstorage() == qrd_saveq1)
@@ -193,15 +150,15 @@ Qrd<T>::prodq(const_Matrix<T, Block0> b,
   // left or right?
   if(ps == mat_lside) 
   {
-    assert(b.size(0) == q_cols);
-    assert(x.size(0) == q_rows);
-    assert(b.size(1) == x.size(1));
+    OVXX_PRECONDITION(b.size(0) == q_cols);
+    OVXX_PRECONDITION(x.size(0) == q_rows);
+    OVXX_PRECONDITION(b.size(1) == x.size(1));
   }
   else
   {
-    assert(b.size(1) == q_rows);
-    assert(x.size(1) == q_cols);
-    assert(b.size(0) == x.size(0));
+    OVXX_PRECONDITION(b.size(1) == q_rows);
+    OVXX_PRECONDITION(x.size(1) == q_cols);
+    OVXX_PRECONDITION(b.size(0) == x.size(0));
   }
 
   Matrix<T,block_type> b_int(b.size(0), b.size(1));
@@ -228,16 +185,16 @@ template <mat_op_type tr,
 	  typename    Block0,
 	  typename    Block1>
 bool
-Qrd<T>::rsol(const_Matrix<T, Block0> b, T alpha, Matrix<T, Block1> x) VSIP_NOTHROW
+qrd<T>::rsol(const_Matrix<T, Block0> b, T alpha, Matrix<T, Block1> x) VSIP_NOTHROW
 {
   typedef typename get_block_layout<Block0>::order_type order_type;
   static storage_format_type const storage_format = get_block_layout<Block0>::storage_format;
   typedef Layout<2, order_type, dense, storage_format> data_LP;
   typedef Strided<2, T, data_LP, Local_map> block_type;
 
-  assert(b.size(0) == n_);
-  assert(b.size(0) == x.size(0));
-  assert(b.size(1) == x.size(1));
+  OVXX_PRECONDITION(b.size(0) == n_);
+  OVXX_PRECONDITION(b.size(0) == x.size(0));
+  OVXX_PRECONDITION(b.size(1) == x.size(1));
 
   Matrix<T, block_type> b_int(b.size(0), b.size(1));
   dda::Data<block_type, dda::inout>  b_data(b_int.block());
@@ -257,14 +214,12 @@ Qrd<T>::rsol(const_Matrix<T, Block0> b, T alpha, Matrix<T, Block1> x) VSIP_NOTHR
   return true;
 }
 
-
-
 /// Solve covariance system for x:
 ///   A' A X = B
 template <typename T>
 template <typename Block0, typename Block1>
 bool
-Qrd<T>::covsol(const_Matrix<T, Block0> b, Matrix<T, Block1> x) VSIP_NOTHROW
+qrd<T>::covsol(const_Matrix<T, Block0> b, Matrix<T, Block1> x) VSIP_NOTHROW
 {
   typedef typename get_block_layout<Block0>::order_type order_type;
   static storage_format_type const storage_format = get_block_layout<Block0>::storage_format;
@@ -294,7 +249,7 @@ Qrd<T>::covsol(const_Matrix<T, Block0> b, Matrix<T, Block1> x) VSIP_NOTHROW
 template <typename T>
 template <typename Block0, typename Block1>
 bool
-Qrd<T>::lsqsol(const_Matrix<T, Block0> b, Matrix<T, Block1> x) VSIP_NOTHROW
+qrd<T>::lsqsol(const_Matrix<T, Block0> b, Matrix<T, Block1> x) VSIP_NOTHROW
 {
   typedef typename get_block_layout<Block0>::order_type order_type;
   static storage_format_type const storage_format = get_block_layout<Block0>::storage_format;
@@ -319,21 +274,17 @@ Qrd<T>::lsqsol(const_Matrix<T, Block0> b, Matrix<T, Block1> x) VSIP_NOTHROW
   return true;
 }
 
-} // namespace vsip::impl::cvsip
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::cvsip
 
-namespace vsip_csl
-{
 namespace dispatcher
 {
 template <typename T>
 struct Evaluator<op::qrd, be::cvsip, T>
 {
-  static bool const ct_valid = impl::cvsip::Solver_traits<T>::valid;
-  typedef impl::cvsip::Qrd<T> backend_type;
+  static bool const ct_valid = cvsip::solver_traits<T>::valid;
+  typedef cvsip::qrd<T> backend_type;
 };
-} // namespace vsip_csl::dispatcher
-} // namespace vsip_csl
+} // namespace ovxx::dispatcher
+} // namespace ovxx
 
-#endif // VSIP_CORE_CVSIP_SOLVER_QR_HPP
+#endif

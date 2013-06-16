@@ -6,26 +6,21 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#include <vsip/core/config.hpp>
-#include <vsip/core/cvsip/fft.hpp>
-#include <vsip/core/cvsip/block.hpp>
-#include <vsip/core/cvsip/view.hpp>
-extern "C" {
-#include <vsip.h>
-}
+#include <ovxx/cvsip/fft.hpp>
+#include <ovxx/cvsip/block.hpp>
+#include <ovxx/cvsip/view.hpp>
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace cvsip
 {
+namespace fft = ovxx::signal::fft;
 
-template <dimension_type D, typename T, int E> struct FFT_traits;
+template <dimension_type D, typename T, int E> struct fft_traits;
 
-#if VSIP_IMPL_CVSIP_HAVE_FLOAT
+#if OVXX_CVSIP_HAVE_FLOAT
 template <int E>
-struct FFT_traits<1, std::complex<float>, E>
+struct fft_traits<1, complex<float>, E>
 {
   typedef vsip_fft_f fft_type;
   typedef vsip_cvview_f view_type;
@@ -40,7 +35,7 @@ struct FFT_traits<1, std::complex<float>, E>
 };
 
 template <>
-struct FFT_traits<1, float, -1>
+struct fft_traits<1, float, -1>
 {
   typedef vsip_fft_f fft_type;
   typedef vsip_vview_f real_view;
@@ -53,7 +48,7 @@ struct FFT_traits<1, float, -1>
 };
 
 template <>
-struct FFT_traits<1, float, 1>
+struct fft_traits<1, float, 1>
 {
   typedef vsip_fft_f fft_type;
   typedef vsip_vview_f real_view;
@@ -66,10 +61,10 @@ struct FFT_traits<1, float, 1>
 };
 
 #endif
-#if VSIP_IMPL_CVSIP_HAVE_DOUBLE
+#if OVXX_CVSIP_HAVE_DOUBLE
 
 template <int E>
-struct FFT_traits<1, std::complex<double>, E>
+struct fft_traits<1, complex<double>, E>
 {
   typedef vsip_fft_d fft_type;
   typedef vsip_cvview_d view_type;
@@ -84,7 +79,7 @@ struct FFT_traits<1, std::complex<double>, E>
 };
 
 template <>
-struct FFT_traits<1, double, -1>
+struct fft_traits<1, double, -1>
 {
   typedef vsip_fft_d fft_type;
   typedef vsip_vview_d real_view;
@@ -97,7 +92,7 @@ struct FFT_traits<1, double, -1>
 };
 
 template <>
-struct FFT_traits<1, double, 1>
+struct fft_traits<1, double, 1>
 {
   typedef vsip_fft_d fft_type;
   typedef vsip_vview_d real_view;
@@ -119,22 +114,22 @@ to_alg_hint(int h)
 
 #endif
 
-template <dimension_type D, typename I, typename O, int S> class Fft_impl;
+template <dimension_type D, typename I, typename O, int S> class Fft;
 
 template <typename T, int S>
-class Fft_impl<1, std::complex<T>, std::complex<T>, S>
-  : public fft::Fft_backend<1, std::complex<T>, std::complex<T>, S>
+class Fft<1, complex<T>, complex<T>, S>
+  : public fft::fft_backend<1, complex<T>, complex<T>, S>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
-  typedef FFT_traits<1, std::complex<T>, S == fft_fwd ? -1 : 1> traits;
+  typedef fft_traits<1, complex<T>, S == fft_fwd ? -1 : 1> traits;
 
 public:
-  Fft_impl(Domain<1> const &d, rtype scale, unsigned int n, int /*h*/)
+  Fft(Domain<1> const &d, rtype scale, unsigned int n, int /*h*/)
     : impl_(traits::create(d.size(), scale, n))
   {}
-  ~Fft_impl() { traits::destroy(impl_);}
+  ~Fft() { traits::destroy(impl_);}
   virtual bool supports_scale() { return true;}
   virtual void in_place(ctype *inout, stride_type stride, length_type length)
   {
@@ -172,19 +167,19 @@ private:
 };
 
 template <typename T>
-class Fft_impl<1, T, std::complex<T>, 0>
-  : public fft::Fft_backend<1, T, std::complex<T>, 0>
+class Fft<1, T, complex<T>, 0>
+  : public fft::fft_backend<1, T, complex<T>, 0>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
-  typedef FFT_traits<1, T, -1> traits;
+  typedef fft_traits<1, T, -1> traits;
 
 public:
-  Fft_impl(Domain<1> const &d, rtype scale, unsigned int n, int /*h*/)
+  Fft(Domain<1> const &d, rtype scale, unsigned int n, int /*h*/)
     : impl_(traits::create(d.size(), scale, n))
   {}
-  ~Fft_impl() { traits::destroy(impl_);}
+  ~Fft() { traits::destroy(impl_);}
   virtual bool supports_scale() { return true;}
   virtual void out_of_place(rtype *in, stride_type in_stride,
 			    ctype *out, stride_type out_stride,
@@ -208,19 +203,19 @@ private:
 };
 
 template <typename T>
-class Fft_impl<1, std::complex<T>, T, 0>
-  : public fft::Fft_backend<1, std::complex<T>, T, 0>
+class Fft<1, complex<T>, T, 0>
+  : public fft::fft_backend<1, complex<T>, T, 0>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
-  typedef FFT_traits<1, T, 1> traits;
+  typedef fft_traits<1, T, 1> traits;
 
 public:
-  Fft_impl(Domain<1> const &d, rtype scale, unsigned int n, int /*h*/)
+  Fft(Domain<1> const &d, rtype scale, unsigned int n, int /*h*/)
     : impl_(traits::create(d.size(), scale, n))
   {}
-  ~Fft_impl() { traits::destroy(impl_);}
+  ~Fft() { traits::destroy(impl_);}
   virtual bool supports_scale() { return true;}
   virtual void out_of_place(ctype *in, stride_type in_stride,
 			    rtype *out, stride_type out_stride,
@@ -243,25 +238,25 @@ private:
   typename traits::fft_type *impl_;
 };
 
-template <typename I, typename O, int A, int D> class Fftm_impl;
+template <typename I, typename O, int A, int D> class Fftm;
 
 template <typename T, int A, int D>
-class Fftm_impl<std::complex<T>, std::complex<T>, A, D>
-  : public fft::Fftm_backend<std::complex<T>, std::complex<T>, A, D>
+class Fftm<complex<T>, complex<T>, A, D>
+  : public fft::fftm_backend<complex<T>, complex<T>, A, D>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
-  typedef FFT_traits<1, std::complex<T>, D == fft_fwd ? -1 : 1> traits;
+  typedef fft_traits<1, complex<T>, D == fft_fwd ? -1 : 1> traits;
 
   static int const axis = A == vsip::col ? 0 : 1;
 
 public:
-  Fftm_impl(Domain<2> const &dom, rtype scale, unsigned int n, int /*h*/)
+  Fftm(Domain<2> const &dom, rtype scale, unsigned int n, int /*h*/)
     : impl_(traits::create(dom[axis].size(), scale, n)),
       mult_(dom[1-axis].size())
   {}
-  ~Fftm_impl() { traits::destroy(impl_);}
+  ~Fftm() { traits::destroy(impl_);}
   virtual bool supports_scale() { return true;}
 
   virtual void in_place(ctype *inout,
@@ -407,22 +402,22 @@ private:
 };
 
 template <typename T, int A>
-class Fftm_impl<T, std::complex<T>, A, fft_fwd>
-  : public fft::Fftm_backend<T, std::complex<T>, A, fft_fwd>
+class Fftm<T, complex<T>, A, fft_fwd>
+  : public fft::fftm_backend<T, complex<T>, A, fft_fwd>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
-  typedef FFT_traits<1, T, -1> traits;
+  typedef fft_traits<1, T, -1> traits;
 
   static int const axis = A == vsip::col ? 0 : 1;
 
 public:
-  Fftm_impl(Domain<2> const &dom, rtype scale, unsigned int n, int /*h*/)
+  Fftm(Domain<2> const &dom, rtype scale, unsigned int n, int /*h*/)
     : impl_(traits::create(dom[axis].size(), scale, n)),
       mult_(dom[1-axis].size())
   {}
-  ~Fftm_impl() { traits::destroy(impl_);}
+  ~Fftm() { traits::destroy(impl_);}
   virtual bool supports_scale() { return true;}
 
   virtual void out_of_place(rtype *in,
@@ -506,22 +501,22 @@ private:
 };
 
 template <typename T, int A>
-class Fftm_impl<std::complex<T>, T, A, fft_inv>
-  : public fft::Fftm_backend<std::complex<T>, T, A, fft_inv>
+class Fftm<complex<T>, T, A, fft_inv>
+  : public fft::fftm_backend<complex<T>, T, A, fft_inv>
 {
   typedef T rtype;
-  typedef std::complex<rtype> ctype;
+  typedef complex<rtype> ctype;
   typedef std::pair<rtype*, rtype*> ztype;
-  typedef FFT_traits<1, T, 1> traits;
+  typedef fft_traits<1, T, 1> traits;
 
   static int const axis = A == vsip::col ? 0 : 1;
 
 public:
-  Fftm_impl(Domain<2> const &dom, rtype scale, unsigned int n, int /*h*/)
+  Fftm(Domain<2> const &dom, rtype scale, unsigned int n, int /*h*/)
     : impl_(traits::create(dom[axis].size(), scale, n)),
       mult_(dom[1-axis].size())
   {}
-  ~Fftm_impl() { traits::destroy(impl_);}
+  ~Fftm() { traits::destroy(impl_);}
   virtual bool supports_scale() { return true;}
 
   virtual void out_of_place(ctype* in,
@@ -606,64 +601,63 @@ private:
 
 #define FFT_DEF(D, I, O, S)				 \
 template <>                                              \
-std::auto_ptr<fft::Fft_backend<D, I, O, S> >	         \
+std::auto_ptr<fft::fft_backend<D, I, O, S> >	         \
 create(Domain<D> const &dom, scalar_of<I>::type scale,   \
        unsigned int n)                                   \
 {                                                        \
-  return std::auto_ptr<fft::Fft_backend<D, I, O, S> >    \
-    (new Fft_impl<D, I, O, S>(dom, scale, n, 0));        \
+  return std::auto_ptr<fft::fft_backend<D, I, O, S> >    \
+    (new Fft<D, I, O, S>(dom, scale, n, 0));        \
 }
 
-#if defined VSIP_IMPL_FFT_USE_FLOAT && VSIP_IMPL_CVSIP_HAVE_FLOAT
-FFT_DEF(1, std::complex<float>, std::complex<float>, fft_fwd)
-FFT_DEF(1, std::complex<float>, std::complex<float>, fft_inv)
-FFT_DEF(1, float, std::complex<float>, 0)
-FFT_DEF(1, std::complex<float>, float, 0)
+#if defined OVXX_CVSIP_HAVE_FLOAT
+FFT_DEF(1, complex<float>, complex<float>, fft_fwd)
+FFT_DEF(1, complex<float>, complex<float>, fft_inv)
+FFT_DEF(1, float, complex<float>, 0)
+FFT_DEF(1, complex<float>, float, 0)
 #endif
 
-#if defined VSIP_IMPL_FFT_USE_DOUBLE && VSIP_IMPL_CVSIP_HAVE_DOUBLE
-FFT_DEF(1, std::complex<double>, std::complex<double>, fft_fwd)
-FFT_DEF(1, std::complex<double>, std::complex<double>, fft_inv)
-FFT_DEF(1, double, std::complex<double>, 0)
-FFT_DEF(1, std::complex<double>, double, 0)
+#if defined OVXX_CVSIP_HAVE_DOUBLE
+FFT_DEF(1, complex<double>, complex<double>, fft_fwd)
+FFT_DEF(1, complex<double>, complex<double>, fft_inv)
+FFT_DEF(1, double, complex<double>, 0)
+FFT_DEF(1, complex<double>, double, 0)
 #endif
 
 #undef FFT_DEF
 
 #define FFTM_DEF(I, O, A, D)			       \
 template <>                                            \
-std::auto_ptr<fft::Fftm_backend<I, O, A, D> >	       \
+std::auto_ptr<fft::fftm_backend<I, O, A, D> >	       \
 create(Domain<2> const &dom, scalar_of<I>::type scale, \
        unsigned int n)                                 \
 {                                                      \
-  return std::auto_ptr<fft::Fftm_backend<I, O, A, D> > \
-    (new Fftm_impl<I, O, A, D>(dom, scale, n, 0));     \
+  return std::auto_ptr<fft::fftm_backend<I, O, A, D> > \
+    (new Fftm<I, O, A, D>(dom, scale, n, 0));     \
 }
 
-#if defined VSIP_IMPL_FFT_USE_FLOAT && VSIP_IMPL_CVSIP_HAVE_FLOAT
-FFTM_DEF(float, std::complex<float>, 0, fft_fwd)
-FFTM_DEF(float, std::complex<float>, 1, fft_fwd)
-FFTM_DEF(std::complex<float>, float, 0, fft_inv)
-FFTM_DEF(std::complex<float>, float, 1, fft_inv)
-FFTM_DEF(std::complex<float>, std::complex<float>, 0, fft_fwd)
-FFTM_DEF(std::complex<float>, std::complex<float>, 1, fft_fwd)
-FFTM_DEF(std::complex<float>, std::complex<float>, 0, fft_inv)
-FFTM_DEF(std::complex<float>, std::complex<float>, 1, fft_inv)
+#if defined OVXX_CVSIP_HAVE_FLOAT
+FFTM_DEF(float, complex<float>, 0, fft_fwd)
+FFTM_DEF(float, complex<float>, 1, fft_fwd)
+FFTM_DEF(complex<float>, float, 0, fft_inv)
+FFTM_DEF(complex<float>, float, 1, fft_inv)
+FFTM_DEF(complex<float>, complex<float>, 0, fft_fwd)
+FFTM_DEF(complex<float>, complex<float>, 1, fft_fwd)
+FFTM_DEF(complex<float>, complex<float>, 0, fft_inv)
+FFTM_DEF(complex<float>, complex<float>, 1, fft_inv)
 #endif
 
-#if defined VSIP_IMPL_FFT_USE_DOUBLE && VSIP_IMPL_CVSIP_HAVE_DOUBLE
-FFTM_DEF(double, std::complex<double>, 0, fft_fwd)
-FFTM_DEF(double, std::complex<double>, 1, fft_fwd)
-FFTM_DEF(std::complex<double>, double, 0, fft_inv)
-FFTM_DEF(std::complex<double>, double, 1, fft_inv)
-FFTM_DEF(std::complex<double>, std::complex<double>, 0, fft_fwd)
-FFTM_DEF(std::complex<double>, std::complex<double>, 1, fft_fwd)
-FFTM_DEF(std::complex<double>, std::complex<double>, 0, fft_inv)
-FFTM_DEF(std::complex<double>, std::complex<double>, 1, fft_inv)
+#if defined OVXX_CVSIP_HAVE_DOUBLE
+FFTM_DEF(double, complex<double>, 0, fft_fwd)
+FFTM_DEF(double, complex<double>, 1, fft_fwd)
+FFTM_DEF(complex<double>, double, 0, fft_inv)
+FFTM_DEF(complex<double>, double, 1, fft_inv)
+FFTM_DEF(complex<double>, complex<double>, 0, fft_fwd)
+FFTM_DEF(complex<double>, complex<double>, 1, fft_fwd)
+FFTM_DEF(complex<double>, complex<double>, 0, fft_inv)
+FFTM_DEF(complex<double>, complex<double>, 1, fft_inv)
 #endif
 
 #undef FFTM_DEF
 
-} // namespace vsip::impl::cvsip
-} // namespace vsip::impl
-} // namespace vsip
+} // namespace ovxx::cvsip
+} // namespace ovxx

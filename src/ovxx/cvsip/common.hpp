@@ -6,27 +6,18 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef VSIP_CORE_CVSIP_COMMON_HPP
-#define VSIP_CORE_CVSIP_COMMON_HPP
-
-/***********************************************************************
-  Included Files
-***********************************************************************/
+#ifndef ovxx_cvsip_common_hpp_
+#define ovxx_cvsip_common_hpp_
 
 #include <vsip/support.hpp>
 #include <vsip/domain.hpp>
-#include <vsip/core/signal/types.hpp>
-#include <vsip/core/solver/common.hpp>
+#include <vsip/impl/signal/types.hpp>
+#include <vsip/impl/solver/common.hpp>
 extern "C" {
 #include <vsip.h>
 }
-/***********************************************************************
-  Declarations
-***********************************************************************/
 
-namespace vsip
-{
-namespace impl
+namespace ovxx
 {
 namespace cvsip
 {
@@ -114,8 +105,7 @@ inline vsip_mat_uplo get_mat_uplo(mat_uplo ul)
 }
 
 
-}
-}
-}
+} // namespace ovxx::cvsip
+} // namespace ovxx
 
 #endif
