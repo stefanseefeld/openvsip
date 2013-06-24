@@ -11,16 +11,9 @@
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/domain.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Definitions - Utility Functions
-***********************************************************************/
+using namespace ovxx;
 
 // Test transpose between arrays with non-unit-stride
 

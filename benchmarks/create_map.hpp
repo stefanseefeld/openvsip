@@ -26,6 +26,7 @@ struct Create_map<Dim, vsip::Local_map>
   static type exec(char) { return type(); }
 };
 
+#if OVXX_PARALLEL_API == 1
 template <vsip::dimension_type Dim>
 struct Create_map<Dim, vsip::Replicated_map<Dim> >
 {
@@ -66,7 +67,7 @@ struct Create_map<1, vsip::Map<Dist0, Dist1, Dist2> >
     }
   }
 };
-
+#endif
 template <vsip::dimension_type Dim,
 	  typename             MapT>
 MapT
@@ -75,27 +76,4 @@ create_map(char type = 'a')
   return Create_map<Dim, MapT>::exec(type);
 }
 
-
-// Sync Policy: use barrier.
-
-struct Barrier
-{
-  Barrier() : comm_(DEFAULT_COMMUNICATOR()) {}
-
-  void sync() { BARRIER(comm_); }
-
-  COMMUNICATOR_TYPE& comm_;
-};
-
-
-
-// Sync Policy: no barrier.
-
-struct No_barrier
-{
-  No_barrier() {}
-
-  void sync() {}
-};
-
-#endif // VSIP_BENCHMARKS_CREATE_MAP_HPP
+#endif

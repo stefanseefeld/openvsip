@@ -13,9 +13,9 @@
 #include <vsip/vector.hpp>
 #include <vsip/dense.hpp>
 #include <vsip/math.hpp>
-#include <vsip_csl/test.hpp>
+#include <test.hpp>
 
-using namespace vsip;
+using namespace ovxx;
 
 typedef Vector<float, Dense<1, float> > DVector;
 typedef Vector<int, Dense<1, int> > IVector;

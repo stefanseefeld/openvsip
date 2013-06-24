@@ -82,7 +82,7 @@ test_corr(
 
     corr(bias, ref, in, out);
 
-    ref::corr(bias, support, ref, in, chk);
+    test::ref::corr(bias, support, ref, in, chk);
 
     double error = test::diff(out, chk);
 

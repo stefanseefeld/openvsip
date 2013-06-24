@@ -9,26 +9,24 @@
 /// Description
 ///   Benchmark main.
 
+#include <vsip/initfin.hpp>
+#include <ovxx/check_config.hpp>
+#include <ovxx/huge_page_allocator.hpp>
+#include "benchmark.hpp"
+
 #include <fstream>
 #include <iostream>
 #if defined(_MC_EXEC)
 #  include <unistd.h>
 #endif
-
-#include <vsip/initfin.hpp>
-#include <vsip/core/check_config.hpp>
-#include <vsip/core/huge_page_pool.hpp>
-
-#include "benchmarks.hpp"
-
 #if !_WIN32
 # include <sys/types.h>
 # include <unistd.h>
 #endif
 
-using namespace vsip;
+using namespace ovxx;
 
-extern int test(Loop1P& loop, int what);
+extern int benchmark(Loop1P& loop, int what);
 extern void defaults(Loop1P& loop);
 
 
@@ -37,15 +35,6 @@ int
 main(int argc, char** argv)
 {
   vsip::vsipl init(argc, argv);
-
-  if (!vsip_csl::profile::DefaultTime::valid)
-  {
-    std::cerr << argv[0] << ": timer "
-	      << vsip_csl::profile::DefaultTime::name()
-	      << " not valid for benchmarking"
-	      << std::endl;
-    exit(-1);
-  }
 
   Loop1P loop;
   bool   verbose = false;
@@ -131,8 +120,6 @@ main(int argc, char** argv)
     }
     else if (!strcmp(argv[i], "-mem"))
       loop.lhs_ = lhs_mem;
-    else if (!strcmp(argv[i], "-prof"))
-      loop.do_prof_  = true;
     else if (!strcmp(argv[i], "-show_loop"))
       loop.show_loop_ = true;
     else if (!strcmp(argv[i], "-show_time"))
@@ -153,7 +140,7 @@ main(int argc, char** argv)
     }
     else if (!strcmp(argv[i], "-lib_config"))
     {
-      std::cout << vsip::impl::library_config();
+      std::cout << ovxx::library_config();
       return 0;
     }
     else if (!strcmp(argv[i], "-pool"))
@@ -163,11 +150,11 @@ main(int argc, char** argv)
 	;
 #if VSIP_IMPL_ENABLE_HUGE_PAGE_POOL
       else if (!strcmp(argv[i], "huge"))
-	loop.pool_ = new vsip::impl::Huge_page_pool("/huge/benchmark.bin", 9);
+	loop.pool_ = new ovxx::huge_page_allocator("/huge/benchmark.bin", 9);
       else if (!strncmp(argv[i], "huge:", 5))
       {
 	int pages = atoi(argv[i]+5);
-	loop.pool_ = new vsip::impl::Huge_page_pool("/huge/benchmark.bin",
+	loop.pool_ = new ovxx::huge_page_allocator("/huge/benchmark.bin",
 						    pages);
       }
 #endif
@@ -193,7 +180,7 @@ main(int argc, char** argv)
   if (pause)
   {
     // Enable this section for easier debugging.
-    impl::Communicator& comm = impl::default_communicator();
+    parallel::Communicator& comm = parallel::default_communicator();
 #if !_WIN32
     pid_t pid = getpid();
 #endif
@@ -212,6 +199,6 @@ main(int argc, char** argv)
 
   loop.what_ = what;
 
-  test(loop, what);
+  benchmark(loop, what);
 }
 

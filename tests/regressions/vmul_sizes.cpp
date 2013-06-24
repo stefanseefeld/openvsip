@@ -18,22 +18,16 @@
 #include <vsip/matrix.hpp>
 #include <vsip/domain.hpp>
 #include <vsip/random.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace vsip;
-using vsip_csl::Almost_equal;
-
-/***********************************************************************
-  Definitions - Utility Functions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T, storage_format_type C>
 void
 test_vmul(length_type len)
 {
   typedef Layout<1, row1_type, dense, C> LP;
-  typedef impl::Strided<1, T, LP> block_type;
+  typedef Strided<1, T, LP> block_type;
 
   Rand<T> gen(0, 0);
 
@@ -56,7 +50,7 @@ test_vmul(length_type len)
 		<< A(i) * B(i) << std::endl;
     }
 #endif
-    test_assert(Almost_equal<T>::eq(Z.get(i), A.get(i) * B.get(i)));
+    test_assert(almost_equal(Z.get(i), A.get(i) * B.get(i)));
   }
 }
 
@@ -76,7 +70,7 @@ main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  test_sweep<float,          interleaved_complex>();
+  test_sweep<float,          array>();
   test_sweep<complex<float>, interleaved_complex>();
   test_sweep<complex<float>, split_complex>();
 }

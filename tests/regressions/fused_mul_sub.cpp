@@ -10,21 +10,13 @@
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/signal.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T>
 void
-test()
+run_test()
 {
   length_type size = 4;
 
@@ -61,21 +53,15 @@ test()
     test_assert(Z.get(i) == b*(A.get(i) - C.get(i)));
 }
 
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
-
 int
 main(int argc, char** argv)
 {
   vsipl init(argc, argv);
 
-  test<float>();
-  test<double>();
-  test<complex<float> >();
-  test<complex<double> >();
+  run_test<float>();
+  run_test<double>();
+  run_test<complex<float> >();
+  run_test<complex<double> >();
 
   return 0;
 }

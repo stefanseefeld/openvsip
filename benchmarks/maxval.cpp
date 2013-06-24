@@ -14,15 +14,10 @@
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
 #include <vsip/selgen.hpp>
-#include <vsip_csl/profile.hpp>
-#include <vsip/core/metaprogramming.hpp>
 #include <vsip/selgen.hpp>
+#include "benchmark.hpp"
 
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
-
-using namespace vsip;
-using vsip_csl::equal;
+using namespace ovxx;
 
 // Make a structure to run maxval based on tag.
 template <template <typename> class ReduceT,
@@ -33,9 +28,9 @@ template <template <typename> class ReduceT,
 struct reduction_op_eval
 {
 
-  typedef typename vsip::get_block_layout<Block>::order_type order_type;
-  typedef vsip_csl::dispatcher::Evaluator<
-    vsip_csl::dispatcher::op::reduce_idx<ReduceT>, Tag,
+  typedef typename get_block_layout<Block>::order_type order_type;
+  typedef dispatcher::Evaluator<
+    dispatcher::op::reduce_idx<ReduceT>, Tag,
     void(typename ReduceT<T>::result_type&,
         Block const&,
         vsip::Index<dim>&,
@@ -82,7 +77,7 @@ template<template <typename,typename> class ViewT,
 struct create_test_vector_helper<vsip::Map<>,ViewT,T,Block>
 {
   static vsip::dimension_type const dim = ViewT<T,Block>::dim;
-  typedef vsip::Dense<dim,T,typename vsip::impl::Row_major<dim>::type,
+  typedef vsip::Dense<dim,T,typename row_major<dim>::type,
     vsip::Map<> > dst_block;
   typedef ViewT<T,dst_block>                 dst_view;
 
@@ -96,7 +91,7 @@ struct create_test_vector_helper<vsip::Map<>,ViewT,T,Block>
     dst_view                     root_view(root_block);
 
     // Ok, now move the vector to the distributed view
-    vsip::impl::assign_local(root_view,sv);
+    assign_local(root_view,sv);
     view = root_view;
 
   };
@@ -140,12 +135,10 @@ struct t_maxval1
     else if (init_ == 2)
       ctvh.assign_view(ramp(T(size-1), T(-1), size));
    
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       val = maxval(ctvh.view, idx);
-    t1.stop();
+    time = t1.elapsed();
 
     if (init_ == 1)
     {
@@ -157,8 +150,6 @@ struct t_maxval1
       test_assert(equal(val, T(size-1)));
       test_assert(idx == 0);
     }
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -172,7 +163,7 @@ struct t_maxval1
 
 template <typename T,
           typename MapT = Local_map,
-	  typename Tag = vsip_csl::dispatcher::be::cvsip>
+	  typename Tag = dispatcher::be::cvsip>
 struct t_maxval2
 {
   char const* what() { return "t_maxval_vector"; }
@@ -183,8 +174,6 @@ struct t_maxval2
 
   void operator()(length_type size, length_type loop, float& time)
   {
-    using namespace vsip::impl;
-
     typedef Dense<1,T,row1_type,MapT> block_type;
     typedef reduction_op_eval<Max_value,T,block_type,1,Tag> eval;
 
@@ -203,12 +192,10 @@ struct t_maxval2
     else if (init_ == 2)
       ctvh.assign_view(ramp(T(size-1), T(-1), size));
    
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       eval::exec(val, ctvh.view.block(), idx);
-    t1.stop();
+    time = t1.elapsed();
 
     if (init_ == 1)
     {
@@ -220,8 +207,6 @@ struct t_maxval2
       test_assert(equal(val, T(size-1)));
       test_assert(idx == 0);
     }
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -243,22 +228,23 @@ defaults(Loop1P&)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
-  using namespace vsip_csl::dispatcher;
+  using namespace dispatcher;
 
   switch (what)
   {
   case  1: loop(t_maxval1<float>(0)); break;
   case  2: loop(t_maxval1<float>(1)); break;
   case  3: loop(t_maxval1<float>(2)); break;
+#if OVXX_PARALLEL_API == 1
   case  4: loop(t_maxval2<float,Map<>,be::parallel>(0)); break;
   case  5: loop(t_maxval2<float,Map<>,be::parallel>(1)); break;
   case  6: loop(t_maxval2<float,Map<>,be::parallel>(2)); break;
   case  7: loop(t_maxval2<float,Map<>,be::generic>(0)); break;
   case  8: loop(t_maxval2<float,Map<>,be::generic>(1)); break;
   case  9: loop(t_maxval2<float,Map<>,be::generic>(2)); break;
-
+#endif
   case  0:
     std::cout
       << "maxval -- find maximum value, and its index, in a vector\n"

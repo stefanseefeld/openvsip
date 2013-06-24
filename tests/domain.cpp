@@ -9,16 +9,9 @@
 #include <iostream>
 #include <vsip/initfin.hpp>
 #include <vsip/domain.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 /// Test Domain<1> interface conformance.
 void

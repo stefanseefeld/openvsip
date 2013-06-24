@@ -18,20 +18,6 @@
 #include <vsip/signal.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-
-#include <vsip/core/config.hpp>
-#include <vsip/core/metaprogramming.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/error_db.hpp>
-#include <vsip_csl/ref_dft.hpp>
-
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#  include "extdata-output.hpp"
-#endif
-
 #include "fft_common.hpp"
 
 
@@ -52,18 +38,6 @@
 #if defined(VSIP_IMPL_FFTW3) || defined(VSIP_IMPL_IPP_FFT)
 #  define TEST_NON_POWER_OF_2 1
 #endif
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-using namespace std;
-using namespace vsip;
-
-
-
 
 // Setup input data for Fft.
 

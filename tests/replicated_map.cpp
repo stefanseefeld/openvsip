@@ -9,17 +9,9 @@
 #include <vsip/support.hpp>
 #include <vsip/map.hpp>
 #include <vsip/initfin.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <dimension_type Dim,
 	  typename       Block>

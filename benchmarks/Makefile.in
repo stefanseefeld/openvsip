@@ -10,8 +10,8 @@ top_srcdir := @top_srcdir@
 
 # config variables
 include ../config.mk
-CPPFLAGS += -I. -I$(srcdir) -I../src -I$(top_srcdir)/src
-LIBS := -L../lib -lovxx $(OVXX_PAR_LIB) $(LIBS)
+CPPFLAGS += -I. -I$(top_srcdir)/support -I$(srcdir) -I../src -I$(top_srcdir)/src
+LIBS := -L../lib -lovxx $(LIBS) $(MPI_LIBS)
 # build instructions
 include ../rules.mk
 

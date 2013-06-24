@@ -8,17 +8,9 @@
 
 #include <iostream>
 #include <vsip/support.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 /// Test throw and catch of computation_error exception.
 void

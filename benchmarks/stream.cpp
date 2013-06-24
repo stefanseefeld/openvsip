@@ -15,10 +15,9 @@
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
 #include <vsip/selgen.hpp>
-#include <vsip_csl/diagnostics.hpp>
-
-#include "benchmarks.hpp"
+#include "benchmark.hpp"
 #include "create_map.hpp"
+#include <cstdio>
 
 using namespace vsip;
 
@@ -58,9 +57,7 @@ struct parameters<int>
   STREAM Composite: Copy -> Scale -> Add -> Triad
 ***********************************************************************/
 
-template <typename T,
-	  typename MapT = Local_map,
-	  typename SP   = No_barrier>
+template <typename T, typename MapT = Local_map>
 struct t_composite_vpp : Benchmark_base
 {
   typedef Dense<1, T, row1_type, MapT> block_type;
@@ -71,8 +68,7 @@ struct t_composite_vpp : Benchmark_base
   int wiob_per_point(length_type)  { return  4*sizeof(T); }
   int  mem_per_point(length_type)  { return  3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
 //  if (loop < 10) loop = 10;
 
@@ -98,27 +94,23 @@ struct t_composite_vpp : Benchmark_base
     bytes[2] = 3 * sizeof(T) * size;
     bytes[3] = 3 * sizeof(T) * size;
 
-    vsip_csl::profile::Acc_timer t1;
-    SP sp;
-    
-    sp.sync();
+    time = 0;
     for (index_type l=0; l<loop; ++l)
     {
-      		t1.start();
+      timer t1;
       C = A;
-      		t1.stop();	times[0][l] = t1.delta();
-      		t1.start();
+      times[0][l] = t1.elapsed();
+      t1.restart();
       B = s*C;
-      		t1.stop();	times[1][l] = t1.delta();
-      		t1.start();
+      times[1][l] = t1.elapsed();
+      t1.restart();
       C = A+B;
-      		t1.stop();	times[2][l] = t1.delta();
-      		t1.start();
+      times[2][l] = t1.elapsed();
+      t1.restart();
       A = B+s*C;
-      		t1.stop();	times[3][l] = t1.delta();
+      times[3][l] = t1.elapsed();
+      time += times[0][l] + times[1][l] + times[2][l] + times[3][l];
     }
-    sp.sync();
-    time = t1.total();
 
     /*  --- SUMMARY --- */
 
@@ -196,6 +188,7 @@ struct t_composite_vpp : Benchmark_base
 
   void diag()
   {
+    using ovxx::assignment::diagnostics;
     length_type const size = 256;
 
     MapT map = create_map<1, MapT>('a');
@@ -204,10 +197,10 @@ struct t_composite_vpp : Benchmark_base
     Vector<T, block_type> B(size,      map);
     Vector<T, block_type> C(size,      map);
 
-    vsip_csl::assign_diagnostics(C, A);
-    vsip_csl::assign_diagnostics(B, T(3)*C);
-    vsip_csl::assign_diagnostics(C, A+B);
-    vsip_csl::assign_diagnostics(A, B+T(3)*C);
+    std::cout << diagnostics(C, A) << std::endl;
+    std::cout << diagnostics(B, T(3)*C) << std::endl;
+    std::cout << diagnostics(C, A+B) << std::endl;
+    std::cout << diagnostics(A, B+T(3)*C) << std::endl;
   }
 
   t_composite_vpp(bool check, bool streamprnt) : check_(check), streamprnt_(streamprnt) {}
@@ -217,9 +210,7 @@ struct t_composite_vpp : Benchmark_base
   bool streamprnt_;
 };
 
-template <typename T,
-	  typename MapT = Local_map,
-	  typename SP   = No_barrier>
+template <typename T, typename MapT = Local_map>
 struct t_composite_c : Benchmark_base
 {
   typedef Dense<1, T, row1_type, MapT> block_type;
@@ -230,8 +221,7 @@ struct t_composite_c : Benchmark_base
   int wiob_per_point(length_type)  { return  4*sizeof(T); }
   int  mem_per_point(length_type)  { return  3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     parameters<T> param;
 
@@ -253,48 +243,40 @@ struct t_composite_c : Benchmark_base
     bytes[2] = 3 * sizeof(T) * size; 
     bytes[3] = 3 * sizeof(T) * size;
 
-    vsip_csl::profile::Acc_timer t1;
-    SP sp;
+    typedef typename Vector<T, block_type>::local_type l_view_type;
+    typedef typename l_view_type::block_type l_block_type;
+
+    dda::Data<l_block_type, dda::inout> data_a(A.local().block());
+    dda::Data<l_block_type, dda::inout> data_b(B.local().block());
+    dda::Data<l_block_type, dda::inout> data_c(C.local().block());
+
+    int const N = data_a.size();
+    T *a = data_a.ptr();
+    T *b = data_b.ptr();
+    T *c = data_c.ptr();
     
+    time = 0;
+    for (index_type l=0; l<loop; ++l)
     {
-      typedef typename Vector<T, block_type>::local_type l_view_type;
-      typedef typename l_view_type::block_type l_block_type;
-
-      dda::Data<l_block_type, dda::inout> ext_a(A.local().block());
-      dda::Data<l_block_type, dda::inout> ext_b(B.local().block());
-      dda::Data<l_block_type, dda::inout> ext_c(C.local().block());
-
-      int const N = ext_a.size();
-      T *a = ext_a.ptr();
-      T *b = ext_b.ptr();
-      T *c = ext_c.ptr();
-    
-      sp.sync();
-      for (index_type l=0; l<loop; ++l)
-      {
-	int j;
-                t1.start();
-	for (j=0; j<N; j++)
-	  c[j] = a[j];
-                t1.stop();   times[0][l] = t1.delta();
-                t1.start();
-	for (j=0; j<N; j++)
-	  b[j] = s*c[j];
-                t1.stop();   times[1][l] = t1.delta();
-                t1.start();
-	for (j=0; j<N; j++)
-	  c[j] = a[j]+b[j];
-                t1.stop();   times[2][l] = t1.delta();
-                t1.start();
-	for (j=0; j<N; j++)
-	  a[j] = b[j]+s*c[j];
-                t1.stop();   times[3][l] = t1.delta();
-      }
-      sp.sync();
+      int j;
+      timer t1;
+      for (j=0; j<N; j++)
+	c[j] = a[j];
+      times[0][l] = t1.elapsed();
+      t1.restart();
+      for (j=0; j<N; j++)
+	b[j] = s*c[j];
+      times[1][l] = t1.elapsed();
+      t1.restart();
+      for (j=0; j<N; j++)
+	c[j] = a[j]+b[j];
+      times[2][l] = t1.elapsed();
+      t1.restart();
+      for (j=0; j<N; j++)
+	a[j] = b[j]+s*c[j];
+      times[3][l] = t1.elapsed();
+      time += times[0][l] + times[1][l] + times[2][l] + times[3][l];
     }
-    
-    time = t1.total();
-
     /*  --- SUMMARY --- */
 
     for (int j=0; j<4; j++)
@@ -381,15 +363,6 @@ struct t_composite_c : Benchmark_base
   bool streamprnt_;
 };
 
-
-
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
 void
 defaults(Loop1P& loop)
 {
@@ -405,7 +378,7 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   bool check  = (loop.param_["check"] == "1" ||
 		 loop.param_["check"] == "y");

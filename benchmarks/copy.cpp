@@ -14,23 +14,18 @@
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
-#include <vsip/core/parallel/assign_chain.hpp>
 #include <vsip/map.hpp>
 #include <vsip/parallel.hpp>
-#include <vsip_csl/profile.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/assignment.hpp>
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
+#include "benchmark.hpp"
 #include "create_map.hpp"
+#include <cstring>
 
 using namespace vsip;
-using vsip_csl::equal;
 
 struct Impl_assign;				// normal assignment
 struct Impl_sa;					// Assignment object
 struct Impl_memcpy;				// use memcpy
-template <typename Impl> struct Impl_pa;	// Par_assign<Impl> object
+template <typename Impl> struct Impl_pa;	// Assignment<Impl> object
 template <typename Impl> struct Impl_pa_na;	//  " " (not amortized)
 
 template <typename T,
@@ -70,15 +65,13 @@ struct t_vcopy<T, SrcMapT, DstMapT, Impl_assign> : Benchmark_base
       A.local().put(i, T(g_i));
     }
     
-    vsip_csl::profile::Timer t1;
-
     if (pre_sync_)
-      vsip::impl::default_communicator().barrier();
+      barrier();
     
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = A;
-    t1.stop();
+    time = t1.elapsed();
 
     for (index_type i=0; i<Z.local().size(); ++i)
     {
@@ -91,20 +84,17 @@ struct t_vcopy<T, SrcMapT, DstMapT, Impl_assign> : Benchmark_base
       }
       test_assert(equal(Z.local().get(i), T(g_i)));
     }
-    
-    time = t1.delta();
   }
 
   void diag()
   {
-    using namespace vsip_csl;
+    using namespace ovxx;
     length_type const size = 256;
 
     Vector<T, src_block_t>   A(size, T(), src_map_);
     Vector<T, dst_block_t>   Z(size,      dst_map_);
 
-    dispatch_diagnostics<dispatcher::op::assign<1>, void, dst_block_t &, src_block_t const&>
-      (Z.block(), A.block());
+    std::cout << assignment::diagnostics(Z, A) << std::endl;
   }
 
   t_vcopy(SrcMapT src_map, DstMapT dst_map, bool pre_sync)
@@ -120,7 +110,7 @@ struct t_vcopy<T, SrcMapT, DstMapT, Impl_assign> : Benchmark_base
 
 
 /***********************************************************************
-  Vector copy - Par_assign ImplTag (setup amortized to zero)
+  Vector copy - parallel::Assignment ImplTag (setup amortized to zero)
 ***********************************************************************/
 
 template <typename T,
@@ -149,29 +139,24 @@ struct t_vcopy<T, SrcMapT, DstMapT, Impl_pa<ParAssignImpl> > : Benchmark_base
       A.local().put(i, T(g_i));
     }
     
-    vsip_csl::profile::Timer t1;
-
-    vsip::impl::Par_assign<dim, T, T, dst_block_t, src_block_t,
-                           ParAssignImpl>
+    ovxx::parallel::Assignment<dim, dst_block_t, src_block_t, ParAssignImpl>
       cpa(Z, A);
 
     if (pre_sync_)
-      vsip::impl::default_communicator().barrier();
+      barrier();
 
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       cpa();
     }
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<Z.local().size(); ++i)
     {
       index_type g_i = global_from_local_index(Z, 0, i);
       test_assert(equal(Z.local().get(i), T(g_i)));
     }
-    
-    time = t1.delta();
   }
 
   t_vcopy(SrcMapT src_map, DstMapT dst_map, bool pre_sync)
@@ -187,7 +172,7 @@ struct t_vcopy<T, SrcMapT, DstMapT, Impl_pa<ParAssignImpl> > : Benchmark_base
 
 
 /***********************************************************************
-  Vector copy - Par_assign ImplTag (setup not amortized)
+  Vector copy - parallel assignment ImplTag (setup not amortized)
 ***********************************************************************/
 
 template <typename T,
@@ -217,28 +202,23 @@ struct t_vcopy<T, SrcMapT, DstMapT, Impl_pa_na<ParAssignImpl> >
       A.local().put(i, T(g_i));
     }
     
-    vsip_csl::profile::Timer t1;
-
     if (pre_sync_)
-      vsip::impl::default_communicator().barrier();
+      barrier();
 
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
-      vsip::impl::Par_assign<dim, T, T, dst_block_t, src_block_t,
-                             ParAssignImpl>
+      ovxx::parallel::Assignment<dim, dst_block_t, src_block_t, ParAssignImpl>
 	cpa(Z, A);
       cpa();
     }
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<Z.local().size(); ++i)
     {
       index_type g_i = global_from_local_index(Z, 0, i);
       test_assert(equal(Z.local().get(i), T(g_i)));
     }
-    
-    time = t1.delta();
   }
 
   t_vcopy(SrcMapT src_map, DstMapT dst_map, bool pre_sync)
@@ -250,69 +230,6 @@ struct t_vcopy<T, SrcMapT, DstMapT, Impl_pa_na<ParAssignImpl> >
   DstMapT	dst_map_;
   bool          pre_sync_;
 };
-
-
-
-/***********************************************************************
-  Vector copy - early-binding (setup_assign)
-***********************************************************************/
-
-template <typename T,
-	  typename SrcMapT,
-	  typename DstMapT>
-struct t_vcopy<T, SrcMapT, DstMapT, Impl_sa> : Benchmark_base
-{
-  char const* what() { return "t_vcopy<..., Impl_sa>"; }
-  int ops_per_point(length_type)  { return 1; }
-  int riob_per_point(length_type) { return 1*sizeof(T); }
-  int wiob_per_point(length_type) { return 1*sizeof(T); }
-  int mem_per_point(length_type)  { return 1*sizeof(T); }
-
-  void operator()(length_type size, length_type loop, float& time)
-  {
-    typedef Dense<1, T, row1_type, SrcMapT> src_block_t;
-    typedef Dense<1, T, row1_type, DstMapT> dst_block_t;
-    Vector<T, src_block_t>   A(size, T(), src_map_);
-    Vector<T, dst_block_t>   Z(size,      dst_map_);
-
-    for (index_type i=0; i<A.local().size(); ++i)
-    {
-      index_type g_i = global_from_local_index(A, 0, i);
-      A.local().put(i, T(g_i));
-    }
-    
-    vsip_csl::profile::Timer t1;
-
-    vsip_csl::Assignment expr(Z, A);
-
-    if (pre_sync_)
-      vsip::impl::default_communicator().barrier();
-    
-    t1.start();
-    for (index_type l=0; l<loop; ++l)
-      expr();
-    t1.stop();
-    
-    for (index_type i=0; i<Z.local().size(); ++i)
-    {
-      index_type g_i = global_from_local_index(Z, 0, i);
-      test_assert(equal(Z.local().get(i), T(g_i)));
-    }
-    
-    time = t1.delta();
-  }
-
-  t_vcopy(SrcMapT src_map, DstMapT dst_map, bool pre_sync)
-    : src_map_(src_map), dst_map_(dst_map), pre_sync_(pre_sync)
-  {}
-
-  // Member data.
-  SrcMapT	src_map_;
-  DstMapT	dst_map_;
-  bool          pre_sync_;
-};
-
-
 
 /***********************************************************************
   Vector copy - use memcpy
@@ -343,19 +260,17 @@ struct t_vcopy<T, Local_map, Local_map, Impl_memcpy> : Benchmark_base
       A.local().put(i, T(g_i));
     }
     
-    vsip_csl::profile::Timer t1;
-
     if (pre_sync_)
-      vsip::impl::default_communicator().barrier();
+      barrier();
 
     {
       dda::Data<src_block_t, dda::in> src_ext(A.block());
       dda::Data<dst_block_t, dda::out> dst_ext(Z.block());
     
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
-	memcpy(dst_ext.ptr(), src_ext.ptr(), size*sizeof(T));
-      t1.stop();
+	std::memcpy(dst_ext.ptr(), src_ext.ptr(), size*sizeof(T));
+      time = t1.elapsed();
     }
 
     for (index_type i=0; i<Z.local().size(); ++i)
@@ -363,8 +278,6 @@ struct t_vcopy<T, Local_map, Local_map, Impl_memcpy> : Benchmark_base
       index_type g_i = global_from_local_index(Z, 0, i);
       test_assert(equal(Z.local().get(i), T(g_i)));
     }
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -429,14 +342,14 @@ defaults(Loop1P&)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   typedef float F;
 
   // Typedefs for parallel assignment algorithms.
-#if VSIP_IMPL_PAR_SERVICE == 1
-  typedef vsip::impl::Chained_assign  Ca;
-  typedef vsip::impl::Blkvec_assign   Bva;
+#if OVXX_PARALLEL_API == 1
+  typedef ovxx::parallel::Chained_assign  Ca;
+  typedef ovxx::parallel::Blkvec_assign   Bva;
 #endif
 
   // typedef fors pre-sync barrier policy.
@@ -445,13 +358,13 @@ test(Loop1P& loop, int what)
   switch (what)
   {
   case  1: loop(t_vcopy_local<float, Impl_assign>()); break;
+#if OVXX_PARALLEL_API == 1
   case  2: loop(t_vcopy_root<float, Impl_assign>()); break;
-  case  3: loop(t_vcopy_root<float, Impl_sa>()); break;
-#if VSIP_IMPL_PAR_SERVICE == 1
   case  4: loop(t_vcopy_root<float, Impl_pa<Ca> >()); break;
 #endif
   case  5: loop(t_vcopy_local<float, Impl_memcpy>()); break;
 
+#if OVXX_PARALLEL_API == 1
   case 10: loop(t_vcopy_redist<float, Impl_assign>('1', '1', ps)); break;
   case 11: loop(t_vcopy_redist<float, Impl_assign>('1', 'a', ps));  break;
   case 12: loop(t_vcopy_redist<float, Impl_assign>('a', '1', ps)); break;
@@ -460,17 +373,6 @@ test(Loop1P& loop, int what)
   case 15: loop(t_vcopy_redist<float, Impl_assign>('1', 'b', ps)); break;
 
   case 16: loop(t_vcopy_redist<complex<float>, Impl_assign>('1', '2', ps)); break;
-
-  case 20: loop(t_vcopy_redist<float, Impl_sa>('1', '1', ps)); break;
-  case 21: loop(t_vcopy_redist<float, Impl_sa>('1', 'a', ps)); break;
-  case 22: loop(t_vcopy_redist<float, Impl_sa>('a', '1', ps)); break;
-  case 23: loop(t_vcopy_redist<float, Impl_sa>('a', 'a', ps)); break;
-  case 24: loop(t_vcopy_redist<float, Impl_sa>('1', '2', ps)); break;
-  case 25: loop(t_vcopy_redist<float, Impl_sa>('1', 'b', ps)); break;
-
-  case 26: loop(t_vcopy_redist<complex<float>, Impl_sa>('1', '2', ps)); break;
-
-#if VSIP_IMPL_PAR_SERVICE == 1
 
   case 100: loop(t_vcopy_redist<F, Impl_pa<Ca> >('1', '1', ps)); break;
   case 101: loop(t_vcopy_redist<F, Impl_pa<Ca> >('1', 'a', ps)); break;
@@ -521,7 +423,7 @@ test(Loop1P& loop, int what)
       << "  -23 -- float dist copy      (all  -> all)\n"
       << "  -24 -- float point-to-point (p0   -> p1)\n"
       << "  -25 -- float scatter2       (root -> all non-root)\n"
-      << "\n MPI low-level Par_assign directly:\n"
+      << "\n MPI low-level parallel assignment directly:\n"
       << "  -100-105 -- Chained_assign\n"
       << "  -110-115 -- Blkvec_assign\n"
       << "  -150-155 -- Chained_assign (non-amortized setup)\n"

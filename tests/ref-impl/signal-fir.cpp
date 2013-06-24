@@ -158,7 +158,7 @@ main (int argc, char** argv)
 #if VSIP_HAS_EXCEPTIONS
   }
   // C-VSIPL doesn't provide state-preserving assignment.
-  catch (vsip::impl::unimplemented const &) {}
+  catch (ovxx::unimplemented const &) {}
 #endif
   /* Test decimations equaling 1 and 2.  */
 

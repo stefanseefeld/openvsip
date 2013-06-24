@@ -8,15 +8,9 @@
 
 #include <vsip/initfin.hpp>
 #include <vsip/complex.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using vsip_csl::equal;
-using vsip_csl::view_equal;
-
-/***********************************************************************
-  Macros
-***********************************************************************/
+using namespace ovxx;
 
 #define TEST_COMPLEX_FUNCTIONS						\
   complex<float> a(3.f, -4.f);						\
@@ -263,21 +257,21 @@ test_polar_view(vsip::length_type size)
   test_assert(equal(mag(0),   T(1)));
   test_assert(equal(phase(0), T(0)));
   v2 = polartorect(mag, phase);
-  test_assert(view_equal(v1, v2));
+  test_assert(equal(v1, v2));
 
   v1 = complex<T>(T(0), T(1));
   recttopolar(v1, mag, phase);
   test_assert(equal(mag(0),   T(1)));
   test_assert(equal(phase(0), pi/2));
   v2 = polartorect(mag, phase);
-  test_assert(view_equal(v1, v2));
+  test_assert(equal(v1, v2));
 
   v1 = complex<T>(T(1), T(1));
   recttopolar(v1, mag, phase);
   test_assert(equal(mag(0),   std::sqrt(T(2))));
   test_assert(equal(phase(0), pi/4));
   v2 = polartorect(mag, phase);
-  test_assert(view_equal(v1, v2));
+  test_assert(equal(v1, v2));
 
 
   v2 = polartorect(T(3));
@@ -292,8 +286,8 @@ test_cmplx(vsip::length_type size)
   vsip::Vector<vsip::complex<T1> > c = vsip::cmplx(v1, v2);
   typename vsip::Vector<vsip::complex<T1> >::realview_type r = c.real();
   typename vsip::Vector<vsip::complex<T1> >::imagview_type i = c.imag();
-  test_assert(view_equal(r, v1));
-  test_assert(view_equal(i, v2));
+  test_assert(equal(r, v1));
+  test_assert(equal(i, v2));
 }
 
 /// Test that functions such as exp, cos, etc. are available for complex.

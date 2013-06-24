@@ -13,7 +13,12 @@
 #define benchmark_hpp_
 
 #include <ovxx/timer.hpp>
+#include <ovxx/type_name.hpp>
+#include <ovxx/ops_count.hpp>
 #include <test.hpp>
 #include "loop.hpp"
+
+using ovxx::equal;
+using ovxx::timer;
 
 #endif

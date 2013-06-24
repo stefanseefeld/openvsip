@@ -7,24 +7,11 @@
 // license contained in the accompanying LICENSE.GPL file.
 
 #include <vsip/support.hpp>
-#include <vsip/core/domain_utils.hpp>
-#include <vsip/core/static_assert.hpp>
+#include <ovxx/domain_utils.hpp>
+#include <ovxx/ct_assert.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-
-using vsip::impl::Length;
-using vsip::impl::extent;
-using vsip::impl::valid;
-using vsip::impl::next;
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 /// Convert a multi-dimensional index into a linear index, using
 /// a specific dimension-order.
@@ -33,7 +20,7 @@ template <typename OrderT>
 index_type
 linear_index(Length<1> const& /*ext*/, Index<1> const& idx)
 {
-  VSIP_IMPL_STATIC_ASSERT(OrderT::impl_dim0 == 0);
+  OVXX_CT_ASSERT(OrderT::impl_dim0 == 0);
   return idx[OrderT::impl_dim0];
 }
 
@@ -41,8 +28,8 @@ template <typename OrderT>
 index_type
 linear_index(Length<2> const& ext, Index<2> const& idx)
 {
-  VSIP_IMPL_STATIC_ASSERT(OrderT::impl_dim0 < 2);
-  VSIP_IMPL_STATIC_ASSERT(OrderT::impl_dim1 < 2);
+  OVXX_CT_ASSERT(OrderT::impl_dim0 < 2);
+  OVXX_CT_ASSERT(OrderT::impl_dim1 < 2);
 
   return (idx[OrderT::impl_dim1] + ext[OrderT::impl_dim1]*
           idx[OrderT::impl_dim0]);
@@ -52,9 +39,9 @@ template <typename OrderT>
 index_type
 linear_index(Length<3> const& ext, Index<3> const& idx)
 {
-  VSIP_IMPL_STATIC_ASSERT(OrderT::impl_dim0 < 3);
-  VSIP_IMPL_STATIC_ASSERT(OrderT::impl_dim1 < 3);
-  VSIP_IMPL_STATIC_ASSERT(OrderT::impl_dim2 < 3);
+  OVXX_CT_ASSERT(OrderT::impl_dim0 < 3);
+  OVXX_CT_ASSERT(OrderT::impl_dim1 < 3);
+  OVXX_CT_ASSERT(OrderT::impl_dim2 < 3);
 
   return (idx[OrderT::impl_dim2] + ext[OrderT::impl_dim2]*
          (idx[OrderT::impl_dim1] + ext[OrderT::impl_dim1]*
@@ -88,7 +75,7 @@ template <dimension_type Dim>
 void
 test_traversal_default(Domain<Dim> const& dom)
 {
-  typedef typename vsip::impl::Row_major<Dim>::type order_type;
+  typedef typename row_major<Dim>::type order_type;
   Length<Dim> ext = extent(dom);
 
   index_type count = 0;

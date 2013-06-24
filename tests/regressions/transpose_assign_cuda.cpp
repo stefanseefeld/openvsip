@@ -10,25 +10,13 @@
 //
 // Added test to strengthen test coverage during CUDA evaluator development
 
-/***********************************************************************
-  Included Files
-***********************************************************************/
-
 #include <vsip/initfin.hpp>
 #include <vsip/math.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/selgen.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/output.hpp>
-#include <vsip_csl/test.hpp>
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-using namespace vsip;
+using namespace ovxx;
 
 template <typename T>
 void
@@ -52,22 +40,22 @@ transpose_assign(length_type const M, length_type const N)
   // explicit transpose
   br = ar.transpose();    // r --> r
   bc = ac.transpose();    // c --> c
-  test_assert(vsip_csl::view_equal(br, bc));
+  test_assert(equal(br, bc));
 
   // implicit copy
   bc = ar.transpose();    // r --> c
   br = ac.transpose();    // c --> r
-  test_assert(vsip_csl::view_equal(br, bc));
+  test_assert(equal(br, bc));
 
   // explicit copy
   dr = ar;                // r --> r
   dc = ac;                // c --> c
-  test_assert(vsip_csl::view_equal(dr, dc));
+  test_assert(equal(dr, dc));
 
   // implicit transpose
   dc = ar;                // r --> c
   dr = ac;                // c --> r
-  test_assert(vsip_csl::view_equal(dr, dc));
+  test_assert(equal(dr, dc));
 }
 
 

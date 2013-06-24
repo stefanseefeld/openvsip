@@ -12,7 +12,7 @@
 #include <vsip/math.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/initfin.hpp>
-#include <vsip_csl/test.hpp>
+#include <test.hpp>
 #include <iostream>
 
 int main(int, char **)
@@ -41,6 +41,6 @@ int main(int, char **)
   // ...and compare it to one computed on a view with negative strides.
   value_type result1 = vsip::dot(a, b);
   value_type result2 = vsip::dot(a_inv, b);
-  test_assert(vsip_csl::equal(result1, result2));
+  test_assert(ovxx::equal(result1, result2));
   return 0;
 }

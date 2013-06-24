@@ -15,11 +15,7 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
-
-#include <vsip_csl/diagnostics.hpp>
-
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
+#include "benchmark.hpp"
 
 using namespace vsip;
 
@@ -42,7 +38,7 @@ struct t_conv1 : Benchmark_base
       output_size = ((size-1)/Dec) - ((coeff_size_-1)/Dec) + 1;
 
     float ops = coeff_size_ * output_size *
-      (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+      (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops / size;
   }
@@ -75,23 +71,20 @@ struct t_conv1 : Benchmark_base
 
     conv_type conv(coeff, Domain<1>(size), Dec);
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       conv(in, out);
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_conv1(length_type coeff_size) : coeff_size_(coeff_size) {}
 
   void diag()
   {
-    using namespace vsip_csl::dispatcher;
-    typedef typename Dispatcher<op::conv<1, nonsym, Supp, T> >::backend backend;
-    std::cout << "BE: " << Backend_name<backend>::name() << std::endl;
+    // TODO
+    // using namespace ovxx::dispatcher;
+    // typedef typename Dispatcher<op::conv<1, nonsym, Supp, T> >::backend backend;
+    // std::cout << "BE: " << Backend_name<backend>::name() << std::endl;
   }
 
   length_type coeff_size_;
@@ -110,7 +103,7 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   typedef complex<float> cf_type;
 

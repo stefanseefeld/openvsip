@@ -10,18 +10,9 @@
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/signal.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-
+using namespace ovxx;
 
 template <typename T,
 	  typename OrderT>

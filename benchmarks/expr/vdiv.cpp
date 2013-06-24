@@ -15,9 +15,7 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-#include <vsip_csl/diagnostics.hpp>
-
-#include "../benchmarks.hpp"
+#include "../benchmark.hpp"
 
 using namespace vsip;
 
@@ -30,13 +28,12 @@ template <typename T>
 struct t_vdiv1 : Benchmark_base
 {
   char const* what() { return "t_vdiv1"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::div; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::div; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<T>   A(size, T());
     Vector<T>   B(size, T());
@@ -49,12 +46,10 @@ struct t_vdiv1 : Benchmark_base
     A.put(0, T(6));
     B.put(0, T(3));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = A / B;
-    t1.stop();
+    time = t1.elapsed();
     
     if (!equal(C.get(0), T(2)))
     {
@@ -79,19 +74,19 @@ struct t_vdiv1 : Benchmark_base
 #else
     }
 #endif
-    
-    time = t1.delta();
   }
 
   void diag()
   {
+    using ovxx::assignment::diagnostics;
+
     length_type const size = 256;
 
     Vector<T>   A(size, T());
     Vector<T>   B(size, T());
     Vector<T>   C(size);
 
-    vsip_csl::assign_diagnostics(C, A / B);
+    std::cout << diagnostics(C, A / B) << std::endl;
   }
 };
 
@@ -101,13 +96,12 @@ template <typename T>
 struct t_vdiv_ip1 : Benchmark_base
 {
   char const* what() { return "t_vdiv_ip1"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::div; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::div; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<T>   A(size, T(1));
     Vector<T>   C(size);
@@ -117,17 +111,13 @@ struct t_vdiv_ip1 : Benchmark_base
     chk = gen.randu(size);
     C = chk;
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C /= A;
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(chk.get(i), C.get(i)));
-    
-    time = t1.delta();
   }
 };
 
@@ -137,13 +127,12 @@ template <typename T>
 struct t_vdiv_dom1 : Benchmark_base
 {
   char const* what() { return "t_vdiv_dom1"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::div; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::div; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<T>   A(size, T());
     Vector<T>   B(size, T());
@@ -158,12 +147,10 @@ struct t_vdiv_dom1 : Benchmark_base
 
     Domain<1> dom(size);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C(dom) = A(dom) / B(dom);
-    t1.stop();
+    time = t1.elapsed();
     
     if (!equal(C.get(0), T(2)))
     {
@@ -173,8 +160,6 @@ struct t_vdiv_dom1 : Benchmark_base
 
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), A.get(i) / B.get(i)));
-    
-    time = t1.delta();
   }
 };
 
@@ -184,13 +169,12 @@ template <typename T, vsip::storage_format_type F>
 struct t_vdiv2 : Benchmark_base
 {
   char const* what() { return "t_vdiv2"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::div; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::div; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     typedef Layout<1, row1_type, dense, F> LP;
     typedef impl::Strided<1, T, LP> block_type;
@@ -202,20 +186,16 @@ struct t_vdiv2 : Benchmark_base
     A.put(0, T(6));
     B.put(0, T(3));
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = A / B;
-    t1.stop();
+    time = t1.elapsed();
     
     if (!equal(C.get(0), T(2)))
     {
       std::cout << "t_vdiv2: ERROR" << std::endl;
       abort();
     }
-    
-    time = t1.delta();
   }
 };
 #endif // VSIP_IMPL_SOURCERY_VPP
@@ -229,13 +209,12 @@ template <typename T>
 struct t_rcvdiv1 : Benchmark_base
 {
   char const* what() { return "t_rcvdiv1"; }
-  int ops_per_point(length_type)  { return 2*vsip::impl::Ops_info<T>::div; }
+  int ops_per_point(length_type)  { return 2*ovxx::ops_count::traits<T>::div; }
   int riob_per_point(length_type) { return sizeof(T) + sizeof(complex<T>); }
   int wiob_per_point(length_type) { return 1*sizeof(complex<T>); }
   int mem_per_point(length_type)  { return 1*sizeof(T)+2*sizeof(complex<T>); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<complex<T> > A(size);
     Vector<T>           B(size);
@@ -247,17 +226,13 @@ struct t_rcvdiv1 : Benchmark_base
     A = cgen.randu(size);
     B = sgen.randu(size);
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = B / A;
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), B.get(i) / A.get(i)));
-    
-    time = t1.delta();
   }
 };
 
@@ -272,9 +247,9 @@ struct t_svdiv1 : Benchmark_base
   char const* what() { return "t_svdiv1"; }
   int ops_per_point(length_type)
   { if (sizeof(ScalarT) == sizeof(T))
-      return vsip::impl::Ops_info<T>::div;
+      return ovxx::ops_count::traits<T>::div;
     else
-      return 2*vsip::impl::Ops_info<ScalarT>::div;
+      return 2*ovxx::ops_count::traits<ScalarT>::div;
   }
   int riob_per_point(length_type) { return 1*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
@@ -287,17 +262,13 @@ struct t_svdiv1 : Benchmark_base
 
     ScalarT alpha = ScalarT(3);
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = alpha / A;
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), alpha / A.get(i)));
-    
-    time = t1.delta();
   }
 };
 
@@ -309,7 +280,7 @@ template <typename T>
 struct t_svdiv2 : Benchmark_base
 {
   char const* what() { return "t_svdiv2"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::div; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::div; }
   int riob_per_point(length_type) { return 1*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 2*sizeof(T); }
@@ -323,30 +294,19 @@ struct t_svdiv2 : Benchmark_base
 
     A.put(0, T(6));
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = A / alpha;
-    t1.stop();
+    time = t1.elapsed();
 
     test_assert(equal(C.get(0), T(2)));
-    
-    time = t1.delta();
   }
 };
 
-
-
-void
-defaults(Loop1P&)
-{
-}
-
-
+void defaults(Loop1P&) {}
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {

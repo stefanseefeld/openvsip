@@ -47,7 +47,7 @@ test_covsol_diag(length_type m,
 
   // Setup b.
   for (index_type i=0; i<p; ++i)
-    b.col(i) = test_ramp(T(1), T(i), n);
+    b.col(i) = test::ramp(T(1), T(i), n);
   if (p > 1)
     b.col(1) += Test_traits<T>::offset();
 
@@ -83,8 +83,8 @@ test_covsol_random(length_type m,
   Matrix<T> b(n, p);
   Matrix<T> x(n, p);
 
-  randm(a);
-  randm(b);
+  test::randm(a);
+  test::randm(b);
 
   if (RtM == by_value)
     x = covsol(a, b);

@@ -15,10 +15,7 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
-#include <vsip_csl/profile.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
+#include "benchmark.hpp"
 #include "mprod.hpp"
 
 
@@ -42,15 +39,11 @@ struct t_mvprod : public t_mprod_base<T>
     Vector<T, Dense<1, T> >            B(N,    T(1));  // N x 1
     Vector<T, Dense<1, T> >            Z(M,    T(1));  // M x 1
 
-    vsip_csl::profile::Timer t1;
-    
     // column-major dimension ordering is used, as required by BLAS
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = prod(A, B);
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_mvprod(length_type size)
@@ -66,7 +59,7 @@ struct t_mvprod : public t_mprod_base<T>
     Vector<T> B(N,    T(1));  // N x 1
     Vector<T> Z(M,    T(1));  // M x 1
 
-    vsip_csl::assign_diagnostics(Z, prod(A, B));
+    std::cout << ovxx::assignment::diagnostics(Z, prod(A, B)) << std::endl;
   }
 
   // data members
@@ -86,7 +79,7 @@ struct t_mvprod_tag : public t_mprod_base<T>
 
   void operator()(length_type const N, length_type loop, float& time)
   {
-    using namespace vsip_csl::dispatcher;
+    using namespace ovxx::dispatcher;
 
     // column-major dimension ordering is used, as required by BLAS
     typedef Dense<1, T> vblock_type;
@@ -102,14 +95,10 @@ struct t_mvprod_tag : public t_mprod_base<T>
     Vector<T, vblock_type> B(N,    T(1));  // N x 1
     Vector<T, vblock_type> Z(M,    T(1));  // M x 1
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       evaluator_type::exec(Z.block(), A.block(), B.block());
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_mvprod_tag(length_type size)
@@ -118,8 +107,8 @@ struct t_mvprod_tag : public t_mprod_base<T>
 
   void diag()
   {
-    using namespace vsip_csl::dispatcher;
-    std::cout << Backend_name<ImplTag>::name() << std::endl;
+    // using namespace ovxx::dispatcher;
+    // std::cout << Backend_name<ImplTag>::name() << std::endl;
   }
 
   // data members
@@ -139,9 +128,9 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
-  using namespace vsip_csl::dispatcher;
+  using namespace ovxx::dispatcher;
 
   length_type size  = atoi(loop.param_["size"].c_str());
 
@@ -153,11 +142,11 @@ test(Loop1P& loop, int what)
   case  3: loop(t_mvprod_tag<be::generic, float>(size)); break;
   case  4: loop(t_mvprod_tag<be::generic, complex<float> >(size)); break;
 
-#if VSIP_IMPL_HAVE_BLAS
+#if OVXX_HAVE_BLAS
   case  5: loop(t_mvprod_tag<be::blas, float>(size)); break;
     // The BLAS backend doesn't handle split-complex, so don't attempt
     // to instantiate that code if we are using split-complex blocks.
-# if !VSIP_IMPL_PREFER_SPLIT_COMPLEX
+# if !OVXX_DEFAULT_COMPLEX_STORAGE_SPLIT
   case  6: loop(t_mvprod_tag<be::blas, complex<float> >(size)); break;
 # endif
 #endif

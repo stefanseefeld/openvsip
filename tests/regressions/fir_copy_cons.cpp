@@ -9,25 +9,14 @@
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/signal.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T>
 void
 test_fir_cc()
 {
-  using vsip::length_type;
-  using vsip::nonsym;
-  using vsip::state_save;
-  using vsip::Fir;
-  using vsip::Vector;
-
   length_type N = 4;
   length_type M = 2;
   length_type D = 1;

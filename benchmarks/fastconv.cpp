@@ -16,14 +16,10 @@
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/random.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/error_db.hpp>
-
-#include "benchmarks.hpp"
+#include "benchmark.hpp"
 #include "fastconv.hpp"
 
-using namespace vsip;
-using vsip_csl::error_db;
+using namespace ovxx;
 
 struct Impl1op;		// out-of-place, phased fast-convolution
 struct Impl1ip;		// in-place, phased fast-convolution
@@ -32,7 +28,6 @@ struct Impl1pip2;	// psuedo in-place (using out-of-place Fft), phased
 struct Impl2op;		// out-of-place (tmp), interleaved fast-convolution
 struct Impl2ip;		// in-place, interleaved fast-convolution
 struct Impl2ip_tmp;	// in-place (w/tmp), interleaved fast-convolution
-struct Impl2fv;		// foreach_vector, interleaved fast-convolution
 struct Impl3;		// Mixed fast-convolution
 struct Impl4vc;		// Single-line fast-convolution, vector of coeffs
 struct Impl4mc;		// Single-line fast-convolution, matrix of coeffs
@@ -101,9 +96,7 @@ struct t_fastconv_base<T, Impl1op> : fastconv_ops
     // frequency domain
     // for_fft(replica);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       // Perform fast convolution:
@@ -111,10 +104,7 @@ struct t_fastconv_base<T, Impl1op> : fastconv_ops
       tmp = vmmul<0>(replica, tmp);
       inv_fftm(tmp, data);
     }
-    t1.stop();
-
-    // CHECK RESULT
-    time = t1.delta();
+    time = t1.elapsed();
   }
 };
 
@@ -159,10 +149,8 @@ struct t_fastconv_base<T, Impl1ip> : fastconv_ops
     // frequency domain
     // for_fft(replica);
     
-    vsip_csl::profile::Timer t1;
-    
     // Impl1 ip
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       // Perform fast convolution:
@@ -170,10 +158,7 @@ struct t_fastconv_base<T, Impl1ip> : fastconv_ops
       data = vmmul<0>(replica, data);
       inv_fftm(data);
     }
-    t1.stop();
-
-    // CHECK RESULT
-    time = t1.delta();
+    time = t1.elapsed();
   }
 };
 
@@ -219,10 +204,8 @@ struct t_fastconv_base<T, Impl1pip1> : fastconv_ops
     // frequency domain
     // for_fft(replica);
     
-    vsip_csl::profile::Timer t1;
-    
     // Impl1 pip
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       // Perform fast convolution:
@@ -232,10 +215,7 @@ struct t_fastconv_base<T, Impl1pip1> : fastconv_ops
       for (index_type p=0; p<npulse; ++p)
 	inv_fft(data.row(p));
     }
-    t1.stop();
-
-    // CHECK RESULT
-    time = t1.delta();
+    time = t1.elapsed();
   }
 };
 
@@ -298,29 +278,24 @@ struct t_fastconv_base<T, Impl1pip2> : fastconv_ops
     // frequency domain
     // for_fft(replica);
     
-    vsip_csl::profile::Timer t1;
-    
     // Impl1 pip2
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
-      length_type l_npulse  = LOCAL(data).size(0);
+      length_type l_npulse  = data.local().size(0);
       for (index_type p=0; p<l_npulse; ++p)
       {
-	for_fft(LOCAL(data).row(p), tmp);
-	LOCAL(data).row(p) = tmp;
+	for_fft(data.local().row(p), tmp);
+	data.local().row(p) = tmp;
       }
-      LOCAL(data) = vmmul<0>(LOCAL(replica), LOCAL(data));
+      data.local() = vmmul<0>(replica.local(), data.local());
       for (index_type p=0; p<l_npulse; ++p)
       {
-	inv_fft(LOCAL(data).row(p), tmp);
-	LOCAL(data).row(p) = tmp;
+	inv_fft(data.local().row(p), tmp);
+	data.local().row(p) = tmp;
       }
     }
-    t1.stop();
-
-    // CHECK RESULT
-    time = t1.delta();
+    time = t1.elapsed();
   }
 };
 
@@ -360,10 +335,8 @@ struct t_fastconv_base<T, Impl1pip2_nopar> : fastconv_ops
     // frequency domain
     // for_fft(replica);
     
-    vsip_csl::profile::Timer t1;
-    
     // Impl1 pip2
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       for (index_type p=0; p<npulse; ++p)
@@ -378,10 +351,7 @@ struct t_fastconv_base<T, Impl1pip2_nopar> : fastconv_ops
 	data.row(p) = tmp;
       }
     }
-    t1.stop();
-
-    // CHECK RESULT
-    time = t1.delta();
+    time = t1.elapsed();
   }
 };
 
@@ -446,22 +416,18 @@ struct t_fastconv_base<T, Impl2op> : fastconv_ops
     // frequency domain
     // for_fft(replica);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
-      length_type l_npulse  = LOCAL(data).size(0);
+      length_type l_npulse  = data.local().size(0);
       for (index_type p=0; p<l_npulse; ++p)
       {
-	for_fft(LOCAL(data).row(p), tmp);
-	tmp *= LOCAL(replica);
-	inv_fft(tmp, LOCAL(data).row(p));
+	for_fft(data.local().row(p), tmp);
+	tmp *= replica.local();
+	inv_fft(tmp, data.local().row(p));
       }
     }
-    t1.stop();
-
-    time = t1.delta();
+    time = t1.elapsed();
 
     // CHECK RESULT
     Rand<T> gen(0, 0);
@@ -470,15 +436,15 @@ struct t_fastconv_base<T, Impl2op> : fastconv_ops
     replica.put(0, T(1));
     for_fft(replica);
 
-    length_type l_npulse  = LOCAL(data).size(0);
+    length_type l_npulse  = data.local().size(0);
     for (index_type p=0; p<l_npulse; ++p)
     {
-      for_fft(LOCAL(data).row(p), tmp);
-      tmp *= LOCAL(replica);
-      inv_fft(tmp, LOCAL(chk).row(p));
+      for_fft(data.local().row(p), tmp);
+      tmp *= replica.local();
+      inv_fft(tmp, chk.local().row(p));
     }
 
-    double error = error_db(LOCAL(data), LOCAL(chk));
+    double error = test::diff(data.local(), chk.local());
 
     test_assert(error < -100);
   }
@@ -545,22 +511,18 @@ struct t_fastconv_base<T, Impl2ip> : fastconv_ops
     // frequency domain
     // for_fft(replica);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
-      length_type l_npulse  = LOCAL(data).size(0);
+      length_type l_npulse  = data.local().size(0);
       for (index_type p=0; p<l_npulse; ++p)
       {
-	for_fft(LOCAL(data).row(p));
-	LOCAL(data).row(p) *= LOCAL(replica);
-	inv_fft(LOCAL(data).row(p));
+	for_fft(data.local().row(p));
+	data.local().row(p) *= replica.local();
+	inv_fft(data.local().row(p));
       }
     }
-    t1.stop();
-
-    time = t1.delta();
+    time = t1.elapsed();
 
     // CHECK RESULT
     Rand<T> gen(0, 0);
@@ -570,15 +532,15 @@ struct t_fastconv_base<T, Impl2ip> : fastconv_ops
     replica.put(0, T(1));
     for_fft(replica);
 
-    length_type l_npulse  = LOCAL(data).size(0);
+    length_type l_npulse  = data.local().size(0);
     for (index_type p=0; p<l_npulse; ++p)
     {
-      for_fft(LOCAL(data).row(p));
-      LOCAL(data).row(p) *= LOCAL(replica);
-      inv_fft(LOCAL(data).row(p));
+      for_fft(data.local().row(p));
+      data.local().row(p) *= replica.local();
+      inv_fft(data.local().row(p));
     }
 
-    double error = error_db(LOCAL(data), LOCAL(chk));
+    double error = test::diff(data.local(), chk.local());
 
     test_assert(error < -100);
   }
@@ -644,34 +606,22 @@ struct t_fastconv_base<T, Impl2ip_tmp> : fastconv_ops
     // frequency domain
     // for_fft(replica);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
-      length_type l_npulse  = LOCAL(data).size(0);
+      length_type l_npulse  = data.local().size(0);
       for (index_type p=0; p<l_npulse; ++p)
       {
-	tmp = LOCAL(data).row(p);
+	tmp = data.local().row(p);
 	for_fft(tmp);
-	tmp *= LOCAL(replica);
+	tmp *= replica.local();
 	inv_fft(tmp);
-	LOCAL(data).row(p) = tmp;
+	data.local().row(p) = tmp;
       }
     }
-    t1.stop();
-
-    // CHECK RESULT
-    time = t1.delta();
+    time = t1.elapsed();
   }
 };
-
-
-
-/***********************************************************************
-  Impl2fv: foreach_vector, interleaved fast-convolution
-***********************************************************************/
-#if PARALLEL_FASTCONV
 
 template <typename T>
 class Fast_convolution
@@ -717,52 +667,11 @@ private:
   inv_fft_type inv_fft_;
 };
 
-
-template <typename T>
-struct t_fastconv_base<T, Impl2fv> : fastconv_ops
-{
-  static length_type const num_args = 1;
-
-  void fastconv(length_type npulse, length_type nrange,
-		length_type loop, float& time)
-  {
-    // Create the data cube.
-    Matrix<T> data(npulse, nrange);
-    
-    // Create the pulse replica
-    Vector<T> replica(nrange);
-
-    // Create the FFT objects.
-    Fast_convolution<T> fconv(replica);
-
-    // Initialize
-    data    = T();
-    replica = T();
-
-
-    // Before fast convolution, convert the replica into the
-    // frequency domain
-    // for_fft(replica);
-    
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
-    for (index_type l=0; l<loop; ++l)
-      foreach_vector<tuple<0, 1> >(fconv, data);
-    t1.stop();
-
-    // CHECK RESULT
-    time = t1.delta();
-  }
-};
-#endif // PARALLEL_FASTCONV
-
-
-
 /***********************************************************************
   Impl3: Mixed phase/interleave fast-convolution
 ***********************************************************************/
 
+#if PARALLEL_FASTCONV
 template <typename T>
 struct t_fastconv_base<T, Impl3> : fastconv_ops
 {
@@ -809,9 +718,7 @@ struct t_fastconv_base<T, Impl3> : fastconv_ops
     // frequency domain
     // for_fft(replica);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       // Perform fast convolution:
@@ -819,12 +726,10 @@ struct t_fastconv_base<T, Impl3> : fastconv_ops
       tmp = vmmul<0>(replica, tmp);
       inv_fftm(tmp, data);
     }
-    t1.stop();
-
-    // CHECK RESULT
-    time = t1.delta();
+    time = t1.elapsed();
   }
 };
+#endif // PARALLEL_FASTCONV
 
 
 
@@ -889,14 +794,12 @@ struct t_fastconv_base<T, Impl4vc> : fastconv_ops
     // frequency domain
     // for_fft(replica);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       data = inv_fftm(vmmul<0>(replica, for_fftm(data)));
     }
-    t1.stop();
+    time = t1.elapsed();
 
     // CHECK RESULT
     if (check)
@@ -913,12 +816,10 @@ struct t_fastconv_base<T, Impl4vc> : fastconv_ops
       
       chk = inv_fftm(vmmul<0>(replica, for_fftm(data)));
 
-      double error = error_db(LOCAL(data), LOCAL(chk));
+      double error = test::diff(data.local(), chk.local());
 
       test_assert(error < -100);
     }
-
-    time = t1.delta();
   }
 
   void diag()
@@ -943,7 +844,7 @@ struct t_fastconv_base<T, Impl4vc> : fastconv_ops
     for_fftm_type for_fftm(Domain<2>(npulse, nrange), 1.0);
     inv_fftm_type inv_fftm(Domain<2>(npulse, nrange), 1.0/nrange);
 
-    //    vsip_csl::assign_diagnostics(data, inv_fftm(vmmul<0>(replica, for_fftm(data))));
+    std::cout << assignment::diagnostics(data, inv_fftm(vmmul<0>(replica, for_fftm(data)))) << std::endl;
   }
 };
 
@@ -1010,16 +911,12 @@ struct t_fastconv_base<T, Impl4mc> : fastconv_ops
     // frequency domain
     // for_fft(replica);
     
-    vsip_csl::profile::Timer t1;
-
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       data = inv_fftm(replica * for_fftm(data));
     }
-    t1.stop();
-
-    time = t1.delta();
+    time = t1.elapsed();
 
     // CHECK RESULT
     typedef Fft<const_Vector, T, T, fft_fwd, by_reference, no_times>
@@ -1030,17 +927,17 @@ struct t_fastconv_base<T, Impl4mc> : fastconv_ops
     Vector<T> tmp(nrange);
 
     data = gen.randu(npulse, nrange);
-    length_type l_npulse  = LOCAL(data).size(0);
+    length_type l_npulse  = data.local().size(0);
     for (index_type p = 0; p < l_npulse; ++p)
     {
       replica.put(p, 0, T(1));
-      for_fft(LOCAL(replica).row(p), tmp);
-      LOCAL(replica).row(p) = tmp;
+      for_fft(replica.local().row(p), tmp);
+      replica.local().row(p) = tmp;
     }
 
     chk = inv_fftm(replica * for_fftm(data));
 
-    double error = error_db(LOCAL(data), LOCAL(chk));
+    double error = test::diff(data.local(), chk.local());
 
     test_assert(error < -100);
   }
@@ -1067,7 +964,7 @@ struct t_fastconv_base<T, Impl4mc> : fastconv_ops
     for_fftm_type for_fftm(Domain<2>(npulse, nrange), 1.0);
     inv_fftm_type inv_fftm(Domain<2>(npulse, nrange), 1.0/nrange);
 
-    vsip_csl::assign_diagnostics(data, inv_fftm(replica * for_fftm(data)));
+    std::cout << assignment::diagnostics(data, inv_fftm(replica * for_fftm(data))) << std::endl;
   }
 };
 
@@ -1093,7 +990,7 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   length_type rows  = atoi(loop.param_["rows"].c_str());
   length_type size  = atoi(loop.param_["size"].c_str());
@@ -1113,7 +1010,6 @@ test(Loop1P& loop, int what)
   case  5: loop(t_fastconv_pf<complex<float>, Impl2op>(rows)); break;
   case  6: loop(t_fastconv_pf<complex<float>, Impl2ip>(rows)); break;
   case  7: loop(t_fastconv_pf<complex<float>, Impl2ip_tmp>(rows)); break;
-  case  8: loop(t_fastconv_pf<complex<float>, Impl2fv>(rows)); break;
   case  9: loop(t_fastconv_pf<complex<float>, Impl4vc>(rows)); break;
   case 10: loop(t_fastconv_pf<complex<float>, Impl4mc>(rows)); break;
 
@@ -1124,7 +1020,6 @@ test(Loop1P& loop, int what)
   case 15: loop(t_fastconv_rf<complex<float>, Impl2op>(size)); break;
   case 16: loop(t_fastconv_rf<complex<float>, Impl2ip>(size)); break;
   case 17: loop(t_fastconv_rf<complex<float>, Impl2ip_tmp>(size)); break;
-  case 18: loop(t_fastconv_rf<complex<float>, Impl2fv>(size)); break;
   case 19: loop(t_fastconv_rf<complex<float>, Impl4vc>(size)); break;
   case 20: loop(t_fastconv_rf<complex<float>, Impl4mc>(size)); break;
 

@@ -38,7 +38,7 @@ test_llsqsol_diag(length_type m,
   if (n > 3) a(3, 3)  = Test_traits<T>::value3();
 
   for (index_type i=0; i<p; ++i)
-    b.col(i) = test_ramp(T(1), T(i), m);
+    b.col(i) = test::ramp(T(1), T(i), m);
   if (p > 1)
     b.col(1) += Test_traits<T>::offset();
 
@@ -75,8 +75,8 @@ test_llsqsol_random(length_type m,
   Matrix<T> b(m, p);
   Matrix<T> chk(m, p);
 
-  randm(a);
-  randm(b);
+  test::randm(a);
+  test::randm(b);
 
   // If m > n, min || AX - B || may not be zero,
   // Need way to check that X is best solution

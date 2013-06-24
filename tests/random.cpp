@@ -9,14 +9,10 @@
 #include <vsip/initfin.hpp>
 #include <vsip/random.hpp>
 #include <vsip/support.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
+#include <test.hpp>
+#include <cstring>
 
-/***********************************************************************
-  Function Definitions
-***********************************************************************/
-
-
+using namespace ovxx;
 
 // C VSIPL code - the following typedefs allow this code to run
 // essentially unmodified from the original source. 
@@ -352,7 +348,6 @@ int
 main(int argc, char** argv)
 {
   using namespace vsip;
-  using namespace vsip_csl;
   vsipl init(argc, argv);
 
 

@@ -3,7 +3,7 @@ CompilerTable.c_kind=GCC
 CompilerTable.c_path=@CC_@
 CompilerTable.cplusplus_kind=GCC
 CompilerTable.cplusplus_path=@CXX_@
-CompilerTable.cplusplus_options= -I@abs_top_srcdir_@/support @CPPFLAGS_@ @CXXFLAGS_@
+CompilerTable.cplusplus_options= -I@abs_top_srcdir@/support @CPPFLAGS_@ @CXXFLAGS_@
 CompilerTable.cplusplus_ldflags= @LIBS_@
 
 CompilationTest.target=@QMTEST_TARGET_@

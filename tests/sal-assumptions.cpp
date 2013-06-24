@@ -9,15 +9,12 @@
 #include <cmath>
 #include <iostream>
 #include <vsip/initfin.hpp>
-#include <vsip/core/layout.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
+#include <ovxx/layout.hpp>
+#include <test.hpp>
 
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
-#ifdef VSIP_IMPL_HAVE_SAL
+#ifdef OVXX_HAVE_SAL
 #include <sal.h>
 
 // this verifies that std::pair<> and the SAL types for split
@@ -55,7 +52,7 @@ check_split_layout()
 int 
 main()
 {
-#ifdef VSIP_IMPL_HAVE_SAL
+#ifdef OVXX_HAVE_SAL
   check_split_layout();
 #endif
 

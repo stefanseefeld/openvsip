@@ -15,8 +15,7 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-#include <vsip_csl/assignment.hpp>
-#include "benchmarks.hpp"
+#include "benchmark.hpp"
 
 using namespace vsip;
 
@@ -27,6 +26,7 @@ using namespace vsip;
 
 // Create a map of a given pattern.
 
+#if OVXX_PARALLEL_API == 1
 inline Map<>
 create_map(char type)
 {
@@ -59,36 +59,19 @@ create_map(char type)
   }
   }
 }
-
-
+#endif
 
 // Sync Policy: use barrier.
-
 struct Barrier
 {
-  Barrier() : comm_(DEFAULT_COMMUNICATOR()) {}
-
-  void sync() { BARRIER(comm_); }
-
-  COMMUNICATOR_TYPE& comm_;
+  void sync() { barrier();}
 };
-
-
 
 // Sync Policy: no barrier.
-
 struct No_barrier
 {
-  No_barrier() {}
-
   void sync() {}
 };
-
-
-
-/***********************************************************************
-  Definitions - distributed vector element-wise multiply
-***********************************************************************/
 
 struct Impl_assign;
 struct Impl_sa;
@@ -111,13 +94,12 @@ template <typename T,
 struct t_dist_vmul<T, MapT, SP, Impl_assign> : Benchmark_base
 {
   char const* what() { return "t_vmul"; }
-  int ops_per_point(length_type)  { return impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     typedef Dense<1, T, row1_type, MapT> block_type;
 
@@ -140,10 +122,9 @@ struct t_dist_vmul<T, MapT, SP, Impl_assign> : Benchmark_base
       B_in.local().put(i, cos(3.1415f * b_freq * T(g_i)));
     }
 
-    vsip_csl::profile::Timer t1;
     SP sp;
     
-    t1.start();
+    timer t1;
     sp.sync();
     for (index_type l=0; l<loop; ++l)
     {
@@ -156,7 +137,7 @@ struct t_dist_vmul<T, MapT, SP, Impl_assign> : Benchmark_base
       C_out = C;
     }
     sp.sync();
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<C_out.local().size(); ++i)
     {
@@ -165,8 +146,6 @@ struct t_dist_vmul<T, MapT, SP, Impl_assign> : Benchmark_base
       T b_val = cos(3.1415f * b_freq * T(g_i));
       test_assert(equal(C_out.local().get(i), a_val * b_val));
     }
-    
-    time = t1.delta();
   }
 
   t_dist_vmul(MapT map_compute, MapT map_in, MapT map_out)
@@ -180,96 +159,6 @@ struct t_dist_vmul<T, MapT, SP, Impl_assign> : Benchmark_base
   MapT map_in_;
   MapT map_out_;
 };
-
-
-
-/***********************************************************************
-  Setup-assign
-***********************************************************************/
-
-template <typename T,
-	  typename MapT,
-	  typename SP>
-struct t_dist_vmul<T, MapT, SP, Impl_sa> : Benchmark_base
-{
-  char const* what() { return "t_vmul"; }
-  int ops_per_point(length_type)  { return impl::Ops_info<T>::mul; }
-  int riob_per_point(length_type) { return 2*sizeof(T); }
-  int wiob_per_point(length_type) { return 1*sizeof(T); }
-  int mem_per_point(length_type)  { return 3*sizeof(T); }
-
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
-  {
-    typedef Dense<1, T, row1_type, MapT> block_type;
-
-    T a_freq = 0.15f;
-    T b_freq = 0.15f;
-
-    Vector<T, block_type> A(size, map_compute_);
-    Vector<T, block_type> B(size, map_compute_);
-    Vector<T, block_type> C(size, map_compute_);
-
-    Vector<T, block_type> A_in (size, T(), map_in_);
-    Vector<T, block_type> B_in (size, T(), map_in_);
-    Vector<T, block_type> C_out(size,      map_out_);
-
-    for (index_type i=0; i<A_in.local().size(); ++i)
-    {
-      // A_in and B_in have same map.
-      index_type g_i = global_from_local_index(A_in, 0, i);
-      A_in.local().put(i, cos(3.1415f * a_freq * T(g_i)));
-      B_in.local().put(i, cos(3.1415f * b_freq * T(g_i)));
-    }
-
-    vsip_csl::profile::Timer t1;
-    SP sp;
-
-    vsip_csl::Assignment scatter_A(A, A_in);
-    vsip_csl::Assignment scatter_B(B, B_in);
-    vsip_csl::Assignment gather   (C_out, C);
-    
-    t1.start();
-    sp.sync();
-    for (index_type l=0; l<loop; ++l)
-    {
-      // scatter data
-      scatter_A();
-      scatter_B();
-
-      // perform operation
-      C = A * B;
-
-      // gather result
-      gather();
-    }
-    sp.sync();
-    t1.stop();
-    
-    for (index_type i=0; i<C_out.local().size(); ++i)
-    {
-      index_type g_i = global_from_local_index(C_out, 0, i);
-      T a_val = cos(3.1415f * a_freq * T(g_i));
-      T b_val = cos(3.1415f * b_freq * T(g_i));
-      test_assert(equal(C_out.local().get(i), a_val * b_val));
-    }
-    
-    time = t1.delta();
-  }
-
-  t_dist_vmul(MapT map_compute, MapT map_in, MapT map_out)
-    : map_compute_(map_compute),
-      map_in_     (map_in),
-      map_out_    (map_out)
-  {}
-
-  // Member data
-  MapT map_compute_;
-  MapT map_in_;
-  MapT map_out_;
-};
-
-
 
 /***********************************************************************
   Wrapper classes
@@ -315,10 +204,9 @@ struct t_dist_vmul_par
   }
 };
 
-
+#if OVXX_PARALLEL_API == 1
 
 // Pipeline parallelism wrapper.
-
 template <typename T,
 	  typename ImplTag,
 	  typename SP   = No_barrier>
@@ -334,7 +222,7 @@ struct t_dist_vmul_pipe
   {}
 };
 
-
+#endif
 
 /***********************************************************************
   Benchmark Definitions
@@ -348,24 +236,18 @@ defaults(Loop1P&)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {
   case  11: loop(t_dist_vmul_local<float,          Impl_assign>()); break;
   case  12: loop(t_dist_vmul_local<complex<float>, Impl_assign>()); break;
+#if OVXX_PARALLEL_API == 1
   case  21: loop(t_dist_vmul_par<float,            Impl_assign>()); break;
   case  22: loop(t_dist_vmul_par<complex<float>,   Impl_assign>()); break;
   case  31: loop(t_dist_vmul_pipe<float,           Impl_assign>()); break;
   case  32: loop(t_dist_vmul_pipe<complex<float>,  Impl_assign>()); break;
-
-  case  41: loop(t_dist_vmul_local<float,          Impl_sa>()); break;
-  case  42: loop(t_dist_vmul_local<complex<float>, Impl_sa>()); break;
-  case  51: loop(t_dist_vmul_par<float,            Impl_sa>()); break;
-  case  52: loop(t_dist_vmul_par<complex<float>,   Impl_sa>()); break;
-  case  61: loop(t_dist_vmul_pipe<float,           Impl_sa>()); break;
-  case  72: loop(t_dist_vmul_pipe<complex<float>,  Impl_sa>()); break;
-
+#endif
   case 0:
     std::cout
       << "dist_vmul -- distributed vector multiplication\n"
@@ -376,13 +258,6 @@ test(Loop1P& loop, int what)
       << "  -22 -- Clique vmul               - complex\n"
       << "  -31 -- Pipelined vmul            - float\n"
       << "  -32 -- Pipelined vmul            - complex\n"
-      << " Using Assignment object\n"
-      << "  -41 -- Local vmul (non-parallel) - float\n"
-      << "  -42 -- Local vmul (non-parallel) - complex\n"
-      << "  -51 -- Clique vmul               - float\n"
-      << "  -52 -- Clique vmul               - complex\n"
-      << "  -61 -- Pipelined vmul            - float\n"
-      << "  -62 -- Pipelined vmul            - complex\n"
       ;
 
   default:

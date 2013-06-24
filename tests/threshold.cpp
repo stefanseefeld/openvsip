@@ -13,17 +13,9 @@
 #include <vsip/matrix.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/random.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-using vsip_csl::equal;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 // Test C = ite(A >= b, A, T(0)) threshold
 //

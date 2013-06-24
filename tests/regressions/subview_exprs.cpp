@@ -14,17 +14,9 @@
 #include <vsip/support.hpp>
 #include <vsip/initfin.hpp>
 #include <vsip/vector.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 /// Test A1: Use of subview in assignment.
 

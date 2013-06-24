@@ -6,11 +6,8 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-/// Description
-///   Benchmark outer loop.
-
-#ifndef LOOP_HPP
-#define LOOP_HPP
+#ifndef loop_hpp_
+#define loop_hpp_
 
 #include <iostream>
 #include <sstream>
@@ -21,35 +18,16 @@
 
 #include <vsip/vector.hpp>
 #include <vsip/math.hpp>
-#include <vsip/parallel.hpp>
-#include <vsip/core/memory_pool.hpp>
-#include <vsip_csl/profile.hpp>
-
-#ifdef VSIP_IMPL_SOURCERY_VPP
-#  define PARALLEL_LOOP 1
-#else
-#  define PARALLEL_LOOP 0
+#if OVXX_PARALLEL_API == 1
+# include <vsip/parallel.hpp>
 #endif
 
-#if PARALLEL_LOOP
-#  include <vsip/map.hpp>
-#  include <vsip/parallel.hpp>
-#  define COMMUNICATOR_TYPE      vsip::impl::Communicator
-#  define PROCESSOR_TYPE         vsip::processor_type
-#  define DEFAULT_COMMUNICATOR() vsip::impl::default_communicator()
-#  define RANK(comm)             comm.rank()
-#  define BARRIER(comm)          comm.barrier()
-#  define NUM_PROCESSORS()       vsip::num_processors()
-#  define LOCAL(view)            view.local()
-#else
-#  define COMMUNICATOR_TYPE      int
-#  define PROCESSOR_TYPE         int
-#  define DEFAULT_COMMUNICATOR() 0
-#  define RANK(comm)             0
-#  define BARRIER(comm)
-#  define NUM_PROCESSORS()       1
-#  define LOCAL(view)            view
+inline void barrier()
+{
+#if OVXX_PARALLEL_API == 1
+  ovxx::parallel::default_communicator().barrier();
 #endif
+}
 
 enum output_metric
 {
@@ -118,14 +96,13 @@ public:
     center_      (1000),
     note_        (0),
     user_param_  (0),
-    do_prof_     (false),
     what_        (0),
     show_loop_   (false),
     show_time_   (false),
     mode_        (sweep_mode),
     m_array_     (),
     param_       (),
-    pool_        (0)
+    allocator_   (0)
   {}
 
   template <typename Functor>
@@ -144,7 +121,7 @@ public:
   void operator()(Functor func);
 
   template <typename Functor>
-  float metric(Functor& fcn, size_t M, size_t loop, float time,
+  float metric(Functor& fcn, std::size_t M, std::size_t loop, float time,
 	       output_metric m);
 
   unsigned
@@ -168,14 +145,13 @@ public:
   unsigned      center_;	// center value if range_ == centered
   char*         note_;
   int           user_param_;
-  bool          do_prof_;
   int           what_;
   bool          show_loop_;
   bool          show_time_;
   bench_mode    mode_;
   std::vector<unsigned> m_array_;
   std::map<std::string, std::string> param_;
-  vsip::impl::Memory_pool*           pool_;
+  ovxx::allocator *allocator_;
 };
 
 
@@ -195,8 +171,8 @@ template <typename Functor>
 inline float
 Loop1P::metric(
   Functor&      fcn,
-  size_t        M,
-  size_t        loop,
+  std::size_t        M,
+  std::size_t        loop,
   float         time,
   output_metric m)
 {
@@ -269,24 +245,23 @@ Loop1P::sweep(Functor fcn)
 {
   using namespace vsip;
 
-  size_t   loop, M;
+  std::size_t   loop, M;
   float    time;
   double   growth;
   unsigned const n_time = samples_;
 
-  COMMUNICATOR_TYPE& comm  = DEFAULT_COMMUNICATOR();
-  PROCESSOR_TYPE     rank  = RANK(comm);
-  PROCESSOR_TYPE     nproc = NUM_PROCESSORS();
+  index_type proc = local_processor_index();
+  length_type nproc = num_processors();
 
   std::vector<float> mtime(n_time);
 
-#if PARALLEL_LOOP
+#if OVXX_PARALLEL_API == 1
   Vector<float, Dense<1, float, row1_type, Map<> > >
       dist_time(nproc, Map<>(nproc));
   Vector<float, Dense<1, float, row1_type, Replicated_map<1> > > glob_time(nproc);
 #else
-  Vector<float, Dense<1, float, row1_type> > dist_time(nproc);
-  Vector<float, Dense<1, float, row1_type> > glob_time(nproc);
+  Vector<float> dist_time(1);
+  Vector<float> glob_time(1);
 #endif
 
   loop = loop_start_;
@@ -298,37 +273,36 @@ Loop1P::sweep(Functor fcn)
     float factor;
     float factor_thresh = 1.05;
     
-    size_t old_loop;
+    std::size_t old_loop;
     do 
     {
       old_loop = loop;
-      BARRIER(comm);
+      barrier();
       {
-	vsip::impl::Memory_pool* cur_pool = vsip::impl::default_pool;
-	if (pool_) vsip::impl::default_pool = pool_;
+	ovxx::allocator *cur_allocator = ovxx::allocator::get_default();
+	if (allocator_) ovxx::allocator::set_default(allocator_);
 	fcn(M, loop, time);
-	vsip::impl::default_pool = cur_pool;
+	ovxx::allocator::set_default(cur_allocator);
       }
-      BARRIER(comm);
+      barrier();
 
-      LOCAL(dist_time).put(0, time);
+      dist_time.local().put(0, time);
       glob_time = dist_time;
 
       Index<1> idx;
 
-      time = maxval(LOCAL(glob_time), idx);
+      time = maxval(glob_time.local(), idx);
 
       if (time <= 0.01) time = 0.01;
 
       factor = goal_sec_ / time;
-      loop = (size_t)(factor * loop);
-      // printf("%d: time: %f  factor: %f  loop: %d\n", rank,time,factor,loop);
+      loop = (std::size_t)(factor * loop);
       if ( loop == 0 ) 
         loop = 1; 
     } while (factor >= factor_thresh && loop > old_loop);
   }
 
-  if (rank == 0)
+  if (proc == 0)
   {
     if (metric_ == data_per_sec)
     {
@@ -359,11 +333,6 @@ Loop1P::sweep(Functor fcn)
     }
   }
 
-#if PARALLEL_LOOP
-  if (this->do_prof_)
-    vsip_csl::profile::prof->set_mode(vsip_csl::profile::pm_accum);
-#endif
-
   // for real ---------------------------------------------------------
   for (unsigned i=start_; i<=stop_; i++)
   {
@@ -371,39 +340,29 @@ Loop1P::sweep(Functor fcn)
 
     for (unsigned j=0; j<n_time; ++j)
     {
-      BARRIER(comm);
+      barrier();
       {
-	vsip::impl::Memory_pool* cur_pool = vsip::impl::default_pool;
-	if (pool_) vsip::impl::default_pool = pool_;
+	ovxx::allocator *cur_allocator = ovxx::allocator::get_default();
+	if (allocator_) ovxx::allocator::set_default(allocator_);
 	fcn(M, loop, time);
-	vsip::impl::default_pool = cur_pool;
+	ovxx::allocator::set_default(cur_allocator);
       }
-      BARRIER(comm);
+      barrier();
 
-      LOCAL(dist_time).put(0, time);
+      dist_time.local().put(0, time);
       glob_time = dist_time;
 
       Index<1> idx;
 
-      mtime[j] = maxval(LOCAL(glob_time), idx);
+      mtime[j] = maxval(glob_time.local(), idx);
     }
-
-#if PARALLEL_LOOP
-    if (this->do_prof_)
-    {
-      char     filename[256];
-      sprintf(filename, "vprof.%lu-%lu.out", (unsigned long) M,
-	      (unsigned long)vsip::local_processor());
-      vsip_csl::profile::prof->dump(filename);
-    }
-#endif
 
     std::sort(mtime.begin(), mtime.end());
 
 
-    if (rank == 0)
+    if (proc == 0)
     {
-      size_t L;
+      std::size_t L;
       
       if (this->lhs_ == lhs_mem)
 	L = M * fcn.mem_per_point(M);
@@ -411,37 +370,35 @@ Loop1P::sweep(Functor fcn)
 	L = M;
 
       if (this->metric_ == all_per_sec)
-	printf("%7ld %f %f %f", (unsigned long) L,
-	       this->metric(fcn, M, loop, mtime[(n_time-1)/2], pts_per_sec),
-	       this->metric(fcn, M, loop, mtime[(n_time-1)/2], ops_per_sec),
-	       this->metric(fcn, M, loop, mtime[(n_time-1)/2], iob_per_sec));
+	std::cout << L << ' '
+		  << this->metric(fcn, M, loop, mtime[(n_time-1)/2], pts_per_sec) << ' '
+		  << this->metric(fcn, M, loop, mtime[(n_time-1)/2], ops_per_sec) << ' '
+		  << this->metric(fcn, M, loop, mtime[(n_time-1)/2], iob_per_sec);
       else if (this->metric_ == data_per_sec)
-	printf("%ld,%f,%f,%f,%f,%f,%f,%f,%ld,%f",
-	       (unsigned long) L,
-	       this->metric(fcn, M, loop, mtime[(n_time-1)/2], pts_per_sec),
-	       this->metric(fcn, M, loop, mtime[n_time-1],     pts_per_sec),
-	       this->metric(fcn, M, loop, mtime[0],            pts_per_sec),
-	       (float)fcn.mem_per_point(M),
-	       (float)fcn.ops_per_point(M),
-	       (float)fcn.riob_per_point(M),
-	       (float)fcn.wiob_per_point(M),
-	       (unsigned long)loop,
-	       mtime[(n_time-1)/2]);
+	std::cout << L << ',' 
+		  << this->metric(fcn, M, loop, mtime[(n_time-1)/2], pts_per_sec) << ','
+		  << this->metric(fcn, M, loop, mtime[n_time-1],     pts_per_sec) << ','
+		  << this->metric(fcn, M, loop, mtime[0],            pts_per_sec) << ','
+		  << (float)fcn.mem_per_point(M) << ','
+		  << (float)fcn.ops_per_point(M) << ','
+		  << (float)fcn.riob_per_point(M) << ','
+		  << (float)fcn.wiob_per_point(M) << ','
+		  << (unsigned long)loop << ','
+		  << mtime[(n_time-1)/2];
       else if (n_time > 1)
 	// Note: max time is min op/s, and min time is max op/s
-	printf("%7lu %f %f %f", (unsigned long) L,
-	       this->metric(fcn, M, loop, mtime[(n_time-1)/2], metric_),
-	       this->metric(fcn, M, loop, mtime[n_time-1],     metric_),
-	       this->metric(fcn, M, loop, mtime[0],            metric_));
+	std::cout << L << ' '
+		  << this->metric(fcn, M, loop, mtime[(n_time-1)/2], metric_) << ' '
+		  << this->metric(fcn, M, loop, mtime[n_time-1],     metric_) << ' '
+		  << this->metric(fcn, M, loop, mtime[0],            metric_);
       else
-	printf("%7lu %f", (unsigned long) L,
-	       this->metric(fcn, M, loop, mtime[0], metric_));
+	std::cout << L << ' '
+		  << this->metric(fcn, M, loop, mtime[0], metric_);
       if (this->show_loop_)
-	printf("  %8lu", (unsigned long)loop);
+	std::cout << "  " << loop;
       if (this->show_time_)
-	printf("  %f", mtime[(n_time-1)/2]);
-      printf("\n");
-      fflush(stdout);
+	std::cout << "  " << mtime[(n_time-1)/2];
+      std::cout << std::endl;
     }
 
     time = mtime[(n_time-1)/2];
@@ -467,27 +424,24 @@ void
 Loop1P::steady(Functor fcn)
 {
   using namespace vsip;
-  using vsip::impl::Memory_pool;
+  using ovxx::allocator;
 
-  size_t   loop, M;
+  std::size_t   loop, M;
   float    time;
 
-  COMMUNICATOR_TYPE& comm  = DEFAULT_COMMUNICATOR();
-  PROCESSOR_TYPE     rank  = RANK(comm);
-  PROCESSOR_TYPE     nproc = NUM_PROCESSORS();
-
-#if PARALLEL_LOOP
+  index_type proc = local_processor_index();
+  length_type nproc = num_processors();
+#if OVXX_PARALLEL_API == 1
   Vector<float, Dense<1, float, row1_type, Map<> > >
     dist_time(nproc, Map<>(nproc));
   Vector<float, Dense<1, float, row1_type, Replicated_map<1> > > glob_time(nproc);
 #else
-  Vector<float, Dense<1, float, row1_type> > dist_time(nproc);
-  Vector<float, Dense<1, float, row1_type> > glob_time(nproc);
+  Vector<float> dist_time(1);
+  Vector<float> glob_time(1);
 #endif
-
   loop = loop_start_;
 
-  if (rank == 0)
+  if (proc == 0)
   {
     std::cout << "# what             : " << fcn.what() << " (" << what_ << ")\n";
     std::cout << "# nproc            : " << nproc << "\n";
@@ -508,57 +462,42 @@ Loop1P::steady(Functor fcn)
     std::cout << "# start_loop       : " << static_cast<unsigned long>(loop) << '\n';
   }
 
-#if PARALLEL_LOOP
-  if (this->do_prof_)
-    vsip_csl::profile::prof->set_mode(vsip_csl::profile::pm_accum);
-#endif
-
   // for real ---------------------------------------------------------
   while (1)
   {
     M = (1 << start_);
 
-    BARRIER(comm);
+    barrier();
     {
-      Memory_pool* cur_pool = vsip::impl::default_pool;
-      if (pool_) vsip::impl::default_pool = pool_;
+      allocator *cur_allocator = ovxx::allocator::get_default();
+      if (allocator_) ovxx::allocator::set_default(allocator_);
       fcn(M, loop, time);
-      vsip::impl::default_pool = cur_pool;
+      ovxx::allocator::set_default(cur_allocator);
     }
-    BARRIER(comm);
+    barrier();
 
-    LOCAL(dist_time).put(0, time);
+    dist_time.local().put(0, time);
     glob_time = dist_time;
 
     Index<1> idx;
 
-    time = maxval(LOCAL(glob_time), idx);
+    time = maxval(glob_time.local(), idx);
 
-#if 0
-    if (this->do_prof_)
-    {
-      std::ostringstream oss;
-      oss << "vprof." << static_cast<unsigned long>(M) << ".out";
-      vsip_csl::profile::prof->dump(oss.str());
-    }
-#endif
-
-    if (rank == 0)
+    if (proc == 0)
     {
       if (this->metric_ == all_per_sec)
-	printf("%7ld %f %f %f", (unsigned long) M,
-	       this->metric(fcn, M, loop, time, pts_per_sec),
-	       this->metric(fcn, M, loop, time, ops_per_sec),
-	       this->metric(fcn, M, loop, time, iob_per_sec));
+	std::cout << M << ' '
+		  << this->metric(fcn, M, loop, time, pts_per_sec) << ' '
+		  << this->metric(fcn, M, loop, time, ops_per_sec) << ' '
+		  << this->metric(fcn, M, loop, time, iob_per_sec);
       else
-	printf("%7lu %f", (unsigned long) M,
-	       this->metric(fcn, M, loop, time, metric_));
+	std::cout << M << ' '
+		  << this->metric(fcn, M, loop, time, metric_);
       if (this->show_loop_)
-	printf("  %8lu", (unsigned long)loop);
+	std::cout << "  " << loop;
       if (this->show_time_)
-	printf("  %f", time);
-      printf("\n");
-      fflush(stdout);
+	std::cout << "  " << time;
+      std::cout << std::endl;
     }
 
     float factor = goal_sec_ / time;
@@ -575,20 +514,78 @@ template <typename Functor>
 inline void
 Loop1P::single(Functor fcn)
 {
+  using namespace vsip;
+
   float  time;
-  size_t loop = 1;
-  size_t M = this->m_value(cal_);
+  std::size_t loop =  loop_start_;
+  std::size_t M = this->m_value(cal_);
 
-  COMMUNICATOR_TYPE& comm  = DEFAULT_COMMUNICATOR();
+  index_type proc = local_processor_index();
+  length_type nproc = num_processors();
 
-  BARRIER(comm);
+#if OVXX_PARALLEL_API == 1
+  Vector<float, Dense<1, float, row1_type, Map<> > >
+    dist_time(nproc, Map<>(nproc));
+  Vector<float, Dense<1, float, row1_type, Replicated_map<1> > > glob_time(nproc);
+#else
+  Vector<float> dist_time(1);
+  Vector<float> glob_time(1);
+#endif
+
+  // calibrate
+  if (do_cal_ && !fix_loop_)
   {
-    vsip::impl::Memory_pool* cur_pool = vsip::impl::default_pool;
-    if (pool_) vsip::impl::default_pool = pool_;
-    fcn(M, loop, time);
-    vsip::impl::default_pool = cur_pool;
+    float factor;
+    float factor_thresh = 1.05;
+    
+    std::size_t old_loop;
+    do 
+    {
+      old_loop = loop;
+      barrier();
+      ovxx::allocator *cur_allocator = ovxx::allocator::get_default();
+      if (allocator_) ovxx::allocator::set_default(allocator_);
+      fcn(M, loop, time);
+      ovxx::allocator::set_default(cur_allocator);
+      barrier();
+
+      dist_time.local().put(0, time);
+      glob_time = dist_time;
+
+      Index<1> idx;
+
+      time = maxval(glob_time.local(), idx);
+
+      if (time <= 0.01) time = 0.01;
+
+      factor = goal_sec_ / time;
+      loop = (std::size_t)(factor * loop);
+
+      if ( loop == 0 ) 
+        loop = 1; 
+    } while (factor >= factor_thresh && loop > old_loop);
   }
-  BARRIER(comm);
+  barrier();
+  ovxx::allocator *cur_allocator = ovxx::allocator::get_default();
+  if (allocator_) ovxx::allocator::set_default(allocator_);
+  fcn(M, loop, time);
+  ovxx::allocator::set_default(cur_allocator);
+  barrier();
+
+  dist_time.local().put(0, time);
+  glob_time = dist_time;
+  
+  Index<1> idx;
+
+  time = maxval(glob_time.local(), idx);
+
+  if (proc == 0)
+  {
+    std::cout << M << ", " 
+	      << this->metric(fcn, M, loop, time, ops_per_sec) << ", "
+	      << loop << ", "
+	      << time * 1e6 / loop << std::endl;
+  }
 }
 
 
@@ -597,28 +594,19 @@ template <typename Functor>
 inline void
 Loop1P::diag(Functor fcn)
 {
-  COMMUNICATOR_TYPE& comm  = DEFAULT_COMMUNICATOR();
-
-  BARRIER(comm);
+  barrier();
   fcn.diag();
-  BARRIER(comm);
+  barrier();
 }
-
-
 
 template <typename Functor>
 inline void
-Loop1P::operator()(
-  Functor fcn)
+Loop1P::operator()(Functor fcn)
 {
-  if (mode_ == steady_mode)
-    this->steady(fcn);
-  else if (mode_ == single_mode)
-    this->single(fcn);
-  else if (mode_ == diag_mode)
-    this->diag(fcn);
-  else
-    this->sweep(fcn);
+  if (mode_ == steady_mode) this->steady(fcn);
+  else if (mode_ == single_mode) this->single(fcn);
+  else if (mode_ == diag_mode) this->diag(fcn);
+  else this->sweep(fcn);
 }
 
 #endif

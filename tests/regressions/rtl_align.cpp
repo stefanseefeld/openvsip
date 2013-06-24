@@ -8,24 +8,17 @@
 
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
-#include <vsip/core/layout.hpp>
+#include <ovxx/layout.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace vsip;
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 void
 test_aligned_rtl_2()
 {
   dimension_type const dim = 2;
 
-  impl::Rt_layout<dim> rtl;
+  Rt_layout<dim> rtl;
 
   length_type rows = 2;
   length_type cols = 5;
@@ -33,13 +26,13 @@ test_aligned_rtl_2()
   length_type elem_size = 8;
 
   rtl.packing = aligned;
-  rtl.order = impl::Rt_tuple(0, 1, 2);
+  rtl.order = Rt_tuple(0, 1, 2);
   rtl.storage_format = interleaved_complex;
   rtl.alignment = align;
 
-  impl::Length<dim> ext(rows, cols);
+  Length<dim> ext(rows, cols);
 
-  impl::Applied_layout<impl::Rt_layout<dim> > layout(rtl, ext, elem_size);
+  Applied_layout<Rt_layout<dim> > layout(rtl, ext, elem_size);
 
   test_assert(layout.size(0) == rows);
   test_assert(layout.size(1) == cols);
@@ -60,7 +53,7 @@ test_aligned_rtl_3()
 {
   dimension_type const dim = 3;
 
-  impl::Rt_layout<dim> rtl;
+  Rt_layout<dim> rtl;
 
   length_type dim0      = 2;
   length_type dim1      = 2;
@@ -69,13 +62,13 @@ test_aligned_rtl_3()
   length_type elem_size = 8;
 
   rtl.packing = aligned;
-  rtl.order = impl::Rt_tuple(0, 1, 2);
+  rtl.order = Rt_tuple(0, 1, 2);
   rtl.storage_format = interleaved_complex;
   rtl.alignment = align;
 
-  impl::Length<dim> ext(dim0, dim1, dim2);
+  Length<dim> ext(dim0, dim1, dim2);
 
-  impl::Applied_layout<impl::Rt_layout<dim> > layout(rtl, ext, elem_size);
+  Applied_layout<Rt_layout<dim> > layout(rtl, ext, elem_size);
 
   test_assert(layout.size(0) == dim0);
   test_assert(layout.size(1) == dim1);

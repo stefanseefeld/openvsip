@@ -411,7 +411,7 @@ cases_conv(
   length_type        D,
   bool               rand)
 {
-  typename vsip::impl::view_of<Dense<Dim, T> >::type
+  typename view_of<Dense<Dim, T> >::type
 		coeff(M[0].size(), M[1].size(), T());
 
   if (rand)
@@ -447,7 +447,7 @@ single_conv(
   length_type        n_loop,
   bool               rand)
 {
-  typename vsip::impl::view_of<Dense<Dim, T> >::type
+  typename view_of<Dense<Dim, T> >::type
 		coeff(M[0].size(), M[1].size(), T());
 
   if (rand)

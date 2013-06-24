@@ -9,23 +9,15 @@
 /// Description
 ///   Benchmark for MPI alltoall.
 
-#include <iostream>
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/map.hpp>
-#include <vsip_csl/profile.hpp>
-#include <vsip/core/ops_info.hpp>
+#include "benchmark.hpp"
+#include <iostream>
+#include <cstring>
 
-#include <vsip_csl/c++0x.hpp>
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
-
-using namespace vsip;
-using vsip_csl::is_same;
-using vsip_csl::equal;
-using vsip_csl::operator<<;
+using namespace ovxx;
 
 
 
@@ -96,9 +88,9 @@ class Send<T, SBlock, DBlock, Impl_alltoall>
   typedef typename get_block_layout<SBlock>::order_type src_order_type;
   typedef typename get_block_layout<DBlock>::order_type dst_order_type;
 
-  typedef typename impl::Distributed_local_block<DBlock>::type
+  typedef typename ovxx::distributed_local_block<DBlock>::type
 		dst_local_block_t;
-  typedef typename impl::Distributed_local_block<SBlock>::type
+  typedef typename ovxx::distributed_local_block<SBlock>::type
 		src_local_block_t;
 
   // Constructor.
@@ -160,7 +152,7 @@ public:
     int		 lena[2]   = { 1, 1 };
     MPI_Aint	 loca[2]   = { 0, ncols_per_recv * sizeof(T) };
     MPI_Datatype typesa[2] = { tmp0_datatype_, MPI_UB };
-    MPI_Type_struct(2, lena, loca, typesa, &src_datatype_);
+    MPI_Type_create_struct(2, lena, loca, typesa, &src_datatype_);
     MPI_Type_commit(&src_datatype_);
 
 
@@ -181,12 +173,12 @@ public:
       int		 len[3]   = { 1, 1, 1 };
       MPI_Aint	 loc[3]   = { 0, 0, sizeof(T) };
       MPI_Datatype types[3] = { tmp1_datatype_, MPI_LB, MPI_UB };
-      MPI_Type_struct(3, len, loc, types, &tmp2_datatype_);
+      MPI_Type_create_struct(3, len, loc, types, &tmp2_datatype_);
       MPI_Type_commit(&tmp2_datatype_);
       
       
-      MPI_Type_hvector(nrows_per_send, 1, sizeof(float), tmp2_datatype_,
-		       &dst_datatype_);
+      MPI_Type_create_hvector(nrows_per_send, 1, sizeof(float), tmp2_datatype_,
+			      &dst_datatype_);
       MPI_Type_commit(&dst_datatype_);
     }
     else
@@ -229,8 +221,8 @@ private:
   Matrix<T, SBlock>           src_;
   Matrix<T, DBlock>           dst_;
 
-  dda::Data<src_local_block_t, dda::in> src_data_;
-  dda::Data<dst_local_block_t, dda::out> dst_data_;
+  vsip::dda::Data<src_local_block_t, vsip::dda::in> src_data_;
+  vsip::dda::Data<dst_local_block_t, vsip::dda::out> dst_data_;
 
   MPI_Datatype      src_datatype_;
   MPI_Datatype      dst_datatype_;
@@ -257,9 +249,9 @@ class Send<T, SBlock, DBlock, Impl_alltoallv<CopyLocal> >
   typedef typename get_block_layout<SBlock>::order_type src_order_type;
   typedef typename get_block_layout<DBlock>::order_type dst_order_type;
 
-  typedef typename impl::Distributed_local_block<DBlock>::type
+  typedef typename ovxx::distributed_local_block<DBlock>::type
 		dst_local_block_t;
-  typedef typename impl::Distributed_local_block<SBlock>::type
+  typedef typename ovxx::distributed_local_block<SBlock>::type
 		src_local_block_t;
 
   // Constructor.
@@ -330,7 +322,7 @@ public:
     int		 lena[2]   = { 1, 1 };
     MPI_Aint	 loca[2]   = { 0, ncols_per_recv_ * sizeof(T) };
     MPI_Datatype typesa[2] = { tmp0_datatype_, MPI_UB };
-    MPI_Type_struct(2, lena, loca, typesa, &src_datatype_);
+    MPI_Type_create_struct(2, lena, loca, typesa, &src_datatype_);
     MPI_Type_commit(&src_datatype_);
 
     for (index_type p=0; p<nproc_; ++p)
@@ -366,12 +358,12 @@ public:
       int		 len[3]   = { 1, 1, 1 };
       MPI_Aint	 loc[3]   = { 0, 0, sizeof(T) };
       MPI_Datatype types[3] = { tmp1_datatype_, MPI_LB, MPI_UB };
-      MPI_Type_struct(3, len, loc, types, &tmp2_datatype_);
+      MPI_Type_create_struct(3, len, loc, types, &tmp2_datatype_);
       MPI_Type_commit(&tmp2_datatype_);
 	
 	
-      MPI_Type_hvector(nrows_per_send_, 1, sizeof(float), tmp2_datatype_,
-		       &dst_datatype_);
+      MPI_Type_create_hvector(nrows_per_send_, 1, sizeof(float), tmp2_datatype_,
+			      &dst_datatype_);
       MPI_Type_commit(&dst_datatype_);
     }
     else
@@ -444,19 +436,18 @@ public:
       {
 	T *dst = dst_data_.ptr() + dst_rank_*nrows_per_send_;
 	T const *src = src_data_.ptr() + src_rank_*ncols_per_recv_;
-	impl::transpose_unit(dst, src,
-			     nrows_per_send_, ncols_per_recv_,
-			     dst_data_.stride(1),
-			     src_data_.stride(0));
+	assignment::transpose(dst, dst_data_.stride(1),
+			      src, src_data_.stride(0),
+			      nrows_per_send_, ncols_per_recv_);
       }
       else
       {
 	T *dst = dst_data_.ptr() + dst_rank_*ncols_per_recv_*nrows_per_send_;
 	T const *src = src_data_.ptr() + src_rank_*ncols_per_recv_;
 	for (index_type i=0; i<nrows_per_send_; ++i)
-	  memcpy(dst + i*ncols_per_recv_,
-		 src + i*src_.size(1),
-		 ncols_per_recv_ * sizeof(T));
+	  std::memcpy(dst + i*ncols_per_recv_,
+		      src + i*src_.size(1),
+		      ncols_per_recv_ * sizeof(T));
       }
     }
   }
@@ -466,8 +457,8 @@ private:
   Matrix<T, SBlock>           src_;
   Matrix<T, DBlock>           dst_;
 
-  dda::Data<src_local_block_t, dda::in> src_data_;
-  dda::Data<dst_local_block_t, dda::out> dst_data_;
+  vsip::dda::Data<src_local_block_t, vsip::dda::in> src_data_;
+  vsip::dda::Data<dst_local_block_t, vsip::dda::out> dst_data_;
 
   length_type       nproc_;
   processor_type    rank_;
@@ -504,9 +495,9 @@ class Send<T, SBlock, DBlock, Impl_isend>
   typedef typename get_block_layout<SBlock>::order_type src_order_type;
   typedef typename get_block_layout<DBlock>::order_type dst_order_type;
 
-  typedef typename impl::Distributed_local_block<DBlock>::type
+  typedef typename ovxx::distributed_local_block<DBlock>::type
 		dst_local_block_t;
-  typedef typename impl::Distributed_local_block<SBlock>::type
+  typedef typename ovxx::distributed_local_block<SBlock>::type
 		src_local_block_t;
 
   // Constructor.
@@ -567,7 +558,7 @@ public:
     int		 lena[2]   = { 1, 1 };
     MPI_Aint	 loca[2]   = { 0, ncols_per_recv_ * sizeof(T) };
     MPI_Datatype typesa[2] = { tmp0_datatype_, MPI_UB };
-    MPI_Type_struct(2, lena, loca, typesa, &src_datatype_);
+    MPI_Type_create_struct(2, lena, loca, typesa, &src_datatype_);
     MPI_Type_commit(&src_datatype_);
 
 
@@ -588,12 +579,12 @@ public:
       int		 len[3]   = { 1, 1, 1 };
       MPI_Aint	 loc[3]   = { 0, 0, sizeof(T) };
       MPI_Datatype types[3] = { tmp1_datatype_, MPI_LB, MPI_UB };
-      MPI_Type_struct(3, len, loc, types, &tmp2_datatype_);
+      MPI_Type_create_struct(3, len, loc, types, &tmp2_datatype_);
       MPI_Type_commit(&tmp2_datatype_);
       
       
-      MPI_Type_hvector(nrows_per_send_, 1, sizeof(float), tmp2_datatype_,
-		       &dst_datatype_);
+      MPI_Type_create_hvector(nrows_per_send_, 1, sizeof(float), tmp2_datatype_,
+			      &dst_datatype_);
       MPI_Type_commit(&dst_datatype_);
     }
     else
@@ -671,8 +662,8 @@ private:
   Matrix<T, SBlock>           src_;
   Matrix<T, DBlock>           dst_;
 
-  dda::Data<src_local_block_t, dda::in> src_data_;
-  dda::Data<dst_local_block_t, dda::out> dst_data_;
+  vsip::dda::Data<src_local_block_t, vsip::dda::in> src_data_;
+  vsip::dda::Data<dst_local_block_t, vsip::dda::out> dst_data_;
 
   length_type       nproc_;
   length_type       nrows_per_send_;
@@ -704,9 +695,9 @@ class Send<T, SBlock, DBlock, Impl_isend_x>
   typedef typename get_block_layout<SBlock>::order_type src_order_type;
   typedef typename get_block_layout<DBlock>::order_type dst_order_type;
 
-  typedef typename impl::Distributed_local_block<DBlock>::type
+  typedef typename ovxx::distributed_local_block<DBlock>::type
 		dst_local_block_t;
-  typedef typename impl::Distributed_local_block<SBlock>::type
+  typedef typename ovxx::distributed_local_block<SBlock>::type
 		src_local_block_t;
 
   // Constructor.
@@ -768,7 +759,7 @@ public:
     int		 lena[2]   = { 1, 1 };
     MPI_Aint	 loca[2]   = { 0, ncols_per_recv_ * sizeof(T) };
     MPI_Datatype typesa[2] = { tmp0_datatype_, MPI_UB };
-    MPI_Type_struct(2, lena, loca, typesa, &src_datatype_);
+    MPI_Type_create_struct(2, lena, loca, typesa, &src_datatype_);
     MPI_Type_commit(&src_datatype_);
 
 
@@ -789,12 +780,12 @@ public:
       int		 len[3]   = { 1, 1, 1 };
       MPI_Aint	 loc[3]   = { 0, 0, sizeof(T) };
       MPI_Datatype types[3] = { tmp1_datatype_, MPI_LB, MPI_UB };
-      MPI_Type_struct(3, len, loc, types, &tmp2_datatype_);
+      MPI_Type_create_struct(3, len, loc, types, &tmp2_datatype_);
       MPI_Type_commit(&tmp2_datatype_);
       
       
-      MPI_Type_hvector(nrows_per_send_, 1, sizeof(float), tmp2_datatype_,
-		       &dst_datatype_);
+      MPI_Type_create_hvector(nrows_per_send_, 1, sizeof(float), tmp2_datatype_,
+			      &dst_datatype_);
       MPI_Type_commit(&dst_datatype_);
     }
     else
@@ -841,19 +832,18 @@ public:
     {
       T *dst = dst_data_.ptr() + rank_*nrows_per_send_;
       T const *src = src_data_.ptr() + rank_*ncols_per_recv_;
-      impl::transpose_unit(dst, src,
-			   nrows_per_send_, ncols_per_recv_,
-			   dst_data_.stride(1),
-			   src_data_.stride(0));
+      assignment::transpose(dst, dst_data_.stride(1),
+			    src, src_data_.stride(0),
+			    nrows_per_send_, ncols_per_recv_);
     }
     else
     {
       T *dst = dst_data_.ptr() + rank_*ncols_per_recv_*nrows_per_send_;
       T const *src = src_data_.ptr() + rank_*ncols_per_recv_;
       for (index_type i=0; i<nrows_per_send_; ++i)
-	memcpy(dst + i*ncols_per_recv_,
-	       src + i*src_.size(1),
-	       ncols_per_recv_ * sizeof(T));
+	std::memcpy(dst + i*ncols_per_recv_,
+		    src + i*src_.size(1),
+		    ncols_per_recv_ * sizeof(T));
     }
 
     // Recv -----------------------------------------------------------
@@ -897,8 +887,8 @@ private:
   Matrix<T, SBlock>           src_;
   Matrix<T, DBlock>           dst_;
 
-  dda::Data<src_local_block_t, dda::in> src_data_;
-  dda::Data<dst_local_block_t, dda::out> dst_data_;
+  vsip::dda::Data<src_local_block_t, vsip::dda::in> src_data_;
+  vsip::dda::Data<dst_local_block_t, vsip::dda::out> dst_data_;
 
   length_type       nproc_;
   index_type        rank_;
@@ -931,9 +921,9 @@ class Send<T, SBlock, DBlock, Impl_persistent>
   typedef typename get_block_layout<SBlock>::order_type src_order_type;
   typedef typename get_block_layout<DBlock>::order_type dst_order_type;
 
-  typedef typename impl::Distributed_local_block<DBlock>::type
+  typedef typename ovxx::distributed_local_block<DBlock>::type
 		dst_local_block_t;
-  typedef typename impl::Distributed_local_block<SBlock>::type
+  typedef typename ovxx::distributed_local_block<SBlock>::type
 		src_local_block_t;
 
   // Constructor.
@@ -995,7 +985,7 @@ public:
     int		 lena[2]   = { 1, 1 };
     MPI_Aint	 loca[2]   = { 0, ncols_per_recv_ * sizeof(T) };
     MPI_Datatype typesa[2] = { tmp0_datatype_, MPI_UB };
-    MPI_Type_struct(2, lena, loca, typesa, &src_datatype_);
+    MPI_Type_create_struct(2, lena, loca, typesa, &src_datatype_);
     MPI_Type_commit(&src_datatype_);
 
     for (index_type i=0; i<nproc_; ++i)
@@ -1023,12 +1013,12 @@ public:
       int		 len[3]   = { 1, 1, 1 };
       MPI_Aint	 loc[3]   = { 0, 0, sizeof(T) };
       MPI_Datatype types[3] = { tmp1_datatype_, MPI_LB, MPI_UB };
-      MPI_Type_struct(3, len, loc, types, &tmp2_datatype_);
+      MPI_Type_create_struct(3, len, loc, types, &tmp2_datatype_);
       MPI_Type_commit(&tmp2_datatype_);
       
       
-      MPI_Type_hvector(nrows_per_send_, 1, sizeof(float), tmp2_datatype_,
-		       &dst_datatype_);
+      MPI_Type_create_hvector(nrows_per_send_, 1, sizeof(float), tmp2_datatype_,
+			      &dst_datatype_);
       MPI_Type_commit(&dst_datatype_);
 
       for (index_type i=0; i<nproc_; ++i)
@@ -1093,8 +1083,8 @@ private:
   Matrix<T, SBlock>           src_;
   Matrix<T, DBlock>           dst_;
 
-  dda::Data<src_local_block_t, dda::in> src_data_;
-  dda::Data<dst_local_block_t, dda::out> dst_data_;
+  vsip::dda::Data<src_local_block_t, vsip::dda::in> src_data_;
+  vsip::dda::Data<dst_local_block_t, vsip::dda::out> dst_data_;
 
   length_type       nproc_;
   length_type       nrows_per_send_;
@@ -1138,9 +1128,9 @@ class Send<T, SBlock, DBlock,
   typedef typename get_block_layout<SBlock>::order_type src_order_type;
   typedef typename get_block_layout<DBlock>::order_type dst_order_type;
 
-  typedef typename impl::Distributed_local_block<DBlock>::type
+  typedef typename ovxx::distributed_local_block<DBlock>::type
 		dst_local_block_t;
-  typedef typename impl::Distributed_local_block<SBlock>::type
+  typedef typename ovxx::distributed_local_block<SBlock>::type
 		src_local_block_t;
 
   // Constructor.
@@ -1240,7 +1230,7 @@ public:
 	int		 lena[2]   = { 1, 1 };
 	MPI_Aint	 loca[2]   = { 0, ncols_per_recv_ * sizeof(T) };
 	MPI_Datatype typesa[2] = { tmp0_datatype_, MPI_UB };
-	MPI_Type_struct(2, lena, loca, typesa, &src_datatype_);
+	MPI_Type_create_struct(2, lena, loca, typesa, &src_datatype_);
 	MPI_Type_commit(&src_datatype_);
 
 	count    = 1;
@@ -1292,12 +1282,12 @@ public:
 	int		 len[3]   = { 1, 1, 1 };
 	MPI_Aint	 loc[3]   = { 0, 0, sizeof(T) };
 	MPI_Datatype types[3] = { tmp1_datatype_, MPI_LB, MPI_UB };
-	MPI_Type_struct(3, len, loc, types, &tmp2_datatype_);
+	MPI_Type_create_struct(3, len, loc, types, &tmp2_datatype_);
 	MPI_Type_commit(&tmp2_datatype_);
       
       
-	MPI_Type_hvector(nrows_per_send_, 1, sizeof(float), tmp2_datatype_,
-			 &dst_datatype_);
+	MPI_Type_create_hvector(nrows_per_send_, 1, sizeof(float), tmp2_datatype_,
+				&dst_datatype_);
 	MPI_Type_commit(&dst_datatype_);
 
 	for (index_type i=0; i<n_src_sb; ++i)
@@ -1405,19 +1395,18 @@ public:
 	{
 	  T *dst = dst_data_.ptr() + dst_rank_*nrows_per_send_;
 	  T const *src = src_data_.ptr() + src_rank_*ncols_per_recv_;
-	  impl::transpose_unit(dst, src,
-			       nrows_per_send_, ncols_per_recv_,
-			       dst_data_.stride(1),
-			       src_data_.stride(0));
+	  assignment::transpose(dst, dst_data_.stride(1),
+				src, src_data_.stride(0),
+				nrows_per_send_, ncols_per_recv_);
 	}
 	else
 	{
 	  T *dst = dst_data_.ptr() + dst_rank_*ncols_per_recv_*nrows_per_send_;
 	  T const *src = src_data_.ptr() + src_rank_*ncols_per_recv_;
 	  for (index_type i=0; i<nrows_per_send_; ++i)
-	    memcpy(dst + i*ncols_per_recv_,
-		   src + i*src_.size(1),
-		   ncols_per_recv_ * sizeof(T));
+	    std::memcpy(dst + i*ncols_per_recv_,
+			src + i*src_.size(1),
+			ncols_per_recv_ * sizeof(T));
 	}
       }
     }
@@ -1434,19 +1423,18 @@ public:
 	{
 	  T *dst = dst_data_.ptr() + dst_rank_*nrows_per_send_;
 	  T const *src = src_data_.ptr() + src_rank_*ncols_per_recv_;
-	  impl::transpose_unit(dst, src,
-			       nrows_per_send_, ncols_per_recv_,
-			       dst_data_.stride(1),
-			       src_data_.stride(0));
+	  assignment::transpose(dst, dst_data_.stride(1),
+				src, src_data_.stride(0),
+				nrows_per_send_, ncols_per_recv_);
 	}
 	else
 	{
 	  T *dst = dst_data_.ptr() + dst_rank_*ncols_per_recv_*nrows_per_send_;
 	  T const *src = src_data_.ptr() + src_rank_*ncols_per_recv_;
 	  for (index_type i=0; i<nrows_per_send_; ++i)
-	    memcpy(dst + i*ncols_per_recv_,
-		   src + i*src_.size(1),
-		   ncols_per_recv_ * sizeof(T));
+	    std::memcpy(dst + i*ncols_per_recv_,
+			src + i*src_.size(1),
+			ncols_per_recv_ * sizeof(T));
 	}
       }
 
@@ -1467,19 +1455,18 @@ public:
       {
 	T *dst = dst_data_.ptr() + dst_rank_*nrows_per_send_;
 	T const *src = src_data_.ptr() + src_rank_*ncols_per_recv_;
-	impl::transpose_unit(dst, src,
-			     nrows_per_send_, ncols_per_recv_,
-			     dst_data_.stride(1),
-			     src_data_.stride(0));
+	assignment::transpose(dst, dst_data_.stride(1),
+			      src, src_data_.stride(0),
+			      nrows_per_send_, ncols_per_recv_);
       }
       else
       {
 	T *dst = dst_data_.ptr() + dst_rank_*ncols_per_recv_*nrows_per_send_;
 	T const *src = src_data_.ptr() + src_rank_*ncols_per_recv_;
 	for (index_type i=0; i<nrows_per_send_; ++i)
-	  memcpy(dst + i*ncols_per_recv_,
-		 src + i*src_.size(1),
-		 ncols_per_recv_ * sizeof(T));
+	  std::memcpy(dst + i*ncols_per_recv_,
+		      src + i*src_.size(1),
+		      ncols_per_recv_ * sizeof(T));
       }
     }
   }
@@ -1489,8 +1476,8 @@ private:
   Matrix<T, SBlock>           src_;
   Matrix<T, DBlock>           dst_;
 
-  dda::Data<src_local_block_t, dda::in> src_data_;
-  dda::Data<dst_local_block_t, dda::out> dst_data_;
+  vsip::dda::Data<src_local_block_t, vsip::dda::in> src_data_;
+  vsip::dda::Data<dst_local_block_t, vsip::dda::out> dst_data_;
 
   length_type       nproc_;
   index_type        rank_;
@@ -1578,12 +1565,10 @@ struct t_alltoall : Benchmark_base
     chk = T();
 
     // Assign src to dst
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       send();
-    t1.stop();
+    time = t1.elapsed();
 
     send.test_fixup();
     
@@ -1597,8 +1582,6 @@ struct t_alltoall : Benchmark_base
 	for (index_type c=0; c<ncols; ++c)
 	  test_assert(chk.local().get(r, c) == T(rank*ncols*nrows+r*ncols+c));
     }
-    
-    time = t1.delta();
   }
 
   t_alltoall(length_type ratio) : ratio_(ratio) {};
@@ -1672,12 +1655,10 @@ struct t_alltoall_fr : Benchmark_base
     chk = T();
 
     // Assign src to dst
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       send();
-    t1.stop();
+    time = t1.elapsed();
 
     send.test_fixup();
     
@@ -1701,8 +1682,6 @@ struct t_alltoall_fr : Benchmark_base
 			    T(rank*ncols*nrows+r*ncols+c) ));
 	}
     }
-    
-    time = t1.delta();
   }
 
   t_alltoall_fr(length_type rows)
@@ -1732,8 +1711,6 @@ struct t_alltoall_fr : Benchmark_base
   Vector<processor_type> dst_pset_;
 };
 
-
-
 void
 defaults(Loop1P& loop)
 {
@@ -1741,10 +1718,8 @@ defaults(Loop1P& loop)
   loop.user_param_ = -1;
 }
 
-
-
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
 
   typedef row2_type Rt;

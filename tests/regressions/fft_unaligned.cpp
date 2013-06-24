@@ -10,16 +10,9 @@
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/signal.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 // Test FFT by-reference out-of-place with given alignment.
 
@@ -31,7 +24,7 @@ test_fft_op_align(length_type size, length_type align)
   static pack_type const sud_type = dense;
   typedef Layout<1, row1_type, sud_type, C> lp_type;
 
-  typedef impl::Strided<1, T, lp_type> block_type;
+  typedef Strided<1, T, lp_type> block_type;
 
   typedef Fft<const_Vector, T, T, fft_fwd, by_reference, 1, alg_space>
 	fft_type;
@@ -60,7 +53,7 @@ test_fft_ip_align(length_type size, length_type align)
   static pack_type const sud_type = dense;
   typedef Layout<1, row1_type, sud_type, C> lp_type;
 
-  typedef impl::Strided<1, T, lp_type> block_type;
+  typedef Strided<1, T, lp_type> block_type;
 
   typedef Fft<const_Vector, T, T, fft_fwd, by_reference, 1, alg_space>
 	fft_type;

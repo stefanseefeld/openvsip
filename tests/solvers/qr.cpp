@@ -59,7 +59,7 @@ test_covsol_diag(
   qr.decompose(a);
 
   for (index_type i=0; i<p; ++i)
-    test_ramp(b.col(i), T(1), T(i));
+    test::ramp(b.col(i), T(1), T(i));
   if (p > 1)
     b.col(1) += Test_traits<T>::offset();
 
@@ -97,7 +97,7 @@ test_covsol_random(
   Matrix<T, block_type> b(n, p, map);
   Matrix<T, block_type> x(n, p, map);
 
-  randm(a);
+  test::randm(a);
 
   qrd<T, by_reference> qr(m, n, st);
 
@@ -107,7 +107,7 @@ test_covsol_random(
 
   qr.decompose(a);
 
-  randm(b);
+  test::randm(b);
 
   qr.covsol(b, x);
 
@@ -238,7 +238,7 @@ test_lsqsol_diag(
   qr.decompose(a);
 
   for (index_type i=0; i<p; ++i)
-    test_ramp(b.col(i), T(1), T(i));
+    test::ramp(b.col(i), T(1), T(i));
   if (p > 1)
     b.col(1) += Test_traits<T>::offset();
 
@@ -277,8 +277,8 @@ test_lsqsol_random(length_type  m,
   Matrix<T, block_type> b(m, p, map);
   Matrix<T, block_type> chk(m, p, map);
 
-  randm(a);
-  randm(b);
+  test::randm(a);
+  test::randm(b);
 
   // If m > n, min || AX - B || may not be zero,
   // Need way to check that X is best solution
@@ -490,7 +490,7 @@ test_rsol_diag(length_type  m,
     // Next, check hermitian multiply w/Q from left-side:
     //   Q' (qi) = I
     //   Q' Q    = I
-    mat_op_type const tr = impl::is_complex<T>::value ? mat_herm : mat_trans;
+    mat_op_type const tr = is_complex<T>::value ? mat_herm : mat_trans;
     qr.template prodq<tr, mat_lside>(qi, qtq);
 
     // Result should be I
@@ -503,7 +503,7 @@ test_rsol_diag(length_type  m,
     // Check rsol()
 
     for (index_type i=0; i<p; ++i)
-      test_ramp(b.col(i), T(1), T(i));
+      test::ramp(b.col(i), T(1), T(i));
     if (p > 1) b.col(1) += Test_traits<T>::offset();
     
     T alpha = T(2);
@@ -710,7 +710,7 @@ test_f_covsol_diag(
 
   // Setup b.
   for (index_type i=0; i<p; ++i)
-    test_ramp(b.col(i), T(1), T(i));
+    test::ramp(b.col(i), T(1), T(i));
   if (p > 1)
     b.col(1) += Test_traits<T>::offset();
 
@@ -742,8 +742,8 @@ test_f_covsol_random(length_type m,
   Matrix<T> b(n, p);
   Matrix<T> x(n, p);
 
-  randm(a);
-  randm(b);
+  test::randm(a);
+  test::randm(b);
 
   f_covsol<RtM>(a, b, x);
 
@@ -983,7 +983,7 @@ test_f_lsqsol_diag(length_type m,
   if (n > 3) a(3, 3)  = Test_traits<T>::value3();
 
   for (index_type i=0; i<p; ++i)
-    b.col(i) = test_ramp(T(1), T(i), m);
+    b.col(i) = test::ramp(T(1), T(i), m);
   if (p > 1)
     b.col(1) += Test_traits<T>::offset();
 
@@ -1024,8 +1024,8 @@ test_f_lsqsol_random(length_type m,
   Matrix<T, block_type> b(m, p, map);
   Matrix<T, block_type> chk(m, p, map);
 
-  randm(a);
-  randm(b);
+  test::randm(a);
+  test::randm(b);
 
   // If m > n, min || AX - B || may not be zero,
   // Need way to check that X is best solution
@@ -1066,7 +1066,7 @@ test_f_lsqsol_random(length_type m,
 
 template <return_mechanism_type RtM,
 	  typename              T>
-void f_lsqsol_cases(vsip::impl::true_type)
+void f_lsqsol_cases(true_type)
 {
   test_f_lsqsol_diag<RtM, T>(1,   1, 2);
   test_f_lsqsol_diag<RtM, T>(5,   5, 2);

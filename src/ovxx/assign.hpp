@@ -15,6 +15,7 @@
 #include <ovxx/block_traits.hpp>
 #include <ovxx/parallel/assign_fwd.hpp>
 #include <ovxx/dda.hpp>
+#include <ovxx/assign/copy.hpp>
 #include <ovxx/assign/loop_fusion.hpp>
 #ifdef OVXX_PARALLEL
 # include <ovxx/parallel/map_traits.hpp>

@@ -15,14 +15,10 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
-#include <vsip_csl/profile.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
+#include "benchmark.hpp"
 #include "mprod.hpp"
 
-
-using namespace vsip;
+using namespace ovxx;
 
 
 template <typename T>
@@ -42,14 +38,10 @@ struct t_vmprod : public t_mprod_base<T>
     Matrix<T> B(N, P, T(1));  // N x P
     Vector<T> Z(   P, T(1));  // 1 x P
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = prod(A, B);
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_vmprod(length_type size)
@@ -65,7 +57,7 @@ struct t_vmprod : public t_mprod_base<T>
     Matrix<T> B(N, P, T(1));  // N x P
     Vector<T> Z(   P, T(1));  // 1 x P
 
-    vsip_csl::assign_diagnostics(Z, prod(A, B));
+    std::cout << assignment::diagnostics(Z, prod(A, B)) << std::endl;
   }
 
   // data members
@@ -85,7 +77,7 @@ struct t_vmprod_tag : public t_mprod_base<T>
 
   void operator()(length_type const N, length_type loop, float& time)
   {
-    using namespace vsip_csl::dispatcher;
+    using namespace ovxx::dispatcher;
 
     typedef Dense<1, T> vblock_type;
     typedef Dense<2, T> mblock_type;
@@ -100,14 +92,10 @@ struct t_vmprod_tag : public t_mprod_base<T>
     Matrix<T, mblock_type> B(N, P, T(1));  // N x P
     Vector<T, vblock_type> Z(   P, T(1));  // 1 x P
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       evaluator_type::exec(Z.block(), A.block(), B.block());
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_vmprod_tag(length_type size)
@@ -116,8 +104,9 @@ struct t_vmprod_tag : public t_mprod_base<T>
 
   void diag()
   {
-    using namespace vsip_csl::dispatcher;
-    std::cout << Backend_name<ImplTag>::name() << std::endl;
+    // TODO
+    // using namespace ovxx::dispatcher;
+    // std::cout << Backend_name<ImplTag>::name() << std::endl;
   }
 
   // data members
@@ -137,9 +126,9 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
-  using namespace vsip_csl::dispatcher;
+  using namespace ovxx::dispatcher;
 
   length_type size  = atoi(loop.param_["size"].c_str());
 
@@ -151,16 +140,16 @@ test(Loop1P& loop, int what)
   case  3: loop(t_vmprod_tag<be::generic, float>(size)); break;
   case  4: loop(t_vmprod_tag<be::generic, complex<float> >(size)); break;
 
-#if VSIP_IMPL_HAVE_BLAS
+#if OVXX_HAVE_BLAS
   case  5: loop(t_vmprod_tag<be::blas, float>(size)); break;
     // The BLAS backend doesn't handle split-complex, so don't attempt
     // to instantiate that code if we are using split-complex blocks.
-# if !VSIP_IMPL_PREFER_SPLIT_COMPLEX
+# if !OVXX_DEFAULT_COMPLEX_STORAGE_SPLIT
   case  6: loop(t_vmprod_tag<be::blas, complex<float> >(size)); break;
 # endif
 #endif
 
-#if VSIP_IMPL_HAVE_CUDA
+#if OVXX_HAVE_CUDA
   case  7: loop(t_vmprod_tag<be::cuda, float>(size)); break;
   case  8: loop(t_vmprod_tag<be::cuda, complex<float> >(size)); break;
 #endif
@@ -178,7 +167,7 @@ test(Loop1P& loop, int what)
       << "    -8 --   CUDA implementation, complex<float>\n"
       << "\n"
       << " Parameters (for sweeping N, size of A and number of rows in B)\n"
-      << "  -p:size P -- fix number of cols in B (default 1024)\n"
+       << "  -p:size P -- fix number of cols in B (default 1024)\n"
       ;
   default: return 0;
   }

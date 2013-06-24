@@ -91,7 +91,7 @@ VSIP_THROW((std::bad_alloc, computation_error))
     if (k < (n - 1))
     {
       tmps  = dot(impl_conj(r(Domain<1>(k))), y(Domain<1>(k-1, -1, k)));
-      alpha = -(tmps + impl::math::impl_conj(r.get(k))) / (scale*beta);
+      alpha = -(tmps + ovxx::math::impl_conj(r.get(k))) / (scale*beta);
       
       tmpv(Domain<1>(k)) = alpha * impl_conj(y(Domain<1>(k-1, -1, k))) 
 	                 + y(Domain<1>(k));

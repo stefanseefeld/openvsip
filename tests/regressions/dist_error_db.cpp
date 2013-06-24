@@ -15,12 +15,9 @@
 #include <vsip/support.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/random.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/error_db.hpp>
-
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
 // Test error_db between two distributed views with identical data.
 
@@ -51,7 +48,7 @@ test_error_db(Map1T const& map1, Map2T const& map2, length_type size)
   A = gen.randu(size);
   B = A;
 
-  double error = error_db(A, B);
+  double error = test::diff(A, B);
 
   test_assert(error < -100.0);
 }

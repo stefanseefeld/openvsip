@@ -13,9 +13,7 @@
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/random.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
+#include "benchmark.hpp"
 
 using namespace vsip;
 
@@ -37,14 +35,10 @@ struct t_hist : Benchmark_base
     Vector<T> in = rgen.randu(size);
     Vector<int> hist(coeff_size_);
     Histogram<const_Vector, T> h(0, 1, coeff_size_);
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       hist = h(in);
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_hist(length_type coeff_size) : coeff_size_(coeff_size) {}
@@ -65,7 +59,7 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {

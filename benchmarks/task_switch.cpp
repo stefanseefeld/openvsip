@@ -16,9 +16,7 @@
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/random.hpp>
-#include <vsip_csl/error_db.hpp>
-
-#include "benchmarks.hpp"
+#include "benchmark.hpp"
 #include "fastconv.hpp"
 
 using namespace vsip;
@@ -93,36 +91,34 @@ struct t_fastconv_base<T, Impl1> : fastconv_ops
     // frequency domain
     // for_fft(replica);
     
-    vsip_csl::profile::Timer t1, t2, t3;
-    
     for_fftm(data, tmp);
     tmp = vmmul<0>(replica, tmp);
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       // Perform half-fast convolution:
       for_fftm(data, tmp);
       tmp = vmmul<0>(replica, tmp);
     }
-    t1.stop();
+    time = t1.elapsed();
 
     for_fftm(data, tmp);
-    t2.start();
+    timer t2;
     for (index_type l=0; l<loop; ++l)
     {
       // Perform fast convolution:
       for_fftm(data, tmp);
     }
-    t2.stop();
+    float t2_time = t2.elapsed();
 
     tmp = vmmul<0>(replica, tmp);
-    t3.start();
+    timer t3;
     for (index_type l=0; l<loop; ++l)
     {
       // Perform fast convolution:
       tmp = vmmul<0>(replica, tmp);
     }
-    t3.stop();
+    float t3_time = t3.elapsed();
 
     if (check)
     {
@@ -156,12 +152,11 @@ struct t_fastconv_base<T, Impl1> : fastconv_ops
       }
     }
 
-    float overhead = (t1.delta() - (t2.delta() + t3.delta()) ) / loop;
+    float overhead = (time - (t2_time + t3_time)) / loop;
     printf("overhead: %f s (fft/vmmul: %7.4f s)\n",
-	   overhead, t1.delta());
+	   overhead, time);
 
     // CHECK RESULT
-    time = t1.delta();
   }
 };
 
@@ -178,7 +173,7 @@ struct t_fastconv_base<T, Impl2> : fastconv_ops
 
   float ops(vsip::length_type npulse, vsip::length_type nrange) 
   {
-    return (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add)
+    return (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add)
       * npulse * nrange;
   }
 
@@ -211,36 +206,34 @@ struct t_fastconv_base<T, Impl2> : fastconv_ops
 
 
     // Step 1: measure alternating */+
-    vsip_csl::profile::Timer t1, t2, t3;
-    
     Ax = Bx * Cx;
     A1 = B * C;
     A2 = B + C;
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       A1 = B * C;
       A2 = B + C;
     }
-    t1.stop();
+    time = t1.elapsed();
 
     // Step 2: measure * only
     A1 = B * C;
-    t2.start();
+    timer t2;
     for (index_type l=0; l<loop; ++l)
     {
       A1 = B * C;
     }
-    t2.stop();
+    float t2_time = t2.elapsed();
 
     // Step 2: measure + only
     A2 = B + C;
-    t3.start();
+    timer t3;
     for (index_type l=0; l<loop; ++l)
     {
       A2 = B + C;
     }
-    t3.stop();
+    float t3_time = t3.elapsed();
 
     if (check)
     {
@@ -255,12 +248,11 @@ struct t_fastconv_base<T, Impl2> : fastconv_ops
 	}
     }
 
-    float overhead = (t1.delta() - (t2.delta() + t3.delta()) ) / loop;
+    float overhead = (time - (t2_time + t3_time)) / loop;
     if (show_overhead)
-      printf("overhead: %f s (vadd/vmul: %7.4f s)\n", overhead, t1.delta());
+      printf("overhead: %f s (vadd/vmul: %7.4f s)\n", overhead, time);
 
     // CHECK RESULT
-    time = t1.delta();
   }
 };
 
@@ -287,7 +279,7 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   length_type rows  = atoi(loop.param_["rows"].c_str());
   length_type size  = atoi(loop.param_["size"].c_str());
@@ -303,11 +295,13 @@ test(Loop1P& loop, int what)
   switch (what)
   {
   case  1: loop(t_fastconv_pf<complex<float>, Impl1>(rows)); break;
+#if OVXX_PARALLEL_API == 1
   case  2: loop(t_fastconv_pf<complex<float>, Impl2>(rows)); break;
-
+#endif
   case 11: loop(t_fastconv_rf<complex<float>, Impl1>(size)); break;
+#if OVXX_PARALLEL_API == 1
   case 12: loop(t_fastconv_rf<complex<float>, Impl2>(size)); break;
-
+#endif
 
   // case 101: loop(t_fastconv_pf<complex<float>, Impl3>(param1)); break;
 

@@ -16,10 +16,7 @@
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
 #include <vsip/selgen.hpp>
-#include <vsip_csl/assignment.hpp>
-#include <vsip_csl/diagnostics.hpp>
-
-#include "../benchmarks.hpp"
+#include "../benchmark.hpp"
 
 using namespace vsip;
 
@@ -58,24 +55,16 @@ create_map()
 
 
 // Sync Policy: use barrier.
-
 struct Barrier
 {
-  Barrier() : comm_(DEFAULT_COMMUNICATOR()) {}
-
-  void sync() { BARRIER(comm_); }
-
-  COMMUNICATOR_TYPE& comm_;
+  void sync() { barrier();}
 };
 
 
 
 // Sync Policy: no barrier.
-
 struct No_barrier
 {
-  No_barrier() {}
-
   void sync() {}
 };
 
@@ -94,13 +83,12 @@ template <typename T>
 struct t_vmul1_nonglobal : Benchmark_base
 {
   char const* what() { return "t_vmul1_nonglobal"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     typedef Dense<1, T, row1_type, Local_map> block_type;
 
@@ -115,17 +103,13 @@ struct t_vmul1_nonglobal : Benchmark_base
     A.put(0, T(3));
     B.put(0, T(4));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = A * B;
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), A.get(i) * B.get(i)));
-    
-    time = t1.delta();
   }
 };
 
@@ -142,13 +126,12 @@ struct t_vmul1 : Benchmark_base
   typedef Dense<1, T, row1_type, MapT> block_type;
 
   char const* what() { return "t_vmul1"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     MapT map = create_map<1, MapT>();
 
@@ -166,21 +149,18 @@ struct t_vmul1 : Benchmark_base
     A.put(0, T(3));
     B.put(0, T(4));
 
-    vsip_csl::profile::Timer t1;
     SP sp;
     
-    t1.start();
+    timer t1;
     sp.sync();
     for (index_type l=0; l<loop; ++l)
       C = A * B;
     sp.sync();
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<C.local().size(); ++i)
       test_assert(equal(C.local().get(i),
 			A.local().get(i) * B.local().get(i)));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -193,7 +173,7 @@ struct t_vmul1 : Benchmark_base
     Vector<T, block_type> B(size, T(), map);
     Vector<T, block_type> C(size,      map);
 
-    vsip_csl::assign_diagnostics(C, A * B);
+    std::cout << ovxx::assignment::diagnostics(C, A * B);
   }
 };
 
@@ -210,13 +190,12 @@ struct t_vmul_func : Benchmark_base
   typedef Dense<1, T, row1_type, MapT> block_type;
 
   char const* what() { return "t_vmul1"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     MapT map = create_map<1, MapT>();
 
@@ -234,21 +213,18 @@ struct t_vmul_func : Benchmark_base
     A.put(0, T(3));
     B.put(0, T(4));
 
-    vsip_csl::profile::Timer t1;
     SP sp;
     
-    t1.start();
+    timer t1;
     sp.sync();
     for (index_type l=0; l<loop; ++l)
       C = mul(A, B);
     sp.sync();
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<C.local().size(); ++i)
       test_assert(equal(C.local().get(i),
 			A.local().get(i) * B.local().get(i)));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -261,7 +237,7 @@ struct t_vmul_func : Benchmark_base
     Vector<T, block_type> B(size, T(), map);
     Vector<T, block_type> C(size,      map);
 
-    vsip_csl::assign_diagnostics(C, mul(A, B));
+    std::cout << ovxx::assignment::diagnostics(C, mul(A, B));
   }
 };
 
@@ -277,13 +253,12 @@ template <typename T,
 struct t_vmul1_local : Benchmark_base
 {
   char const* what() { return "t_vmul1"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     typedef Dense<1, T, row1_type, MapT> block_type;
 
@@ -300,20 +275,17 @@ struct t_vmul1_local : Benchmark_base
     A.put(0, T(3));
     B.put(0, T(4));
 
-    vsip_csl::profile::Timer t1;
     SP sp;
     
-    t1.start();
+    timer t1;
     sp.sync();
     for (index_type l=0; l<loop; ++l)
       C.local() = A.local() * B.local();
     sp.sync();
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), A.get(i) * B.get(i)));
-    
-    time = t1.delta();
   }
 };
 
@@ -328,13 +300,12 @@ template <typename T,
 struct t_vmul1_early_local : Benchmark_base
 {
   char const* what() { return "t_vmul1_early_local"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     typedef Dense<1, T, row1_type, MapT> block_type;
 
@@ -351,10 +322,9 @@ struct t_vmul1_early_local : Benchmark_base
     A.put(0, T(3));
     B.put(0, T(4));
 
-    vsip_csl::profile::Timer t1;
     SP sp;
     
-    t1.start();
+    timer t1;
     typename Vector<T, block_type>::local_type A_local = A.local();
     typename Vector<T, block_type>::local_type B_local = B.local();
     typename Vector<T, block_type>::local_type C_local = C.local();
@@ -362,67 +332,12 @@ struct t_vmul1_early_local : Benchmark_base
     for (index_type l=0; l<loop; ++l)
       C_local = A_local * B_local;
     sp.sync();
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), A.get(i) * B.get(i)));
-    
-    time = t1.delta();
   }
 };
-
-
-
-// Element-wise vector-multiply.  Supports distributed views, using Assignment.
-template <typename T,
-	  typename MapT = Local_map,
-	  typename SP   = No_barrier>
-struct t_vmul1_sa : Benchmark_base
-{
-  char const* what() { return "t_vmul1_sa"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
-  int riob_per_point(length_type) { return 2*sizeof(T); }
-  int wiob_per_point(length_type) { return 1*sizeof(T); }
-  int mem_per_point(length_type)  { return 3*sizeof(T); }
-
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
-  {
-    typedef Dense<1, T, row1_type, MapT> block_type;
-
-    MapT map = create_map<1, MapT>();
-
-    Vector<T, block_type> A(size, T(), map);
-    Vector<T, block_type> B(size, T(), map);
-    Vector<T, block_type> C(size,      map);
-
-    Rand<T> gen(0, 0);
-    A = gen.randu(size);
-    B = gen.randu(size);
-
-    A.put(0, T(3));
-    B.put(0, T(4));
-
-
-    vsip_csl::profile::Timer t1;
-    SP sp;
-    
-    vsip_csl::Assignment expr(C, A*B);
-    t1.start();
-    sp.sync();
-    for (index_type l=0; l<loop; ++l)
-      expr();
-    sp.sync();
-    t1.stop();
-
-    for (index_type i=0; i<size; ++i)
-      test_assert(equal(C.get(i), A.get(i) * B.get(i)));
-    
-    time = t1.delta();
-  }
-};
-
-
 
 // Elementwise vector-multiply using get/put.
 //
@@ -432,13 +347,12 @@ template <typename T>
 struct t_vmul_gp : Benchmark_base
 {
   char const* what() { return "t_vmul_gp"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     typedef Dense<1, T, row1_type, Local_map> block_type;
 
@@ -453,18 +367,14 @@ struct t_vmul_gp : Benchmark_base
     A.put(0, T(3));
     B.put(0, T(4));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       for (index_type i=0; i<size; ++i)
 	C.put(i, A.get(i) * B.get(i));
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), A.get(i) * B.get(i)));
-    
-    time = t1.delta();
   }
 };
 
@@ -474,13 +384,12 @@ template <typename T>
 struct t_vmul_ip1 : Benchmark_base
 {
   char const* what() { return "t_vmul_ip1"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<T>   A(size, T(1));
     Vector<T>   C(size);
@@ -490,17 +399,13 @@ struct t_vmul_ip1 : Benchmark_base
     chk = gen.randu(size);
     C = chk;
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C *= A;
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(chk.get(i), C.get(i)));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -510,7 +415,7 @@ struct t_vmul_ip1 : Benchmark_base
     Vector<T> A(size, T(1));
     Vector<T> C(size);
 
-    vsip_csl::assign_diagnostics(C, C * A);
+    std::cout << ovxx::assignment::diagnostics(C, C * A);
   }
 };
 
@@ -520,13 +425,12 @@ template <typename T>
 struct t_vmul_dom1 : Benchmark_base
 {
   char const* what() { return "t_vmul_dom1"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<T>   A(size, T());
     Vector<T>   B(size, T());
@@ -541,17 +445,13 @@ struct t_vmul_dom1 : Benchmark_base
 
     Domain<1> dom(size);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C(dom) = A(dom) * B(dom);
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), A.get(i) * B.get(i)));
-    
-    time = t1.delta();
   }
 };
 
@@ -566,13 +466,12 @@ struct t_vmul2 : Benchmark_base
 
   // benchmark attributes
   char const* what() { return "t_vmul2"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<T, block_type> A(size, T());
     Vector<T, block_type> B(size, T());
@@ -581,16 +480,12 @@ struct t_vmul2 : Benchmark_base
     A.put(0, T(3));
     B.put(0, T(4));
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = A * B;
-    t1.stop();
+    time = t1.elapsed();
     
     test_assert(equal(C.get(0), T(12)));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -601,7 +496,7 @@ struct t_vmul2 : Benchmark_base
     Vector<T, block_type> B(size, T());
     Vector<T, block_type> C(size);
 
-    vsip_csl::assign_diagnostics(C, A * B);
+    std::cout << ovxx::assignment::diagnostics(C, A * B);
   }
 };
 #endif // VSIP_IMPL_SOURCERY_VPP
@@ -615,13 +510,12 @@ template <typename T>
 struct t_rcvmul1 : Benchmark_base
 {
   char const* what() { return "t_rcvmul1"; }
-  int ops_per_point(length_type)  { return 2*vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return 2*ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return sizeof(T) + sizeof(complex<T>); }
   int wiob_per_point(length_type) { return 1*sizeof(complex<T>); }
   int mem_per_point(length_type)  { return 1*sizeof(T)+2*sizeof(complex<T>); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<complex<T> > A(size);
     Vector<T>           B(size);
@@ -633,17 +527,13 @@ struct t_rcvmul1 : Benchmark_base
     A = cgen.randu(size);
     B = sgen.randu(size);
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = B * A;
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), A.get(i) * B.get(i)));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -654,7 +544,7 @@ struct t_rcvmul1 : Benchmark_base
     Vector<T>           B(size);
     Vector<complex<T> > C(size);
 
-    vsip_csl::assign_diagnostics(C, B * A);
+    std::cout << ovxx::assignment::diagnostics(C, B * A);
   }
 };
 
@@ -670,9 +560,9 @@ struct t_svmul1 : Benchmark_base
   char const* what() { return "t_svmul1"; }
   int ops_per_point(length_type)
   { if (sizeof(ScalarT) == sizeof(T))
-      return vsip::impl::Ops_info<T>::mul;
+      return ovxx::ops_count::traits<T>::mul;
     else
-      return 2*vsip::impl::Ops_info<ScalarT>::mul;
+      return 2*ovxx::ops_count::traits<ScalarT>::mul;
   }
   int riob_per_point(length_type) { return 1*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
@@ -689,17 +579,13 @@ struct t_svmul1 : Benchmark_base
     A = gen.randu(size);
     A.put(0, T(4));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = alpha * A;
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), alpha * A.get(i)));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -711,7 +597,7 @@ struct t_svmul1 : Benchmark_base
 
     ScalarT alpha = ScalarT(3);
 
-    vsip_csl::assign_diagnostics(C, alpha * A);
+    std::cout << ovxx::assignment::diagnostics(C, alpha * A);
   }
 };
 
@@ -726,9 +612,9 @@ struct t_svmul_dom : Benchmark_base
   char const* what() { return "t_svmul_dom"; }
   int ops_per_point(length_type)
   { if (sizeof(ScalarT) == sizeof(T))
-      return vsip::impl::Ops_info<T>::mul;
+      return ovxx::ops_count::traits<T>::mul;
     else
-      return 2*vsip::impl::Ops_info<ScalarT>::mul;
+      return 2*ovxx::ops_count::traits<ScalarT>::mul;
   }
   int riob_per_point(length_type) { return 1*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
@@ -747,17 +633,13 @@ struct t_svmul_dom : Benchmark_base
 
     Domain<1> dom(size);
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C(dom) = alpha * A(dom);
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), alpha * A.get(i)));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -771,7 +653,7 @@ struct t_svmul_dom : Benchmark_base
 
     Domain<1> dom(size);
 
-    vsip_csl::assign_diagnostics(C(dom), alpha * A(dom));
+    std::cout << ovxx::assignment::diagnostics(C(dom), alpha * A(dom));
   }
 };
 
@@ -786,9 +668,9 @@ struct t_svmul_cc : Benchmark_base
   char const* what() { return "t_svmul_cc (cold cache)"; }
   int ops_per_point(length_type)
   { if (sizeof(ScalarT) == sizeof(T))
-      return vsip::impl::Ops_info<T>::mul;
+      return ovxx::ops_count::traits<T>::mul;
     else
-      return 2*vsip::impl::Ops_info<ScalarT>::mul;
+      return 2*ovxx::ops_count::traits<ScalarT>::mul;
   }
   int riob_per_point(length_type) { return 1*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
@@ -806,18 +688,14 @@ struct t_svmul_cc : Benchmark_base
     A = gen.randu(rows, size);
     A.put(0, 0, T(4));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C.row(l%rows) = alpha * A.row(l%rows);
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       for (index_type r=0; r<rows && r<loop; ++r)
 	test_assert(equal(C.get(r, i), alpha * A.get(r, i)));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -830,7 +708,7 @@ struct t_svmul_cc : Benchmark_base
 
     ScalarT alpha = ScalarT(3);
 
-    vsip_csl::assign_diagnostics(C.row(0), alpha * A.row(0));
+    std::cout << ovxx::assignment::diagnostics(C.row(0), alpha * A.row(0));
   }
 
   t_svmul_cc(length_type footprint) : footprint_(footprint) {}
@@ -846,7 +724,7 @@ template <typename T>
 struct t_svmul3 : Benchmark_base
 {
   char const* what() { return "t_svmul3"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 1*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 2*sizeof(T); }
@@ -858,16 +736,12 @@ struct t_svmul3 : Benchmark_base
 
     A.put(0, T(4));
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = 3.f * A;
-    t1.stop();
+    time = t1.elapsed();
 
     test_assert(equal(C.get(0), T(12)));
-    
-    time = t1.delta();
   }
 };
 
@@ -882,7 +756,7 @@ template <typename T,
 struct t_svmul4 : Benchmark_base
 {
   char const* what() { return "t_svmul4"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 1*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 2*sizeof(T); }
@@ -917,21 +791,17 @@ struct t_svmul4 : Benchmark_base
 
     T alpha;
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       alpha = K.get(1);
       C = alpha * A;
     }
-    t1.stop();
+    time = t1.elapsed();
 
     alpha = K.get(1);
     for (index_type i=0; i<C.local().size(); ++i)
       test_assert(equal(C.local().get(i), A.local().get(i) * alpha));
-    
-    time = t1.delta();
   }
 };
 

@@ -12,17 +12,9 @@
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/signal.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
+using namespace ovxx;
 
 // Test FFT by-reference
 
@@ -33,8 +25,8 @@ test_fft_br(length_type size)
   typedef Layout<1, row1_type, dense, SC> src_lp_type;
   typedef Layout<1, row1_type, dense, DC> dst_lp_type;
 
-  typedef impl::Strided<1, T, src_lp_type> src_block_type;
-  typedef impl::Strided<1, T, dst_lp_type> dst_block_type;
+  typedef Strided<1, T, src_lp_type> src_block_type;
+  typedef Strided<1, T, dst_lp_type> dst_block_type;
 
   typedef Fft<const_Vector, T, T, fft_fwd, by_reference, 1, alg_space>
 	fft_type;
@@ -62,8 +54,8 @@ test_fft_bv(length_type size)
   typedef Layout<1, row1_type, dense, SC> src_lp_type;
   typedef Layout<1, row1_type, dense, DC> dst_lp_type;
 
-  typedef impl::Strided<1, T, src_lp_type> src_block_type;
-  typedef impl::Strided<1, T, dst_lp_type> dst_block_type;
+  typedef Strided<1, T, src_lp_type> src_block_type;
+  typedef Strided<1, T, dst_lp_type> dst_block_type;
 
   typedef Fft<const_Vector, T, T, fft_fwd, by_value, 1, alg_space>
 	fft_type;
@@ -91,8 +83,8 @@ test_fft_bv_expr(length_type size)
   typedef Layout<1, row1_type, dense, SC> src_lp_type;
   typedef Layout<1, row1_type, dense, DC> dst_lp_type;
 
-  typedef impl::Strided<1, T, src_lp_type> src_block_type;
-  typedef impl::Strided<1, T, dst_lp_type> dst_block_type;
+  typedef Strided<1, T, src_lp_type> src_block_type;
+  typedef Strided<1, T, dst_lp_type> dst_block_type;
 
   typedef Fft<const_Vector, T, T, fft_fwd, by_value, 1, alg_space>
 	fft_type;

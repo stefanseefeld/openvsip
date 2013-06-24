@@ -15,13 +15,9 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
+#include "benchmark.hpp"
 
-#include <vsip_csl/profile.hpp>
-
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
-
-using namespace vsip;
+using namespace ovxx;
 
 template <support_region_type Supp,
 	  typename            T>
@@ -32,7 +28,7 @@ struct t_corr1 : Benchmark_base
   {
     length_type output_size = this->my_output_size(size);
     float ops = ref_size_ * output_size *
-      (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+       (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops / size;
   }
@@ -56,14 +52,10 @@ struct t_corr1 : Benchmark_base
 
     corr_type corr((Domain<1>(ref_size_)), Domain<1>(size));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
      corr(bias_, ref, in, out);
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_corr1(length_type ref_size, bias_type bias)
@@ -102,7 +94,7 @@ struct t_corr2 : Benchmark_base
   {
     length_type output_size = this->my_output_size(size);
     float ops = ref_size_ * output_size *
-      (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+      (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops / size;
   }
@@ -113,7 +105,7 @@ struct t_corr2 : Benchmark_base
 
   void operator()(length_type size, length_type loop, float& time)
   {
-    using namespace vsip_csl::dispatcher;
+    using namespace dispatcher;
 
     length_type output_size = this->my_output_size(size);
 
@@ -130,14 +122,11 @@ struct t_corr2 : Benchmark_base
 
     corr_type corr((Domain<1>(ref_size_)), Domain<1>(size));
 
-    vsip_csl::profile::Timer t1;
+    timer t1;
     
-    t1.start();
     for (index_type l=0; l<loop; ++l)
-     corr.impl_correlate(bias_, ref, in, out);
-    t1.stop();
-    
-    time = t1.delta();
+     corr.correlate(bias_, ref, in, out);
+    time = t1.elapsed();
   }
 
   t_corr2(length_type ref_size, bias_type bias)
@@ -174,10 +163,10 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   length_type M = loop.user_param_;
-  using namespace vsip_csl::dispatcher;
+  using namespace dispatcher;
 
   typedef float T;
   typedef complex<float> CT;
@@ -199,22 +188,6 @@ test(Loop1P& loop, int what)
   case  10: loop(t_corr1<support_full, CT >(M, unbiased)); break;
   case  11: loop(t_corr1<support_same, CT >(M, unbiased)); break;
   case  12: loop(t_corr1<support_min,  CT >(M, unbiased)); break;
-
-  case  13: loop(t_corr2<be::opt, support_full, T>(M, biased)); break;
-  case  14: loop(t_corr2<be::opt, support_same, T>(M, biased)); break;
-  case  15: loop(t_corr2<be::opt, support_min,  T>(M, biased)); break;
-
-  case  16: loop(t_corr2<be::opt, support_full, T>(M, unbiased)); break;
-  case  17: loop(t_corr2<be::opt, support_same, T>(M, unbiased)); break;
-  case  18: loop(t_corr2<be::opt, support_min,  T>(M, unbiased)); break;
-
-  case  19: loop(t_corr2<be::opt, support_full, CT >(M, biased)); break;
-  case  20: loop(t_corr2<be::opt, support_same, CT >(M, biased)); break;
-  case  21: loop(t_corr2<be::opt, support_min,  CT >(M, biased)); break;
-
-  case  22: loop(t_corr2<be::opt, support_full, CT >(M, unbiased)); break;
-  case  23: loop(t_corr2<be::opt, support_same, CT >(M, unbiased)); break;
-  case  24: loop(t_corr2<be::opt, support_min,  CT >(M, unbiased)); break;
 
   case  25: loop(t_corr2<be::generic, support_full, T>(M, biased)); break;
   case  26: loop(t_corr2<be::generic, support_same, T>(M, biased)); break;

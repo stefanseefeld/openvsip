@@ -14,19 +14,16 @@
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
-#include <vsip_csl/math.hpp>
 #include <vsip/map.hpp>
 #include <vsip/parallel.hpp>
+#include <test.hpp>
+#include <storage.hpp>
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-storage.hpp>
-
-using namespace vsip;
+using namespace ovxx;
 
 void
 large_reduction_tests()
 {
-  using namespace vsip_csl;
   typedef float T;
 
   // This test is constructed to catch an error reported by a customer

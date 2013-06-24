@@ -21,13 +21,10 @@
 
 using namespace vsip;
 
-void
-defaults(Loop1P&)
-{
-}
+void defaults(Loop1P&) {}
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {

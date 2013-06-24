@@ -19,40 +19,27 @@
 
 using namespace vsip;
 
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-void
-defaults(Loop1P&)
-{
-}
-
-
+void defaults(Loop1P&) {}
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {
   case  92: loop(t_vmul1_nonglobal<complex<float> >()); break;
 
+#if OVXX_PARALLEL_API == 1
   case 101: loop(t_vmul1<        float , Map<> >()); break;
   case 102: loop(t_vmul1<complex<float>, Map<> >()); break;
 
   case 111: loop(t_vmul1<        float , Map<>, Barrier>()); break;
   case 112: loop(t_vmul1<complex<float>, Map<>, Barrier>()); break;
-
+#endif
   case 121: loop(t_vmul1_local<        float  >()); break;
   case 122: loop(t_vmul1_local<complex<float> >()); break;
 
   case 131: loop(t_vmul1_early_local<        float  >()); break;
   case 132: loop(t_vmul1_early_local<complex<float> >()); break;
-
-  case 141: loop(t_vmul1_sa<        float  >()); break;
-  case 142: loop(t_vmul1_sa<complex<float> >()); break;
 
   case 0:
     std::cout
@@ -69,8 +56,6 @@ test(Loop1P& loop, int what)
       << " -122 -- Vector<complex<float>> * Vector<complex<float>> PAR local\n"
       << " -131 -- Vector<        float > * Vector<        float > PAR early local\n"
       << " -132 -- Vector<complex<float>> * Vector<complex<float>> PAR early local\n"
-      << " -141 -- Vector<        float > * Vector<        float > PAR setup assign\n"
-      << " -142 -- Vector<complex<float>> * Vector<complex<float>> PAR setup assign\n"
       ;
 
   default:

@@ -12,17 +12,9 @@
 #include <vsip/support.hpp>
 #include <vsip/initfin.hpp>
 #include <vsip/vector.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Vector coverage
-***********************************************************************/
+using namespace ovxx;
 
 /// Sum of vector values.
 
@@ -32,7 +24,7 @@ T
 sum_view(const_Vector<T, Block> view)
 {
   typedef T value_type;
-  typedef typename vsip::impl::scalar_of<value_type>::type scalar_type;
+  typedef typename scalar_of<value_type>::type scalar_type;
 
   T sum = T();
 
@@ -50,7 +42,7 @@ void
 check_view(Vector<T, Block> view)
 {
   typedef T value_type;
-  typedef typename vsip::impl::scalar_of<value_type>::type scalar_type;
+  typedef typename scalar_of<value_type>::type scalar_type;
 
   for (index_type i=0; i<view.size(); ++i)
     view(i) = value_type(1);
@@ -83,7 +75,7 @@ T
 sum_view(const_Matrix<T, Block> view)
 {
   typedef T value_type;
-  typedef typename vsip::impl::scalar_of<value_type>::type scalar_type;
+  typedef typename scalar_of<value_type>::type scalar_type;
 
   T sum = T();
 
@@ -102,7 +94,7 @@ void
 check_view(Matrix<T, Block> view)
 {
   typedef T value_type;
-  typedef typename vsip::impl::scalar_of<value_type>::type scalar_type;
+  typedef typename scalar_of<value_type>::type scalar_type;
 
   for (index_type i=0; i<view.size(0); ++i)
     for (index_type j=0; j<view.size(1); ++j)
@@ -136,7 +128,7 @@ T
 sum_view(const_Tensor<T, Block> view)
 {
   typedef T value_type;
-  typedef typename vsip::impl::scalar_of<value_type>::type scalar_type;
+  typedef typename scalar_of<value_type>::type scalar_type;
 
   T sum = T();
 
@@ -156,7 +148,7 @@ void
 check_view(Tensor<T, Block> view)
 {
   typedef T value_type;
-  typedef typename vsip::impl::scalar_of<value_type>::type scalar_type;
+  typedef typename scalar_of<value_type>::type scalar_type;
 
   for (index_type i=0; i<view.size(0); ++i)
     for (index_type j=0; j<view.size(1); ++j)

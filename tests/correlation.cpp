@@ -49,7 +49,7 @@ test_corr(
   typedef typename scalar_of<T>::type scalar_type;
   typedef Correlation<const_Vector, support, T> corr_type;
 
-  length_type const P = ref::corr_output_size(support, M, N);
+  length_type const P = test::ref::corr_output_size(support, M, N);
   corr_type corr((Domain<1>(M)), Domain<1>(N));
 
   test_assert(corr.support()  == support);

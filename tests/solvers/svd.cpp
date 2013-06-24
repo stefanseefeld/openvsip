@@ -490,7 +490,7 @@ test_svd_rand(storage_type ustorage,
   Matrix<T>     sv_v(n, n);	// U matrix
 
   // Setup a.
-  randm(a);
+  test::randm(a);
 
   test_svd<RtM>(ustorage, vstorage, a, loop);
 }

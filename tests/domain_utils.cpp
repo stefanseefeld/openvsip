@@ -11,24 +11,14 @@
 
 #include <vsip/initfin.hpp>
 #include <vsip/domain.hpp>
-#include <vsip/core/domain_utils.hpp>
+#include <ovxx/domain_utils.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 void
 test_intersect()
 {
-  using vsip::impl::intersect;
   Domain<1> intr;
 
   {
@@ -88,8 +78,6 @@ test_intersect()
 void
 test_subset_from_intr()
 {
-  using vsip::impl::subset_from_intr;
-
   {
     Domain<1> dom (0, 1, 4); // [0, 1, 2, 3]
     Domain<1> intr(2, 1, 2); // [      2, 3]
@@ -114,8 +102,6 @@ test_subset_from_intr()
 void
 test_apply_intr()
 {
-  using vsip::impl::apply_intr;
-
   {
     Domain<1> x   (0, 2, 4);                // [0, 2, 4, 6]
     Domain<1> y   (0, 1, 4);                // [0, 1, 2, 3]

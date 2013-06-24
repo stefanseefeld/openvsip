@@ -18,34 +18,7 @@
 #include <vsip/signal.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-
-#include <vsip/core/config.hpp>
-#include <vsip/core/metaprogramming.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/error_db.hpp>
-#include <vsip_csl/ref_dft.hpp>
-
-#if VERBOSE
-#  include <iostream>
-#  include <vsip_csl/output.hpp>
-#  include "extdata-output.hpp"
-#endif
-
 #include "fft_common.hpp"
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-using namespace std;
-using namespace vsip;
-
-
-
-// Check with different block types.
 
 template <typename T>
 void

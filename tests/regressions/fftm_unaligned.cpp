@@ -16,16 +16,9 @@
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/signal.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-using vsip_csl::equal;
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 // Test FFTM by-reference out-of-place with given alignment.
 
@@ -51,7 +44,7 @@ test_fftm_op_align(
 
   typedef Layout<2, row2_type, dense, C> lp_type;
 
-  typedef impl::Strided<2, T, lp_type> block_type;
+  typedef Strided<2, T, lp_type> block_type;
 
   typedef Fftm<T, T, row, fft_fwd, by_reference, 1, alg_space> fftm_type;
 
@@ -109,7 +102,7 @@ test_fftm_ip_align(
 
   typedef Layout<2, row2_type, dense, C> lp_type;
 
-  typedef impl::Strided<2, T, lp_type> block_type;
+  typedef Strided<2, T, lp_type> block_type;
 
   typedef Fftm<T, T, row, fft_fwd, by_reference, 1, alg_space> fftm_type;
 
@@ -124,12 +117,6 @@ test_fftm_ip_align(
   for (index_type i=0; i<rows; ++i)
     test_assert(inout.get(i, align) == T(size));
 }
-
-
-
-/***********************************************************************
-  Main
-***********************************************************************/
 
 int
 main(int argc, char** argv)

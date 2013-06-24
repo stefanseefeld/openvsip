@@ -20,16 +20,9 @@
 #include <vsip/domain.hpp>
 #include <vsip/random.hpp>
 #include <vsip/selgen.hpp>
-#include <vsip/opt/assign_diagnostics.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions - Utility Functions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename VT,
 	  typename MT,
@@ -38,12 +31,10 @@ template <typename VT,
 void
 test_vmmul(length_type rows, length_type cols)
 {
-  using namespace std;
-
-  typedef Layout<1, row1_type, dense, C> LP1;
+  typedef Layout<1, row1_type, dense, array> LP1;
   typedef Layout<2, row2_type, dense, C> LP2;
-  typedef impl::Strided<1, VT, LP1> block1_type;
-  typedef impl::Strided<2, MT, LP2> block2_type;
+  typedef Strided<1, VT, LP1> block1_type;
+  typedef Strided<2, MT, LP2> block2_type;
 
   length_type v_size = SD == row ? cols : rows;
 
@@ -54,7 +45,7 @@ test_vmmul(length_type rows, length_type cols)
   vec = ramp<VT>(VT(0), VT(1), v_size);
 
 #if SHOW_DIAG
-  vsip_csl::assign_diagnostics(out, vmmul<SD>(vec, in));
+  assignment::diagnostics(out, vmmul<SD>(vec, in));
 #endif
   out = vmmul<SD>(vec, in);
 

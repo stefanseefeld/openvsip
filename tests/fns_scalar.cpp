@@ -14,19 +14,10 @@
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/math.hpp>
+#include <test.hpp>
+#include <storage.hpp>
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-storage.hpp>
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-using namespace std;
-using namespace vsip;
-using vsip_csl::equal;
+using namespace ovxx;
 
 template <dimension_type Dim,
 	  typename       T1,

@@ -9,17 +9,10 @@
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/matrix.hpp>
+#include <ovxx/assign/diagnostics.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <iostream>
-
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions - Utility Functions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T>
 void
@@ -31,7 +24,7 @@ ip_transpose(length_type size)
     for (index_type c=0; c<size; ++c)
       A.put(r, c, T(r*size+c));
 
-  vsip_csl::assign_diagnostics(A, A.transpose());
+  assignment::diagnostics(A, A.transpose());
   A = A.transpose();
 
   for (index_type r=0; r<size; ++r)

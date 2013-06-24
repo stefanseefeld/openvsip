@@ -15,9 +15,7 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
-#include <vsip/opt/diag/fft.hpp>
-
-#include "benchmarks.hpp"
+#include "benchmark.hpp"
 
 using namespace vsip;
 
@@ -56,20 +54,16 @@ struct t_fft_op : Benchmark_base
 
     A = T(1);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       fft(A, Z);
-    t1.stop();
+    time = t1.elapsed();
     
     if (!equal(Z.get(0), T(scale_ ? 1 : size)))
     {
       std::cout << "t_fft_op: ERROR" << std::endl;
       abort();
     }
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -83,8 +77,7 @@ struct t_fft_op : Benchmark_base
       fft_type;
 
     fft_type fft(Domain<1>(size), scale_ ? (1.f/size) : 1.f);
-
-    diagnose_fft_call("fft_op", fft, A, Z);
+    // TBD
   }
 
   t_fft_op(bool scale) : scale_(scale) {}
@@ -118,20 +111,16 @@ struct t_fft_ip : Benchmark_base
 
     fft_type fft(Domain<1>(size), scale_ ? (1.f/size) : 1.f);
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       fft(A);
-    t1.stop();
+    time = t1.elapsed();
     
     if (!equal(A.get(0), T(0)))
     {
       std::cout << "t_fft_ip: ERROR" << std::endl;
       abort();
     }
-    
-    time = t1.delta();
   }
 
   t_fft_ip(bool scale) : scale_(scale) {}
@@ -168,16 +157,12 @@ struct t_fft_bv : Benchmark_base
 
     A = T(1);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = fft(A);
-    t1.stop();
+    time = t1.elapsed();
     
     test_assert(equal(Z.get(0), T(scale_ ? 1 : size)));
-    
-    time = t1.delta();
   }
 
   t_fft_bv(bool scale) : scale_(scale) {}
@@ -197,7 +182,7 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   int const estimate = 1;  // FFT_ESTIMATE
   int const measure  = 15; // FFT_MEASURE (no_times > 12)

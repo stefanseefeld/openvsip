@@ -15,12 +15,7 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
-
-#include <vsip_csl/profile.hpp>
-
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
-
+#include "benchmark.hpp"
 
 using namespace vsip;
 
@@ -38,7 +33,7 @@ struct t_prod1 : Benchmark_base
     length_type P = M;
 
     float ops = /*M * */ P * N * 
-      (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+      (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops;
   }
@@ -56,14 +51,10 @@ struct t_prod1 : Benchmark_base
     Matrix<T>   B (N, P, T(1));
     Matrix<T>   Z (M, P, T(1));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = prod(A, B);
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_prod1() {}
@@ -85,7 +76,7 @@ struct t_prodh1 : Benchmark_base
     length_type P = M;
 
     float ops = /*M * */ P * N * 
-      (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+      (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops;
   }
@@ -103,14 +94,10 @@ struct t_prodh1 : Benchmark_base
     Matrix<T>   B (P, N, T());
     Matrix<T>   Z (M, P, T());
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = prodh(A, B);
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_prodh1() {}
@@ -132,7 +119,7 @@ struct t_prodt1 : Benchmark_base
     length_type P = M;
 
     float ops = /*M * */ P * N * 
-      (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+      (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops;
   }
@@ -150,14 +137,10 @@ struct t_prodt1 : Benchmark_base
     Matrix<T>   B (P, N, T());
     Matrix<T>   Z (M, P, T());
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = prodt(A, B);
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_prodt1() {}
@@ -180,7 +163,7 @@ struct t_prod2 : Benchmark_base
     length_type P = M;
 
     float ops = /*M * */ P * N * 
-      (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+      (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops;
   }
@@ -191,7 +174,7 @@ struct t_prod2 : Benchmark_base
 
   void operator()(length_type M, length_type loop, float& time)
   {
-    using namespace vsip_csl::dispatcher;
+    using namespace ovxx::dispatcher;
 
     typedef Dense<2, T, row2_type> a_block_type;
     typedef Dense<2, T, row2_type> b_block_type;
@@ -208,14 +191,10 @@ struct t_prod2 : Benchmark_base
     Matrix<T, b_block_type>   B(N, P, T());
     Matrix<T, z_block_type>   Z(M, P, T());
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       evaluator_type::exec(Z.block(), A.block(), B.block());
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_prod2() {}
@@ -232,9 +211,9 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
-  using namespace vsip_csl::dispatcher;
+  using namespace ovxx::dispatcher;
 
   switch (what)
   {
@@ -248,7 +227,7 @@ test(Loop1P& loop, int what)
   case  5: loop(t_prod2<be::blas, float>()); break;
     // The BLAS backend doesn't handle split-complex, so don't attempt
     // to instantiate that code if we are using split-complex blocks.
-# if !VSIP_IMPL_PREFER_SPLIT_COMPLEX
+# if !OVXX_DEFAULT_COMPLEX_STORAGE_SPLIT
   case  6: loop(t_prod2<be::blas, complex<float> >()); break;
 # endif
 #endif

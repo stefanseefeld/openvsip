@@ -13,16 +13,9 @@
 #include <vsip/matrix.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/map.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T,
 	  typename MapT>
@@ -63,7 +56,7 @@ main(int argc, char** argv)
 
 #if 0
   // Enable this section for easier debugging.
-  impl::Communicator& comm = impl::default_communicator();
+  parallel::Communicator& comm = parallel::default_communicator();
   pid_t pid = getpid();
 
   cout << "rank: "   << comm.rank()

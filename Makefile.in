@@ -54,6 +54,9 @@ endif
 check:
 	$(MAKE) -C tests
 
+installcheck:
+	$(MAKE) -C tests installcheck
+
 # convenience to rerun previously failed tests
 recheck:
 	$(MAKE) -C tests recheck

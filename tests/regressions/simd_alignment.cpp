@@ -16,20 +16,9 @@
 #include <vsip/math.hpp>
 #include <vsip/selgen.hpp>
 #include <vsip/parallel.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-using vsip_csl::equal;
-
-
-
-/***********************************************************************
-  Definitions - Misaligned
-***********************************************************************/
+using namespace ovxx;
 
 // Test an unaligned negation, where all views have same relative
 // alignment.

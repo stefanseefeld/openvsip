@@ -14,11 +14,7 @@
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
-#include <vsip_csl/profile.hpp>
-
-#include <vsip_csl/test.hpp>
-#include "../loop.hpp"
-#include "../benchmarks.hpp"
+#include "../benchmark.hpp"
 
 using namespace vsip;
 
@@ -63,15 +59,15 @@ template <typename T>
 struct t_vmul1 : Benchmark_base
 {
   char const* what() { return "t_vmul1"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
   void operator()(length_type size, length_type loop, float& time)
   {
-    typedef Layout<1, row1_type, dense, interleaved_complex> LP;
-    typedef impl::Strided<1, T, LP, Local_map> block_type;
+    typedef Layout<1, row1_type, dense, array> LP;
+    typedef ovxx::Strided<1, T, LP, Local_map> block_type;
 
     Vector<T, block_type>   A(size, T());
     Vector<T, block_type>   B(size, T());
@@ -80,24 +76,22 @@ struct t_vmul1 : Benchmark_base
     A(0) = T(3);
     B(0) = T(4);
 
-    vsip_csl::profile::Timer t1;
-
     {
-      dda::Data<block_type, dda::in> ext_a(A.block());
-      dda::Data<block_type, dda::in> ext_b(B.block());
-      dda::Data<block_type, dda::out> ext_c(C.block());
+      dda::Data<block_type, dda::in> data_a(A.block());
+      dda::Data<block_type, dda::in> data_b(B.block());
+      dda::Data<block_type, dda::out> data_c(C.block());
       
-      T const * pa = ext_a.ptr();
-      T const * pb = ext_b.ptr();
-      T* pc = ext_c.ptr();
+      T const * pa = data_a.ptr();
+      T const * pb = data_b.ptr();
+      T* pc = data_c.ptr();
     
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
       {
 	for (index_type j=0; j<size; ++j)
 	  pc[j] = pa[j] * pb[j];
       }
-      t1.stop();
+      time = t1.elapsed();
     }
       
     if (!equal(C(0), T(12)))
@@ -106,8 +100,6 @@ struct t_vmul1 : Benchmark_base
 		<< "       : C(0) = " << C(0) << std::endl;
       abort();
     }
-    
-    time = t1.delta();
   }
 };
 
@@ -121,15 +113,15 @@ template <typename T>
 struct t_vmul2 : Benchmark_base
 {
   char const* what() { return "t_vmul2"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
   void operator()(length_type size, length_type loop, float& time)
   {
-    typedef Layout<1, row1_type, dense, interleaved_complex> LP;
-    typedef impl::Strided<1, T, LP, Local_map> block_type;
+    typedef Layout<1, row1_type, dense, array> LP;
+    typedef ovxx::Strided<1, T, LP, Local_map> block_type;
 
     Vector<T, block_type>   A(size, T());
     Vector<T, block_type>   B(size, T());
@@ -138,21 +130,19 @@ struct t_vmul2 : Benchmark_base
     A(0) = T(3);
     B(0) = T(4);
 
-    vsip_csl::profile::Timer t1;
-
     {
-      dda::Data<block_type, dda::in> ext_a(A.block());
-      dda::Data<block_type, dda::in> ext_b(B.block());
-      dda::Data<block_type, dda::out> ext_c(C.block());
+      dda::Data<block_type, dda::in> data_a(A.block());
+      dda::Data<block_type, dda::in> data_b(B.block());
+      dda::Data<block_type, dda::out> data_c(C.block());
       
-      T const * pa = ext_a.ptr();
-      T const * pb = ext_b.ptr();
-      T* pc = ext_c.ptr();
+      T const * pa = data_a.ptr();
+      T const * pb = data_b.ptr();
+      T* pc = data_c.ptr();
     
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
 	vmul(size, pa, pb, pc);
-      t1.stop();
+      time = t1.elapsed();
     }
       
     if (!equal(C(0), T(12)))
@@ -161,8 +151,6 @@ struct t_vmul2 : Benchmark_base
 		<< "       : C(0) = " << C(0) << std::endl;
       abort();
     }
-    
-    time = t1.delta();
   }
 };
 
@@ -176,15 +164,15 @@ template <typename T>
 struct t_svmul1 : Benchmark_base
 {
   char const* what() { return "t_svmul1"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::mul; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::mul; }
   int riob_per_point(length_type) { return 1*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
   void operator()(length_type size, length_type loop, float& time)
   {
-    typedef Layout<1, row1_type, dense, interleaved_complex> LP;
-    typedef impl::Strided<1, T, LP, Local_map> block_type;
+    typedef Layout<1, row1_type, dense, array> LP;
+    typedef ovxx::Strided<1, T, LP, Local_map> block_type;
 
     Vector<T, block_type>   A(size, T());
     Vector<T, block_type>   C(size);
@@ -193,38 +181,27 @@ struct t_svmul1 : Benchmark_base
 
     A(0) = T(4);
     
-    vsip_csl::profile::Timer t1;
-
     {
-      dda::Data<block_type, dda::in> ext_a(A.block());
-      dda::Data<block_type, dda::out> ext_c(C.block());
+      dda::Data<block_type, dda::in> data_a(A.block());
+      dda::Data<block_type, dda::out> data_c(C.block());
       
-      T const * pa = ext_a.ptr();
-      T* pc = ext_c.ptr();
+      T const * pa = data_a.ptr();
+      T* pc = data_c.ptr();
     
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
 	svmul(size, alpha, pa, pc);
-      t1.stop();
+      time = t1.elapsed();
     }
     
     test_assert(equal(C(0), T(12)));
-    
-    time = t1.delta();
   }
 };
 
-
-
-void
-defaults(Loop1P&)
-{
-}
-
-
+void defaults(Loop1P&) {}
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {

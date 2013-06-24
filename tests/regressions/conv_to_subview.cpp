@@ -12,18 +12,9 @@
 #include <vsip/initfin.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/signal.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/error_db.hpp>
-
-using namespace std;
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 double const ERROR_THRESH = -100;
 
@@ -133,7 +124,7 @@ test_conv_nonsym_split(
     exp.put(i, complex<T>(T(k1) * val1, T(k2) * val2));
   }
 
-  double error = error_db(out, exp);
+  double error = test::diff(out, exp);
   test_assert(error < ERROR_THRESH);
 }
 

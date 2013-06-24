@@ -8,16 +8,10 @@
 
 #include <iostream>
 #include <vsip/initfin.hpp>
+#include <test.hpp>
+#include <cstring>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 static void
 use_the_library ()
@@ -90,7 +84,7 @@ main (int argc, char** argv)
 
   for (int i=0; i<argc; ++i)
   {
-    if (!strcmp(argv[i], "-test"))
+    if (!std::strcmp(argv[i], "-test"))
       test = atoi(argv[++i]);
   }
 

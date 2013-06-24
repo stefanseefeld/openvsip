@@ -14,21 +14,14 @@
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
-#include <vsip/core/parallel/assign_chain.hpp>
 #include <vsip/map.hpp>
-#include <vsip_csl/profile.hpp>
-#include <vsip/core/metaprogramming.hpp>
-#include <vsip_csl/diagnostics.hpp>
-
-#include <vsip_csl/assignment.hpp>
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
-
+#include "benchmark.hpp"
+#include <ovxx/output.hpp>
+#include <iostream>
+#include <cstring>
 
 using namespace vsip;
-using vsip_csl::equal;
 
-using vsip::impl::conditional;
 
 /***********************************************************************
   Matrix copy - normal assignment
@@ -75,8 +68,7 @@ struct t_mcopy<T, SrcBlock, DstBlock, Impl_assign> : Benchmark_base
   int wiob_per_point(length_type size) { return size*sizeof(T); }
   int mem_per_point(length_type size)  { return size*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     length_type const M = size;
     length_type const N = size;
@@ -90,29 +82,27 @@ struct t_mcopy<T, SrcBlock, DstBlock, Impl_assign> : Benchmark_base
 	A.put(m, n, T(m*N + n));
       }
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = A;
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type m=0; m<M; ++m)
       for (index_type n=0; n<N; ++n)
       {
 	if (!equal(Z.get(m, n), T(m*N+n)))
 	{
+	  std::cout << A << std::endl;
+	  std::cout << Z << std::endl;
 	  std::cout << "t_mcopy: ERROR" << std::endl;
 	  abort();
 	}
       }
-    
-    time = t1.delta();
   }
 
   void diag()
   {
-    using namespace vsip_csl;
+    using namespace ovxx;
 
     length_type const M = 256;
     length_type const N = 256;
@@ -120,8 +110,7 @@ struct t_mcopy<T, SrcBlock, DstBlock, Impl_assign> : Benchmark_base
     Matrix<T, SrcBlock>   A(M, N, T(), src_map_);
     Matrix<T, DstBlock>   Z(M, N,      dst_map_);
 
-    dispatch_diagnostics<dispatcher::op::assign<1>, void, DstBlock &, SrcBlock const&>
-      (Z.block(), A.block());
+    std::cout << assignment::diagnostics(Z, A) << std::endl;
   }
 
   t_mcopy(src_map_type src_map, dst_map_type dst_map)
@@ -133,75 +122,6 @@ struct t_mcopy<T, SrcBlock, DstBlock, Impl_assign> : Benchmark_base
   src_map_type	src_map_;
   dst_map_type	dst_map_;
 };
-
-
-
-/***********************************************************************
-  Matrix copy - setup assignment
-***********************************************************************/
-
-template <typename T,
-	  typename SrcBlock,
-	  typename DstBlock>
-struct t_mcopy<T, SrcBlock, DstBlock, Impl_sa> : Benchmark_base
-{
-  typedef typename SrcBlock::map_type src_map_type;
-  typedef typename DstBlock::map_type dst_map_type;
-
-  char const* what() { return "t_mcopy<T, SrcBlock, DstBlock, Impl_sa>"; }
-  int ops_per_point(length_type size)  { return size; }
-  int riob_per_point(length_type size) { return size*sizeof(T); }
-  int wiob_per_point(length_type size) { return size*sizeof(T); }
-  int mem_per_point(length_type size)  { return size*sizeof(T); }
-
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
-  {
-    length_type const M = size;
-    length_type const N = size;
-
-    Matrix<T, SrcBlock>   A(M, N, T(), src_map_);
-    Matrix<T, DstBlock>   Z(M, N,      dst_map_);
-
-    vsip_csl::Assignment expr(Z, A);
-
-    for (index_type m=0; m<M; ++m)
-      for (index_type n=0; n<N; ++n)
-      {
-	A.put(m, n, T(m*N + n));
-      }
-    
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
-    for (index_type l=0; l<loop; ++l)
-      expr();
-    t1.stop();
-    
-    for (index_type m=0; m<M; ++m)
-      for (index_type n=0; n<N; ++n)
-      {
-	if (!equal(Z.get(m, n), T(m*N+n)))
-	{
-	  std::cout << "t_mcopy: ERROR" << std::endl;
-	  abort();
-	}
-      }
-    
-    time = t1.delta();
-  }
-
-  t_mcopy(src_map_type src_map, dst_map_type dst_map)
-    : src_map_(src_map),
-      dst_map_(dst_map)
-    {}
-
-  // Member data.
-  src_map_type	src_map_;
-  dst_map_type	dst_map_;
-};
-
-
 
 /***********************************************************************
   Matrix copy - using memcpy 
@@ -221,8 +141,7 @@ struct t_mcopy<T, SrcBlock, DstBlock, Impl_memcpy> : Benchmark_base
   int wiob_per_point(length_type size) { return size*sizeof(T); }
   int mem_per_point(length_type size)  { return size*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     length_type const M = size;
     length_type const N = size;
@@ -236,16 +155,14 @@ struct t_mcopy<T, SrcBlock, DstBlock, Impl_memcpy> : Benchmark_base
 	A.put(m, n, T(m*N + n));
       }
     
-    vsip_csl::profile::Timer t1;
-
     {
       dda::Data<SrcBlock, dda::in> src_data(A.block());
       dda::Data<DstBlock, dda::out> dst_data(Z.block());
     
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
-	memcpy(dst_data.ptr(), src_data.ptr(), M*N*sizeof(T));
-      t1.stop();
+	std::memcpy(dst_data.ptr(), src_data.ptr(), M*N*sizeof(T));
+      time = t1.elapsed();
     }
     
     for (index_type m=0; m<M; ++m)
@@ -257,8 +174,6 @@ struct t_mcopy<T, SrcBlock, DstBlock, Impl_memcpy> : Benchmark_base
 	  abort();
 	}
       }
-    
-    time = t1.delta();
   }
 
   t_mcopy(src_map_type src_map, dst_map_type dst_map)
@@ -308,11 +223,11 @@ struct t_mcopy_par_helper
 {
   typedef Map<Block_dist, Block_dist> map_type;
 
-  typedef typename conditional<SrcDO == 0, row2_type, col2_type>::type
+  typedef typename ovxx::conditional<SrcDO == 0, row2_type, col2_type>::type
           src_order_type;
   typedef Dense<2, T, src_order_type, map_type> src_block_type;
 
-  typedef typename conditional<DstDO == 0, row2_type, col2_type>::type
+  typedef typename ovxx::conditional<DstDO == 0, row2_type, col2_type>::type
           dst_order_type;
   typedef Dense<2, T, dst_order_type, map_type> dst_block_type;
 
@@ -352,7 +267,7 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   processor_type np = num_processors();
 
@@ -376,12 +291,11 @@ test(Loop1P& loop, int what)
   // case  13: loop(t_mcopy_local<float, ct, rt, Impl_memcpy>()); break;
   case  14: loop(t_mcopy_local<float, ct, ct, Impl_memcpy>()); break;
     
+#if OVXX_PARALLEL_API == 1
   case  31: loop(t_mcopy_par<float, 0, 0, Impl_assign>(np, np)); break;
   case  32: loop(t_mcopy_par<float, 0, 1, Impl_assign>(np, np)); break;
 
-  case  41: loop(t_mcopy_par<float, 0, 0, Impl_sa>(np, np)); break;
-  case  42: loop(t_mcopy_par<float, 0, 1, Impl_sa>(np, np)); break;
-
+#endif
   case 102: loop(t_mcopy_local<int, rt, ct, Impl_assign>()); break;
 
   case   0:
@@ -399,8 +313,6 @@ test(Loop1P& loop, int what)
       << "   -14: local,         float,  cols <- cols, memcpy\n"
       << "   -31:   par,         float,  Map<>(np,1) <- Map<>(np,1), assignment\n"
       << "   -32:   par,         float,  Map<>(np,1) <- Map<>(1,np), assignment\n"
-      << "   -41:   par,         float,  Map<>(np,1) <- Map<>(np,1), setup assignment\n"
-      << "   -42:   par,         float,  Map<>(np,1) <- Map<>(1,np), setup assignment\n"
       << "  -102: local,           int,  rows <- cols, assignment\n"
       << "\n"
       << " Notes:\n"

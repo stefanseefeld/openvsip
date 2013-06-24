@@ -6,29 +6,17 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.GPL file.
 
-#include <iostream>
-
 #include <vsip/initfin.hpp>
-
+#include <ovxx/inttypes.hpp>
 #include "vmul.hpp"
+#include <iostream>
 
 using namespace vsip;
 
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
-void
-defaults(Loop1P&)
-{
-}
-
-
+void defaults(Loop1P&) {}
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   length_type footprint = 1 << loop.stop_;
 
@@ -37,7 +25,7 @@ test(Loop1P& loop, int what)
   case   1: loop(t_svmul1<float,          float>()); break;
   case   2: loop(t_svmul1<float,          complex<float> >()); break;
   case   3: loop(t_svmul1<complex<float>, complex<float> >()); break;
-  case   4: loop(t_svmul1<float, uint32_t, float>()); break;
+  case   4: loop(t_svmul1<float, ovxx::uint32_type, float>()); break;
 
   case  11: loop(t_svmul_dom<float,          float>()); break;
   case  12: loop(t_svmul_dom<float,          complex<float> >()); break;

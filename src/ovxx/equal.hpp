@@ -12,6 +12,9 @@
 #include <ovxx/support.hpp>
 #include <ovxx/complex_traits.hpp>
 #include <ovxx/math/scalar.hpp>
+#include <vsip/vector.hpp>
+#include <vsip/matrix.hpp>
+#include <vsip/tensor.hpp>
 
 namespace ovxx
 {

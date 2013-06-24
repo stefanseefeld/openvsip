@@ -19,12 +19,10 @@
 #include <vsip/matrix.hpp>
 #include <vsip/domain.hpp>
 #include <vsip/random.hpp>
-#include <vsip/opt/fast_transpose.hpp>
-#include <vsip_csl/test.hpp>
+#include <test.hpp>
+#include "../test_common.hpp"
 
-#include "test_common.hpp"
-
-using namespace vsip;
+using namespace ovxx;
 
 /***********************************************************************
   Definitions - Utility Functions
@@ -110,10 +108,9 @@ test_ll(length_type rows, length_type cols)
       dst.get()[r + c*rows] = T(-100);
     }
 
-  vsip::impl::transpose_unit(
-		dst.get(), src.get(), rows, cols, 
-  		rows, // dst_col_stride
-  		cols); // src_row_stride
+  assignment::transpose(dst.get(), rows,
+			src.get(), cols,
+			rows, cols);
 
   for (index_type r=0; r<rows; r++)
     for (index_type c=0; c<cols; c++)

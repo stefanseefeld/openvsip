@@ -609,12 +609,12 @@ struct lvalue_factory_type<expr::Sliced<B, D>, D>
 template <typename B, dimension_type D1, dimension_type D2>
 struct lvalue_factory_type<expr::Sliced2<B, D1, D2>, 1>
 {
-  typedef typename lvalue_factory_type<B, 2>
+  typedef typename lvalue_factory_type<B, 3>
   ::template rebind<expr::Sliced2<B, D1, D2> >::type type;
   template <typename O>
   struct rebind 
   {
-    typedef typename lvalue_factory_type<B, 2>::
+    typedef typename lvalue_factory_type<B, 3>::
       template rebind<O>::type type;
   };
 };

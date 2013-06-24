@@ -10,13 +10,10 @@
 #include <complex>
 #include <vsip/initfin.hpp>
 #include <vsip/selgen.hpp>
+#include <test.hpp>
 #include <functional>
-#include <vsip_csl/test.hpp>
 
-using namespace std;
-using namespace vsip;
-using vsip_csl::equal;
-using vsip_csl::view_equal;
+using namespace ovxx;
 
 void 
 test_first()
@@ -76,7 +73,7 @@ void test_gather_scatter()
 
   Matrix<float> m2(5, 5, 0.);
   scatter(v, indices, m2);
-  test_assert(view_equal(m, m2));
+  test_assert(equal(m, m2));
 }
 
 void
@@ -114,8 +111,8 @@ test_swap()
   Matrix<float> t2(5, 5);
   t2 = m2;
   vsip::swap(t1, t2);
-  test_assert(view_equal(t1, m2));
-  test_assert(view_equal(t2, m1));
+  test_assert(equal(t1, m2));
+  test_assert(equal(t2, m1));
 }
 
 int 

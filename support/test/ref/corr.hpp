@@ -21,10 +21,9 @@ namespace ref
 {
 
 vsip::length_type
-corr_output_size(
-  vsip::support_region_type supp,
-  vsip::length_type         M,    // kernel length
-  vsip::length_type         N)    // input  length
+corr_output_size(vsip::support_region_type supp,
+		 vsip::length_type         M,    // kernel length
+		 vsip::length_type         N)    // input  length
 {
   if      (supp == vsip::support_full)
     return (N + M - 1);
@@ -37,9 +36,8 @@ corr_output_size(
 
 
 vsip::stride_type
-expected_shift(
-  vsip::support_region_type supp,
-  vsip::length_type         M)     // kernel length
+expected_shift(vsip::support_region_type supp,
+	       vsip::length_type         M)     // kernel length
 {
   if      (supp == vsip::support_full)
     return -(M-1);
@@ -56,12 +54,11 @@ template <typename T,
 	  typename Block2,
 	  typename Block3>
 void
-corr(
-  vsip::bias_type               bias,
-  vsip::support_region_type     sup,
-  vsip::const_Vector<T, Block1> ref,
-  vsip::const_Vector<T, Block2> in,
-  vsip::Vector<T, Block3>       out)
+corr(vsip::bias_type               bias,
+     vsip::support_region_type     sup,
+     vsip::const_Vector<T, Block1> ref,
+     vsip::const_Vector<T, Block2> in,
+     vsip::Vector<T, Block3>       out)
 {
   using vsip::index_type;
   using vsip::length_type;
@@ -70,7 +67,7 @@ corr(
   using vsip::Domain;
   using vsip::unbiased;
 
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   length_type M = ref.size(0);
   length_type N = in.size(0);
@@ -116,7 +113,7 @@ corr(
     }
 #endif
       
-    T val = dot(ref, impl_conj(sub));
+    T val = ref::dot(ref, impl_conj(sub));
     if (bias == vsip::unbiased)
       val /= scale;
 
@@ -131,12 +128,11 @@ template <typename T,
 	  typename Block2,
 	  typename Block3>
 void
-corr(
-  vsip::bias_type               bias,
-  vsip::support_region_type     sup,
-  vsip::const_Matrix<T, Block1> ref,
-  vsip::const_Matrix<T, Block2> in,
-  vsip::Matrix<T, Block3>       out)
+corr(vsip::bias_type               bias,
+     vsip::support_region_type     sup,
+     vsip::const_Matrix<T, Block1> ref,
+     vsip::const_Matrix<T, Block2> in,
+     vsip::Matrix<T, Block3>       out)
 {
   using vsip::index_type;
   using vsip::length_type;
@@ -145,7 +141,7 @@ corr(
   using vsip::Domain;
   using vsip::unbiased;
 
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   length_type Mr = ref.size(0);
   length_type Mc = ref.size(1);

@@ -16,14 +16,10 @@
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/random.hpp>
-#include <vsip_csl/profile.hpp>
-#include <vsip_csl/diagnostics.hpp>
+#include <vsip/selgen.hpp>
+#include "benchmark.hpp"
 
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
-
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
 template <typename T,
 	  typename Tag,
@@ -40,7 +36,7 @@ struct Impl_s_pop;	// Scaled, psuedo out-of-place vmmul, using vmul
 /***********************************************************************
   Impl_op: Out-of-place vmmul
 ***********************************************************************/
-
+#if OVXX_PARALLEL_API == 1
 template <typename T,
 	  int      SD>
 struct t_vmmul<T, Impl_op, SD> : Benchmark_base
@@ -54,7 +50,7 @@ struct t_vmmul<T, Impl_op, SD> : Benchmark_base
 
   char const* what() { return "t_vmmul<T, Impl_op, SD>"; }
   int ops(length_type rows, length_type cols)
-    { return rows * cols * vsip::impl::Ops_info<T>::mul; }
+    { return rows * cols * ovxx::ops_count::traits<T>::mul; }
 
   void exec(length_type rows, length_type cols, length_type loop, float& time)
   {
@@ -70,12 +66,10 @@ struct t_vmmul<T, Impl_op, SD> : Benchmark_base
     W = ramp(T(1), T(1), W.size());
     A = rand.randu(rows, cols);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = vmmul<SD>(W, A);
-    t1.stop();
+    time = t1.elapsed();
     
     if (SD == row)
     {
@@ -94,8 +88,6 @@ struct t_vmmul<T, Impl_op, SD> : Benchmark_base
 	  test_assert(equal(Z.local().get(r, c),
 			    W.get(r) * A.local().get(r, c)));
     }
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -106,11 +98,10 @@ struct t_vmmul<T, Impl_op, SD> : Benchmark_base
     Vector<T>   W(SD == row ? cols : rows);
     Matrix<T>   A(rows, cols, T());
     Matrix<T>   Z(rows, cols);
-
-    vsip_csl::assign_diagnostics(Z, vmmul<SD>(W, A));
+    // TBD
   }
 };
-
+#endif
 
 
 /***********************************************************************
@@ -123,7 +114,7 @@ struct t_vmmul<T, Impl_pop, SD> : Benchmark_base
 {
   char const* what() { return "t_vmmul<T, Impl_op, SD>"; }
   int ops(length_type rows, length_type cols)
-    { return rows * cols * vsip::impl::Ops_info<T>::mul; }
+    { return rows * cols * ovxx::ops_count::traits<T>::mul; }
 
   void exec(length_type rows, length_type cols, length_type loop, float& time)
   {
@@ -134,28 +125,24 @@ struct t_vmmul<T, Impl_pop, SD> : Benchmark_base
     W = ramp(T(1), T(1), W.size());
     A = T(1);
     
-    vsip_csl::profile::Timer t1;
-    
     if (SD == row)
     {
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
 	for (index_type i=0; i<rows; ++i)
 	  Z.row(i) = W * A.row(i);
-      t1.stop();
+      time = t1.elapsed();
     }
     else
     {
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
 	for (index_type i=0; i<cols; ++i)
 	  Z.col(i) = W * A.col(i);
-      t1.stop();
+      time = t1.elapsed();
     }
     
     test_assert(equal(Z(0, 0), T(1)));
-    
-    time = t1.delta();
   }
 };
 
@@ -171,7 +158,7 @@ struct t_vmmul<T, Impl_s_op, SD> : Benchmark_base
 {
   char const* what() { return "t_vmmul<T, Impl_s_op, SD>"; }
   int ops(length_type rows, length_type cols)
-    { return rows * cols * vsip::impl::Ops_info<T>::mul; }
+    { return rows * cols * ovxx::ops_count::traits<T>::mul; }
 
   void exec(length_type rows, length_type cols, length_type loop, float& time)
   {
@@ -182,16 +169,12 @@ struct t_vmmul<T, Impl_s_op, SD> : Benchmark_base
     W = ramp(T(1), T(1), W.size());
     A = T(1);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = T(2) * vmmul<SD>(W, A);
-    t1.stop();
+    time = t1.elapsed();
     
     test_assert(equal(Z(0, 0), T(2)));
-    
-    time = t1.delta();
   }
 };
 
@@ -207,7 +190,7 @@ struct t_vmmul<T, Impl_s_pop, SD> : Benchmark_base
 {
   char const* what() { return "t_vmmul<T, Impl_s_pop, SD>"; }
   int ops(length_type rows, length_type cols)
-    { return rows * cols * vsip::impl::Ops_info<T>::mul; }
+    { return rows * cols * ovxx::ops_count::traits<T>::mul; }
 
   void exec(length_type rows, length_type cols, length_type loop, float& time)
   {
@@ -218,28 +201,24 @@ struct t_vmmul<T, Impl_s_pop, SD> : Benchmark_base
     W = ramp(T(1), T(1), W.size());
     A = T(1);
     
-    vsip_csl::profile::Timer t1;
-    
     if (SD == row)
     {
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
 	for (index_type i=0; i<rows; ++i)
 	  Z.row(i) = T(2) * W * A.row(i);
-      t1.stop();
+      time = t1.elapsed();
     }
     else
     {
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
 	for (index_type i=0; i<cols; ++i)
 	  Z.col(i) = T(2) * W * A.col(i);
-      t1.stop();
+      time = t1.elapsed();
     }
     
     test_assert(equal(Z(0, 0), T(2)));
-    
-    time = t1.delta();
   }
 };
 
@@ -341,29 +320,39 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   length_type nr = atoi(loop.param_["rows"].c_str());
   length_type nc = atoi(loop.param_["cols"].c_str());
 
   switch (what)
   {
+#if OVXX_PARALLEL_API == 1
   case  1: loop(t_vmmul_fix_rows<complex<float>, Impl_op,    row>(nr)); break;
+#endif
   case  2: loop(t_vmmul_fix_rows<complex<float>, Impl_pop,   row>(nr)); break;
   case  3: loop(t_vmmul_fix_rows<complex<float>, Impl_s_op,  row>(nr)); break;
   case  4: loop(t_vmmul_fix_rows<complex<float>, Impl_s_pop, row>(nr)); break;
 
+#if OVXX_PARALLEL_API == 1
   case 11: loop(t_vmmul_fix_cols<complex<float>, Impl_op,    row>(nc)); break;
+#endif
   case 12: loop(t_vmmul_fix_cols<complex<float>, Impl_pop,   row>(nc)); break;
   case 13: loop(t_vmmul_fix_cols<complex<float>, Impl_s_op,  row>(nc)); break;
   case 14: loop(t_vmmul_fix_cols<complex<float>, Impl_s_pop, row>(nc)); break;
 
+#if OVXX_PARALLEL_API == 1
   case 21: loop(t_vmmul_fix_rows<complex<float>, Impl_op,    col>(nr)); break;
+#endif
   case 22: loop(t_vmmul_fix_rows<complex<float>, Impl_pop,   col>(nr)); break;
+#if OVXX_PARALLEL_API == 1
   case 23: loop(t_vmmul_fix_rows<complex<float>, Impl_s_op,  col>(nr)); break;
+#endif
   case 24: loop(t_vmmul_fix_rows<complex<float>, Impl_s_pop, col>(nr)); break;
 
+#if OVXX_PARALLEL_API == 1
   case 31: loop(t_vmmul_fix_cols<complex<float>, Impl_op,    col>(nc)); break;
+#endif
   case 32: loop(t_vmmul_fix_cols<complex<float>, Impl_pop,   col>(nc)); break;
   case 33: loop(t_vmmul_fix_cols<complex<float>, Impl_s_op,  col>(nc)); break;
   case 34: loop(t_vmmul_fix_cols<complex<float>, Impl_s_pop, col>(nc)); break;

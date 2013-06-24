@@ -13,13 +13,9 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-#include <vsip_csl/profile.hpp>
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
+#include "benchmark.hpp"
 
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
 template <typename T>
 struct t_memwrite1 : Benchmark_base
@@ -35,32 +31,24 @@ struct t_memwrite1 : Benchmark_base
     Vector<T>   view(size, T());
     T           val = T(1);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       view = val;
-    t1.stop();
+    time = t1.elapsed();
 
     for(index_type i=0; i<size; ++i)
       test_assert(equal(view.get(i), val));
-    
-    time = t1.delta();
   }
 
   void diag()
   {
-    using namespace vsip_csl;
+    using namespace ovxx;
     length_type const size = 256;
 
     Vector<T>   view(size, T());
     T           val = T(1);
 
-    dispatch_diagnostics<dispatcher::op::assign<1>,
-                         void,
-                         typename Vector<T>::block_type &,
-                         expr::Scalar<1, T> const&>
-      (view.block(), val);
+    std::cout << assignment::diagnostics(view, val) << std::endl;
   }
 };
 
@@ -82,35 +70,24 @@ struct t_memwrite_expl : Benchmark_base
     Vector<T>   view(size, T());
     T           val = T(1);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       for (index_type i=0; i<size; ++i)
 	view.put(i, val);
-    t1.stop();
+    time = t1.elapsed();
 
     for(index_type i=0; i<size; ++i)
       test_assert(equal(view.get(i), val));
-    
-    time = t1.delta();
   }
 };
-
-
-
-
-
 
 void
 defaults(Loop1P&)
 {
 }
 
-
-
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {

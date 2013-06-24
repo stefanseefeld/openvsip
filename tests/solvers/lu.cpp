@@ -348,7 +348,7 @@ test_lud_diag(
   if (n > 3) a(3, 3)  = mag(Test_traits<T>::value3());
 
   for (index_type i=0; i<p; ++i)
-    b.col(i) = test_ramp(T(1), T(i), n);
+    b.col(i) = test::ramp(T(1), T(i), n);
   if (p > 1)
     b.col(1) += Test_traits<T>::offset();
 
@@ -369,8 +369,8 @@ test_lud_random(
   Matrix<T> a(n, n);
   Matrix<T> b(n, p);
 
-  randm(a);
-  randm(b);
+  test::randm(a);
+  test::randm(b);
 
   solve_lu(rtm, a, b);
 }
@@ -395,8 +395,8 @@ test_lud_dist(
   Matrix<T, a_block_type> a(n, n);
   Matrix<T, b_block_type> b(n, p);
 
-  randm(a);
-  randm(b);
+  test::randm(a);
+  test::randm(b);
 
   solve_lu_dist<MapT>(rtm, a, b);
 }

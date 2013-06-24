@@ -15,14 +15,11 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
-
-#include <vsip_csl/profile.hpp>
-
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
+#include <ovxx/dispatch.hpp>
+#include "benchmark.hpp"
 
 using namespace vsip;
-using namespace vsip_csl::dispatcher;
+using namespace ovxx::dispatcher;
 
 // Dot-product benchmark class.
 
@@ -34,7 +31,7 @@ struct t_dot1 : Benchmark_base
   char const* what() { return "t_dot1"; }
   float ops_per_point(length_type)
   {
-    float ops = (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+    float ops = (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops;
   }
@@ -52,17 +49,13 @@ struct t_dot1 : Benchmark_base
     A(0) = T(3);
     B(0) = T(4);
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       r = dot(A, B);
-    t1.stop();
+    time = t1.elapsed();
 
     if (r != T(3)*T(4))
       abort();
-    
-    time = t1.delta();
   }
 
   t_dot1() {}
@@ -74,7 +67,7 @@ struct t_dot1 : Benchmark_base
 
 template <typename ImplTag,
           typename T,
-          bool     IsValid = impl::dispatcher::Evaluator<
+          bool     IsValid = Evaluator<
             op::dot, ImplTag,
             T(typename Vector<T>::block_type const&, 
               typename Vector<T>::block_type const&) >::ct_valid>
@@ -85,7 +78,7 @@ struct t_dot2 : Benchmark_base
   char const* what() { return "t_dot2"; }
   float ops_per_point(length_type)
   {
-    float ops = (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+    float ops = (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops;
   }
@@ -111,17 +104,12 @@ struct t_dot2 : Benchmark_base
 
     assert(Eval::ct_valid);
   
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       r = Eval::exec(A.block(), B.block());
-    t1.stop();
+    time = t1.elapsed();
 
-    if (r != T(3)*T(4))
-      abort();
-    
-    time = t1.delta();
+    test_assert(r == T(3)*T(4));
   }
 
   t_dot2() {}
@@ -150,7 +138,7 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {

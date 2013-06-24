@@ -15,14 +15,9 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
-#include <vsip_csl/profile.hpp>
-#include <vsip/opt/diag/fft.hpp>
+#include "benchmark.hpp"
 
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
-
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
 // Number of times.  Parameter to Fftm.
 //  1 - 12       - FFTW3 backend uses FFTW_ESTIMATE
@@ -91,17 +86,15 @@ struct t_fftm<T, Impl_op, SD> : Benchmark_base
 
     A = T(1);
     
-    vsip_csl::profile::Timer t1;
-   
     // Warm up call for the Fftm.  The initialization overhead begins to obscure
     //  performance numbers when the number of iterations is reduced in order to
     //  compensate for large Fftm sizes.
     fftm(A, Z);
  
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       fftm(A, Z);
-    t1.stop();
+    time = t1.elapsed();
     
     if (!equal(Z(0, 0), T(scale_ ? 1.0 : SD == row ? cols : rows)))
     {
@@ -111,8 +104,6 @@ struct t_fftm<T, Impl_op, SD> : Benchmark_base
 		<< std::endl;
       abort();
     }
-    
-    time = t1.delta();
   }
 
   void diag_rc(length_type rows, length_type cols)
@@ -170,17 +161,15 @@ struct t_fftm<T, Impl_ip, SD> : Benchmark_base
 
     A = T(0);
     
-    vsip_csl::profile::Timer t1;
-   
     // Warm up call for the Fftm.  The initialization overhead begins to obscure
     //  performance numbers when the number of iterations is reduced in order to
     //  compensate for large Fftm sizes.
     fftm(A);
  
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       fftm(A);
-    t1.stop();
+    time = t1.elapsed();
 
     A = T(1);
     fftm(A);
@@ -192,8 +181,6 @@ struct t_fftm<T, Impl_ip, SD> : Benchmark_base
       std::cout << "   expected: " << T(SD == row ? cols : rows) << std::endl;
       abort();
     }
-    
-    time = t1.delta();
   }
 
   void diag_rc(length_type /*rows*/, length_type /*cols*/)
@@ -236,27 +223,25 @@ struct t_fftm<T, Impl_pop, SD> : Benchmark_base
 
     A = T(1);
     
-    vsip_csl::profile::Timer t1;
-    
     if (SD == row)
     {
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
 	for (index_type i=0; i<rows; ++i)
 	{
 	  fft(A.row(i), Z.row(i));
 	}
-      t1.stop();
+      time = t1.elapsed();
     }
     else
     {
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
 	for (index_type i=0; i<cols; ++i)
 	{
 	  fft(A.col(i), Z.col(i));
 	}
-      t1.stop();
+      time = t1.elapsed();
     }
 
     if (!equal(Z(0, 0), T(SD == row ? cols : rows)))
@@ -267,8 +252,6 @@ struct t_fftm<T, Impl_pop, SD> : Benchmark_base
 		<< std::endl;
       abort();
     }
-    
-    time = t1.delta();
   }
 
   void diag_rc(length_type /*rows*/, length_type /*cols*/)
@@ -309,27 +292,25 @@ struct t_fftm<T, Impl_pip1, SD> : Benchmark_base
 
     A = T(0);
     
-    vsip_csl::profile::Timer t1;
-    
     if (SD == row)
     {
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
 	for (index_type i=0; i<rows; ++i)
 	  fft(A.row(i));
-      t1.stop();
-
+      time = t1.elapsed();
+      
       A = T(1);
       for (index_type i=0; i<rows; ++i)
 	fft(A.row(i));
     }
     else
     {
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
 	for (index_type i=0; i<cols; ++i)
 	  fft(A.col(i));
-      t1.stop();
+      time = t1.elapsed();
 
       A = T(1);
       for (index_type i=0; i<cols; ++i)
@@ -344,8 +325,6 @@ struct t_fftm<T, Impl_pip1, SD> : Benchmark_base
 		<< std::endl;
       abort();
     }
-    
-    time = t1.delta();
   }
 
   void diag_rc(length_type /*rows*/, length_type /*cols*/)
@@ -387,18 +366,16 @@ struct t_fftm<T, Impl_pip2, SD> : Benchmark_base
 
     A = T(0);
     
-    vsip_csl::profile::Timer t1;
-    
     if (SD == row)
     {
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
 	for (index_type i=0; i<rows; ++i)
 	{
 	  fft(A.row(i), tmp);
 	  A.row(i) = tmp;
 	}
-      t1.stop();
+      time = t1.elapsed();
 
       A = T(1);
       for (index_type i=0; i<rows; ++i)
@@ -409,14 +386,14 @@ struct t_fftm<T, Impl_pip2, SD> : Benchmark_base
     }
     else
     {
-      t1.start();
+      timer t1;
       for (index_type l=0; l<loop; ++l)
 	for (index_type i=0; i<cols; ++i)
 	{
 	  fft(A.col(i), tmp);
 	  A.col(i) = tmp;
 	}
-      t1.stop();
+      time = t1.elapsed();
 
       A = T(1);
       for (index_type i=0; i<cols; ++i)
@@ -434,8 +411,6 @@ struct t_fftm<T, Impl_pip2, SD> : Benchmark_base
 		<< std::endl;
       abort();
     }
-    
-    time = t1.delta();
   }
 
   void diag_rc(length_type /*rows*/, length_type /*cols*/)
@@ -479,21 +454,17 @@ struct t_fftm<T, Impl_bv, SD> : Benchmark_base
 
     A = T(1);
     
-    vsip_csl::profile::Timer t1;
-   
     // Warm up call for the Fftm.  The initialization overhead begins to obscure
     //  performance numbers when the number of iterations is reduced in order to
     //  compensate for large Fftm sizes.
     Z = fftm(A);
  
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = fftm(A);
-    t1.stop();
+    time = t1.elapsed();
     
     test_assert(equal(Z.get(0, 0), T(scale_ ? 1.0 : SD == row ? cols : rows)));
-    
-    time = t1.delta();
   }
 
   void diag_rc(length_type /*rows*/, length_type /*cols*/)
@@ -603,7 +574,7 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   length_type rows  = atoi(loop.param_["rows"].c_str());
   length_type size  = atoi(loop.param_["size"].c_str());

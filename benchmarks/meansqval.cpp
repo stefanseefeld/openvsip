@@ -14,25 +14,17 @@
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
-#include <vsip_csl/math.hpp>
 #include <vsip/random.hpp>
-#include <vsip/core/reductions/functors.hpp>
+#include <ovxx/reductions/functors.hpp>
+#include "benchmark.hpp"
 
-#include <vsip_csl/diagnostics.hpp>
-#include <vsip_csl/profile.hpp>
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
-
-#include "benchmarks.hpp"
-
-using namespace vsip;
-using namespace vsip_csl;
+using namespace ovxx;
 
 template <typename T>
 struct t_meansqval1 : Benchmark_base
 {
   char const* what() { return "t_meansqval_vector"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::add; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::add; }
   int riob_per_point(length_type) { return sizeof(T); }
   int wiob_per_point(length_type) { return 0; }
   int mem_per_point(length_type)  { return 1*sizeof(T); }
@@ -51,17 +43,13 @@ struct t_meansqval1 : Benchmark_base
     else if (init_ == 2)
       view(size-1) = T(size);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       val = vsip::meansqval(view);
-    t1.stop();
+    time = t1.elapsed();
 
     if (init_ == 1 || init_ == 2)
       test_assert(equal(val, T(size)));
-    
-    time = t1.delta();
   }
 
   t_meansqval1(int init) : init_(init) {}
@@ -74,7 +62,7 @@ template <typename T, typename R>
 struct t_meansqval1_ext_base : Benchmark_base
 {
   char const* what() { return "t_meansqval_ext_vector"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::add; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::add; }
   int riob_per_point(length_type) { return sizeof(T); }
   int wiob_per_point(length_type) { return 0; }
   int mem_per_point(length_type)  { return 1*sizeof(T); }
@@ -98,20 +86,16 @@ struct t_meansqval1_ext_base : Benchmark_base
       view(size-1) = T(256);
     }
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
-      val = vsip_csl::meansqval(view, R());
-    t1.stop();
+      val = meansqval(view, R());
+    time = t1.elapsed();
 
     if (init_ == 1 || init_ == 2)
       test_assert(equal(val, R(size)));
     else
     if (init_ == 3)
       test_assert(equal(val, R((2*2+256*256)/size)));
-    
-    time = t1.delta();
   }
 
   t_meansqval1_ext_base(int init) : init_(init) {}
@@ -144,7 +128,7 @@ struct t_meansqval_matrix : Benchmark_base
   char const* what() { return "t_meansqval_matrix"; }
   int ops_per_point(length_type)
   { 
-    return rows_ * (vsip::impl::Ops_info<T>::add + vsip::impl::Ops_info<T>::mul);
+    return rows_ * (ovxx::ops_count::traits<T>::add + ovxx::ops_count::traits<T>::mul);
   }
   int riob_per_point(length_type) { return sizeof(T); }
   int wiob_per_point(length_type) { return 0; }
@@ -159,12 +143,10 @@ struct t_meansqval_matrix : Benchmark_base
     
     view(0, 1) = itm;
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       val = vsip::meansqval(view);
-    t1.stop();
+    time = t1.elapsed();
     
     if (!equal(val, ans))
       std::cout << "t_meansqval: ERROR, val=" << val << ", size=" << size
@@ -172,8 +154,6 @@ struct t_meansqval_matrix : Benchmark_base
 	<< ", itm=" << itm
 	<< "\n";
     test_assert(equal(val, ans));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -185,17 +165,11 @@ struct t_meansqval_matrix : Benchmark_base
 
     Matrix<T>   A(rows, cols, T());
     typedef typename Matrix<T>::block_type block_type;
-    typedef typename vsip::impl::Mean_magsq_value<T>::result_type result_type;
-    typedef typename dispatcher::op::reduce<vsip::impl::Mean_magsq_value> op_type;
+    typedef typename Mean_magsq_value<T>::result_type result_type;
+    typedef typename dispatcher::op::reduce<Mean_magsq_value> op_type;
     result_type r;
 
-    dispatch_diagnostics<
-        op_type, void,
-        result_type&,
-        block_type const&,
-        row2_type,
-        vsip::impl::Int_type<2> >
-      (r, A.block(), row2_type(), vsip::impl::Int_type<2>());
+    // TBD
   }
 
 
@@ -217,7 +191,7 @@ template <typename T>
 struct t_meansqval_gp : Benchmark_base
 {
   char const* what() { return "t_meansqval_gp"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::add; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::add; }
   int riob_per_point(length_type) { return sizeof(T); }
   int wiob_per_point(length_type) { return 0; }
   int mem_per_point(length_type)  { return 1*sizeof(T); }
@@ -236,9 +210,7 @@ struct t_meansqval_gp : Benchmark_base
     else if (init_ == 2)
       view(size-1) = T(size);
     
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       val = T();
@@ -246,12 +218,10 @@ struct t_meansqval_gp : Benchmark_base
 	val += view.get(i)*view.get(i);
       val /= size;
     }
-    t1.stop();
+    time = t1.elapsed();
 
     if (init_ == 1 || init_ == 2)
       test_assert(equal(val, T(size)));
-    
-    time = t1.delta();
   }
 
   t_meansqval_gp(int init) : init_(init) {}
@@ -272,7 +242,7 @@ defaults(Loop1P& loop)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   length_type rows = atoi(loop.param_["rows"].c_str());
 
@@ -287,8 +257,8 @@ test(Loop1P& loop, int what)
   case  21: loop(t_meansqval_gp<float>(0)); break;
 
   case  31: loop(t_meansqval1<unsigned short>(0)); break;
-  case  32: loop(t_meansqval1_ext<unsigned short>(0)); break;
-  case  33: loop(t_meansqval1_ext_help<unsigned long>::t_meansqval1_ext<unsigned short>(3)); break;
+  // case  32: loop(t_meansqval1_ext<unsigned short>(0)); break;
+  // case  33: loop(t_meansqval1_ext_help<unsigned long>::t_meansqval1_ext<unsigned short>(3)); break;
 
   case 101: loop(t_meansqval_matrix<float>(rows)); break;
   case 102: loop(t_meansqval_matrix<std::complex<float> >(rows)); break;

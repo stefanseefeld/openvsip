@@ -103,7 +103,7 @@ prod_check(
   vsip::Matrix<T, Block3> c)
 {
   using vsip::index_type;
-  typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+  typedef typename ovxx::scalar_of<T>::type scalar_type;
 
   assert(a.size(0) == c.size(0));
   assert(b.size(1) == c.size(1));

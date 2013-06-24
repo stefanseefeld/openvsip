@@ -15,12 +15,9 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-#include <vsip/core/metaprogramming.hpp>
-#include <vsip_csl/diagnostics.hpp>
+#include "../benchmark.hpp"
 
-#include "../benchmarks.hpp"
-
-using namespace vsip;
+using namespace ovxx;
 
 
 /***********************************************************************
@@ -30,23 +27,22 @@ using namespace vsip;
 template <typename T>
 struct t_vmagsq1 : Benchmark_base
 {
-  typedef typename impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   char const* what() { return "t_vmagsq1"; }
   int ops_per_point(length_type)
   {
-    if (impl::is_complex<T>::value)
-      return 2*vsip::impl::Ops_info<scalar_type>::mul + 
-        vsip::impl::Ops_info<scalar_type>::add;
+    if (is_complex<T>::value)
+      return 2*ovxx::ops_count::traits<scalar_type>::mul + 
+        ovxx::ops_count::traits<scalar_type>::add;
     else
-      return vsip::impl::Ops_info<T>::mul;
+      return ovxx::ops_count::traits<T>::mul;
   }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<T>           A(size, T());
     Vector<scalar_type> Z(size);
@@ -56,17 +52,13 @@ struct t_vmagsq1 : Benchmark_base
 
     A.put(0, T(3));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = magsq(A);
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(Z.get(i), magsq(A.get(i))));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -75,7 +67,7 @@ struct t_vmagsq1 : Benchmark_base
     Vector<T>           A(size, T());
     Vector<scalar_type> Z(size);
 
-    vsip_csl::assign_diagnostics(Z, magsq(A));
+    std::cout << ovxx::assignment::diagnostics(Z, magsq(A)) << std::endl;
   }
 };
 
@@ -84,23 +76,22 @@ struct t_vmagsq1 : Benchmark_base
 template <typename T>
 struct t_vmag1 : Benchmark_base
 {
-  typedef typename impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   char const* what() { return "t_vmag1"; }
   int ops_per_point(length_type)
   {
-    if (impl::is_complex<T>::value)
-      return 2*vsip::impl::Ops_info<scalar_type>::mul + 
-        vsip::impl::Ops_info<scalar_type>::add;
+    if (is_complex<T>::value)
+      return 2*ovxx::ops_count::traits<scalar_type>::mul + 
+        ovxx::ops_count::traits<scalar_type>::add;
     else
-      return vsip::impl::Ops_info<T>::mul;
+      return ovxx::ops_count::traits<T>::mul;
   }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<T>           A(size, T());
     Vector<scalar_type> Z(size);
@@ -110,17 +101,13 @@ struct t_vmag1 : Benchmark_base
 
     A.put(0, T(3));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = mag(A);
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(Z.get(i), mag(A.get(i))));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -129,7 +116,7 @@ struct t_vmag1 : Benchmark_base
     Vector<T>           A(size, T());
     Vector<scalar_type> Z(size);
 
-    vsip_csl::assign_diagnostics(Z, mag(A));
+    std::cout << ovxx::assignment::diagnostics(Z, mag(A)) << std::endl;
   }
 };
 
@@ -138,25 +125,24 @@ struct t_vmag1 : Benchmark_base
 template <typename T>
 struct t_vmag_dense_mat : Benchmark_base
 {
-  typedef typename impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   static length_type const rows = 2;
 
   char const* what() { return "t_vmag_dense_mat"; }
   int ops_per_point(length_type)
   {
-    if (impl::is_complex<T>::value)
-      return rows * (2*vsip::impl::Ops_info<scalar_type>::mul + 
-		     vsip::impl::Ops_info<scalar_type>::add);
+    if (is_complex<T>::value)
+      return rows * (2*ovxx::ops_count::traits<scalar_type>::mul + 
+		     ovxx::ops_count::traits<scalar_type>::add);
     else
-      return rows * vsip::impl::Ops_info<T>::mul;
+      return rows * ovxx::ops_count::traits<T>::mul;
   }
   int riob_per_point(length_type) { return rows*2*sizeof(T); }
   int wiob_per_point(length_type) { return rows*1*sizeof(T); }
   int mem_per_point(length_type)  { return rows*3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Matrix<T>           A(rows, size, T());
     Matrix<scalar_type> Z(rows, size);
@@ -166,18 +152,14 @@ struct t_vmag_dense_mat : Benchmark_base
 
     A.put(0, 0, T(3));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = mag(A);
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type r=0; r<rows; ++r)
       for (index_type i=0; i<size; ++i)
 	test_assert(equal(Z.get(r, i), mag(A.get(r, i))));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -186,7 +168,7 @@ struct t_vmag_dense_mat : Benchmark_base
     Matrix<T>           A(rows, size, T());
     Matrix<scalar_type> Z(rows, size);
 
-    vsip_csl::assign_diagnostics(Z, mag(A));
+    std::cout << ovxx::assignment::diagnostics(Z, mag(A)) << std::endl;
   }
 };
 
@@ -195,25 +177,24 @@ struct t_vmag_dense_mat : Benchmark_base
 template <typename T>
 struct t_vmag_nondense_mat : Benchmark_base
 {
-  typedef typename impl::scalar_of<T>::type scalar_type;
+  typedef typename scalar_of<T>::type scalar_type;
 
   static length_type const rows = 2;
 
   char const* what() { return "t_vmag_nondense_mat"; }
   int ops_per_point(length_type)
   {
-    if (impl::is_complex<T>::value)
-      return rows * (2*vsip::impl::Ops_info<scalar_type>::mul + 
-		     vsip::impl::Ops_info<scalar_type>::add);
+    if (is_complex<T>::value)
+      return rows * (2*ovxx::ops_count::traits<scalar_type>::mul + 
+		     ovxx::ops_count::traits<scalar_type>::add);
     else
-      return rows * vsip::impl::Ops_info<T>::mul;
+      return rows * ovxx::ops_count::traits<T>::mul;
   }
   int riob_per_point(length_type) { return rows*2*sizeof(T); }
   int wiob_per_point(length_type) { return rows*1*sizeof(T); }
   int mem_per_point(length_type)  { return rows*3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Matrix<T>           Asup(rows, size + 16, T());
     Matrix<scalar_type> Zsup(rows, size + 16);
@@ -226,18 +207,14 @@ struct t_vmag_nondense_mat : Benchmark_base
 
     A.put(0, 0, T(3));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       Z = mag(A);
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type r=0; r<rows; ++r)
       for (index_type i=0; i<size; ++i)
 	test_assert(equal(Z.get(r, i), mag(A.get(r, i))));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -250,21 +227,14 @@ struct t_vmag_nondense_mat : Benchmark_base
     typename Matrix<T>::subview_type A = Asup(Domain<2>(rows, size));
     typename Matrix<T>::subview_type Z = Zsup(Domain<2>(rows, size));
 
-    vsip_csl::assign_diagnostics(Z, mag(A));
+    std::cout << ovxx::assignment::diagnostics(Z, mag(A)) << std::endl;
   }
 };
 
-
-
-void
-defaults(Loop1P&)
-{
-}
-
-
+void defaults(Loop1P&) {}
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {

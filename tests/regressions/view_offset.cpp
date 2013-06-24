@@ -22,16 +22,9 @@
 #include <vsip/matrix.hpp>
 #include <vsip/domain.hpp>
 #include <vsip/random.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace vsip;
-using namespace vsip_csl;
-
-
-/***********************************************************************
-  Definitions - Utility Functions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T>
 void
@@ -58,7 +51,7 @@ test_vadd(
 
   for (index_type i=0; i<len; ++i)
   {
-    test_assert(Almost_equal<T>::eq(Z.get(i), A.get(i) + B.get(i)));
+    test_assert(equal(Z.get(i), A.get(i) + B.get(i)));
   }
 }
 
@@ -72,7 +65,7 @@ test_vma_cSC(
   length_type offset2,
   length_type offset3)
 {
-  typedef typename vsip::impl::scalar_of<T>::type ST;
+  typedef typename scalar_of<T>::type ST;
 
   Rand<ST> rgen(0, 0);
   Rand<T>  cgen(0, 0);
@@ -93,7 +86,7 @@ test_vma_cSC(
 
   for (index_type i=0; i<len; ++i)
   {
-    test_assert(Almost_equal<T>::eq(Z.get(i), a * B.get(i) + C.get(i)));
+    test_assert(equal(Z.get(i), a * B.get(i) + C.get(i)));
   }
 }
 
@@ -132,7 +125,7 @@ test_vmul(
 		<< A(i) * B(i) << std::endl;
     }
 #endif
-    test_assert(Almost_equal<T>::eq(Z.get(i), A.get(i) * B.get(i)));
+    test_assert(equal(Z.get(i), A.get(i) * B.get(i)));
   }
 }
 
@@ -164,7 +157,7 @@ test_vthresh(
 
   for (index_type i=0; i<len; ++i)
   {
-    test_assert(Almost_equal<T>::eq(Z.get(i), A.get(i) > B.get(i) ? A.get(i) : k));
+    test_assert(equal(Z.get(i), A.get(i) > B.get(i) ? A.get(i) : k));
   }
 }
 

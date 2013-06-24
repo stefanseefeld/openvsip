@@ -17,10 +17,7 @@
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
 #include <vsip/selgen.hpp>
-#include <vsip_csl/assignment.hpp>
-#include <vsip_csl/diagnostics.hpp>
-
-#include "../benchmarks.hpp"
+#include "../benchmark.hpp"
 
 using namespace vsip;
 
@@ -34,13 +31,12 @@ template <typename T>
 struct t_vadd1_nonglobal : Benchmark_base
 {
   char const* what() { return "t_vadd1_nonglobal"; }
-  int ops_per_point(length_type)  { return vsip::impl::Ops_info<T>::add; }
+  int ops_per_point(length_type)  { return ovxx::ops_count::traits<T>::add; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     typedef Dense<1, T, row1_type, Local_map> block_type;
 
@@ -55,17 +51,13 @@ struct t_vadd1_nonglobal : Benchmark_base
     A.put(0, T(3));
     B.put(0, T(4));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = A + B;
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), A.get(i) + B.get(i)));
-    
-    time = t1.delta();
   }
 };
 
@@ -82,7 +74,7 @@ defaults(Loop1P&)
 
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {

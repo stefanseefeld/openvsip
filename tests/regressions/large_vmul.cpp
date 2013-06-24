@@ -16,23 +16,16 @@
 #include <vsip/support.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/random.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace vsip;
-using vsip_csl::equal;
-using vsip_csl::almost_equal;
-
-/***********************************************************************
-  Definitions - Utility Functions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T, storage_format_type C>
 void
 test_vmul(length_type size)
 {
   typedef Layout<1, row1_type, dense, C> LP;
-  typedef impl::Strided<1, T, LP> block_type;
+  typedef Strided<1, T, LP> block_type;
 
   Vector<T, block_type> A(size, T(3));
   Vector<T, block_type> B(size, T(4));
@@ -54,7 +47,7 @@ test_vmul(length_type size)
       std::cout << "A(i) * B(i) = " << A(i) * B(i) << std::endl;
     }
 #endif
-    test_assert(almost_equal(Z.get(i), A(i) * B(i)));
+    test_assert(equal(Z.get(i), A(i) * B(i)));
   }
 }
 
@@ -70,7 +63,7 @@ main(int argc, char** argv)
   test_vmul<complex<float>, interleaved_complex>(2048+16+1);
 
   // Hit stride bug for CBE float backend (081224)
-  test_vmul<float, interleaved_complex>(65536);
+  test_vmul<float, array>(65536);
   test_vmul<complex<float>, interleaved_complex>(65536);
   test_vmul<complex<float>, split_complex>(65536);
 }

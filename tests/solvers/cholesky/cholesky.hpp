@@ -154,7 +154,7 @@ test_chold_diag(
   test_assert(success);
 
   for (index_type i=0; i<p; ++i)
-    b.col(i) = test_ramp(T(1), T(i), n);
+    b.col(i) = test::ramp(T(1), T(i), n);
   if (p > 1)
     b.col(1) += Test_traits<T>::offset();
 
@@ -190,7 +190,7 @@ test_chold_random(
   // 1. Construct a symmetric/hermetian positive-definite A by "cross-product"
   //     - A = W' W
 
-  randm(w);
+  test::randm(w);
 
   prodh(w, w, a);
 
@@ -218,7 +218,7 @@ test_chold_random(
 
   // 3. Solve A X = B.
 
-  randm(b);
+  test::randm(b);
 
   chol.solve(b, x);
 
@@ -298,7 +298,7 @@ test_chold_file(
 
   // 3. Solve A X = B.
 
-  randm(b);
+  test::randm(b);
 
   chol.solve(b, x);
 

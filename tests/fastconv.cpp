@@ -11,17 +11,9 @@
 #include <vsip/math.hpp>
 #include <vsip/selgen.hpp>
 #include <vsip/signal.hpp>
-#include <vsip_csl/error_db.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
-#if VSIP_IMPL_CBE_SDK
-#include <vsip/opt/cbe/ppu/fastconv.hpp>
-#endif
+#include <test.hpp>
 
-using namespace vsip;
-using vsip_csl::equal;
-using vsip_csl::error_db;
-using vsip_csl::operator<<;
+using namespace ovxx;
 
 length_type const multi = 16;
 
@@ -346,66 +338,6 @@ private:
   inv_fftm_type inv_fftm_;
 };
 
-#if VSIP_IMPL_CBE_SDK
-// Both of the direct methods perform multiple convolutions.
-// In the second case, the weights are unique for each row as well, so
-// they are passed as a matrix rather than a vector.
-
-template <typename T,
-          bool     W>  // pre-transform weights 
-class Fast_convolution<std::complex<T>, direct_vmmul<W> >
-{
-  typedef std::complex<T> value_type;
-public:
-  template <typename B>
-  Fast_convolution(Vector<value_type, B> weights)
-  // Note the third parameter indicates the opposite of W, i.e. whether
-  // or not the Fastconv object needs to do the transform.
-    : fastconv_((W ? t2f(weights) : weights), weights.size(0), !W)
-  {}
-
-  template <typename Block1, typename Block2>
-  void operator()(const_Vector<value_type, Block1> in,
-                  Vector<value_type, Block2> out)
-  {
-    fastconv_(in, out);
-  }
-
-  template <typename Block1, typename Block2>
-  void operator()(const_Matrix<value_type, Block1> in,
-                  Matrix<value_type, Block2> out)
-  {
-    fastconv_(in, out);
-  }
-
-private:
-  vsip::impl::cbe::Fastconv<1, value_type, vsip::impl::dense_complex_format> fastconv_;
-};
-
-
-template <typename T,
-          bool     W>  // pre-transform weights 
-class Fast_convolution<std::complex<T>, direct_mmmul<W> >
-{
-  typedef std::complex<T> value_type;
-public:
-  template <typename B>
-  Fast_convolution(Matrix<value_type, B> weights)
-    : fastconv_((W ? t2f(weights) : weights), weights.size(1), !W)
-  {}
-
-  template <typename Block1, typename Block2>
-  void operator()(const_Matrix<value_type, Block1> in,
-                  Matrix<value_type, Block2> out)
-  {
-    fastconv_(in, out);
-  }
-
-private:
-  vsip::impl::cbe::Fastconv<2, value_type, vsip::impl::dense_complex_format> fastconv_;
-};
-#endif
-
 template <typename O, typename B, typename T>
 void test_shift(Domain<1> const &dom, length_type shift, T scale)
 {
@@ -421,7 +353,7 @@ void test_shift(Domain<1> const &dom, length_type shift, T scale)
     input.row(r) = ramp(0., 1., dom.size());
   Matrix<T, Dense<2, T, O> > output(multi, dom.size());
   fconv(input, output);
-  double error = error_db
+  double error = test::diff
     (scale * input(Domain<2>(multi, (Domain<1>(0, 1, dom.size() - shift)))),
      output(Domain<2>(multi, (Domain<1>(shift, 1, dom.size() - shift)))));
   if (error >= -100)
@@ -449,7 +381,7 @@ void test_shift_v(Domain<1> const &dom, length_type shift, T scale)
   Matrix<T, Dense<2, T, O> > output(dom.size(), dom.size());
   for (size_t r = 0; r != dom.size(); ++r)  
     fconv(input.row(r), output.row(r));
-  double error = error_db
+  double error = test::diff
     (scale * input(Domain<2>(dom.size(), (Domain<1>(0, 1, dom.size() - shift)))),
      output(Domain<2>(dom.size(), (Domain<1>(shift, 1, dom.size() - shift)))));
   if (error >= -100)
@@ -482,7 +414,7 @@ void test_shift_m(Domain<1> const &dom, length_type shift, T scale)
   Matrix<T> reference(input);
   for (index_type i = 0; i < dom.size(); ++i)
     reference.row(i) *= (scale * (1 + i * ds));
-  double error = error_db(
+  double error = test::diff(
     reference(Domain<2>(dom.size(), (Domain<1>(0, 1, dom.size() - shift)))),
     output(Domain<2>(dom.size(), (Domain<1>(shift, 1, dom.size() - shift)))));
   if (error >= -100)
@@ -519,13 +451,4 @@ int main(int argc, char **argv)
   //    - multiple rows at a time, fft() * coeffs order
   test_shift_m<row2_type, fused_m_multi<1> >(64, 2, std::complex<float>(2.));
   test_shift_m<row2_type, fused_m_multi<1> >(64, 2, float(2.));
-
-#if VSIP_IMPL_CBE_SDK
-  test_shift<row2_type, direct_vmmul<false> >(64, 2, std::complex<float>(0.5));
-  test_shift<row2_type, direct_vmmul<true> >(64, 2, std::complex<float>(0.5));
-  test_shift_v<row2_type, direct_vmmul<false> >(64, 2, std::complex<float>(0.5));
-  test_shift_v<row2_type, direct_vmmul<true> >(64, 2, std::complex<float>(0.5));
-  test_shift_m<row2_type, direct_mmmul<false> >(64, 2, std::complex<float>(0.5));
-  test_shift_m<row2_type, direct_mmmul<true> >(64, 2, std::complex<float>(0.5));
-#endif
 }

@@ -10,34 +10,27 @@
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/tensor.hpp>
-#include <vsip/core/strided.hpp>
+#include <ovxx/strided.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <storage_format_type C, dimension_type Dim>
 void
-test(stride_type        component_stride,
+run_test(stride_type        component_stride,
      Domain<Dim> const& dom)
 {
   typedef complex<float> T;
 
   typedef Layout<Dim, row1_type, dense, C> layout_type;
-  typedef impl::Strided<Dim, T, layout_type> block_type;
-  typedef typename impl::view_of<block_type>::type view_type;
+  typedef Strided<Dim, T, layout_type> block_type;
+  typedef typename view_of<block_type>::type view_type;
 
   block_type block(dom);
   view_type  view(block);
 
 
-  dda::Data<block_type, dda::inout> ext(view.block());
+  vsip::dda::Data<block_type, vsip::dda::inout> ext(view.block());
   test_assert(ext.cost()        == 0);
   test_assert(ext.stride(Dim-1) == 1);
 
@@ -51,7 +44,7 @@ test(stride_type        component_stride,
 
   typename view_type::realview_type real = view.real();
 
-  dda::Data<typename view_type::realview_type::block_type, dda::inout>
+  vsip::dda::Data<typename view_type::realview_type::block_type, vsip::dda::inout>
     extr(real.block());
 
   test_assert(extr.cost()    == 0);
@@ -68,7 +61,7 @@ test(stride_type        component_stride,
 
   typename view_type::imagview_type imag = view.imag();
 
-  dda::Data<typename view_type::imagview_type::block_type, dda::inout>
+  vsip::dda::Data<typename view_type::imagview_type::block_type, vsip::dda::inout>
     exti(imag.block());
 
   test_assert(exti.cost()    == 0);
@@ -88,12 +81,12 @@ int
 main()
 {
   vsip::vsipl init;
-  test<interleaved_complex>(2, Domain<1>(5));
-  test<split_complex>(1, Domain<1>(5));
+  run_test<interleaved_complex>(2, Domain<1>(5));
+  run_test<split_complex>(1, Domain<1>(5));
 
-  test<interleaved_complex>(2, Domain<2>(5, 7));
-  test<split_complex>(1, Domain<2>(5, 7));
+  run_test<interleaved_complex>(2, Domain<2>(5, 7));
+  run_test<split_complex>(1, Domain<2>(5, 7));
 
-  test<interleaved_complex>(2, Domain<3>(5, 7, 9));
-  test<split_complex>(1, Domain<3>(5, 7, 9));
+  run_test<interleaved_complex>(2, Domain<3>(5, 7, 9));
+  run_test<split_complex>(1, Domain<3>(5, 7, 9));
 }

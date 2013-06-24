@@ -11,17 +11,9 @@
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/vector.hpp>
-#include <vsip/core/us_block.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 template <typename T>
 struct put_block
@@ -46,19 +38,9 @@ struct derived_block : put_block<float>
 void
 test_modifiable_1()
 {
-  using vsip::impl::is_modifiable_block;
-  using vsip::impl::Strided;
-  using vsip::impl::Us_block;
-  using vsip::impl::Dense_storage;
-  using vsip::interleaved_complex;
 
   test_assert((is_modifiable_block<Dense<1, float> >::value == true));
   test_assert((is_modifiable_block<Strided<1, float> >::value == true));
-
-  test_assert((is_modifiable_block<Us_block<1, float> >::value == true));
-  test_assert((is_modifiable_block<Us_block<1, complex<float> > >::value == true));
-  test_assert((is_modifiable_block<Us_block<2, float> >::value == true));
-  // test_assert((is_modifiable_block<Us_block<3, complex<float> > >::value == true));
 
   // Has_modifiable mostly does the right thing on its own.
   test_assert((is_modifiable_block<noput_block<float> >::value == false));
@@ -74,7 +56,6 @@ template <typename ViewT>
 void
 check_modifiable(ViewT, bool modifiable)
 {
-  using vsip::impl::is_modifiable_block;
   test_assert((is_modifiable_block<typename ViewT::block_type>::value ==
 	  modifiable));
 }

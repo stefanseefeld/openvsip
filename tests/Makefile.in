@@ -14,7 +14,13 @@ include ../config.mk
 # build instructions
 include ../rules.mk
 
-pkgconfig := PKG_CONFIG_PATH=$(libdir)/pkgconfig pkg-config vsipl++ \
+ifdef variant
+ovxx := ovxx-$(variant)
+else
+ovxx := ovxx
+endif
+
+pkgconfig := PKG_CONFIG_PATH=$(libdir)/pkgconfig pkg-config $(ovxx) \
                --define-variable=prefix=$(prefix) \
                --define-variable=libdir=$(libdir)
 
@@ -38,21 +44,21 @@ run_ident :=-a run_id=$(run_id)
 endif
 
 # The number of processors to use for parallel tests.
-mpi_num_processors := 1
+mpi_num_processors := 2
 
 define make_context_installed
 @echo generating context-installed
-	cat $(srcdir)/../support/context-installed.pre | \
-          sed -e "s|@CC_@|`$(tests_pkgconfig) --variable=cc`|" | \
-          sed -e "s|@CXX_@|`$(tests_pkgconfig) --variable=cxx`|" | \
-	  sed -e "s|@CPPFLAGS_@|`$(tests_pkgconfig) --variable=cppflags`|" | \
-          sed -e "s|@CFLAGS_@|`$(tests_pkgconfig) --variable=cflags`|" | \
-          sed -e "s|@CXXFLAGS_@|`$(tests_pkgconfig) --variable=cxxflags`|" | \
-          sed -e "s|@LIBS_@|`$(tests_pkgconfig) --libs`|" | \
-          sed -e "s|@QMTEST_TARGET_@|`$(tests_pkgconfig) --variable=qmtest_target`|" | \
-          sed -e "s|@MPI_BOOT_@|`$(tests_pkgconfig) --variable=mpi_boot`|" | \
-          sed -e "s|@MPI_HALT_@|`$(tests_pkgconfig) --variable=mpi_halt`|" | \
-          sed -e "s|@MPI_RUN_@|`$(tests_pkgconfig) --variable=mpi_run`|" | \
+	cat ../support/context-installed.pre | \
+          sed -e "s|@CC_@|`$(pkgconfig) --variable=cc`|" | \
+          sed -e "s|@CXX_@|`$(pkgconfig) --variable=cxx`|" | \
+	  sed -e "s|@CPPFLAGS_@|`$(pkgconfig) --variable=cppflags`|" | \
+          sed -e "s|@CFLAGS_@|`$(pkgconfig) --variable=cflags`|" | \
+          sed -e "s|@CXXFLAGS_@|`$(pkgconfig) --variable=cxxflags`|" | \
+          sed -e "s|@LIBS_@|`$(pkgconfig) --libs`|" | \
+          sed -e "s|@QMTEST_TARGET_@|`$(pkgconfig) --variable=qmtest_target`|" | \
+          sed -e "s|@MPI_BOOT_@|`$(pkgconfig) --variable=mpi_boot`|" | \
+          sed -e "s|@MPI_HALT_@|`$(pkgconfig) --variable=mpi_halt`|" | \
+          sed -e "s|@MPI_RUN_@|`$(pkgconfig) --variable=mpi_run`|" | \
           sed -e "s|@MPI_NUM_PROCS_@|$(mpi_num_processors)|" \
           > context-installed
 endef

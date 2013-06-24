@@ -48,44 +48,34 @@
 
 #include <vsip/initfin.hpp>
 #include <vsip/dense.hpp>
-#include <vsip/core/lvalue_proxy.hpp>
-#include <vsip/core/static_assert.hpp>
-#include <vsip/core/metaprogramming.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 void
 function_value(complex<float> value)
 {
-  assert(value == complex<float>(1.0, -1.0));
+  test_assert(value == complex<float>(1.0, -1.0));
 }
 
 void
 function_cref(complex<float> const& value)
 {
-  assert(value == complex<float>(1.0, -1.0));
+  test_assert(value == complex<float>(1.0, -1.0));
 }
 
 template <typename T>
 void
 function_template_value(complex<T> value)
 {
-  assert(value == complex<T>(1.0, -1.0));
+  test_assert(value == complex<T>(1.0, -1.0));
 }
 
 template <typename T>
 void
 function_template_cref(complex<T> const& value)
 {
-  assert(value == complex<T>(1.0, -1.0));
+  test_assert(value == complex<T>(1.0, -1.0));
 }
 
 
@@ -97,7 +87,7 @@ test_fun()
 
   Dense<1, complex<float> > d(Domain<1>(size), complex<float> (42));
 
-  impl::Lvalue_proxy<complex<float> , Dense<1, complex<float> >, 1> p(d, 1);
+  element_proxy<Dense<1, complex<float> >, 1> p(d, 1);
 
   complex<float> a = complex<float>(1.0, -1.0);
 
@@ -110,8 +100,8 @@ test_fun()
 
   function_value(p);
   function_cref(p);
-  function_template_value(p);
-  function_template_cref(p);
+  function_template_value<float>(p);
+  function_template_cref<float>(p);
 }
 
 

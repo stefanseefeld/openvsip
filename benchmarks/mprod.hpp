@@ -9,8 +9,8 @@
 /// Description
 ///   VSIPL++ Library: Matrix product benchmark base class
 
-#ifndef BENCHMARKS_MPROD_HPP
-#define BENCHMARKS_MPROD_HPP
+#ifndef mprod_hpp_
+#define mprod_hpp_
 
 #include <vsip/support.hpp>
 
@@ -22,7 +22,7 @@ struct t_mprod_base : Benchmark_base
   float ops_total(vsip::length_type M, vsip::length_type N, vsip::length_type P)
   {
     float ops = M * N * P * 
-      (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+      (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops;
   }
@@ -37,4 +37,4 @@ struct t_mprod_base : Benchmark_base
     { return riob_total(M, N, P) + wiob_total(M, P); } 
 };
 
-#endif // BENCHMARKS_MPROD_HPP
+#endif

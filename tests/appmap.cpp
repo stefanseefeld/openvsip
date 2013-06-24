@@ -10,26 +10,11 @@
 #include <vsip/map.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/initfin.hpp>
-#include <vsip/core/length.hpp>
-#include <vsip/core/domain_utils.hpp>
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/output.hpp>
+#include <ovxx/length.hpp>
+#include <ovxx/domain_utils.hpp>
+#include <test.hpp>
 
-using namespace std;
-using namespace vsip;
-
-using vsip::impl::Length;
-using vsip::impl::extent;
-using vsip::impl::valid;
-using vsip::impl::next;
-using vsip::impl::domain_nth;
-
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
-
+using namespace ovxx;
 
 /// Get the nth index in a domain.
 
@@ -60,17 +45,16 @@ create_pvec(
 
 template <typename MapT>
 void
-dump_appmap(
-  std::ostream&          out,
-  MapT const&            map,
-  Vector<processor_type> pvec)
+dump_appmap(std::ostream&          out,
+	    MapT const&            map,
+	    Vector<processor_type> pvec)
 {
   out << "App_map:\n"
       << "   Dim: (" << map.num_subblocks(0) << " x "
                      << map.num_subblocks(1) << " x "
                      << map.num_subblocks(2) << ")\n"
       << "-----------"
-      << endl;
+      << std::endl;
 
   for (index_type pi=0; pi<pvec.size(); ++pi)
   {
@@ -86,7 +70,7 @@ dump_appmap(
 	out << "  pr=" << pr << "  sb=" << sb << " patch=" << p
 	    << "  gdom=" << gdom
 	    << "  ldom=" << ldom
-	    << endl;
+	    << std::endl;
       }
     }
   }

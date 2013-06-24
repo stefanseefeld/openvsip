@@ -13,20 +13,9 @@
 #include <vsip/support.hpp>
 #include <vsip/domain.hpp>
 #include <vsip/dense.hpp>
-#include <vsip/core/subblock.hpp>
-#include <vsip_csl/test.hpp>
+#include <test.hpp>
 
-using namespace vsip_csl;
-
-using vsip::dimension_type;
-using vsip::index_type;
-using vsip::Domain;
-using vsip::Dense;
-using vsip::impl::Subset_block;
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 // The purpose of this class is to allow overloading the ramp and
 // verify_ramp functions on the block's dimension.
@@ -73,7 +62,7 @@ template <typename T>
 void test_slices_1d(void)
 {
   typedef Dense<1,T> D1T;
-  typedef Subset_block<D1T> SD1T;
+  typedef expr::Subset<D1T> SD1T;
   
   D1T block(Domain<1>(2*3*5*7));  block.increment_count();
 
@@ -94,7 +83,7 @@ template <typename T>
 void test_subset_write_1d(void)
 {
   typedef Dense<1,T> D1T;
-  typedef Subset_block<D1T> SD1T;
+  typedef expr::Subset<D1T> SD1T;
 
   D1T block(Domain<1>(50)); block.increment_count();
 

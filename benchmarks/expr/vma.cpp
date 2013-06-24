@@ -9,22 +9,13 @@
 /// Description
 ///   Benchmark for fused multiply-add and variants such as axpy.
 
-#define DO_SIMD 0
-
 #include <iostream>
 
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-#if DO_SIMD
-#  include <vsip/opt/simd/simd.hpp>
-#  include <vsip/opt/simd/vaxpy.hpp>
-#endif
-#include <vsip_csl/diagnostics.hpp>
-
-#include <vsip_csl/test-storage.hpp>
-#include "../benchmarks.hpp"
+#include "../benchmark.hpp"
 
 
 using namespace vsip;
@@ -82,42 +73,37 @@ struct t_vma : Benchmark_base
 {
   char const* what() { return "t_vma"; }
   int ops_per_point(length_type)
-    { return vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add; }
+    { return ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
-    Storage<DimA, T> A(Domain<1>(size), T(3));
-    Storage<DimB, T> B(Domain<1>(size), T(4));
-    Storage<DimC, T> C(Domain<1>(size), T(5));
+    Vector<T> A(size, T(3));
+    Vector<T> B(size, T(4));
+    Vector<T> C(size, T(5));
     Vector<T>        X(size, T(0));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
-      X = A.view * B.view + C.view;
-    t1.stop();
+      X = A * B + C;
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(X.get(i), T(3*4+5)));
-    
-    time = t1.delta();
   }
 
   void diag()
   {
     length_type const size = 256;
 
-    Storage<DimA, T> A(Domain<1>(size), T(3));
-    Storage<DimB, T> B(Domain<1>(size), T(4));
-    Storage<DimC, T> C(Domain<1>(size), T(5));
+    Vector<T> A(size, T(3));
+    Vector<T> B(size, T(4));
+    Vector<T> C(size, T(5));
     Vector<T>        X(size, T(0));
 
-    vsip_csl::assign_diagnostics(X, A.view * B.view + C.view);
+    std::cout << ovxx::assignment::diagnostics(X, A * B + C) << std::endl;
   }
 };
 
@@ -129,43 +115,38 @@ struct t_vma_fcn : Benchmark_base
 {
   char const* what() { return "t_vma_fcn"; }
   int ops_per_point(length_type)
-    { return vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add; }
+    { return ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
-    Storage<DimA, T> A(Domain<1>(size), T(3));
-    Storage<DimB, T> B(Domain<1>(size), T(4));
-    Storage<DimC, T> C(Domain<1>(size), T(5));
+    Vector<T> A(size, T(3));
+    Vector<T> B(size, T(4));
+    Vector<T> C(size, T(5));
     Vector<T>        X(size, T(0));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
-//    X = A.view * B.view + C.view;
-      X = ma(A.view,B.view,C.view);
-    t1.stop();
+//    X = A * B + C;
+      X = ma(A, B, C);
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(X.get(i), T(3*4+5)));
-    
-    time = t1.delta();
   }
 
   void diag()
   {
     length_type const size = 256;
 
-    Storage<DimA, T> A(Domain<1>(size), T(3));
-    Storage<DimB, T> B(Domain<1>(size), T(4));
-    Storage<DimC, T> C(Domain<1>(size), T(5));
+    Vector<T> A(size, T(3));
+    Vector<T> B(size, T(4));
+    Vector<T> C(size, T(5));
     Vector<T>        X(size, T(0));
 
-    vsip_csl::assign_diagnostics(X, ma(A.view,B.view,C.view));
+    std::cout << ovxx::assignment::diagnostics(X, ma(A, B, C)) << std::endl;
   }
 };
 
@@ -179,48 +160,43 @@ struct t_vma_nonfused : Benchmark_base
 {
   char const* what() { return "t_vma_nonfused"; }
   int ops_per_point(length_type)
-    { return vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add; }
+    { return ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add; }
   int riob_per_point(length_type) { return 2*sizeof(T); }
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
-    Storage<DimA, T> A(Domain<1>(size), T(3));
-    Storage<DimB, T> B(Domain<1>(size), T(4));
-    Storage<DimC, T> C(Domain<1>(size), T(5));
+    Vector<T> A(size, T(3));
+    Vector<T> B(size, T(4));
+    Vector<T> C(size, T(5));
     Vector<T>        tmp(size, T(0));
     Vector<T>        X(size, T(0));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
-      tmp = A.view * B.view;
-      X   = tmp + C.view;
+      tmp = A * B;
+      X   = tmp + C;
     }
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(X.get(i), T(3*4+5)));
-    
-    time = t1.delta();
   }
 
   void diag()
   {
     length_type const size = 256;
 
-    Storage<DimA, T> A(Domain<1>(size), T(3));
-    Storage<DimB, T> B(Domain<1>(size), T(4));
-    Storage<DimC, T> C(Domain<1>(size), T(5));
+    Vector<T> A(size, T(3));
+    Vector<T> B(size, T(4));
+    Vector<T> C(size, T(5));
     Vector<T>        tmp(size, T(0));
     Vector<T>        X(size, T(0));
 
-    vsip_csl::assign_diagnostics(tmp, A.view * B.view);
-    vsip_csl::assign_diagnostics(X,  tmp + C.view);
+    std::cout << ovxx::assignment::diagnostics(tmp, A * B) << std::endl;
+    std::cout << ovxx::assignment::diagnostics(X,  tmp + C) << std::endl;
   }
 };
 
@@ -244,40 +220,35 @@ struct t_vma_ip : Benchmark_base
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
-    Storage<DimA, TA> A(Domain<1>(size), TA(0));
-    Storage<DimB, TB> B(Domain<1>(size), TB(0));
+    Vector<TA> A(size, TA(0));
+    Vector<TB> B(size, TB(0));
     Vector<T>         X(size, T(5));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
-      X += A.view * B.view;
-    t1.stop();
+      X += A * B;
+    time = t1.elapsed();
 
-    A.view = TA(3);
-    B.view = TB(4);
+    A = TA(3);
+    B = TB(4);
 
-    X += A.view * B.view;
+    X += A * B;
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(X.get(i), T(3*4+5)));
-    
-    time = t1.delta();
   }
 
   void diag()
   {
     length_type const size = 256;
 
-    Storage<DimA, TA> A(Domain<1>(size), TA(0));
-    Storage<DimB, TB> B(Domain<1>(size), TB(0));
+    Vector<TA> A(size, TA(0));
+    Vector<TB> B(size, TB(0));
     Vector<T>         X(size, T(5));
 
-    vsip_csl::assign_diagnostics(X, X + A.view * B.view);
+    std::cout << ovxx::assignment::diagnostics(X, X + A * B) << std::endl;
   }
 };
 
@@ -301,44 +272,39 @@ struct t_vma_ip_nonfused : Benchmark_base
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
-    Storage<DimA, TA> A(Domain<1>(size), TA(0));
-    Storage<DimB, TB> B(Domain<1>(size), TB(0));
+    Vector<TA> A(size, TA(0));
+    Vector<TB> B(size, TB(0));
     Vector<T>         tmp(size, T(0));
     Vector<T>         X(size, T(5));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
-      tmp = A.view * B.view;
+      tmp = A * B;
       X   = X + tmp;
     }
-    t1.stop();
+    time = t1.elapsed();
 
-    A.view = TA(3);
-    B.view = TB(4);
+    A = TA(3);
+    B = TB(4);
 
-    X += A.view * B.view;
+    X += A * B;
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(X.get(i), T(3*4+5)));
-    
-    time = t1.delta();
   }
 
   void diag()
   {
     length_type const size = 256;
 
-    Storage<DimA, TA> A(Domain<1>(size), TA(0));
-    Storage<DimB, TB> B(Domain<1>(size), TB(0));
+    Vector<TA> A(size, TA(0));
+    Vector<TB> B(size, TB(0));
     Vector<T>         X(size, T(5));
 
-    vsip_csl::assign_diagnostics(X, X + A.view * B.view);
+    std::cout << ovxx::assignment::diagnostics(X, X + A * B) << std::endl;
   }
 };
 
@@ -358,25 +324,20 @@ struct t_vma_cSC : Benchmark_base
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     complex<T>          a = complex<T>(3, 0);
     Vector<T>           B(size, T(4));
     Vector<complex<T> > C(size, complex<T>(5, 0));
     Vector<complex<T> > X(size, complex<T>(0, 0));
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       X = a * B + C;
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(X.get(i), complex<T>(3*4+5, 0)));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -388,7 +349,7 @@ struct t_vma_cSC : Benchmark_base
     Vector<complex<T> > C(size, complex<T>(5, 0));
     Vector<complex<T> > X(size, complex<T>(0, 0));
 
-    vsip_csl::assign_diagnostics(X, a * B + C);
+    std::cout << ovxx::assignment::diagnostics(X, a * B + C) << std::endl;
   }
 };
 
@@ -408,8 +369,7 @@ struct t_vma_cSC_simd : Benchmark_base
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     using vsip::dda::Data;
 
@@ -421,18 +381,16 @@ struct t_vma_cSC_simd : Benchmark_base
     Vector<complex<T>, cblock_type> C(size, complex<T>(5, 0));
     Vector<complex<T>, cblock_type> X(size, complex<T>(0, 0));
 
-    vsip_csl::profile::Timer t1;
-
     {
       dda::Data<sblock_type> B_ext(B.block());
       dda::Data<cblock_type> C_ext(C.block());
       dda::Data<cblock_type> X_ext(X.block());
     
-    t1.start();
-    for (index_type l=0; l<loop; ++l)
-      vsip::impl::simd::vma_cSC(a, B_ext.ptr(), C_ext.ptr(), X_ext.ptr(),
-				size);
-    t1.stop();
+      timer t1;
+      for (index_type l=0; l<loop; ++l)
+	vsip::impl::simd::vma_cSC(a, B_ext.ptr(), C_ext.ptr(), X_ext.ptr(),
+				  size);
+      time = t1.elapsed();
     }
     
     for (index_type i=0; i<size; ++i)
@@ -441,36 +399,27 @@ struct t_vma_cSC_simd : Benchmark_base
 	std::cout << i << " = " << X.get(i) << std::endl;
       test_assert(equal(X.get(i), complex<T>(3*4+5, 0)));
     }
-    
-    time = t1.delta();
   }
 
   void diag()
   {
-    using vsip::impl::simd::is_algorithm_supported;
-    using vsip::impl::simd::Alg_vma_cSC;
+    // using vsip::impl::simd::is_algorithm_supported;
+    // using vsip::impl::simd::Alg_vma_cSC;
 
-    static bool const Is_vectorized =
-      is_algorithm_supported<std::complex<T>, false, Alg_vma_cSC>::value;
+    // static bool const Is_vectorized =
+    //   is_algorithm_supported<std::complex<T>, false, Alg_vma_cSC>::value;
 
-    std::cout << "is_vectorized: "
-	      << (Is_vectorized ? "yes" : "no")
-	      << std::endl;
+    // std::cout << "is_vectorized: "
+    // 	      << (Is_vectorized ? "yes" : "no")
+    // 	      << std::endl;
   }
 };
 #endif
 
-
-
-void
-defaults(Loop1P&)
-{
-}
-
-
+void defaults(Loop1P&) {}
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   typedef float           SF;
   typedef complex<float>  CF;

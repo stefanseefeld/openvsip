@@ -15,9 +15,7 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-#include <vsip_csl/diagnostics.hpp>
-
-#include "../benchmarks.hpp"
+#include "../benchmark.hpp"
 
 using namespace vsip;
 
@@ -35,8 +33,7 @@ struct t_vatan1 : Benchmark_base
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<T>   A(size, T());
     Vector<T>   C(size);
@@ -44,27 +41,25 @@ struct t_vatan1 : Benchmark_base
     Rand<T> gen(0, 0);
     A = gen.randu(size);
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = atan(A);
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), atan(A.get(i))));
-    
-    time = t1.delta();
   }
 
   void diag()
   {
+    using ovxx::assignment::diagnostics;
+
     length_type const size = 256;
 
     Vector<T>   A(size, T());
     Vector<T>   C(size);
 
-    vsip_csl::assign_diagnostics(C, atan(A));
+    std::cout << diagnostics(C, atan(A)) << std::endl;
   }
 };
 
@@ -81,8 +76,7 @@ struct t_vatan21 : Benchmark_base
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<T>   A(size, T());
     Vector<T>   B(size, T());
@@ -92,47 +86,36 @@ struct t_vatan21 : Benchmark_base
     A = gen.randu(size);
     B = gen.randu(size);
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = atan2(B,A);
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), atan2(B.get(i),A.get(i))));
-    
-    time = t1.delta();
   }
 
   void diag()
   {
+    using ovxx::assignment::diagnostics;
+
     length_type const size = 256;
 
     Vector<T>   A(size, T());
     Vector<T>   B(size, T());
     Vector<T>   C(size);
 
-    vsip_csl::assign_diagnostics(C, atan2(B,A));
+    std::cout << diagnostics(C, atan2(B,A)) << std::endl;
   }
 };
-
-
-
-
-
-
-
 
 void
 defaults(Loop1P&)
 {
 }
 
-
-
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {

@@ -13,16 +13,9 @@
 #include <vsip/matrix.hpp>
 #include <vsip/signal.hpp>
 #include <vsip/map.hpp>
+#include <test.hpp>
 
-#include <vsip_csl/test.hpp>
-
-using namespace std;
-using namespace vsip;
-
-
-/***********************************************************************
-  Definitions
-***********************************************************************/
+using namespace ovxx;
 
 // By-value Fftm, out-of-place
 

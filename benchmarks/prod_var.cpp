@@ -15,22 +15,12 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
-
-#include <vsip_csl/profile.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/test-precision.hpp>
-#include <vsip_csl/output.hpp>
-#include <vsip_csl/ref_matvec.hpp>
-
-#include "loop.hpp"
+#include <ovxx/output.hpp>
+#include "benchmark.hpp"
 
 #define VERBOSE 1
 
-using namespace vsip;
-using namespace vsip_csl;
-using namespace ref;
-
+using namespace ovxx;
 
 /***********************************************************************
   Matrix-matrix product variants
@@ -270,46 +260,6 @@ prod(
   }
 }
 
-
-
-/***********************************************************************
-  Comparison routine and benchmark driver.
-***********************************************************************/
-
-template <typename T0,
-	  typename T1,
-          typename T2,
-          typename Block0,
-          typename Block1,
-          typename Block2>
-void
-check_prod(
-  Matrix<T0, Block0> test,
-  Matrix<T1, Block1> chk,
-  Matrix<T2, Block2> gauge)
-{
-  typedef typename Promotion<T0, T1>::type return_type;
-  typedef typename vsip::impl::scalar_of<return_type>::type scalar_type;
-
-  Index<2> idx;
-  scalar_type err = maxval(((mag(chk - test)
-			     / Precision_traits<scalar_type>::eps)
-			    / gauge),
-			   idx);
-
-#if VERBOSE
-  if (err >= 10.0)
-  {
-    std::cout << "test  =\n" << test;
-    std::cout << "chk   =\n" << chk;
-    std::cout << "gauge =\n" << gauge;
-    std::cout << "err = " << err << std::endl;
-  }
-#endif
-
-  test_assert(err < 10.0);
-}
-
 // Matrix-matrix product benchmark class.
 
 template <int ImplI, typename T>
@@ -324,7 +274,7 @@ struct t_prod1 : Benchmark_base
     length_type P = M;
 
     float ops = /*M * */ P * N * 
-      (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+      (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops;
   }
@@ -335,7 +285,7 @@ struct t_prod1 : Benchmark_base
 
   void operator()(length_type M, length_type loop, float& time)
   {
-    typedef typename vsip::impl::scalar_of<T>::type scalar_type;
+    typedef typename scalar_of<T>::type scalar_type;
 
     length_type N = M;
     length_type P = M;
@@ -346,24 +296,10 @@ struct t_prod1 : Benchmark_base
     Matrix<T>   chk(M, P);
     Matrix<scalar_type> gauge(M, P);
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       prod(Int_type<ImplI>(), A, B, Z);
-    t1.stop();
-
-    chk   = ref::prod(A, B);
-    gauge = ref::prod(mag(A), mag(B));
-
-    for (index_type i=0; i<gauge.size(0); ++i)
-      for (index_type j=0; j<gauge.size(1); ++j)
-	if (!(gauge(i, j) > scalar_type()))
-	  gauge(i, j) = scalar_type(1);
-
-    check_prod(Z, chk, gauge );
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_prod1() {}
@@ -379,16 +315,9 @@ defaults(Loop1P& loop)
   loop.stop_  = 8;
 }
 
-
-template <> float  Precision_traits<float>::eps = 0.0;
-template <> double Precision_traits<double>::eps = 0.0;
-
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
-  Precision_traits<float>::compute_eps();
-  Precision_traits<double>::compute_eps();
-
   switch (what)
   {
   case  1: loop(t_prod1< 1, float>()); break;

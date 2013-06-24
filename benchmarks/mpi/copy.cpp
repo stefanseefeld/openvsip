@@ -15,16 +15,10 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/map.hpp>
-#include <vsip_csl/profile.hpp>
-
-#include <vsip_csl/c++0x.hpp>
-#include <vsip_csl/test.hpp>
-#include "loop.hpp"
+#include "benchmark.hpp"
 
 using namespace vsip;
-using vsip_csl::is_same;
-using vsip_csl::equal;
-using vsip_csl::operator<<;
+using ovxx::is_same;
 
 
 
@@ -73,9 +67,9 @@ class Send<T, SBlock, DBlock, Impl_isend<SendMode, RecvMode> >
   typedef typename SBlock::map_type src_map_type;
   typedef typename DBlock::map_type dst_map_type;
 
-  typedef typename impl::Distributed_local_block<DBlock>::type
+  typedef typename ovxx::distributed_local_block<DBlock>::type
 		dst_local_block_t;
-  typedef typename impl::Distributed_local_block<SBlock>::type
+  typedef typename ovxx::distributed_local_block<SBlock>::type
 		src_local_block_t;
 
   // Constructor.
@@ -135,7 +129,7 @@ public:
 	int	     lena[1]   = { 1 };
 	MPI_Aint     loca[1]   = { 0 };
 	MPI_Datatype typesa[1] = { send0_datatype_ };
-	MPI_Type_struct(1, lena, loca, typesa, &send1_datatype_);
+	MPI_Type_create_struct(1, lena, loca, typesa, &send1_datatype_);
 	MPI_Type_commit(&send1_datatype_);
 
 	send_datatype_ = send1_datatype_;
@@ -170,7 +164,7 @@ public:
 	int	     lena[1]   = { 1 };
 	MPI_Aint     loca[1]   = { 0 };
 	MPI_Datatype typesa[1] = { recv0_datatype_ };
-	MPI_Type_struct(1, lena, loca, typesa, &recv1_datatype_);
+	MPI_Type_create_struct(1, lena, loca, typesa, &recv1_datatype_);
 	MPI_Type_commit(&recv1_datatype_);
 
 	recv_datatype_ = recv1_datatype_;
@@ -225,7 +219,7 @@ public:
 	int	     lena[1]   = { 1 };
 	MPI_Aint     loca[1]   = { 0 };
 	MPI_Datatype typesa[1] = { send0_datatype_ };
-	MPI_Type_struct(1, lena, loca, typesa, &send1_datatype_);
+	MPI_Type_create_struct(1, lena, loca, typesa, &send1_datatype_);
 	MPI_Type_commit(&send1_datatype_);
 
 	send_datatype_ = send1_datatype_;
@@ -258,7 +252,7 @@ public:
 	int	     lena[1]   = { 1 };
 	MPI_Aint     loca[1]   = { 0 };
 	MPI_Datatype typesa[1] = { recv0_datatype_ };
-	MPI_Type_struct(1, lena, loca, typesa, &recv1_datatype_);
+	MPI_Type_create_struct(1, lena, loca, typesa, &recv1_datatype_);
 	MPI_Type_commit(&recv1_datatype_);
 
 	recv_datatype_ = recv1_datatype_;
@@ -337,9 +331,9 @@ class Send<T, SBlock, DBlock, Impl_persistent<SendMode, RecvMode> >
   typedef typename SBlock::map_type src_map_type;
   typedef typename DBlock::map_type dst_map_type;
 
-  typedef typename impl::Distributed_local_block<DBlock>::type
+  typedef typename ovxx::distributed_local_block<DBlock>::type
 		dst_local_block_t;
-  typedef typename impl::Distributed_local_block<SBlock>::type
+  typedef typename ovxx::distributed_local_block<SBlock>::type
 		src_local_block_t;
 
   // Constructor.
@@ -400,7 +394,7 @@ public:
 	int	     lena[1]   = { 1 };
 	MPI_Aint     loca[1]   = { 0 };
 	MPI_Datatype typesa[1] = { send0_datatype_ };
-	MPI_Type_struct(1, lena, loca, typesa, &send1_datatype_);
+	MPI_Type_create_struct(1, lena, loca, typesa, &send1_datatype_);
 	MPI_Type_commit(&send1_datatype_);
 
 	send_datatype_ = send1_datatype_;
@@ -440,7 +434,7 @@ public:
 	int	     lena[1]   = { 1 };
 	MPI_Aint     loca[1]   = { 0 };
 	MPI_Datatype typesa[1] = { recv0_datatype_ };
-	MPI_Type_struct(1, lena, loca, typesa, &recv1_datatype_);
+	MPI_Type_create_struct(1, lena, loca, typesa, &recv1_datatype_);
 	MPI_Type_commit(&recv1_datatype_);
 
 	recv_datatype_ = recv1_datatype_;
@@ -570,12 +564,10 @@ struct t_copy : Benchmark_base
     }
 
     // Assign src to dst
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       send();
-    t1.stop();
+    time = t1.elapsed();
 
     // Check result.
     for (index_type i=0; i<dst.local().size(); ++i)
@@ -583,8 +575,6 @@ struct t_copy : Benchmark_base
       index_type g_i = global_from_local_index(dst, 0, i);
       test_assert(equal(dst.local().get(i), T(g_i)));
     }
-    
-    time = t1.delta();
   }
 
   t_copy() {}
@@ -592,17 +582,10 @@ struct t_copy : Benchmark_base
   // Member data.
 };
 
-
-
-void
-defaults(Loop1P& /*loop*/)
-{
-}
-
-
+void defaults(Loop1P& /*loop*/) {}
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {

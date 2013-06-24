@@ -15,9 +15,7 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/random.hpp>
-#include <vsip_csl/diagnostics.hpp>
-
-#include "../benchmarks.hpp"
+#include "../benchmark.hpp"
 
 using namespace vsip;
 
@@ -35,8 +33,7 @@ struct t_vhypot1 : Benchmark_base
   int wiob_per_point(length_type) { return 1*sizeof(T); }
   int mem_per_point(length_type)  { return 3*sizeof(T); }
 
-  void operator()(length_type size, length_type loop, float& time)
-    VSIP_IMPL_NOINLINE
+  void operator()(length_type size, length_type loop, float& time) OVXX_NOINLINE
   {
     Vector<T>   A(size, T());
     Vector<T>   B(size, T());
@@ -46,17 +43,13 @@ struct t_vhypot1 : Benchmark_base
     A = gen.randu(size);
     B = gen.randu(size);
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       C = hypot(B,A);
-    t1.stop();
+    time = t1.elapsed();
     
     for (index_type i=0; i<size; ++i)
       test_assert(equal(C.get(i), hypot(B.get(i),A.get(i))));
-    
-    time = t1.delta();
   }
 
   void diag()
@@ -67,26 +60,14 @@ struct t_vhypot1 : Benchmark_base
     Vector<T>   B(size, T());
     Vector<T>   C(size);
 
-    vsip_csl::assign_diagnostics(C, hypot(B,A));
+    std::cout << ovxx::assignment::diagnostics(C, hypot(B,A)) << std::endl;
   }
 };
 
-
-
-
-
-
-
-
-void
-defaults(Loop1P&)
-{
-}
-
-
+void defaults(Loop1P&) {}
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   switch (what)
   {

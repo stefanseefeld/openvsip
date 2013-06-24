@@ -15,13 +15,8 @@
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
 #include <vsip/signal.hpp>
-
-#include <vsip/opt/diag/fir.hpp>
-#include <vsip_csl/profile.hpp>
-
-#include <vsip_csl/test.hpp>
-#include <vsip_csl/error_db.hpp>
-#include "loop.hpp"
+#include <vsip/selgen.hpp>
+#include "benchmark.hpp"
 
 using namespace vsip;
 
@@ -37,7 +32,7 @@ struct t_fir1 : Benchmark_base
   float ops_per_point(length_type size)
   {
     float ops = (coeff_size_ * size / dec_) *
-      (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+      (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops / size;
   }
@@ -66,20 +61,16 @@ struct t_fir1 : Benchmark_base
 
     in = ramp<T>(0, 1, size);
 
-    vsip_csl::profile::Timer t1;
-    
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
       fir(in, out);
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
 
     if (Save == state_save)
     {
       Domain<1> d_i(dec_-1, dec_, (size-1)/dec_);
       Domain<1> d_o(1, 1, (size-1)/dec_);
-      float error = vsip_csl::error_db(in(d_i), out(d_o));
+      float error = test::diff(in(d_i), out(d_o));
       if (error > -100)
 	for (index_type i=0; i<d_i.size(); ++i)
 	  std::cout << i << ": " << in(d_i.impl_nth(i)) << ", "
@@ -104,8 +95,7 @@ struct t_fir1 : Benchmark_base
     length_type size = 1024;
 
     fir_type fir(coeff, size, dec_);
-
-    vsip::impl::diagnose_fir("fir", fir);
+    // TBD
   }
 
   length_type coeff_size_;
@@ -126,7 +116,7 @@ struct t_fir2 : Benchmark_base
   float ops_per_point(length_type size)
   {
     float ops = (coeff_size_ * total_size_) *
-      (vsip::impl::Ops_info<T>::mul + vsip::impl::Ops_info<T>::add);
+      (ovxx::ops_count::traits<T>::mul + ovxx::ops_count::traits<T>::add);
 
     return ops / size;
   }
@@ -153,18 +143,14 @@ struct t_fir2 : Benchmark_base
     Vector<T>   in (total_size_, T());
     Vector<T>   out(total_size_);
 
-    vsip_csl::profile::Timer t1;
-
-    t1.start();
+    timer t1;
     for (index_type l=0; l<loop; ++l)
     {
       for (index_type pos=0; pos<total_size_; pos += block_size)
 	fir(in (Domain<1>(pos, 0, block_size)),
 	    out(Domain<1>(pos, 0, block_size)));
     }
-    t1.stop();
-    
-    time = t1.delta();
+    time = t1.elapsed();
   }
 
   t_fir2(length_type coeff_size, length_type total_size)
@@ -183,8 +169,7 @@ struct t_fir2 : Benchmark_base
     length_type block_size = 1024;
 
     fir_type fir(coeff, block_size, 1);
-
-    vsip::impl::diagnose_fir("fir", fir);
+    // TBD
   }
 
   length_type coeff_size_;
@@ -217,7 +202,7 @@ defaults(Loop1P& loop)
 //    Float and complex<float> value types.
 
 int
-test(Loop1P& loop, int what)
+benchmark(Loop1P& loop, int what)
 {
   length_type k = atoi(loop.param_["k"].c_str());
   length_type d = atoi(loop.param_["d"].c_str());
