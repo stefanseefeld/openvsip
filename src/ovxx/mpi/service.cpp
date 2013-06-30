@@ -27,31 +27,42 @@ namespace ovxx
 namespace mpi
 {
 
+// This function is guaranteed to be called exactly once per thread.
+// Initialize process-global state in the first call, and thread-global
+// state in each call.
 void initialize(int &argc, char **&argv)
 {
-  buffer = new char[BUFSIZE];
-  int initialized;
-  OVXX_MPI_CHECK_RESULT(MPI_Initialized, (&initialized));
-  if (!initialized)
+  if (!buffer)
   {
-    initialized = MPI_Init(&argc, &argv) == 0;
-    OVXX_INVARIANT(initialized);
-    finalize_mpi = true;
+    buffer = new char[BUFSIZE];
+    int initialized;
+    OVXX_MPI_CHECK_RESULT(MPI_Initialized, (&initialized));
+    if (!initialized)
+    {
+      initialized = MPI_Init(&argc, &argv) == 0;
+      OVXX_INVARIANT(initialized);
+      finalize_mpi = true;
+    }
+    MPI_Buffer_attach(buffer, BUFSIZE);
+    MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
+    // Initialize complex datatypes.
+    Datatype<complex<float> >::value();
+    Datatype<complex<double> >::value();
   }
   communicator = new Communicator(MPI_COMM_WORLD, Communicator::comm_attach);
-  MPI_Buffer_attach(buffer, BUFSIZE);
-  
-  // Initialize complex datatypes.
-  Datatype<complex<float> >::value();
-  Datatype<complex<double> >::value();  
 }
-void finalize()
+// This function is guaranteed to be called exactly once per thread.
+// On its final call (presumably from the main thread) finalize the MPI library.
+void finalize(bool final)
 {
   delete communicator;
   communicator = 0;
-  if (finalize_mpi)
-    MPI_Finalize();
-  delete[] buffer;
+  if (final)
+  {
+    if (finalize_mpi)
+      MPI_Finalize();
+    delete[] buffer;
+  }
 }
 
 } // namespace ovxx::mpi

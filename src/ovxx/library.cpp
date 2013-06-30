@@ -9,38 +9,77 @@
 #include <ovxx/library.hpp>
 #include <ovxx/allocator.hpp>
 #include <ovxx/c++11/chrono.hpp>
+#if defined(OVXX_ENABLE_THREADING)
+# include <ovxx/c++11/thread.hpp>
+#endif
 #if OVXX_HAVE_MPI
 # include <ovxx/mpi/service.hpp>
+#endif
+#if defined(OVXX_ENABLE_OMP)
+# include <omp.h>
 #endif
 #if defined(OVXX_HAVE_CVSIP)
 extern "C" {
 # include <vsip.h>
 }
 #endif
-#include <cstring>
-#include <cstdlib>
-#include <cctype>
-#include <cassert>
 
 using namespace ovxx;
 
 namespace
 {
-unsigned int use_count = 0;
+// Part of the library need to be initialized once per application,
+// other parts once per thread. Thus we maintain one global and one
+// thread-local counter.
+// In addition, we initialize OMP threads so OMP pragmas will work
+// correctly.
+unsigned int global_count = 0;
+#if defined(OVXX_ENABLE_THREADING)
+mutex global_count_guard;
+thread_local unsigned int thread_local_count = 0;
+#ifdef OVXX_ENABLE_OMP
+thread_local library *omp_library = 0;
+#endif
+#else
+unsigned int thread_local_count = 0;
+#endif
 
 void initialize(int &argc, char **&argv)
 {
-  if (use_count++ != 0) return;
+  {
+#if defined(OVXX_ENABLE_THREADING)
+    lock_guard<mutex> lock(global_count_guard);
+#endif
+    ++global_count;
+  }
+  if (thread_local_count++) return;
 
-  allocator::initialize(argc, argv);
+  if (global_count == 1)
+  {
 #ifndef OVXX_TIMER_SYSTEM
-  cxx11::chrono::high_resolution_clock::init();
+    cxx11::chrono::high_resolution_clock::init();
 #endif
 #if (OVXX_HAVE_CVSIP)
-  vsip_init(0);
+    vsip_init(0);
 #endif
+  }
+  if (thread_local_count == 1)
+  {
+    allocator::initialize(argc, argv);
 #if OVXX_HAVE_MPI
-  mpi::initialize(argc, argv);
+    mpi::initialize(argc, argv);
+#endif
+  }
+#ifdef OVXX_ENABLE_OMP
+  if (global_count == 1)
+  {
+    // Initialize OpenMP threads
+#pragma omp parallel
+    // thread 0 is the main thread, which is already
+    // initialized.
+    if (!omp_library && omp_get_thread_num() != 0)
+      omp_library = new library();
+  }
 #endif
 }
 
@@ -50,15 +89,35 @@ void initialize(int &argc, char **&argv)
 /// bulk of the finalization logic in this function.
 void finalize()
 {
-  if (--use_count != 0) return;
-
+#ifdef OVXX_ENABLE_OMP
+  // finalize OMP threads from the main thread.
+  if (omp_get_thread_num() == 0)
+  {
+#pragma omp parallel
+    delete omp_library;
+    omp_library = 0;
+  }
+#endif
+  {
+#if OVXX_ENABLE_THREADING
+    lock_guard<mutex> lock(global_count_guard);
+#endif
+    --global_count;
+  }
+  --thread_local_count;
+  if (!thread_local_count)
+  {
 #if OVXX_HAVE_MPI
-  mpi::finalize();
+    mpi::finalize(global_count == 0);
+    allocator::finalize();
 #endif
+  }
+  if (!global_count)
+  {
 #if (OVXX_HAVE_CVSIP)
-  vsip_finalize(0);
+    vsip_finalize(0);
 #endif
-  allocator::finalize();
+  }
 }
 } // namespace <unnamed>
 

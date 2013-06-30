@@ -6,13 +6,11 @@
 // license contained in the accompanying LICENSE.GPL file.
 
 #include <vsip/initfin.hpp>
-#include <vsip/core/thread.hpp>
-#include <vsip_csl/test.hpp>
+#include <ovxx/c++11/thread.hpp>
+#include <test.hpp>
 #include <iostream>
 
-using namespace vsip;
-using namespace vsip_csl;
-using namespace vsip::impl;
+using namespace ovxx;
 
 thread_local int tss;
 

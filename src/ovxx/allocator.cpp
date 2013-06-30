@@ -14,7 +14,11 @@
 namespace ovxx
 {
 
+#if OVXX_ENABLE_THREADING
+thread_local allocator *allocator::default_ = 0;
+#else
 allocator *allocator::default_ = 0;
+#endif
 
 void allocator::initialize(int &/*argc*/, char **&/*argv*/)
 {

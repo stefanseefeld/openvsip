@@ -28,7 +28,7 @@ namespace mpi
 {
 
 void initialize(int &, char **&);
-void finalize();
+void finalize(bool);
 
 } // namespace mpi
 

@@ -9,10 +9,11 @@
 #ifndef ovxx_allocator_hpp_
 #define ovxx_allocator_hpp_
 
+#include <ovxx/support.hpp>
+#include <ovxx/c++11.hpp>
 #include <limits>
 #include <cstdlib>
 #include <stdexcept>
-#include <ovxx/support.hpp>
 
 namespace ovxx
 {
@@ -37,14 +38,22 @@ public:
 
   static void initialize(int &argc, char **&argv);
   static void finalize();
-  static allocator *get_default() { return default_;}
+  static allocator *get_default()
+  {
+    OVXX_INVARIANT(default_ && "OpenVSIP not properly initialized !");
+    return default_;
+  }
   static void set_default(allocator *a) { default_ = a;}
 
 private:
   virtual void *allocate(size_t size) = 0;
   virtual void deallocate(void *ptr, size_t size) = 0;
 
+#if OVXX_ENABLE_THREADING
+  static thread_local allocator *default_;
+#else
   static allocator *default_;
+#endif
 };
 
 } // namespace ovxx
