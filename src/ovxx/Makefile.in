@@ -54,6 +54,9 @@ endif
 ifdef cvsip_fft
 src += $(srcdir)/cvsip/fft.cpp
 endif
+ifdef fftw
+src += $(srcdir)/fftw/fft.cpp
+endif
 ifndef have_huge_page_allocator
 src := $(filter-out %/huge_page_allocator.cpp, $(src))
 endif

@@ -23,6 +23,9 @@ extern "C" {
 # include <vsip.h>
 }
 #endif
+#if defined(OVXX_FFTW_THREADS)
+# include <fftw3.h>
+#endif
 
 using namespace ovxx;
 
@@ -62,6 +65,21 @@ void initialize(int &argc, char **&argv)
 #if (OVXX_HAVE_CVSIP)
     vsip_init(0);
 #endif
+#if defined(OVXX_FFTW_THREADS)
+    int status = 0;
+# ifdef OVXX_FFTW_HAVE_FLOAT
+    status = fftwf_init_threads();
+    if (!status)
+      OVXX_DO_THROW(std::runtime_error("Error during FFTW initialization"));
+    fftwf_plan_with_nthreads(4);
+# endif
+# ifdef OVXX_FFTW_HAVE_DOUBLE
+    status = fftw_init_threads();
+    if (!status)
+      OVXX_DO_THROW(std::runtime_error("Error during FFTW initialization"));
+    fftw_plan_with_nthreads(4);
+# endif
+#endif // OVXX_FFTW_THREADS
   }
   if (thread_local_count == 1)
   {

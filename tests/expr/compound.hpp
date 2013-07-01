@@ -731,8 +731,8 @@ test_nonelementwise_vectors(length_type const N)
     s = T();
     x = C();
 
-    typedef vsip::Fft<const_Vector, C, C, fft_fwd> fwd_fft_type;
-    typedef vsip::Fft<const_Vector, C, C, fft_inv> inv_fft_type;
+    typedef vsip::Fft<const_Vector, C, C, fft_fwd, by_value, 1> fwd_fft_type;
+    typedef vsip::Fft<const_Vector, C, C, fft_inv, by_value, 1> inv_fft_type;
 
     fwd_fft_type f_fft(Domain<1>(N), 1.0);
     inv_fft_type i_fft(Domain<1>(N), 1.0 / N);
@@ -837,8 +837,8 @@ test_nonelementwise_vectors(length_type const N)
     s = T();
     x = T();
 
-    typedef vsip::Fft<const_Vector, T, C> fwd_fft_type;
-    typedef vsip::Fft<const_Vector, C, T> inv_fft_type;
+    typedef vsip::Fft<const_Vector, T, C, 0, by_value, 1> fwd_fft_type;
+    typedef vsip::Fft<const_Vector, C, T, 0, by_value, 1> inv_fft_type;
 
     fwd_fft_type f_fft(Domain<1>(N), 1.0);
     inv_fft_type i_fft(Domain<1>(N), 1.0 / N);
