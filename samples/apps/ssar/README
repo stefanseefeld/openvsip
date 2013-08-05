@@ -1,0 +1,150 @@
+=============================================================================
+Scalable SAR (SSAR) Application Benchmark
+Copyright (c) 2006-2011 CodeSourcery, Inc.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following
+      disclaimer in the documentation and/or other materials
+      provided with the distribution.
+    * Neither the name of CodeSourcery nor the names of its
+      contributors may be used to endorse or promote products
+      derived from this software without specific prior written
+      permission.
+
+THIS SOFTWARE IS PROVIDED BY CODESOURCERY, INC. "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL CODESOURCERY BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=============================================================================
+
+Introduction
+------------
+
+This directory contains the Sourcery VSIPL++ implementation of the
+application benchmark defined as part of the High Performance Embedded 
+Computing (HPEC) "Challenge Benchmark Suite" from MIT's Lincoln Laboratory.
+
+  http://www.ll.mit.edu/HPECchallenge/sar.html
+
+This benchmark is also part of the High Productivity Computing 
+Systems (HPCS) Scalable Synthetic Compact Application #3 (SSCA #3).
+
+  http://www.highproductivity.org/SSCABmks.htm
+
+
+In brief, the application showcases several computationally-intensive 
+operations typically found in radar data processing applications.  At 
+present, this application focus on the first stage - image formation 
+from raw radar signal returns.  Later stages deal with image storage and 
+retrieval as well as target detection through image differencing.
+
+
+Building and Running
+--------------------
+
+Run the benchmark or execute other functions by specifying the any one of 
+the following commands:
+
+  make			Build the benchmark
+
+  make show-info	Show which VSIPL++ package is selected, along 
+			with the values of CXX, CXXFLAGS and LIBS.
+
+  make clean		Remove temporary files.
+
+  make check		Run the benchmark, comparing output to a known
+			reference (produced by the HPCS version that runs
+			under Matlab).  The default uses data from the data3/
+			subdirectory (for which the scale factor is 3).
+
+  make profileN		Use the built-in profiling capabilities of the
+			library to investigate application timing.  N 
+			defines the scale factor and the dataN/
+			sub-directory contains the data files.
+
+To run the benchmark directly, just provide the data set directory
+name on the command line:
+
+  $ ./ssar data3
+
+This will produce 'image.view'.
+
+
+Command-Line Options
+--------------------
+
+  -o <name>        Name of output data file (default is 'image.view')
+  --output <name>
+
+  -l <count>       Number of loops (useful during profiling)     
+  -loop <count>
+  --loop <count>  
+
+  -swap            Swap bytes four at a time when doing file I/O
+  --swap             (default for big-endian systems)
+
+  -noswap          Do not swap bytes when doing file I/O
+  --noswap           (default for little-endian systems)
+
+
+Input/Output Data
+-----------------
+
+In each data directory there are several files containing filter 
+coefficients and one much larger file containing synthesized sensor
+data.  There is also a dimension file that indicates the scale
+factor, the input image size and the output image size.  For example,
+the SCALE=3 data dimension file is data3/dims.txt and contains:
+
+  $ cat data3/dims.txt
+  3
+  1072
+  480
+  1144
+  756
+
+These are variables used by the SSCA-3 data generation program
+
+  SCALE      The scale factor.
+  n          Input image height
+  mc         Input image width
+  m          Output image height
+  nx         Output image width
+
+So the input image is (mc x n) pixels and the ouptut image is (nx x m)
+pixels.
+
+		
+Notes
+-----
+
+  The application may perform computations using either single or double-
+  precision floating point.  Use 'precision=double' in the makefile
+  (or command line) as desired.
+
+  All data read from or written to disk is single-precision, regardless
+  of the computational mode.
+
+  The validation step uses a utility called 'diffview' (provided) that
+  is used to compare the generated output to the reference output.  It
+  also converts the data to a greyscale using 'viewtoraw' (also 
+  provided) and then to a viewable image using 'rawtopgm' (part of
+  the Netpbm package).  
+
+  Creating the viewable images is not necessary to validate the images, 
+  but it is helpful.  The synthesized data is of a field of rectangularly
+  spaced corner reflectors that appear as bright spots within an 
+  otherwise dark background.
