@@ -1,0 +1,41 @@
+========================================================================
+ Sourcery VSIPL++
+ Digital Signal Processing Examples
+========================================================================
+
+Designing and employing digital filters using Sourcery VSIPL++ is 
+accomplished rapidly with relatively few lines of code.  These examples
+stand alone, but each builds upon the last.  Reviewing them in order is
+recommended but not strictly necessary.
+
+Type 'make' to build the examples, then run them to produce several
+raw data files (.view) that can be processed into graphics files
+(.svg) by the Matlab/Octave scripts (.m).  These graphics files
+are already installed so you can see what the examples do without 
+running the scripts.
+
+------------------------------------------------------------------------
+Moving Average
+------------------------------------------------------------------------
+  One of the simplest filters to construct, a moving average filter
+  is also computationally efficient, though the frequency response
+  has high side-lobes and is therefore not ideal.  This example 
+  calculates the magnitude of the frequency response for a 5-point
+  moving average filter.
+
+------------------------------------------------------------------------
+Low-pass Filter
+------------------------------------------------------------------------
+  Better low-pass filters can be designed using a variety of methods.
+  Here, we demostrate the "window method" for filter design and obtain
+  the coefficients of a 31-point filter and use the SV++ Finite Impulse
+  Response (FIR) object to apply the filter and remove an unwanted
+  frequency component.
+
+------------------------------------------------------------------------
+High-pass Filter
+------------------------------------------------------------------------
+  Low-pass filters can be modulated (shifted) to create high-pass 
+  filters.  This example does so with the low-pass filter created in
+  the previous example and removes the low-frequency component, leaving
+  the high-frequency one instead.
