@@ -93,15 +93,19 @@ endif
 	$(call install_headers,assign)
 	$(call install_headers,expr)
 	$(call install_headers,view)
+	$(call install_headers,math)
 	$(call install_headers,reductions)
 	$(call install_headers,signal)
 	$(call install_headers,signal/fft)
 	$(call install_headers,solver)
+	$(call install_headers,lapack)
 	$(call install_headers,cvsip)
+	$(call install_headers,fftw)
 	$(call install_headers,parallel)
 ifdef have_mpi
 	$(call install_headers,mpi)
 endif
+	$(call install_headers,io)
 	$(install_acconfig)
 
 depend: $(deps)

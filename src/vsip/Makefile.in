@@ -28,5 +28,8 @@ clean:
 install:
 	$(call install_headers,)
 	$(call install_headers,impl)
+	$(call install_headers,impl/reductions)
+	$(call install_headers,impl/signal)
+	$(call install_headers,impl/solver)
 
 depend:

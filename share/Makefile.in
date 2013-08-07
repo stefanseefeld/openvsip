@@ -22,5 +22,22 @@ endef
 all:
 
 install:
+	$(INSTALL) -d $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) common.mk $(DESTDIR)$(pkgdatadir)/common.mk
+	$(INSTALL_DATA) $(srcdir)/Makefile $(DESTDIR)$(pkgdatadir)/Makefile
+	$(call install_dir,examples/audio)
+	$(call install_dir,examples/dda)
+	$(call install_dir,examples/dispatch)
+	$(call install_dir,examples/dsp)
+	$(call install_dir,examples/eval)
+	$(call install_dir,examples/io)
+	$(call install_dir,examples/parallel)
+	$(call install_dir,examples/radar)
+	$(call install_dir,examples/signal)
+	$(call install_dir,examples/solvers)
+	$(call install_dir,examples/ustorage)
+	$(call install_dir,examples/views)
+	$(call install_dir,apps/ssar)
+	$(call install_dir,apps/ssar/data)
 
 clean:

@@ -10,7 +10,7 @@
 
 #include <ovxx/support.hpp>
 #include <ovxx/block_traits.hpp>
-#include <ovxx/view_traits.hpp>
+#include <ovxx/view/traits.hpp>
 #include <ovxx/expr/unary.hpp>
 
 namespace ovxx

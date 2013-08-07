@@ -1,0 +1,91 @@
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+
+# This should point to the directory where OpenVSIP is installed.
+prefix := @prefix@
+variant :=
+
+pkg_config_path := $(prefix)/lib/pkgconfig
+
+suffix := $(if $(variant),-$(variant))
+pkg := ovxx$(suffix)
+pkgcommand := PKG_CONFIG_PATH=$(pkg_config_path) pkg-config $(pkg)
+
+CC := $(shell ${pkgcommand} --variable=cc)
+CXX := $(shell ${pkgcommand} --variable=cxx)
+CPPFLAGS := $(shell ${pkgcommand} --variable=cppflags)
+CFLAGS := $(shell ${pkgcommand} --variable=cflags)
+CXXFLAGS := $(shell ${pkgcommand} --variable=cxxflags)
+LDFLAGS := $(shell ${pkgcommand} --variable=ldflags)
+LIBS := $(shell ${pkgcommand} --variable=libs)
+
+ld_library_path:=$(shell ${pkgcommand} --variable=libdir)
+
+# By default, the 'check' target will run all targets.
+check_targets ?= $(targets)
+
+# For check targets we need to prepare the environment
+%.check: export LD_LIBRARY_PATH:=$(ld_library_path):$(LD_LIBRARY_PATH)
+
+all: $(targets)
+
+check: $(patsubst %, %.check, $(check_targets))
+
+show-library-path:
+	@echo $(ld_library_path)
+
+show-info:
+	@echo "info for variant '$(variant)'"
+	@echo " CC=$(CC)"
+	@echo " CXX=$(CXX)"
+	@echo " CPPFLAGS=$(CPPFLAGS)"
+	@echo " CFLAGS=$(CFLAGS)"
+	@echo " CXXFLAGS=$(CXXFLAGS)"
+	@echo " LDFLAGS=$(LDFLAGS)"
+	@echo " LIBS=$(LIBS)"
+
+clean::
+	rm -rf $(targets)
+
+%.check: %
+	@(./$< > /dev/null && echo "PASS: $<") || echo "FAIL: $<"
+
+# cancel default (built-in) rules
+%: %.cpp
+%: %.m
+
+%.o: %.cpp
+	$(compile)
+
+%.o: %.c
+	$(ccompile)
+
+%: %.o
+	$(link)
+
+define compile_and_link
+@echo compiling $@
+$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+endef
+
+# Compilation
+define compile
+@echo compiling $@
+$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
+endef
+
+# Compilation
+define ccompile
+@echo compiling $@
+$(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
+endef
+
+# Link
+define link
+@echo linking $@
+$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
+endef

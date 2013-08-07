@@ -37,15 +37,21 @@ bool almost_equal(T a, T b,
   return relative_error <= rel_eps;
 }
 
-template <typename T>
-inline typename enable_if<is_integral<T>::value, bool>::type
-equal(T a, T b)
+template <typename T1, typename T2>
+inline typename enable_if<is_integral<T1>::value &&
+                          is_integral<T2>::value,
+			  bool>::type
+equal(T1 a, T2 b)
 { return a == b;}
 
-template <typename T>
-inline typename enable_if<is_floating_point<T>::value, bool>::type
-equal(T a, T b)
-{ return almost_equal<T>(a, b);}
+template <typename T1, typename T2>
+inline typename enable_if<is_floating_point<T1>::value ||
+                          is_floating_point<T2>::value,
+			  bool>::type
+equal(T1 a, T2 b)
+{
+  return almost_equal<typename Promotion<T1, T2>::type>(a, b);
+}
 
 template <typename T1, typename T2>
 inline bool equal(complex<T1> const &a, complex<T2> const &b)
@@ -75,8 +81,8 @@ inline bool equal(element_proxy<B, D> const &a, element_proxy<B, D> const &b)
   return equal(static_cast<typename B::value_type>(a), static_cast<typename B::value_type>(b));
 }
 
-template <typename T, typename B1, typename B2>
-inline bool equal(const_Vector<T, B1> v, const_Vector<T, B2> w)
+template <typename T1, typename B1, typename T2, typename B2>
+inline bool equal(const_Vector<T1, B1> v, const_Vector<T2, B2> w)
 {
   if (v.size() != w.size()) return false;
   for (length_type i = 0; i != v.size(); ++i)
@@ -85,8 +91,8 @@ inline bool equal(const_Vector<T, B1> v, const_Vector<T, B2> w)
   return true;
 }
 
-template <typename T, typename B1, typename B2>
-inline bool equal(const_Matrix<T, B1> v, const_Matrix<T, B2> w)
+template <typename T1, typename B1, typename T2, typename B2>
+inline bool equal(const_Matrix<T1, B1> v, const_Matrix<T2, B2> w)
 {
   if (v.size(0) != w.size(0) || v.size(1) != w.size(1)) return false;
   for (length_type i = 0; i != v.size(0); ++i)
@@ -96,8 +102,8 @@ inline bool equal(const_Matrix<T, B1> v, const_Matrix<T, B2> w)
   return true;
 }
 
-template <typename T, typename B1, typename B2>
-inline bool equal(const_Tensor<T, B1> v, const_Tensor<T, B2> w)
+template <typename T1, typename B1, typename T2, typename B2>
+inline bool equal(const_Tensor<T1, B1> v, const_Tensor<T2, B2> w)
 {
   if (v.size(0) != w.size(0) || v.size(1) != w.size(1) || v.size(2) != w.size(2))
     return false;
