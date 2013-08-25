@@ -1,0 +1,114 @@
+# -*-python-*-
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+
+# This file contains the data used to define the various
+# packages and build variants.
+
+cvsip_dir = '/usr/local'
+
+cxxflags = ['-g', '-fPIC']
+ldflags = ['-g']
+
+class em64t_st(variant):
+    libdir = 'em64t/st'
+    options = ['CXXFLAGS="%s"'%' '.join(cxxflags),
+               'LDFLAGS="%s"'%' '.join(ldflags),
+               '--enable-shared-libs',
+               '--enable-fft=fftw',
+               '--with-lapack=atlas',
+               '--with-atlas-include=/usr/include/atlas',
+               '--with-atlas-libdir=/usr/lib64/atlas',
+               '--disable-mpi',
+               '--enable-timer=x64_tsc']
+
+class em64t_mt(variant):
+    libdir = 'em64t/mt'
+    options = ['CXXFLAGS="%s"'%' '.join(cxxflags),
+               'LDFLAGS="%s"'%' '.join(ldflags),
+               '--enable-shared-libs',
+               '--enable-fft=fftw',
+               '--with-lapack=atlas',
+               '--with-atlas-include=/usr/include/atlas',
+               '--with-atlas-libdir=/usr/lib64/atlas',
+               '--disable-mpi',
+               '--enable-timer=x64_tsc',
+               '--enable-threading',
+               '--enable-omp']
+
+class em64t_mt_par(variant):
+    libdir = 'em64t/mt-par'
+    options = ['CXXFLAGS="%s"'%' '.join(cxxflags),
+               'LDFLAGS="%s"'%' '.join(ldflags),
+               '--enable-shared-libs',
+               '--enable-fft=fftw',
+               '--with-lapack=atlas',
+               '--with-atlas-include=/usr/include/atlas',
+               '--with-atlas-libdir=/usr/lib64/atlas',
+               '--enable-mpi=openmpi',
+               '--enable-timer=x64_tsc',
+               '--enable-threading',
+               '--enable-omp']
+
+class em64t_cvsip(variant):
+    libdir = 'em64t/cvsip'
+    options = ['CXXFLAGS="%s"'%' '.join(cxxflags),
+               'LDFLAGS="%s"'%' '.join(ldflags),
+               '--enable-shared-libs',
+               '--enable-fft=cvsip',
+               '--with-cvsip',
+               '--disable-mpi',
+               '--enable-timer=x64_tsc']
+
+class em64t_cxx11(variant):
+    libdir = 'em64t/c++11'
+    options = ['CXXFLAGS=--std=c++11',
+               '--enable-timer=system']
+
+class em64t_llvm(variant):
+    libdir = 'em64t/llvm'
+    options = ['CXX=clang++',
+               'CXXFLAGS=--std=c++11',
+               '--enable-timer=system']
+
+class test_package(package):
+
+    suffix = ''
+    host = 'i686-pc-linux-gnu'
+    em64t_st = em64t_st
+    em64t_mt = em64t_mt
+    em64t_mt_par = em64t_mt_par
+    em64t_cxx11 = em64t_cxx11
+
+class x86(package):
+
+    suffix = ''
+    host = 'i686-pc-linux-gnu'
+    em64t = em64t_st
+
+class x86_mt(package):
+
+    suffix = ''
+    host = 'i686-pc-linux-gnu'
+    em64t_mt = em64t_mt
+    em64t_st = em64t_st
+
+class cvsip(package):
+
+    suffix = ''
+    host = 'i686-pc-linux-gnu'
+    em64t = em64t_cvsip
+
+class cxx11(package):
+
+    suffix = ''
+    em64t = em64t_cxx11
+
+class llvm(package):
+
+    suffix = ''
+    em64t = em64t_llvm

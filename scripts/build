@@ -1,0 +1,557 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+
+import sys, os, os.path, string, time, argparse
+from subprocess import STDOUT, call
+from types import ClassType
+from shutil import rmtree
+from os.path import join, dirname, abspath, exists
+from shutil import copyfile, rmtree, copytree
+
+class variant:
+    suffix=''
+    options=''
+
+class package:
+    suffix=''
+    host=''
+
+class test(variant):
+    options=['--enable-fft=dft', '--disable-mpi', '--disable-lapack']
+    name='test'
+
+def read_config_file(filename):
+    configdir = dirname(abspath(filename))
+
+    env = {'variant':variant, 'package':package}
+
+    def include(filename):
+        exec open("%s/%s"%(configdir, filename), 'r').read() in env
+
+    env['include'] = include
+
+    exec open(filename, 'r').read() in env
+    del env['variant']
+    del env['package']
+    packages = {}
+    for n, p in env.iteritems():
+        if type(p) is ClassType and issubclass(p, package):
+            p.name = n
+            packages[n] = p
+
+    return packages
+
+def extract_package_info(package):
+
+    variants = {}
+    for n, v in package.__dict__.iteritems():
+        if type(v) is ClassType and issubclass(v, variant):
+            v.name = n
+            variants[n] = v
+
+    return package.suffix, package.host, variants
+
+
+class CommandError(Exception):
+    def __init__(self, returncode, cmd, logfile):
+        self.returncode = returncode
+        self.cmd = cmd
+        self.logfile = logfile
+    def __str__(self):
+        return """'%s' returned error status %d
+        See '%s' for details"""%(' '.join(self.cmd), self.returncode, self.logfile)
+
+
+class Command(object):
+    def __init__(self, parent = None):
+        """Define initial state. If this command has a parent,
+        it inherits its state."""
+
+        if parent:
+            self.packages = parent.packages
+            self.verbose = parent.verbose
+            self.package = parent.package
+            self.variant = parent.variant
+            self.srcdir = parent.srcdir
+            self.builddir = parent.builddir
+            self.logdir = parent.logdir
+            self.prefix = parent.prefix
+            self.distdir = parent.distdir
+        else:
+            config=join(abspath(dirname(__file__)), 'configurations')
+            self.packages = read_config_file(config)
+            self.verbose = False
+        
+    def cli(self, parser):
+        """Define the command's command-line interface."""
+
+        parser.add_argument('-v', '--verbose', action='store_true',
+                            help='print verbose output')
+        parser.add_argument('-p', '--prefix',
+                            help='the install prefix (default: %(default)s)',
+                            default='/usr/local/')        
+        parser.add_argument('-s', '--srcdir',
+                            help='the source directory (default: %(default)s)',
+                            default=abspath(dirname(dirname(__file__))))        
+        parser.add_argument('-b', '--builddir',
+                            help='the build directory (default: %(default)s)',
+                            default=abspath('build'))        
+        parser.add_argument('-l', '--logdir',
+                            help='the log directory (default: %(default)s)',
+                            default=abspath('logs'))        
+
+    def parse_args(self, args):
+        """Parse the command-specific arguments.
+        Most of the work has already been done by the parser object.
+        Validate the remaining arguments and transfer them to this object."""
+
+        self.verbose = args.verbose
+        self.logdir = abspath(args.logdir)
+        self.srcdir = abspath(args.srcdir)
+        self.builddir = abspath(args.builddir)
+        self.prefix = args.prefix
+        self.distdir = ''
+
+    def info(self, msg):
+        """Print a message if the output isn't silenced."""
+
+        if (self.verbose):
+            sys.stdout.write('%s: %s\n'%(time.strftime('%H:%M:%S'), msg))
+
+    def error(self, msg, terminate=False):
+        """Print an error message and optionally terminate."""
+
+        sys.stderr.write('Error: %s\n'%msg)
+        if terminate:
+            sys.exit(-1)
+
+    def validate_package(self, p):
+        """Make sure 'p' is a known package, then return
+        the associated package object"""
+
+        if p not in self.packages:
+            self.error('unknown package "%s"'%p)
+            self.error('  available packages are:')
+            for p in self.packages:
+                self.error('    %s'%p)
+            sys.exit(-1)
+        else:
+            return self.packages[p]
+
+    def validate_variant(self, v):
+        """Make sure 'v' is a valid variant name (<pkg>.<variant>),
+        and return the associated package and variant objects."""
+
+        if '.' not in v:
+            self.error('expected qualified name of the form <package>.<variant>', True)
+
+        package, variant = v.split('.', 1)
+        p = self.validate_package(package)
+        s, h, variants = extract_package_info(p)
+        if variant not in variants:
+            self.error('unknown variant "%s"'%variant)
+            self.error('  available variants in "%s" are:'%package)
+            for v in variants:
+                self.error('    %s'%v)
+            sys.exit(-1)
+        else:
+            return p, variants[variant]
+
+    def execute(self, name, cmd, env_vars = {}):
+        """Helper function to execute a command and log its output."""
+
+        if not os.path.exists(self.logdir):
+            os.makedirs(self.logdir)
+        logfile = '%s.log'%name
+        if self.variant:
+            logfile = '%s-%s-%s'%(self.package.name, self.variant.name, logfile)
+        else:
+            logfile = '%s-%s'%(self.package.name, logfile)
+        logfile = join(self.logdir, logfile)
+        log = open(logfile, 'w')
+        log.write('Running in %s:\n'%os.getcwd())
+        log.write(' '.join(cmd))
+        log.write('\n\n\n')
+        log.flush()
+        env = os.environ.copy()
+        env.update(env_vars)
+        status = call(cmd, stdout=log, stderr=STDOUT, shell=True, env=env)
+        if status != 0:
+            raise CommandError(status, cmd, logfile)
+
+
+class Info(Command):
+    """Provide information about available packages and build variants."""
+
+    def cli(self, subparsers):
+        
+        parser = subparsers.add_parser('info')
+        super(Info, self).cli(parser)
+        parser.add_argument('item', nargs='?',
+                            help='package or variant, i.e. <pkg> or <pkg>.<variant>')
+        parser.set_defaults(command=self)
+
+    def parse_args(self, args):
+
+        super(Info, self).parse_args(args)
+        self.package, self.variant = None, None
+        if args.item:
+            if '.' in args.item:
+                self.package, self.variant = self.validate_variant(args.item)
+            else:
+                self.package, self.variant = self.validate_package(args.item), None
+
+    def run(self):
+
+        if self.variant:
+            sys.stdout.write('variant :%s\n'%self.variant.name)
+            sys.stdout.write('options :\n')
+            sys.stdout.write('  %s'%'\n  '.join(self.variant.options))
+            sys.stdout.write('\n')
+
+        elif self.package:
+            for m in self.package.__dict__:
+                v = self.package.__dict__[m]
+                if type(v) is ClassType and issubclass(v, variant):
+                    sys.stdout.write('%s\n'%m)
+        else:
+            for p in self.packages:
+                sys.stdout.write('%s\n'%p)
+                for m in self.packages[p].__dict__:
+                    v = self.packages[p].__dict__[m]
+                    if type(v) is ClassType and issubclass(v, variant):
+                        sys.stdout.write('  %s\n'%m)
+
+
+class Configure(Command):
+    """Configure a build variant."""
+
+    def cli(self, subparsers):
+        
+        parser = subparsers.add_parser('configure')
+        super(Configure, self).cli(parser)
+        parser.add_argument('variant', help='variant to configure, i.e. <pkg>.<variant>')
+        parser.set_defaults(command=self)
+
+    def parse_args(self, args):
+
+        super(Configure, self).parse_args(args)
+        self.package, self.variant = self.validate_variant(args.variant)
+
+    def run(self):
+
+        self.info('configuring %s.%s...'%(self.package.name, self.variant.name))
+        if not os.path.exists(self.builddir):
+            os.makedirs(self.builddir)
+        cwd = os.getcwd()
+        try:
+            os.chdir(self.builddir)
+            cmd = self.srcdir + '/configure '
+            cmd += '--prefix=%s '%self.prefix
+            cmd += ' '.join(self.variant.options)
+            self.execute('configure', [cmd])
+        finally:
+            os.chdir(cwd)
+
+
+class Build(Command):
+    """Build a build variant."""
+
+    def cli(self, subparsers):
+
+        parser = subparsers.add_parser('build')
+        super(Build, self).cli(parser)
+        parser.add_argument('variant', help='variant to build, i.e. <pkg>.<variant>')
+        parser.set_defaults(command=self)
+
+    def parse_args(self, args):
+
+        super(Build, self).parse_args(args)
+        self.package, self.variant = self.validate_variant(args.variant)
+
+    def run(self):
+
+        configure = Configure(self)
+        configure.run()
+        self.info('building %s.%s...'%(self.package.name, self.variant.name))
+        if not os.path.exists(self.builddir):
+            os.makedirs(self.builddir)
+        cwd = os.getcwd()
+        try:
+            os.chdir(self.builddir)
+            cmd = 'make'
+            self.execute('build', [cmd])
+        finally:
+            os.chdir(cwd)
+
+class Test(Command):
+    """Test a build variant."""
+
+    def cli(self, subparsers):
+
+        parser = subparsers.add_parser('test')
+        super(Test, self).cli(parser)
+        parser.add_argument('variant', help='variant to test, i.e. <pkg>.<variant>')
+        parser.set_defaults(command=self)
+
+    def parse_args(self, args):
+
+        super(Test, self).parse_args(args)
+        self.package, self.variant = self.validate_variant(args.variant)
+
+    def run(self):
+
+        build = Build(self)
+        build.run()
+        self.info('testing %s.%s...'%(self.package.name, self.variant.name))
+        cwd = os.getcwd()
+        try:
+            os.chdir(self.builddir)
+            cmd = 'make check'
+            self.execute('test', [cmd])
+        finally:
+            os.chdir(cwd)
+
+class Install(Command):
+    """Install a build variant."""
+
+    def cli(self, subparsers):
+
+        parser = subparsers.add_parser('install')
+        super(Install, self).cli(parser)
+        parser.add_argument('variant')
+        parser.set_defaults(command=self)
+
+    def parse_args(self, args):
+
+        super(Install, self).parse_args(args)
+        self.package, self.variant = self.validate_variant(args.variant)
+
+    def run(self):
+
+        build = Build(self)
+        build.run()
+        self.info('installing %s.%s...'%(self.package.name, self.variant.name))
+        cwd = os.getcwd()
+        try:
+            os.chdir(self.builddir)
+            cmd = 'make install'
+            if self.distdir:
+                cmd += ' DESTDIR=%s'%self.distdir
+            self.execute('install', [cmd])
+        finally:
+            os.chdir(cwd)
+
+class Sdist(Command):
+    """Build a source package."""
+
+    def cli(self, subparsers):
+
+        parser = subparsers.add_parser('sdist')
+        super(Sdist, self).cli(parser)
+        parser.add_argument('--version')
+        parser.set_defaults(command=self)
+
+    def parse_args(self, args):
+
+        super(Sdist, self).parse_args(args)
+        self.version = args.version
+        if self.version == 'snapshot':
+            self.version = time.strftime("%Y%m%d")
+
+    def run(self):
+
+        configure = Configure(self)
+        configure.run()
+        self.info('starting sdist...')
+        cwd = os.getcwd()
+        try:
+            os.chdir(self.builddir)
+            cmd = 'make sdist'
+            if self.version:
+                cmd += ' PACKAGE_VERSION=%s'%self.version
+            self.execute('sdist', [cmd])
+        finally:
+            os.chdir(cwd)
+
+class Bdist(Command):
+    """Build a binary package."""
+
+    def cli(self, subparsers):
+
+        parser = subparsers.add_parser('bdist')
+        super(Bdist, self).cli(parser)
+        parser.add_argument('package')
+        parser.add_argument('--version')
+        parser.set_defaults(command=self)
+
+    def parse_args(self, args):
+
+        super(Bdist, self).parse_args(args)
+        self.package = self.validate_package(args.package)
+        self.version = args.version
+        if self.version == 'snapshot':
+            self.version = time.strftime("%Y%m%d")
+
+    def run(self):
+
+        self.info('starting bdist...')
+        suffix, host, variants = extract_package_info(self.package)
+        self.distdir = join(self.builddir, self.package.name, 'install')
+        # Build all the variants that participate in this package.
+        top_builddir = self.builddir
+        for v in variants:
+            self.variant = variants[v]
+            # Insert --with-variant so multiple variants can coexist
+            # in a single installation.
+            self.variant.options.append('--with-variant=%s'%v)
+            self.builddir = join(top_builddir, self.package.name, v)
+            install = Install(self)
+            install.run()
+        # Now package the combined install tree.
+        self.info('packaging %s...'%self.package.name)
+        self.variant = None
+        cwd = os.getcwd()
+        try:
+            # Just reusing the build directory of the most recently built
+            # variant will be fine for this.
+            os.chdir(self.builddir)
+            cmd = 'make bdist'
+            if self.package.suffix:
+                cmd += ' packagesuffix=%s'%self.package.suffix
+            cmd += ' DESTDIR=%s'%self.distdir
+            if self.package.host:
+                cmd += ' host=%s'%self.package.host
+            if self.version:
+                cmd += ' PACKAGE_VERSION=%s'%self.version
+            self.execute('bdist', [cmd])
+        finally:
+            os.chdir(cwd)
+
+class Ptest(Command):
+    """Test a binary package.
+
+    Depending on the arguments provided this may include running the
+    regular test suite as well as installing and testing a workspace,
+    for all build variants participating in the chosen package."""
+
+    def cli(self, subparsers):
+
+        parser = subparsers.add_parser('ptest')
+        super(Ptest, self).cli(parser)
+        parser.add_argument('package')
+        parser.add_argument('pkgfile')
+        parser.add_argument('--ids',
+                            help="tests to run (use 'workspace' to skip the regular test suite)")
+        parser.set_defaults(command=self)
+
+    def parse_args(self, args):
+
+        super(Ptest, self).parse_args(args)
+        self.package = self.validate_package(args.package)
+        self.pkgfile = args.pkgfile
+        if not os.path.exists(self.pkgfile):
+            self.error('pkgfile "%s" does not exist'%self.pkgfile, True)
+        else:
+            self.pkgfile = abspath(self.pkgfile)
+        self.ids=args.ids
+
+    def run(self):
+
+        self.info('starting ptest...')
+        self.distdir = join(self.builddir, self.package.name, 'install')
+        if exists(self.distdir):
+            self.error('%s already exists.'%self.distdir, True)
+        # Dummy configuration to set up the test database
+        self.variant = test
+        configure = Configure(self)
+        configure.run()
+        suffix, host, variants = extract_package_info(self.package)
+        cwd = os.getcwd()
+        try:
+            self.info('unpacking %s...'%self.pkgfile)
+            os.makedirs(self.distdir)
+            os.chdir(self.distdir)
+            self.execute('unpack', ['tar xvf %s'%self.pkgfile])
+            if self.ids != 'workspace':
+                os.chdir(self.builddir)
+                for v in variants:
+                    self.install_check(variants[v])
+                os.chdir(cwd)
+            os.chdir(join(self.builddir, self.package.name))
+            for v in variants:
+                self.workspace_check(variants[v])
+        finally:
+            os.chdir(cwd)
+
+    def install_check(self, variant):
+        """Run the test suite for the chosen variant."""
+
+        self.info('executing install check for %s...'%variant.name)
+        self.variant = variant
+        prefix='%s/%s'%(self.distdir, self.prefix)
+        ld_library_path = os.environ['LD_LIBRARY_PATH']
+        new_ld_library_path = '%s/lib:%s'%(prefix, ld_library_path)
+        env = {'LD_LIBRARY_PATH':new_ld_library_path}
+        cmd = 'make installcheck '
+        cmd += 'prefix=%s '%prefix
+        cmd += 'variant=%s '%v
+        cmd += 'output=results-%s.qmr '%v
+        if self.ids:
+            cmd += 'ids="%s"'%self.ids
+        self.execute('installcheck', [cmd], env)
+
+    def workspace_check(self, variant):
+        """Install a workspace for the chosen variant,
+        and run 'make check' in it."""
+
+        self.info('executing workspace check for %s...'%variant.name)
+        self.variant = variant
+        prefix='%s/%s'%(self.distdir, self.prefix)
+        ld_library_path = os.environ['LD_LIBRARY_PATH']
+        new_ld_library_path = '%s/lib:%s'%(prefix, ld_library_path)
+        env = {'LD_LIBRARY_PATH':new_ld_library_path}
+        workspace = 'workspace-%s'%variant.name
+        cmd = join(prefix, 'bin', 'ovxx-create-workspace')
+        cmd += ' --variant=%s '%variant.name
+        cmd += workspace
+        self.execute('create-workspace', [cmd], env)
+        cwd = os.getcwd()
+        try:
+            os.chdir(workspace)
+            cmd = 'make check'
+            self.execute('check-workspace', [cmd], env)
+        finally:
+            os.chdir(cwd)
+        
+
+commands = [Info, Configure, Build, Test, Install, Sdist, Bdist, Ptest]
+
+def main(argv):
+
+    parser = argparse.ArgumentParser(description="build / test OpenVSIP packages.")
+    subparsers = parser.add_subparsers()
+    [c().cli(subparsers) for c in commands]
+    args = parser.parse_args(argv[1:])
+    command = args.command
+    command.parse_args(args)
+    command.run()
+        
+if __name__ == '__main__':
+
+    try:
+        main(sys.argv)
+
+    except IOError, e:
+        print 'Error:', e
+
+    except KeyboardInterrupt, e:
+        print 'KeyboardInterrupt'
+    
+    except CommandError, e:
+        print 'Error:', e
