@@ -37,8 +37,9 @@
 #
 ########################################################################
 
-targets := png
+targets := png hdf5
 
 include ../../common.mk
 
 png: override LIBS += -lpng
+hdf5: override LIBS += -lhdf5

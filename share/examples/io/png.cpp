@@ -32,7 +32,7 @@
 #include <vsip/matrix.hpp>
 #include <vsip/dense.hpp>
 #include <vsip/math.hpp>
-#include <ovxx/png.hpp>
+#include <ovxx/io/png.hpp>
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -90,13 +90,11 @@ int main (int argc, char **argv)
 	    << "  Color type : " << info.colortype << std::endl;
 
   Image image(info.width, info.height);
-  decoder.decode(reinterpret_cast<unsigned char *>(image.block().ptr()),
-		 sizeof(Pixel) * info.height * info.width);
+  decoder.decode(image);
   // swap red and green channels
   image = unary<Pixel>(swap_red_green, image);
   std::ofstream ofs(argv[2]);
   png::encoder encoder(ofs.rdbuf(), info);
-  encoder.encode(reinterpret_cast<unsigned char *>(image.block().ptr()),
-		 sizeof(Pixel) * info.height * info.rowbytes);
+  encoder.encode(image);
 }
 
