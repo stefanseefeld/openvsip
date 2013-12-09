@@ -70,17 +70,12 @@ the following commands:
 			under Matlab).  The default uses data from the data3/
 			subdirectory (for which the scale factor is 3).
 
-  make profileN		Use the built-in profiling capabilities of the
-			library to investigate application timing.  N 
-			defines the scale factor and the dataN/
-			sub-directory contains the data files.
-
 To run the benchmark directly, just provide the data set directory
 name on the command line:
 
-  $ ./ssar data3
+  $ ./ssar data
 
-This will produce 'image.view'.
+This will produce 'data/image.hdf5'.
 
 
 Command-Line Options
@@ -131,18 +126,10 @@ pixels.
 Notes
 -----
 
-  The application may perform computations using either single or double-
-  precision floating point.  Use 'precision=double' in the makefile
-  (or command line) as desired.
-
-  All data read from or written to disk is single-precision, regardless
-  of the computational mode.
-
   The validation step uses a utility called 'diffview' (provided) that
   is used to compare the generated output to the reference output.  It
-  also converts the data to a greyscale using 'viewtoraw' (also 
-  provided) and then to a viewable image using 'rawtopgm' (part of
-  the Netpbm package).  
+  also converts the data to a greyscale using 'viewtopng' (also 
+  provided).
 
   Creating the viewable images is not necessary to validate the images, 
   but it is helpful.  The synthesized data is of a field of rectangularly

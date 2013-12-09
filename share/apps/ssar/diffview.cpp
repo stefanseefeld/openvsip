@@ -27,26 +27,13 @@
    OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  */
 
-/** @file    diffview.cpp
-    @author  Don McCoy
-    @date    2006-10-29
-    @brief   Utility to compare VSIPL++ views to determine equality
-*/
-
 #include <iostream>
 
 #include <vsip/initfin.hpp>
 #include <vsip/math.hpp>
+#include <ovxx/io/hdf5.hpp>
 
-#include <vsip_csl/load_view.hpp>
-#include <vsip_csl/save_view.hpp>
-#include <vsip_csl/error_db.hpp>
-
-
-using namespace vsip;
-using namespace vsip_csl;
-using namespace std;
-
+using namespace ovxx;
 
 enum data_format_type
 {
@@ -55,32 +42,56 @@ enum data_format_type
   INTEGER_VIEW
 };
 
-#if VSIP_BIG_ENDIAN
-bool swap_bytes = true;   // Whether or not to swap bytes during file I/O
-#else
-bool swap_bytes = false;
-#endif
-
 template <typename T>
-void 
-compare(char const* infile, char const* ref, length_type rows, 
-  length_type cols);
+void
+compare(std::string const &infile, std::string const &ref)
+{
+  typedef Matrix<T> matrix_type;
+
+  hdf5::file file(infile, 'r');
+  hdf5::dataset ds = file.open_dataset("data");
+  Domain<2> dom = ds.query_extent<2>();
+
+  matrix_type in(dom[0].size(), dom[1].size());
+  ds.read(in);
+  matrix_type refv(dom[0].size(), dom[1].size());
+  hdf5::file ref_file(ref, 'r');
+  hdf5::dataset ref_ds = ref_file.open_dataset("data");
+  ref_ds.read(refv);
+
+  double error = 0.;
+  if (anytrue(is_nan(in)) || anytrue(is_nan(refv)))
+    error = 201.0;
+
+  Index<2> idx;
+
+  double refmax1 = maxval(magsq(in), idx);
+  double refmax2 = maxval(magsq(refv), idx);
+  double refmax  = std::max(refmax1, refmax2);
+  double maxsum  = maxval(ite(magsq(in - refv) < 1.e-20,
+			      -201.0,
+			      10.0 * log10(magsq(in - refv)/(2.0*refmax))),
+			  idx);
+  error = maxsum;
+
+  std::cout << error << " dB" << std::endl;
+}
 
 int
 main(int argc, char** argv)
 {
   vsip::vsipl init(argc, argv);
 
-  if (argc < 5 || argc > 6)
+  if (argc < 3 || argc > 4)
   {
-    cerr << "Usage: " << argv[0] 
-         << " [-crn] <input> <reference> <rows> <cols>" << endl;
+    std::cerr << "Usage: " << argv[0] 
+	      << " [-crn] <input> <reference>" << std::endl;
     return -1;
   }
   else
   {
     data_format_type format = COMPLEX_VIEW;
-    if (argc == 6)
+    if (argc == 4)
     {
       if (0 == strncmp("-c", argv[1], 2))
         format = COMPLEX_VIEW;
@@ -90,8 +101,8 @@ main(int argc, char** argv)
         format = INTEGER_VIEW;
       else
       {
-        cerr << "Usage: " << argv[0] 
-             << " [-crn] <input> <reference> <rows> <cols>" << endl;
+	std::cerr << "Usage: " << argv[0] 
+		  << " [-crn] <input> <reference>" << std::endl;
         return -1;
       }
       ++argv;
@@ -99,32 +110,10 @@ main(int argc, char** argv)
     }
 
     if (format == REAL_VIEW)
-      compare<float>(argv[1], argv[2], atoi(argv[3]), atoi(argv[4]));
+      compare<float>(argv[1], argv[2]);
     else if (format == INTEGER_VIEW)
-      compare<int>(argv[1], argv[2], atoi(argv[3]), atoi(argv[4]));
+      compare<int>(argv[1], argv[2]);
     else
-      compare<complex<float> >(argv[1], argv[2], atoi(argv[3]), atoi(argv[4])); 
-
+      compare<complex<float> >(argv[1], argv[2]);
   }
-
-  return 0;
 }
-
-
-template <typename T>
-void
-compare(char const* infile, char const* ref, length_type rows, 
-  length_type cols)
-{
-  typedef Matrix<T> matrix_type;
-  Domain<2> dom(rows, cols);
-
-  matrix_type in(rows, cols);
-  in = Load_view<2, T>(infile, dom, vsip::Local_map(), swap_bytes).view();
-
-  matrix_type refv(rows, cols);
-  refv = Load_view<2, T>(ref, dom, vsip::Local_map(), swap_bytes).view();
-
-  cout << error_db(in, refv) << endl;
-}
-

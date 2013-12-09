@@ -59,13 +59,9 @@ struct ssar_options
 
   std::string data_dir;
   // Files required to be in the data directory
+  std::string parameters;
   std::string sar_dimensions;
   std::string raw_sar_data;
-  std::string fast_time_filter;
-  std::string slow_time_wavenumber;
-  std::string slow_time_compressed_aperture_position;
-  std::string slow_time_aperture_position;
-  std::string slow_time_spatial_frequency;
 };
 
 #endif

@@ -32,19 +32,14 @@
 
 #include <vsip/selgen.hpp>
 #include <vsip/dense.hpp>
-#include <vsip_csl/strided.hpp>
-#include <vsip_csl/profile.hpp>
-#include <vsip_csl/matlab_utils.hpp>
-#include <vsip_csl/save_view.hpp>
-#include <vsip_csl/load_view.hpp>
-#include <vsip_csl/udk.hpp>
-#include <stdint.h>
+#include <ovxx/strided.hpp>
+#include <ovxx/io/hdf5.hpp>
 #include "ssar.hpp"
+#include <iostream>
 
 #if 0
 #define VERBOSE
-#define SAVE_VIEW(a, b, c)    \
-  vsip_csl::save_view_as<complex<float> >((this->data_dir_ + a).c_str(), b, c)
+#define SAVE_VIEW(a, b, c) hdf5::write(this->data_dir_ + a, "data", b)
 #else
 #define SAVE_VIEW(a, b, c)
 #endif
@@ -62,61 +57,54 @@
 // entire image before proceeding to the next.  This can be more efficient
 // on certain architectures (such as Cell/B.E.) where large computations
 // can be distributed amongst several compute elements and run in parallel.
-#if VSIP_IMPL_CBE_SDK || VSIP_IMPL_HAVE_CUDA
+#if OVXX_HAVE_CUDA
 #  define DIGITAL_SPOTLIGHT_BY_ROW  0
 #else
 #  define DIGITAL_SPOTLIGHT_BY_ROW  1
 #endif
 
-
-// On Cell/B.E. platforms, this may be defined to utilize a user-defined
-// kernel for part of the interpolation stage.
-//
-// Setting it to '1' will utilize the kernel for the range-loop portion
-// of the computation (polar-to-rectangular interpolation) which will 
-// distribute groups of columns of the image to the SPEs.  This processes
-// data in parallel with a corresponding increase in performance.
-//
-// Setting it to '0' will perform the computation entirely on the PPE
-// as it does on x86 processors.
-#if VSIP_IMPL_CBE_SDK
-#  define USE_CELL_UKERNEL 1
-#else
-#  define USE_CELL_UKERNEL 0
-#endif
-
-#if USE_CELL_UKERNEL
-#  include <vsip_csl/ukernel/host/ukernel.hpp>
-#  include <cbe/host/interp.hpp>
-#endif
-
-
 // On CUDA-enabled platforms, this may be defined to use the custom kernel
 // for the range loop (as with Cell above).
-#if VSIP_IMPL_HAVE_CUDA
+#if OVXX_HAVE_CUDA
 # include <cuda/interp.hpp>
 #endif
 
-using namespace vsip;
-namespace udk = vsip_csl::udk;
+using namespace ovxx;
+using ovxx::signal::freqswap;
+
+template <dimension_type D, typename M1, typename M2>
+void fd_fftshift(M1 in, M2 out)
+{
+  typedef typename M1::value_type T;
+  typedef typename M2::block_type block2_type;
+  typedef typename M1::block_type::map_type map1_type;
+
+  assert(parallel::has_same_map<2>(in.block().map(), out.block()));
+
+  length_type rows = in.local().size(0);
+  length_type cols = in.local().size(1);
+
+  Matrix<T> w(rows, cols);
+
+  index_type g_offset = global_from_local_index(out, 0, 0);
+  index_type start    = 1 - (g_offset % 2);
+  
+  w = T(+1);
+  if (D == vsip::row)
+    w(Domain<2>(rows, Domain<1>(start, 2, cols/2))) = T(-1);
+  else
+    w(Domain<2>(Domain<1>(start, 2, rows/2), cols)) = T(-1);
+  out.local() = in.local() * w;
+}
 
 template <typename T>
 class Kernel1_base
 {
 protected:
-#if VSIP_IMPL_CBE_SDK
-  typedef Layout<2, row2_type, aligned_128, split_complex> row_layout_type;
-  typedef Layout<2, col2_type, aligned_128, split_complex> col_layout_type;
-  typedef vsip_csl::Strided<2, T, row_layout_type> real_row_block_type;
-  typedef vsip_csl::Strided<2, T, col_layout_type> real_col_block_type;
-  typedef vsip_csl::Strided<2, complex<T>, row_layout_type> complex_row_block_type;
-  typedef vsip_csl::Strided<2, complex<T>, col_layout_type> complex_col_block_type;
-#else
   typedef Dense<2, complex<T>, col2_type> complex_col_block_type;
   typedef Dense<2, complex<T>, row2_type> complex_row_block_type;
   typedef Dense<2, T, col2_type> real_col_block_type;
   typedef Dense<2, T, row2_type> real_row_block_type;
-#endif
   typedef Matrix<complex<T>, complex_col_block_type> complex_col_matrix_type;
   typedef Matrix<complex<T>, complex_row_block_type> complex_matrix_type;
   typedef Matrix<T, real_col_block_type> real_col_matrix_type;
@@ -167,10 +155,6 @@ Kernel1_base<T>::Kernel1_base(ssar_options const &opt, Local_map const &huge_map
     us_(m_),
     kx_(n_, m_)
 {
-  using vsip_csl::matlab::fftshift;
-  using vsip_csl::matlab::fd_fftshift;
-  using vsip_csl::load_view_as;
-
   interp_sidelobes_ = 8;     // 2. (scalar, integer) number of 
                              //    neighboring sidelobes used in sinc interp.
                              //    WARNING: Changing 'nInterpSidelobes' 
@@ -208,13 +192,17 @@ Kernel1_base<T>::Kernel1_base(ssar_options const &opt, Local_map const &huge_map
   real_vector_type u(m_);
   real_vector_type ku0(m_);
 
-  load_view_as<complex<float>, complex_vector_type>
-    (opt.fast_time_filter.c_str(), fast_time_filter_, swap_bytes_);
-  load_view_as<float, real_vector_type>(opt.slow_time_wavenumber.c_str(), k, swap_bytes_);
-  load_view_as<float, real_vector_type>
-    (opt.slow_time_compressed_aperture_position.c_str(), uc, swap_bytes_);
-  load_view_as<float, real_vector_type>(opt.slow_time_aperture_position.c_str(), u, swap_bytes_);
-  load_view_as<float, real_vector_type>(opt.slow_time_spatial_frequency.c_str(), ku0, swap_bytes_);
+  hdf5::file file(opt.parameters, 'r');
+  hdf5::dataset d1 = file.open_dataset("ftfilt");
+  d1.read(fast_time_filter_);
+  hdf5::dataset d2 = file.open_dataset("k");
+  d2.read(k);
+  hdf5::dataset d3 = file.open_dataset("uc");
+  d3.read(uc);
+  hdf5::dataset d4 = file.open_dataset("u");
+  d4.read(u);
+  hdf5::dataset d5 = file.open_dataset("ku");
+  d5.read(ku0);
 
   // 60. (1 by n array of reals) fftshifted slow-time wavenumber
   ks_ = freqswap(k);
@@ -265,10 +253,10 @@ Kernel1_base<T>::Kernel1_base(ssar_options const &opt, Local_map const &huge_map
   //    fs_ref_.put(i, j, (kx_.get(i, j) > 0) ? exp(...) : complex<T>(0));
   fs_ref_ = ite(kx_ > 0, exp(complex<T>(0, 1) * 
     (Xc_ * (kx_ - 2 * k1) + T(0.25 * M_PI) + ku)), complex<T>(0));
-  fftshift<col>(fs_ref_, fs_ref_preshift_);
+  freqswap<col>(fs_ref_, fs_ref_preshift_);
   fd_fftshift<row>(fs_ref_preshift_, fs_ref_preshift_);
 
-  SAVE_VIEW("p76_fs_ref.view", fs_ref_, swap_bytes_);
+  SAVE_VIEW("p76_fs_ref.hdf5", fs_ref_, swap_bytes_);
 
   // 78. (scalar, int) interpolation processing sliver size
   I_ = 2 * interp_sidelobes_ + 1;
@@ -444,9 +432,6 @@ Kernel1<T>::Kernel1(ssar_options const &opt, Local_map huge_map)
     ifftmr_(Domain<2>(this->nx_, m_), T(1./m_)),
     ifftmc_(Domain<2>(this->nx_, m_), T(1./this->nx_))
 {
-  using vsip_csl::matlab::fftshift;
-  using vsip_csl::matlab::fd_fftshift;
-
   // 83. (1 by nx array of reals) uniformly-spaced KX0 points where 
   //     interpolation is done  
   KX0_ = this->kx_min_ + 
@@ -569,18 +554,10 @@ void
 Kernel1<T>::process_image(complex_matrix_type const input, 
   real_matrix_type output)
 {
-  using vsip_csl::profile::Scope;
-  using vsip_csl::profile::user;
   assert(input.size(0) == n_);
   assert(input.size(1) == mc_);
   assert(output.size(0) == m_);
   assert(output.size(1) == this->nx_);
-
-  // Time the remainder of this function, provided profiling is enabled 
-  // (pass '--vsip-profile-mode=[accum|trace]' on the command line).  
-  // If profiling is not enabled, then this statement has no effect.
-  Scope<user> scope("Kernel1 total", kernel1_total_ops_);
-
 
   // Digital spotlighting and bandwidth-expansion using slow-time 
   // compression and decompression.  
@@ -599,11 +576,6 @@ template <typename T>
 void
 Kernel1<T>::digital_spotlighting(complex_matrix_type s_raw)
 {
-  using vsip_csl::profile::Scope;
-  using vsip_csl::profile::user;
-  Scope<user> scope("digital_spotlighting", digital_spotlighting_ops_);
-
-  using vsip_csl::matlab::fftshift;
   assert(s_raw.size(0) == n_);
   assert(s_raw.size(1) == mc_);
 
@@ -625,7 +597,7 @@ Kernel1<T>::digital_spotlighting(complex_matrix_type s_raw)
   // (spatial frequency) domain.  
 
   // corner-turn: to col-major
-  fftshift(s_raw, s_filt_); 
+  freqswap(s_raw, s_filt_); 
 
   // 59. (n by mc array of complex numbers) filtered echoed signal
   // 
@@ -690,7 +662,7 @@ Kernel1<T>::digital_spotlighting(complex_matrix_type s_raw)
     fsm_.row(xr)(rdom) = fs_spotlit_row_(ldom) * this->fs_ref_.row(xr)(rdom);
   }
 
-  SAVE_VIEW("p77_fsm_row.view", fsm_, this->swap_bytes_);
+  SAVE_VIEW("p77_fsm_row.hdf5", fsm_, this->swap_bytes_);
 }
 
 
@@ -700,20 +672,13 @@ template <typename T>
 void
 Kernel1<T>::digital_spotlighting(complex_matrix_type s_raw)
 {
-  using vsip_csl::profile::Scope;
-  using vsip_csl::profile::user;
-  Scope<user> scope("digital_spotlighting", digital_spotlighting_ops_);
-
   assert(s_raw.size(0) == n_);
   assert(s_raw.size(1) == mc_);
 
   // The baseband reference signal is first transformed into the Doppler 
   // (spatial frequency) domain.  
 
-  {
-    Scope<user> scope("corner-turn-1", n_ * mc_ * sizeof(complex<float>));
-    s_filt_ = s_raw;
-  }
+  s_filt_ = s_raw;
 
   // 59. (n by mc array of complex numbers) filtered echoed signal
   //
@@ -723,15 +688,9 @@ Kernel1<T>::digital_spotlighting(complex_matrix_type s_raw)
   // 62. (n by mc array of complex numbers) signal compressed along 
   //     slow-time (note that to view 'sCompr' it will need to be 
   //     fftshifted first.)
-  {
-    Scope<user> scope("ft-half-fc",  fast_time_filter_ops_);
-    s_filt_ = s_compr_filt_shift_ * ft_fftm_(s_filt_);
-  }
-  SAVE_VIEW("p62_s_filt.view", s_filt_, this->swap_bytes_);
-  {
-    Scope<user> scope("corner-turn-2", n_ * mc_ * sizeof(complex<float>));
-    fs_ = s_filt_;
-  }
+  s_filt_ = s_compr_filt_shift_ * ft_fftm_(s_filt_);
+  SAVE_VIEW("p62_s_filt.hdf5", s_filt_, this->swap_bytes_);
+  fs_ = s_filt_;
 
   // 63. (n by mc array of complex numbers) narrow-bandwidth polar format
   //     reconstruction along slow-time
@@ -749,22 +708,16 @@ Kernel1<T>::digital_spotlighting(complex_matrix_type s_raw)
   Domain<2> right_dst(Domain<1>(0, 1, n_), Domain<1>(mz + mc_/2, 1, mc_/2));
   Domain<2> right_src(Domain<1>(0, 1, n_), Domain<1>(mc_/2, 1, mc_/2));
 
-  {
-    Scope<user> scope("expand", n_ * m_ * sizeof(complex<float>));
-    fs_padded_(left) = fs_(left);
-    fs_padded_(center_dst) = complex<T>();
-    fs_padded_(right_dst) = fs_(right_src);
-  }
+  fs_padded_(left) = fs_(left);
+  fs_padded_(center_dst) = complex<T>();
+  fs_padded_(right_dst) = fs_(right_src);
 
   // 66. (n by m array of complex numbers) transform-back the zero 
   // padded spatial spectrum along its cross-range
   //
   // 68. (n by m array of complex numbers) slow-time decompression (note 
   //     that to view 'sDecompr' it will need to be fftshifted first.)
-  {
-    Scope<user> scope("decompr-half-fc",  slow_time_decompression_ops_);
-    fs_padded_ = s_decompr_filt_shift_ * decompr_fftm_(fs_padded_);
-  }
+  fs_padded_ = s_decompr_filt_shift_ * decompr_fftm_(fs_padded_);
 
   // 69. (n by m array of complex numbers) digitally-spotlighted SAR 
   //     signal spectrum
@@ -775,12 +728,8 @@ Kernel1<T>::digital_spotlighting(complex_matrix_type s_raw)
   //
   // 77. (n by m array of complex nums) Doppler domain matched-filtered signal
 
-  {
-    Scope<user> scope("st-half-fc",  slow_time_decompression_ops_);
-    fsm_ = this->fs_ref_preshift_ * st_fftm_(fs_padded_); // row
-  }
-
-  SAVE_VIEW("p77_fsm_half_fc.view", fsm_, this->swap_bytes_);
+  fsm_ = this->fs_ref_preshift_ * st_fftm_(fs_padded_); // row
+  SAVE_VIEW("p77_fsm_half_fc.hdf5", fsm_, this->swap_bytes_);
 }
 #endif // DIGITAL_SPOTLIGHT_BY_ROW
 
@@ -790,109 +739,63 @@ template <typename T>
 void // Matrix<T>
 Kernel1<T>::interpolation(real_matrix_type image)
 {
-  using vsip_csl::profile::Scope;
-  using vsip_csl::profile::user;
-  Scope<user> scope("interpolation", interpolation_ops_);
-
   assert(image.size(0) == m_);
   assert(image.size(1) == this->nx_);
 
   // Interpolate From Polar Coordinates to Rectangular Coordinates
 
   // corner-turn to col-major
-  {
-    Scope<user> scope("corner-turn-3", n_ * m_ * sizeof(complex<float>));
-    fsm_t_ = fsm_;
-  }
-
+  fsm_t_ = fsm_;
 
   // 86b. begin the range loop
+  // (86a. initialize the F(kx,ku) array)
+  F_ = complex<T>(0);
+
+  for (index_type j = 0; j < m_; ++j)
   {
-    Scope<user> scope("range loop", range_loop_ops_);
-#if USE_CELL_UKERNEL
-    // (86a. initialize the F(kx,ku) array) - ukernel does this
-    Interp_proxy obj;
-    vsip_csl::ukernel::Ukernel<Interp_proxy> uk(obj);
-    uk(
-      icKX_.transpose(), 
-      SINC_HAM_.template transpose<1, 0, 2>(), 
-      fsm_t_.transpose(), 
-      F_.transpose());
-
-#elif VSIP_IMPL_HAVE_CUDA
-    udk::Task<udk::target::cuda, 
-      udk::tuple<udk::in<Dense<2, uint32_t, col2_type> >,
-      udk::in<Dense<3, T, tuple<1, 0, 2> > >,
-      udk::in<complex_col_block_type>,
-      udk::out<complex_col_block_type> > > 
-    task(interpolate_with_shift<Dense<2, uint32_t, col2_type>,
-	 Dense<3, T, tuple<1, 0, 2> >,
-	 complex_col_block_type,
-	 complex_col_block_type>);
-    task.execute(icKX_, SINC_HAM_, fsm_t_, F_);
-#else
-    // (86a. initialize the F(kx,ku) array)
+    for (index_type i = 0; i < n_; ++i)
     {
-      Scope<user> scope("zero", this->nx_ * m_ * sizeof(complex<float>));
-      F_ = complex<T>(0);
-    }
-
-    for (index_type j = 0; j < m_; ++j)
-    {
-      for (index_type i = 0; i < n_; ++i)
-      {
-	// 88. (I by m array of ints) ikx are the indices of the slice that 
-	//     include the cross-range sliver at its center
-	index_type ikxrows = icKX_.get(i, j);
+      // 88. (I by m array of ints) ikx are the indices of the slice that 
+      //     include the cross-range sliver at its center
+      index_type ikxrows = icKX_.get(i, j);
 #if DIGITAL_SPOTLIGHT_BY_ROW
-	index_type i_shift = i;
+      index_type i_shift = i;
 #else
-	index_type i_shift = (i + n_/2) % n_;
+      index_type i_shift = (i + n_/2) % n_;
 #endif
 	
-	for (index_type h = 0; h < this->I_; ++h)
-	{
-	  // sinc convolution interpolation of the signal's Doppler 
-	  // spectrum, from polar to rectangular coordinates 
+      for (index_type h = 0; h < this->I_; ++h)
+      {
+	// sinc convolution interpolation of the signal's Doppler 
+	// spectrum, from polar to rectangular coordinates 
 	  
-	  // 92. (nx by m array of complex nums) F is the rectangular signal 
-	  //     spectrum
-	  F_.put(ikxrows + h, j, F_.get(ikxrows + h, j) + 
-		 (fsm_t_.get(i_shift, j) * SINC_HAM_.get(i, j, h)));
-	}
+	// 92. (nx by m array of complex nums) F is the rectangular signal 
+	//     spectrum
+	F_.put(ikxrows + h, j, F_.get(ikxrows + h, j) + 
+	       (fsm_t_.get(i_shift, j) * SINC_HAM_.get(i, j, h)));
       }
-      F_.col(j)(Domain<1>(j%2, 2, this->nx_/2)) *= T(-1);
-    } // 93. end the range loop
-#endif
-  }
+    }
+    F_.col(j)(Domain<1>(j%2, 2, this->nx_/2)) *= T(-1);
+  } // 93. end the range loop
 
-  SAVE_VIEW("p92_F.view", F_, this->swap_bytes_);
+  SAVE_VIEW("p92_F.hdf5", F_, this->swap_bytes_);
 
 
   // transform from the Doppler domain image into a spatial domain image
 
   // 94. (nx by m array of complex nums) spatial image (complex pixel 
   //     intensities) 
-  {
-    Scope<user> scope("doppler to spatial transform", interp_fftm_ops_);
-    ifftmc_(F_);	// col
-    spatial_ = F_;	// row := col corner-turn-
-    ifftmr_(spatial_);	// row
+  ifftmc_(F_);	// col
+  spatial_ = F_;	// row := col corner-turn-
+  ifftmr_(spatial_);	// row
 
-    // The final freq-domain fftshift can be skipped because mag() throws
-    // away sign:
-    // fd_fftshift(spatial_, spatial_);
-  }
+  // The final freq-domain fftshift can be skipped because mag() throws
+  // away sign:
+  // fd_fftshift(spatial_, spatial_);
 
-  {
-    Scope<user> scope("corner-turn-4", m_ * this->nx_ *sizeof(complex<float>));
-    F_ = spatial_;
-  }
+  F_ = spatial_;
 
   // for viewing, transpose spatial's magnitude 
   // 95. (m by nx array of reals) image (pixel intensities)
-  {
-    Scope<user> scope("image-prep", magnitude_ops_);
-    image = mag(F_.transpose());
-  }
+  image = mag(F_.transpose());
 }

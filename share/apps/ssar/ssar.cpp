@@ -95,15 +95,11 @@ ssar_options::ssar_options(int argc, char **argv)
   if (data_dir.empty()) usage(argv[0], "No data dir given");
 
   data_dir += '/';
+  parameters = data_dir + "parameters.hdf5";
   sar_dimensions = data_dir + "dims.txt";
-  raw_sar_data = data_dir + "sar.view";
-  fast_time_filter = data_dir + "ftfilt.view";
-  slow_time_wavenumber = data_dir + "k.view";
-  slow_time_compressed_aperture_position = data_dir + "uc.view";
-  slow_time_aperture_position = data_dir + "u.view";
-  slow_time_spatial_frequency = data_dir + "ku.view";
+  raw_sar_data = data_dir + "sar.hdf5";
 
-  if (output.empty()) output = data_dir + "image.view";
+  if (output.empty()) output = data_dir + "image.hdf5";
 
   std::ifstream ifs(sar_dimensions.c_str());
   if (!ifs) usage(argv[0], "unable to open dimension data file");
@@ -139,8 +135,7 @@ main(int argc, char** argv)
   // Retrieve the raw radar image data from disk.  This Data I/O 
   // component is currently untimed.
   Kernel1<T>::complex_matrix_type s_raw(opt.n, opt.mc, huge_map);
-  load_view_as<complex<float>, 
-    Kernel1<T>::complex_matrix_type>(opt.raw_sar_data.c_str(), s_raw, opt.swap_bytes);
+  ovxx::hdf5::read(opt.raw_sar_data, "data", s_raw);
 
   // Resolve the image.  This Computation component is timed.
   Kernel1<T>::real_matrix_type 
@@ -168,5 +163,5 @@ main(int argc, char** argv)
   }
 
   // Store the image on disk for later processing (not timed).
-  ovxx::hdf5::write(opt.output, image); 
+  ovxx::hdf5::write(opt.output, "data", image); 
 }

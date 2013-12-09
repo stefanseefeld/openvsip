@@ -38,102 +38,27 @@
 ########################################################################
 
 targets := ssar viewtopng diffview
+check_targets :=
 
 include ../../common.mk
 
 CPPFLAGS += -I .
-
-########################################################################
-# Variables
-########################################################################
-
-HAVE_CBE_SDK := 
-HAVE_CUDA := 
-
-# The default precision is single (double may also be used)
-precision := single
-
-ifeq ($(precision),double)
-ref_image_base := ref_image_dp
-ssar_type := SSAR_BASE_TYPE=double
-else
-ref_image_base := ref_image_sp
-ssar_type := SSAR_BASE_TYPE=float
-endif
-
-fmt-profile-command := $(prefix)/bin/fmt-profile.pl
-
-# Enable profiling
-PROFILE	:= -DVSIP_PROFILE_MATVEC -DVSIP_PROFILE_SIGNAL -DVSIP_PROFILE_USER
-CXXFLAGS += $(PROFILE) -D$(ssar_type)
+LIBS += -lhdf5
 
 ########################################################################
 # Rules
 ########################################################################
 
-ifdef HAVE_CBE_SDK
-
-include ../../common.spu.mk
-
-ssar: | cinterp.plg zinterp.plg
-
-clean::
-	rm -f *.plg
-
-plg_obj:= cbe/accel/cinterp.o cbe/accel/zinterp.o
-
-$(plg_obj): %.o: %.cpp
-	$(compile_ukernel)
-
-%.exe: %.o
-	$(link_ukernel)
-
-%.plg: cbe/accel/%.exe
-	$(embed_ukernel)
-
-endif
-ifdef HAVE_CUDA
-
-include ../../common.cuda.mk
-
-ssar: interp.o
-
-clean::
-	rm -f interp.o
-
-%.o: cuda/%.cu
-	$(compile_cuda)
-
-endif
-
 check: ssar diffview viewtopng
 	@echo "Running SSAR application..."
-	./ssar -o data3/result3.view data3
+	./ssar data
 	@echo
 	@echo "Comparing output to reference view (should be less than -100)"
-	./diffview -r data3/result3.view data3/$(ref_image_base).view 1144 756
+	./diffview -r data/image.hdf5 data/ref_image.hdf5
 	@echo
 	@echo "Creating viewable image of output"
-	./viewtopng -s data3/result3.view data3/result3.png 1144 756
+	./viewtopng -s data/image.hdf5 data/image.png
 	@echo "Creating viewable image of reference view"
-	./viewtopng -s data3/$(ref_image_base).view data3/$(ref_image_base).png 1144 756
-
-profile1: ssar viewtopng
-	@echo "Profiling SSAR application (SCALE = 1)..."
-	./ssar --output data1/result1.view --loop 10 \
-          --vsip-profile-mode=accum --vsip-profile-output=data1/profile.out \
-          data1
-	@echo "Formatting profiler output..."
-	${fmt-profile-command}  -sec -o data1/profile1.txt data1/profile.out
-	./make_images.sh data1/result1.view data1 data1 438 160 382 266
-
-profile3: ssar viewtopng
-	@echo "Profiling SSAR application (SCALE = 3)..."
-	./ssar --output data3/result3.view --loop 10 \
-          --vsip-profile-mode=accum --vsip-profile-output=data3/profile.out \
-          data3
-	@echo "Formatting profiler output..."
-	${fmt-profile-command}  -sec -o data3/profile3.txt data3/profile.out
-	./make_images.sh data3/result3.view data3 data3 1072 480 1144 756
+	./viewtopng -s data/ref_image.hdf5 data/ref_image.png
 
 viewtopng: LIBS += -lpng

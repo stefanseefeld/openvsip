@@ -27,24 +27,16 @@
    OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  */
 
-/** @file    viewtopng.cpp
-    @author  Stefan Seefeld
-    @date    2008-11-24
-    @brief   Utility to convert VSIPL++ views to greyscale png images.
-*/
-
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <vsip/math.hpp>
-#include <vsip_csl/view_cast.hpp>
-#include <vsip_csl/load_view.hpp>
-#include <vsip_csl/png.hpp>
+#include <ovxx/io/png.hpp>
+#include <ovxx/io/hdf5.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
 
-using namespace vsip;
-
+using namespace ovxx;
 
 enum data_format_type
 {
@@ -55,33 +47,40 @@ enum data_format_type
   SCALAR_INTEGER
 };
 
-#if VSIP_BIG_ENDIAN
-bool const swap_bytes = true;
-#else
-bool const swap_bytes = false;
-#endif
+template <typename T>
+Matrix<T, Strided<2, T> >
+read(hdf5::dataset ds, Domain<2> const &dom)
+{
+  typedef Strided<2, T> block_type;
+  typedef Matrix<T, block_type> view_type;
+  block_type *block = new block_type(dom);
+  view_type view(*block);
+  ds.read(view);
+  return view;
+}
 
 void
 convert_to_greyscale(data_format_type format, 
-                     std::string const &infile, std::string const &outfile,
-                     length_type rows, length_type cols)
+                     std::string const &infile, std::string const &outfile)
 {
-  using vsip_csl::Load_view;
   typedef Matrix<scalar_f> matrix_type;
-  Domain<2> dom(rows, cols);
 
-  matrix_type in(rows, cols);
+  hdf5::file file(infile, 'r');
+  hdf5::dataset ds = file.open_dataset("data");
+  Domain<2> dom = ds.query_extent<2>();
+
+  matrix_type in(dom[0].size(), dom[1].size());
 
   if (format == COMPLEX_MAG)
-    in = mag(Load_view<2, cscalar_f>(infile.c_str(), dom, Local_map(), swap_bytes).view());
+    in = mag(read<cscalar_f>(ds, dom));
   else if (format == COMPLEX_REAL)
-    in = real(Load_view<2, cscalar_f>(infile.c_str(), dom, Local_map(), swap_bytes).view());
+    in = real(read<cscalar_f>(ds, dom));
   else if (format == COMPLEX_IMAG)
-    in = imag(Load_view<2, cscalar_f>(infile.c_str(), dom, Local_map(), swap_bytes).view());
+    in = imag(read<cscalar_f>(ds, dom));
   else if (format == SCALAR_FLOAT)
-    in = Load_view<2, scalar_f>(infile.c_str(), dom, Local_map(), swap_bytes).view();
+    in = read<scalar_f>(ds, dom);
   else if (format == SCALAR_INTEGER)
-    in = Load_view<2, scalar_i>(infile.c_str(), dom, Local_map(), swap_bytes).view();
+    in = read<scalar_i>(ds, dom);
   else
     std::cerr << "Error: format type " << format << " not supported." << std::endl;
 
@@ -91,31 +90,31 @@ convert_to_greyscale(data_format_type format,
   scalar_f maxv = maxval(in, idx);
   scalar_f scale = (maxv - minv ? maxv - minv : 1.f);
 
-  Matrix<unsigned char> out(rows, cols);
-  out = vsip_csl::view_cast<unsigned char>((in - minv) * 255.f / scale);
+  Matrix<unsigned char> out(dom[0].size(), dom[1].size());
+  out = view_cast<unsigned char>((in - minv) * 255.f / scale);
 
   std::ofstream ofs(outfile.c_str());
-  vsip_csl::png::info info;
-  info.width = cols;
-  info.height = rows;
+  ovxx::png::info info;
+  info.width = dom[1].size();
+  info.height = dom[0].size();
   info.depth = 8;
-  info.colortype = vsip_csl::png::gray;
+  info.colortype = ovxx::png::gray;
   info.compression = 0;
   info.filter = 0;
-  info.interlace = vsip_csl::png::none;
-  info.rowbytes = cols;
-  vsip_csl::png::encoder encoder(ofs.rdbuf(), info);
-  encoder.encode(out.block().ptr(), info.height * info.rowbytes);
+  info.interlace = ovxx::png::none;
+  info.rowbytes = dom[1].size();
+  ovxx::png::encoder encoder(ofs.rdbuf(), info);
+  encoder.encode(out);
 
   // The min and max values are displayed to reveal the scale
-  std::cout << infile << " [" << rows << " x " << cols << "] : "
+  std::cout << infile << " [" << dom[0].size() << " x " << dom[1].size() << "] : "
             << "min " << minv << ", max " << maxv << std::endl;
 }
 
 void usage(std::ostream &os, std::string const &prog_name)
 {
   os << "Usage: " << prog_name
-     << " [-c|-r|-i|-s|-n] <input> <output> <rows> <cols>" << std::endl;
+     << " [-c|-r|-i|-s|-n] <input> <output>" << std::endl;
 }
 
 int
@@ -124,7 +123,7 @@ main(int argc, char** argv)
   std::string prog_name = argv[0];
   vsip::vsipl init(argc, argv);
 
-  if (argc < 5 || argc > 6)
+  if (argc < 3 || argc > 4)
   {
     usage(std::cerr, prog_name);
     return -1;
@@ -137,7 +136,7 @@ main(int argc, char** argv)
   // single-precision floating point or integer format (-s or -n must be 
   // used to indicate which).
   data_format_type format = COMPLEX_MAG;
-  if (argc == 6)
+  if (argc == 4)
   {
     if (std::string("-c") == argv[1]) format = COMPLEX_MAG;
     else if (std::string("-r") == argv[1]) format = COMPLEX_REAL;
@@ -152,26 +151,7 @@ main(int argc, char** argv)
     ++argv;
     --argc;
   }
-  length_type rows, cols;
-  {
-    std::istringstream iss(argv[3]);
-    iss >> rows;
-    if (!iss)
-    {
-      usage(std::cerr, prog_name);
-      return -1;
-    }
-  }
-  {
-    std::istringstream iss(argv[4]);
-    iss >> cols;
-    if (!iss)
-    {
-      usage(std::cerr, prog_name);
-      return -1;
-    }
-  }
-  convert_to_greyscale(format, argv[1], argv[2], rows, cols);
+  convert_to_greyscale(format, argv[1], argv[2]);
   return 0;
 }
 
