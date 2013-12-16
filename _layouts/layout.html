@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>{{ page.title}}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="{{site.url}}/css/layout.css"/>
+    <link rel="stylesheet" href="{{site.url}}/css/style.css"/>
+  </head>
+  <body>
+    <div id="header">
+      <img src="{{site.url}}/css/logo.png"/>
+    </div>
+    <div id="sidebar">
+      <ul>
+	<li><a href="{{site.url}}/">Home</a></li>
+	<li><a href="https://github.com/openvsip/openvsip/tarball/master">Download</a></li>
+	<li>
+	  <a href="{{site.url}}/doc">Docs</a>
+	  <ul>
+	    <li><a href="{{site.url}}/doc/getting-started.html">Getting Started</a></li>
+	    <li><a href="{{site.url}}/doc/architecture.html">Architecture</a></li>
+	  </ul>
+	</li>
+	<li><a href="https://github.com/openvsip/openvsip/issues">Issues</a></li>
+	<li><a href="{{site.url}}/contact.html">Contact</a></li>
+	<li><a href="https://github.com/openvsip/openvsip">Code</a></li>
+      </ul>
+    </div>          
+    <div id="content">
+      {{ content }}
+    </div>
+    <div id="footer">
+      <p>Last update: {{ site.time }}</p>
+      <p>Powered by Jekyll</p>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,83 @@
+body
+{
+  background-color: #ffffff;
+  font-family: Times, "Times New Roman", Georgia, serif;
+  font-size: 1em;
+}
+
+#header 
+{
+  background-image: url("header-bg.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-color: #dfdff4;
+}
+
+#sidebar ul
+{
+  padding: 0 0 0 1em;
+  list-style-image: none;
+  list-style-type: none;
+  line-height: 1.125em;
+  white-space: nowrap;
+}
+
+#sidebar li
+{
+  /*border-top: thin solid #bdaa7a;*/
+  margin: 5px 0px;
+}
+#sidebar a
+{
+  display: block;
+  padding: 3px;
+  width: 100%;
+/*  background-color: #bdaa7a;*/
+  border: thin solid #bdb297;
+/*  background-color: #bdb297;*/
+  color: #000080;
+}
+
+#content
+{
+  height: 100%;
+}
+#content .section 
+{
+  padding: 1em;
+}
+#content #news
+{
+  float: right;
+  border: solid 1px #888888;
+  padding: 1em;
+  margin: 1em;
+}
+
+#content table
+{
+  border: solid 1px #888888;
+  background-color: #FAFAFA;
+  border-collapse: collapse;
+  border-spacing: 1px;
+}
+#content table th,
+#content table td
+{
+  border: 1px solid #888888;
+  padding-right: 1em;
+  text-align: left;
+}
+
+#content dt { font-weight: bold;}
+
+#sidebar-first { border-right: solid 1px #888888;}
+
+#footer
+{
+  color: lightgrey;
+  font-size: small;
+  text-align: center;
+}
+
+h1, h2, h3, h4, h5, h6 { color: #000080;}
