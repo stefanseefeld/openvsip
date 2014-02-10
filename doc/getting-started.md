@@ -1,20 +1,24 @@
+Getting Started
+===============
+
 Introduction
-============
+------------
 
 OpenVSIP uses a build system that is based on the GNU autotools. A typical build process thus consists of executing `configure`, `make`, and `make install`. The individual steps are discussed in detail below.
 
 Prerequisites
-=============
+-------------
 
 OpenVSIP can be compiled for a variety of target platforms, including x86, ppc, and cuda. 
 It relies on (partly optional) third-party libraries for specific computational kernels:
 
+* [LAPACK](http://www.netlib.org/lapack/) / [ATLAS](http://math-atlas.sourceforge.net/)
 * [FFTW](http://www.fftw.org/)
-* [LAPACK](http://www.netlib.org/lapack/)
-* [OpenMPI](https://developer.nvidia.com/cuda-toolkit)
+* [OpenMPI](http://www.open-mpi.org/)
 * [CUDA](https://developer.nvidia.com/cuda-toolkit)
+* [HDF5](http://www.hdfgroup.org/HDF5/)
 
-OpenVSIP is known to compile with [G++](http://gcc.gnu.org/), version 4.4 and higher.
+OpenVSIP is known to compile with [G++](http://gcc.gnu.org/), version 4.8 and higher.
 It is being developed on Fedora.
 
 Testing and benchmarking requires
@@ -23,7 +27,7 @@ Testing and benchmarking requires
 * [QMTest](http://mentorembedded.github.io/qmtest/)
 
 Configuration
-=============
+-------------
 
 To configure OpenVSIP:
 
@@ -35,20 +39,20 @@ Useful options:
 
  * `--prefix=dirname` : Specify the toplevel installation directory.
                         (The default is `/usr/local`.)
- * `--enable-parallel` : Enable support for the Parallel VSIPL++ API.
+ * `--enable-mpi` : Enable support for the Parallel VSIPL++ API.
  * `--enable-lapack=<lapack>` : Enable LAPACK bindings using the specified backend.
  * `--enable-fft=<fft-backend-list>` : Enable the specified FFT backends.
 
 
 Building
-========
+--------
 
 To build OpenVSIP:
 
      % make
 
 Testing
-=======
+-------
 
 To run the OpenVSIP test suite:
 
@@ -58,7 +62,7 @@ To run the OpenVSIP test suite:
 with the specified concurrency level.)
 
 Installing
-==========
+----------
 
 To install OpenVSIP:
 
@@ -67,13 +71,18 @@ To install OpenVSIP:
 This will install OpenVSIP in the prefix specified during configuration.
 
 Running Examples
-================
+----------------
 
 OpenVSIP contains a number of example applets that demonstrate how to
 use specific APIs. To build them, start by setting up an OpenVSIP workspace:
 
-    % $(prefix)/bin/openvsip-create-workspace ovxx-workspace
+    % $(prefix)/bin/ovxx-create-workspace <workspace>
 
-Within the 'ovxx-workspace' directory structure you can now run `make` 
+Within the created workspace directory structure you can now run `make` 
 (or `make <target>`) to build the demo apps. Make sure to set your environment 
 variables (notably LD_LIBRARY_PATH) so that the appropriate libraries are found.
+
+What's next
+-----------
+
+For an architectural overview of OpenVSIP please refer to [Architecture](architecture.md)
