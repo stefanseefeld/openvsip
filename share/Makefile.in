@@ -37,6 +37,9 @@ install:
 	$(call install_dir,examples/solvers)
 	$(call install_dir,examples/ustorage)
 	$(call install_dir,examples/views)
+ifdef enable_python_bindings
+	$(call install_dir,examples/python)
+endif
 	$(call install_dir,apps/ssar)
 	$(call install_dir,apps/ssar/data)
 

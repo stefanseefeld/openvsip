@@ -1,0 +1,100 @@
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+
+srcdir := @srcdir@
+top_srcdir:=@top_srcdir@
+
+# config variables
+include ../../config.mk
+CPPFLAGS += -I../../src -I$(top_srcdir)/src $(PYTHON_CPPFLAGS) $(BOOST_CPPFLAGS)
+CXXFLAGS := $(CXXFLAGS_LIB)
+LDFLAGS += -L../../lib $(BOOST_LDFLAGS) $(PYTHON_LDFLAGS)
+LIBS += -l$(OVXXLIB) $(BOOST_LIBS) $(PYTHON_LIBS)
+
+# build instructions
+include ../../rules.mk
+
+define make_dep
+@echo generating dependencies for $(@D)/$(<F)
+mkdir -p $(@D)
+$(SHELL) -ec '$(CXXDEP) $(CPPFLAGS) $(CXXFLAGS) $< \
+	      | sed "s|$(*F)\\.o[ :]*|$(*F)\\.$(OBJEXT) : |g" \
+	      | sed "s|$(*F)\\.$(OBJEXT)[ :]*|$*\\.d $*\\.$(OBJEXT) : |g" > $@'
+endef
+
+define compile
+@echo compiling $(@D)/$(@F)
+$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
+endef
+
+ifneq (,$(findstring -g,$(LDFLAGS)))
+  define link_dso
+  @echo linking $@
+  $(LDSHARED) $(LDFLAGS) -o $@ $^ $(LIBS)
+  endef
+else
+  define link_dso
+  @echo linking $@
+  $(LDSHARED) $(LDFLAGS) -o $@ $^ $(LIBS)
+  $(STRIP) --strip-unneeded $@
+  endef
+endif
+
+subdirs := math
+
+python_dir := ../../lib/python
+mod := $(foreach dir, . $(subdirs), $(wildcard $(srcdir)/$(dir)/*.py))
+ext := $(foreach dir, . $(subdirs), $(wildcard $(srcdir)/$(dir)/*.cpp))
+
+obj     := $(patsubst $(srcdir)/%.cpp, %.$(OBJEXT), $(ext))
+targets := $(patsubst $(srcdir)/%, %, $(mod))
+targets += $(patsubst $(srcdir)/%.cpp, %$(PYTHON_EXT), $(ext))
+deps    := $(patsubst $(srcdir)/%.cpp, %.d, $(ext))
+
+vpath %.cpp $(srcdir)
+vpath %.py $(srcdir)
+
+all: $(patsubst %, $(python_dir)/vsip/%, $(targets))
+
+clean:
+	rm -f $(obj)
+
+install: all
+	@echo installing python extensions
+	for m in $(targets); do \
+          $(INSTALL) -d $(DESTDIR)$(libdir)/python/vsip/`dirname $$m`; \
+          $(INSTALL_DATA) $(python_dir)/vsip/$$m $(DESTDIR)$(libdir)/python/vsip/`dirname $$m`; \
+	done
+
+depend: $(deps)
+
+%.$(OBJEXT): %.cpp
+	$(compile)
+
+$(python_dir)/vsip/%.py: %.py
+	@echo copying $^
+	mkdir -p $(@D)
+	cp $< $@
+
+$(python_dir)/vsip/%$(PYTHON_EXT): %.$(OBJEXT)
+	mkdir -p $(@D)
+	$(link_dso)
+
+%.d: %.cpp
+	$(make_dep)
+
+.FORCE:
+
+# Include automatically generated dependency files.
+ifeq (,$(filter $(MAKECMDGOALS), depend doc mostlyclean clean))
+include $(deps)
+endif
+
+# Always remake dependencies when asked to.
+ifneq (,$(findstring depend, $(MAKECMDGOALS)))
+$(deps): %.d:	.FORCE
+endif

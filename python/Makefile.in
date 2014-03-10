@@ -6,15 +6,18 @@
 # license contained in the accompanying LICENSE.BSD file.
 
 srcdir := @srcdir@
-abs_srcdir := @abs_srcdir@
-
-# config variables
-include ../config.mk
-# build instructions
-include ../rules.mk
+top_srcdir:=@top_srcdir@
 
 all:
+	@echo making all in src
+	@$(MAKE) -C src
 
 clean:
+	@echo making clean in src
+	@$(MAKE) -C src clean
 
 install:
+	@$(MAKE) -C src install
+
+depend:
+	@$(MAKE) -C src depend

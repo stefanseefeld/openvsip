@@ -106,6 +106,9 @@ ifdef have_mpi
 	$(call install_headers,mpi)
 endif
 	$(call install_headers,io)
+ifdef enable_python_bindings
+	$(call install_headers,python)
+endif
 	$(install_acconfig)
 
 depend: $(deps)

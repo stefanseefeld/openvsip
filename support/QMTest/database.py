@@ -301,7 +301,7 @@ class Database(CompilationTestDatabase):
                 self.excluded_subdirs.append('cuda')
             if self.flags.get('enable_cvsip_bindings') != 'yes':
                 self.excluded_subdirs.append('cvsip')
-            if self.flags.get('enable_python_bindings') != 'yes':
+            if self.flags.get('enable_python_bindings') not in ('1', 'yes'):
                 self.excluded_subdirs.append('python')
             if self.flags.get('enable_threading') != '1':
                 self.excluded_subdirs.append('threading')

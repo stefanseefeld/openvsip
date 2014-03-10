@@ -67,6 +67,9 @@ all: check
 
 # For the 'check' target we really want to use our own libraries
 check recheck: export LD_LIBRARY_PATH:= $(abs_top_builddir)/lib:$(LD_LIBRARY_PATH)
+ifdef enable_python_bindings
+check recheck: export PYTHONPATH:= $(abs_top_builddir)/lib/python:$(PYTHONPATH)
+endif
 
 check:	$(qmtest_harness) $(qmtest_context)
 	$(QMTEST) run -j $(parallelism) -o $(output) -C $(qmtest_context) \

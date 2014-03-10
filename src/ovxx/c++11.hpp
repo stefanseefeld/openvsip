@@ -37,6 +37,8 @@ using std::is_integral;
 using std::is_floating_point;
 using std::is_unsigned;
 using std::is_arithmetic;
+using std::is_signed;
+using std::is_unsigned;
 
 #else
 
@@ -121,12 +123,32 @@ template <> struct is_floating_point<float> { static bool const value = true;};
 template <> struct is_floating_point<double> { static bool const value = true;};
 template <> struct is_floating_point<long double> { static bool const value = true;};
 
-template <typename T> struct is_unsigned { static bool const value = (0 < T(-1));};
-
 template <typename T> 
 struct is_arithmetic : integral_constant<bool,
 					 is_integral<T>::value ||
 					 is_floating_point<T>::value> {};
+template <typename T> struct is_integral_signed
+{
+  static bool const value = static_cast<bool>(T(-1) < T(0));
+};
+
+template <typename T, bool = is_integral<T>::value, bool = is_floating_point<T>::value>
+struct is_signed_helper : false_type {};
+template <typename T>
+struct is_signed_helper<T, false, true> : true_type {};
+template <typename T>
+struct is_signed_helper<T, true, false>
+  : integral_constant<bool, static_cast<bool>(T(-1) < T(0))> {};
+
+template <typename T>
+struct is_signed : is_signed_helper<T> {};
+
+template <typename T>
+struct is_unsigned :
+  conditional<is_arithmetic<T>::value && !is_signed<T>::value,
+	      true_type,
+	      false_type>::type
+{};
 #endif
 } // namespace ovxx::cxx11
 

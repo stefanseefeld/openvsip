@@ -23,6 +23,9 @@ CXXFLAGS := $(shell ${pkgcommand} --variable=cxxflags)
 LDFLAGS := $(shell ${pkgcommand} --variable=ldflags)
 LIBS := $(shell ${pkgcommand} --variable=libs)
 
+PYTHON_CPPFLAGS := @PYTHON_CPPFLAGS@
+PYTHON_LIBS := @BOOST_LIBS@ @PYTHON_LIBS@
+
 ld_library_path:=$(shell ${pkgcommand} --variable=libdir)
 
 # By default, the 'check' target will run all targets.

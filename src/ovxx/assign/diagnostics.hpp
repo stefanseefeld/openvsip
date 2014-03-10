@@ -9,6 +9,7 @@
 #define ovxx_assign_diagnostics_hpp_
 
 #include <ovxx/assign_fwd.hpp>
+#include <ovxx/expr/scalar.hpp>
 #include <ovxx/dispatch.hpp>
 #include <ovxx/type_name.hpp>
 #include <sstream>
