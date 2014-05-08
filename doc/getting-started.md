@@ -18,6 +18,12 @@ It relies on (partly optional) third-party libraries for specific computational 
 * [CUDA](https://developer.nvidia.com/cuda-toolkit)
 * [HDF5](http://www.hdfgroup.org/HDF5/)
 
+and for additional language bindings:
+
+* [Python](http://python.org/)
+* [NumPy] (http://www.numpy.org/)
+* [Boost] (http://www.boost.org/)
+
 OpenVSIP is known to compile with [G++](http://gcc.gnu.org/), version 4.8 and higher.
 It is being developed on Fedora.
 
