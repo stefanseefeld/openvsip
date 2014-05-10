@@ -14,12 +14,14 @@
     <div id="sidebar">
       <ul>
 	<li><a href="{{site.url}}/">Home</a></li>
+	<li><a href="{{site.url}}/news.html">News</a></li>
 	<li><a href="https://github.com/openvsip/openvsip/tarball/master">Download</a></li>
 	<li>
 	  <a href="{{site.url}}/doc">Docs</a>
 	  <ul>
 	    <li><a href="{{site.url}}/doc/getting-started.html">Getting Started</a></li>
 	    <li><a href="{{site.url}}/doc/architecture.html">Architecture</a></li>
+	    <li><a href="{{site.url}}/doc/related.html">Related material</a></li>
 	  </ul>
 	</li>
 	<li><a href="https://github.com/openvsip/openvsip/issues">Issues</a></li>
@@ -28,6 +30,14 @@
       </ul>
     </div>          
     <div id="content">
+      {% if page.title == "Home" %}
+      <div id="news">
+        {% for post in site.posts limit:1 %}
+          <a href="{{site.url}}{{ post.url }}">{{ post.title }} ({{post.date | | date: "%-d %B %Y"}})</a>
+          {{ post.excerpt }}
+	{% endfor %}
+      </div>
+      {% endif %}
       {{ content }}
     </div>
     <div id="footer">

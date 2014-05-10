@@ -1,0 +1,13 @@
+---
+layout: layout
+---
+
+<ul>
+  {% for post in site.posts limit:10 %}
+  <li>
+    <h3><a href="{{site.url}}{{ post.url }}">{{ post.title }}</a>
+      ({{post.date | | date: "%-d %B %Y"}})</h3>
+    {{ post.content }}
+  </li>
+  {% endfor %}
+</ul>

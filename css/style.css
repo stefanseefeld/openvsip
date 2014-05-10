@@ -41,6 +41,7 @@ body
 #content
 {
   height: 100%;
+  padding: 1em;
 }
 #content .section 
 {
@@ -49,7 +50,7 @@ body
 #content #news
 {
   float: right;
-  border: solid 1px #888888;
+  border: thin solid #bdb297;
   padding: 1em;
   margin: 1em;
 }

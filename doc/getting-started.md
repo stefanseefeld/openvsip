@@ -92,7 +92,7 @@ use specific APIs. To build them, start by setting up an OpenVSIP workspace:
 
 Within the created workspace directory structure you can now run `make` 
 (or `make <target>`) to build the demo apps. Make sure to set your environment 
-variables (notably LD_LIBRARY_PATH) so that the appropriate libraries are found.
+variables (notably `LD_LIBRARY_PATH`) so that the appropriate libraries are found.
 
 What's next
 -----------
