@@ -60,3 +60,8 @@ $(LDSHARED) -Llib $(LDFLAGS) -o $@ $^ $(LIBS)
   $(STRIP) --strip-unneeded $@
 endef
 endif
+
+define link
+@echo linking $@
+$(CXX) $(LDFLAGS) -o $@ $< -L$(top_builddir)/lib -l$(OVXXLIB) $(LIBS)
+endef

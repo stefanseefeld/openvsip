@@ -4,6 +4,7 @@
   <argument name="no_exclusions"><enumeral>@enable_all_tests@</enumeral></argument>
   <argument name="flags">
     <dict>
+      <item><text>have_opencl</text><text>@OVXX_HAVE_OPENCL@</text></item>
       <item><text>have_cuda</text><text>@OVXX_HAVE_CUDA@</text></item>
       <item><text>have_mpi</text><text>@OVXX_HAVE_MPI@</text></item>
       <item><text>enable_threading</text><text>@OVXX_ENABLE_THREADING@</text></item>

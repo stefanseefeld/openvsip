@@ -36,7 +36,7 @@ done
 endef
 
 define install_acconfig
-cat detail/$(acconfig) | sed -e "s/^#define PACKAGE_.*//g" \
+cat detail/$(acconfig) | sed -e "s/^#define PACKAGE_/#define OVXX_/g" \
   > detail/$(acconfig).tmp
 $(INSTALL_DATA) detail/$(acconfig).tmp \
   $(DESTDIR)$(includedir)/ovxx/detail/$(acconfig)
@@ -45,6 +45,9 @@ endef
 src := $(wildcard $(srcdir)/*.cpp)
 src += $(wildcard $(srcdir)/c++11/*.cpp)
 src += $(wildcard $(srcdir)/signal/*.cpp)
+ifdef have_mpi
+src += $(wildcard $(srcdir)/opencl/*.cpp)
+endif
 ifdef have_mpi
 src += $(srcdir)/mpi/group.cpp
 src += $(srcdir)/mpi/communicator.cpp

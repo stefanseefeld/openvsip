@@ -107,6 +107,12 @@ if test "$enable_omp" = yes; then
   AC_SUBST(OVXX_ENABLE_OMP, 1)
 fi
 
+### OpenCL
+AC_ARG_WITH([opencl],
+  AS_HELP_STRING([--with-opencl],
+                 [Use OpenCL.]),,
+  [with_opencl=no])
+
 ### NVidia CUDA
 AC_ARG_WITH([cuda],
   AS_HELP_STRING([--with-cuda],
@@ -669,6 +675,7 @@ fi
 OVXX_CHECK_FFT
 OVXX_CHECK_MPI
 
+OVXX_CHECK_OPENCL
 OVXX_CHECK_CUDA
 OVXX_CHECK_SAL
 OVXX_CHECK_MKL
@@ -735,6 +742,7 @@ AC_MSG_RESULT([Exceptions enabled:                      $status_exceptions])
 AC_MSG_RESULT([With MPI:                                $mpi_backend])
 AC_MSG_RESULT([With OMP:                                $enable_omp])
 AC_MSG_RESULT([With LAPACK:                             $lapack_found])
+AC_MSG_RESULT([With OpenCL:                             $with_opencl])
 AC_MSG_RESULT([With CUDA:                               $with_cuda])
 AC_MSG_RESULT([With CULA:                               $with_cula])
 AC_MSG_RESULT([With SAL:                                $with_sal])

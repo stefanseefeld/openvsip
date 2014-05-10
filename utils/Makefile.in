@@ -11,6 +11,9 @@ top_srcdir:=@top_srcdir@
 include ../config.mk
 
 subdirs :=
+ifdef have_opencl
+subdirs += opencl
+endif
 ifdef have_cuda
 subdirs += cuda
 endif

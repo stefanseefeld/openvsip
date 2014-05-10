@@ -93,6 +93,7 @@ enable_python_bindings  := @enable_python_bindings@
 
 ### Third-party package availability ###
 
+have_opencl := @OVXX_HAVE_OPENCL@
 have_cuda := @OVXX_HAVE_CUDA@
 have_mkl_vml := @OVXX_HAVE_MKL_VML@
 have_ipp := @OVXX_HAVE_IPP@

@@ -297,6 +297,8 @@ class Database(CompilationTestDatabase):
                 self.excluded_subdirs.append('sal')
             if self.flags.get('have_fftw') != '1':
                 self.excluded_subdirs.append('fftw')
+            if self.flags.get('have_opencl') != '1':
+                self.excluded_subdirs.append('opencl')
             if self.flags.get('have_cuda') != '1':
                 self.excluded_subdirs.append('cuda')
             if self.flags.get('enable_cvsip_bindings') != 'yes':
