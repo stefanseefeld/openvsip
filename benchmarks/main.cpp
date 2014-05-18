@@ -179,6 +179,7 @@ main(int argc, char** argv)
 
   if (pause)
   {
+#if OVXX_PARALLEL
     // Enable this section for easier debugging.
     parallel::Communicator& comm = parallel::default_communicator();
 #if !_WIN32
@@ -195,6 +196,7 @@ main(int argc, char** argv)
     // Stop each process, allow debugger to be attached.
     if (comm.rank() == 0) getchar();
     comm.barrier();
+#endif
   }
 
   loop.what_ = what;

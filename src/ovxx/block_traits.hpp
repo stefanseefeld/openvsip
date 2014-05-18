@@ -50,11 +50,11 @@ template <typename T>
 yes_tag
 has_put_helper(int, ptmf_helper<T, &T::put>* p = 0);
 
-template <typename BlockT>
+template <typename B>
 struct has_put
 {
   static bool const value = 
-  sizeof(has_put_helper<BlockT>(0)) == sizeof(yes_tag);
+    sizeof(has_put_helper<B>(0)) == sizeof(yes_tag);
 };
 
 } // namespace detail

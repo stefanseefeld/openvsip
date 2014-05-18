@@ -51,7 +51,7 @@ public:
     std::istream_iterator<std::string> beg(buf), end;
     return std::vector<std::string>(beg, end);
   }
-  std::vector<device> devices(device::type type = device::all)
+  std::vector<device> devices(cl_device_type type = device::all)
   {
     cl_uint ndevices = 0;
     int status = clGetDeviceIDs(id_, type, 0, 0, &ndevices);
@@ -69,7 +69,7 @@ public:
     return devices;
   }
 
-  operator cl_platform_id() { return id_;}
+  cl_platform_id id() { return id_;}
 private:
   std::string info(cl_platform_info i) const
   {
@@ -79,6 +79,8 @@ private:
   }
   cl_platform_id id_;
 };
+
+platform default_platform();
 
 } // namespace ovxx::opencl
 } // namespace ovxx

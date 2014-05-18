@@ -53,6 +53,8 @@ struct generic;
 struct parallel;
 /// C-VSIPL library.
 struct cvsip;
+/// OpenCL implementation (AMD, NVidia, etc)
+struct opencl;
 /// NVidia CUDA GPU library
 struct cuda;
 /// Optimized Tag.struct 

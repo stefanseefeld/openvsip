@@ -10,6 +10,7 @@
 #include <vsip/initfin.hpp>
 #include <vsip/support.hpp>
 #include <stdexcept>
+#include <cstdarg>
 
 namespace bpl = boost::python;
 

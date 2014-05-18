@@ -24,36 +24,52 @@ class program : ovxx::detail::noncopyable
 {
   friend class context;
 public:
+  program() : impl_(0) {}
+  explicit program(cl_program p, bool retain = true)
+    : impl_(p)
+  {
+    if (impl_ && retain) OVXX_OPENCL_CHECK_RESULT(clRetainProgram, (impl_));
+  }
+  program(program const &other)
+    : impl_(other.impl_)
+  {
+    if (impl_) OVXX_OPENCL_CHECK_RESULT(clRetainProgram, (impl_));
+  }
+  program &operator=(program const &other)
+  {
+    if (this != &other)
+    {
+      if (impl_) OVXX_OPENCL_CHECK_RESULT(clReleaseProgram, (impl_));
+      impl_ = other.impl_;
+      if (impl_) OVXX_OPENCL_CHECK_RESULT(clRetainProgram, (impl_));
+    }
+    return *this;
+  }
   ~program() { OVXX_OPENCL_CHECK_RESULT(clReleaseProgram, (impl_));}
 
-  void build(std::vector<device> const &d)
-  {
-    cl_device_id ids_[8];
-    cl_device_id *ids = 0;
-    if (d.size() > 8)
-      ids = new cl_device_id[d.size()];
-    else
-      ids = ids_;
-    std::copy(d.begin(), d.end(), ids);
-    OVXX_OPENCL_CHECK_RESULT(clBuildProgram,
-      (impl_, d.size(), ids, 0, 0, 0));
-    if (d.size() > 8)
-      delete [] ids;
-  }
-  kernel *create_kernel(std::string const &name)
-  {
-    return new kernel(impl_, name);
-  }
-private:
-  program(cl_context c, std::string const &source)
+  static program create_with_source(context const &c, std::string const &source)
   {
     cl_int status;
     char const *sources[] = {source.data()};
     size_t size[] = { source.size()};
-    impl_ = clCreateProgramWithSource(c, 1, sources, size, &status);
+    cl_program p = clCreateProgramWithSource(c.get(), 1, sources, size, &status);
     if (status < 0)
       OVXX_DO_THROW(exception("clCreateProgramWithSource", status));
+    return program(p, false);
   }
+
+  void build(std::vector<device> const &d)
+  {
+    std::vector<cl_device_id> ids(d.size());
+    std::transform(d.begin(), d.end(), ids.begin(), std::mem_fun_ref(&device::id));
+    OVXX_OPENCL_CHECK_RESULT(clBuildProgram, 
+      (impl_, d.size(), &*ids.begin(), 0, 0, 0));
+  }
+  kernel create_kernel(std::string const &name)
+  {
+    return kernel(impl_, name);
+  }
+private:
   cl_program impl_;
 };
 

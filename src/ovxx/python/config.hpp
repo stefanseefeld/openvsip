@@ -16,6 +16,17 @@
 #define OVXX_PRECONDITION(c) \
 if (!(c)) OVXX_DO_THROW(std::runtime_error(#c " evaluates to false"))
 
+namespace ovxx
+{
+namespace python
+{
+void trace(char const *format, ...);
+}
+}
+
+// Forward all traces to the Python logger
+#define OVXX_TRACE(...) ovxx::python::trace(__VA_ARGS__)
+
 // These bindings use the NumPy 1.7 API
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 

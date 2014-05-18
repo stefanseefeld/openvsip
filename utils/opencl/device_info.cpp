@@ -27,7 +27,7 @@ main(int argc, char **argv)
   namespace ocl = ovxx::opencl;
   int pid = -1;
   int did = -1;
-  ocl::device::type t = ocl::device::default_;
+  cl_device_type t = ocl::device::default_;
 
   for (int i = 1; i < argc; ++i)
   {

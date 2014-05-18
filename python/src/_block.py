@@ -7,7 +7,7 @@
 
 import numpy
 
-def import_block_module(dtype):
+def _import_block_module(dtype):
     mod = None
     if dtype == numpy.float32:
         _temp = __import__('vsip', globals(), locals(), ['fblock'], -1) 
@@ -46,7 +46,7 @@ def block(array=None, dtype=None, shape=None):
     else:
         assert dtype and shape
 
-    mod = import_block_module(dtype)
+    mod = _import_block_module(dtype)
 
     if array is not None:
         return mod.block(array)
@@ -59,7 +59,7 @@ def block(array=None, dtype=None, shape=None):
     elif len(shape) == 3:
         return mod.block(shape[0], shape[1], shape[2])
     else:
-        raise ValueError, 'Unsupported shape %s'%domain
+        raise ValueError, 'Unsupported shape %s'%shape
     
 def subblock(parent, slice):
     """Create a subblock of 'parent'.
@@ -71,7 +71,7 @@ def subblock(parent, slice):
     """
 
     dtype = parent.dtype
-    mod = import_block_module(dtype)
+    mod = _import_block_module(dtype)
 
     if len(slice) == 1:
         return mod.subblock(parent, slice[0])

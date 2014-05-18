@@ -51,14 +51,14 @@ ifdef enable_python_bindings
 endif
 	$(MAKE) -C doc clean
 
-check:
+check: all
 	$(MAKE) -C tests
 
 installcheck:
 	$(MAKE) -C tests installcheck
 
 # convenience to rerun previously failed tests
-recheck:
+recheck: all
 	$(MAKE) -C tests recheck
 
 benchmarks:

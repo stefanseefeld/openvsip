@@ -11,6 +11,9 @@
 #include <ovxx/storage/storage.hpp>
 #include <ovxx/storage/host.hpp>
 #include <ovxx/storage/user.hpp>
+#if OVXX_HAVE_OPENCL
+# include <ovxx/opencl/storage.hpp>
+#endif
 #include <ovxx/block_traits.hpp>
 
 namespace ovxx
@@ -43,12 +46,18 @@ public:
   storage_manager(length_type size)
     : use_user_storage_(false),
       host_storage_(allocator::get_default(), size, true),
+#if OVXX_HAVE_OPENCL
+      opencl_storage_(size, false),
+#endif
       admitted_(true)
   {
   }
   storage_manager(allocator *a, length_type size)
     : use_user_storage_(false),
       host_storage_(a, size, true),
+#if OVXX_HAVE_OPENCL
+      opencl_storage_(size, false),
+#endif
       admitted_(true)
   {
   }
@@ -60,6 +69,9 @@ public:
 		    use_user_storage_ ?
 		    user_storage_.template as<F>() :
 		    ptr_type()),
+#if OVXX_HAVE_OPENCL
+      opencl_storage_(size),
+#endif
       admitted_(false)
   {
   }
@@ -70,6 +82,9 @@ public:
 		    use_user_storage_ ?
 		    user_storage_.template as<F>() :
 		    ptr_type()),
+#if OVXX_HAVE_OPENCL
+      opencl_storage_(size),
+#endif
       admitted_(false)
   {
   }
@@ -80,6 +95,9 @@ public:
 		    use_user_storage_ ?
 		    user_storage_.template as<F>() :
 		    ptr_type()),
+#if OVXX_HAVE_OPENCL
+      opencl_storage_(size),
+#endif
       admitted_(false)
   {
   }
@@ -90,6 +108,9 @@ public:
 		    use_user_storage_ ?
 		    user_storage_.template as<F>() :
 		    ptr_type()),
+#if OVXX_HAVE_OPENCL
+      opencl_storage_(size),
+#endif
       admitted_(false)
   {
   }
@@ -100,6 +121,9 @@ public:
 		    use_user_storage_ ?
 		    user_storage_.template as<F>() :
 		    ptr_type()),
+#if OVXX_HAVE_OPENCL
+      opencl_storage_(size),
+#endif
       admitted_(false)
   {
   }
@@ -110,6 +134,9 @@ public:
 		    use_user_storage_ ?
 		    user_storage_.template as<F>() :
 		    ptr_type()),
+#if OVXX_HAVE_OPENCL
+      opencl_storage_(size),
+#endif
       admitted_(false)
   {
   }
@@ -129,6 +156,9 @@ public:
 			 use_user_storage_ ?
 			 user_storage_.template as<F>() :
 			 ptr_type());
+#if OVXX_HAVE_OPENCL
+    opencl_storage_.resize(size);
+#endif
   }
   void rebind(uT *ptr, length_type size)
   {
@@ -139,6 +169,9 @@ public:
 			 use_user_storage_ ?
 			 user_storage_.template as<F>() :
 			 ptr_type());
+#if OVXX_HAVE_OPENCL
+    opencl_storage_.resize(size);
+#endif
   }
   void rebind(std::pair<uT*,uT*> ptr, length_type size)
   {
@@ -149,6 +182,9 @@ public:
 			 use_user_storage_ ?
 			 user_storage_.template as<F>() :
 			 ptr_type());
+#if OVXX_HAVE_OPENCL
+    opencl_storage_.resize(size);
+#endif
   }
   void find(T *&ptr)
   {
@@ -216,10 +252,14 @@ public:
       invalidate(~0);
       return host_storage_.ptr();
     }
-    // TODO: Add device storage support
-    // else // device
-    // {
-    // }
+// #if OVXX_HAVE_OPENCL
+//     else // device
+//     {
+//       sync(~0);
+//       invalidate(0);
+//       return opencl_storage_.ptr();
+//     }
+// #endif
   }
   // get a valid read-only pointer in the given address space
   const_ptr_type ptr(location where = 0) const
@@ -229,11 +269,28 @@ public:
       sync(0);
       return host_storage_.ptr();
     }
-    // TODO: Add device storage support
-    // else // device
-    // {
-    // }
+// #if OVXX_HAVE_OPENCL
+//     else
+//     {
+//       sync(~0);
+//       return opencl_storage_.ptr();
+//     }
+// #endif
   }
+#if OVXX_HAVE_OPENCL
+  opencl::buffer buffer()
+  {
+    sync(1); // TODO: define proper location for OpenCL storage
+    invalidate(0);
+    return opencl_storage_.ptr();
+  }
+  opencl::buffer buffer() const
+  {
+    sync(1); // TODO: define proper location for OpenCL storage
+    invalidate(0);
+    return opencl_storage_.ptr();
+  }
+#endif
 
   value_type get(index_type i) const
   {
@@ -262,16 +319,55 @@ private:
   // and data is valid.
   void sync(location where) const
   {
-    // TODO: Add device storage support
+#if OVXX_HAVE_OPENCL
+    if (where == 0) // host
+    {
+      // 1. allocate if necessary
+      host_storage_.allocate();
+      // 2. copy data to host, if necessary
+      //    and mark host as valid
+      if (!host_storage_.is_valid())
+      {
+	opencl_storage_.copy_to_host(host_storage_.ptr());
+	host_storage_.validate();
+      }
+    }
+    else // device
+    {
+      // 1. allocate if necessary
+      opencl_storage_.allocate();
+      // 2. copy data from host, if necessary
+      //    and mark device as valid
+      if (!opencl_storage_.is_valid())
+      {
+	opencl_storage_.copy_from_host(host_storage_.ptr());
+	opencl_storage_.validate();
+      }
+    }
+#endif    
   }
   void invalidate(location where) const
   {
-    // TODO: Add device storage support
+#if OVXX_HAVE_OPENCL
+    if (where == 0) // host
+    {
+      // 1. mark host as invalid
+      host_storage_.invalidate();
+    }
+    else // device
+    {
+      // 1. mark opencl device as invalid
+      opencl_storage_.invalidate();
+    }
+#endif    
   }
 
   ovxx::user_storage<T> user_storage_;
   bool use_user_storage_;
   mutable host_storage<T, F> host_storage_;
+#if OVXX_HAVE_OPENCL
+  mutable opencl::storage<T, F> opencl_storage_;
+#endif
   bool admitted_;
 };
 

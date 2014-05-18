@@ -59,6 +59,18 @@ struct t_dot1 : Benchmark_base
   }
 
   t_dot1() {}
+
+  void diag()
+  {
+    using namespace ovxx;
+    typedef typename Vector<T>::block_type block_type;
+    Vector<T> A(8, T());
+    Vector<T> B(8, T());
+    T r = T();
+    std::cout <<
+      diagnostics<op::dot, T, block_type const &, block_type const &>
+      (A.block(), B.block());
+  }
 };
 
 
@@ -148,14 +160,19 @@ benchmark(Loop1P& loop, int what)
   case  3: loop(t_dot2<be::generic, float>()); break;
   case  4: loop(t_dot2<be::generic, complex<float> >()); break;
 
-#if VSIP_IMPL_HAVE_BLAS
+#if OVXX_HAVE_BLAS
   case  5: loop(t_dot2<be::blas, float>()); break;
   case  6: loop(t_dot2<be::blas, complex<float> >()); break;
 #endif
 
-#if VSIP_IMPL_HAVE_CUDA
-  case  7: loop(t_dot2<be::cuda, float>()); break;
-  case  8: loop(t_dot2<be::cuda, complex<float> >()); break;
+#if OVXX_HAVE_OPENCL
+  case  7: loop(t_dot2<be::opencl, float>()); break;
+  case  8: loop(t_dot2<be::opencl, complex<float> >()); break;
+#endif
+
+#if OVXX_HAVE_CUDA
+  case  9: loop(t_dot2<be::cuda, float>()); break;
+  case 10: loop(t_dot2<be::cuda, complex<float> >()); break;
 #endif
 
   case  0:

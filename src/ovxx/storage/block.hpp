@@ -297,6 +297,10 @@ public:
 
   ptr_type ptr() { return smanager_.ptr();}
   const_ptr_type ptr() const { return smanager_.ptr();}
+#if OVXX_HAVE_OPENCL
+  opencl::buffer buffer() { return smanager_.buffer();}
+  opencl::buffer buffer() const { return smanager_.buffer();}
+#endif
   stride_type stride(dimension_type block_dim, dimension_type d) const
   {
     OVXX_PRECONDITION(block_dim == 1 || block_dim == dim);

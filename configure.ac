@@ -191,12 +191,6 @@ AC_ARG_WITH([alignment],
   ,
   [with_alignment=probe])
 
-AC_ARG_ENABLE([profile_nesting],
-  AS_HELP_STRING([--disable-profile-nesting],
-                 [Disable nesting of events for profile accumulate mode
-                  (enabled by default)]),,
-  [enable_profile_nesting=yes])
-
 AC_ARG_ENABLE([timer],
   AS_HELP_STRING([--enable-timer=type],
                  [Set profile timer type.  Choices include system, posix, pentiumtsc, x86_64_tsc, power_tb [[posix]].]),,
@@ -214,6 +208,14 @@ AC_ARG_WITH([test_level],
 		  1 for regular effort, 2 for high-level (enables
 		  long-running tests) [[1]].]),,
   [with_test_level=1])
+
+AC_ARG_ENABLE([tracing],
+  AS_HELP_STRING([--enable-tracing=type],
+                 [Set tracing type. At this time the only supported type is lttng.]),  [case x"$enableval" in
+      xno) enable_tracing= ;;
+      *) enable_tracing=lttng
+    esac],
+  [enable_tracing=])
 
 AC_ARG_ENABLE(all-tests,,
   [case x"$enableval" in
@@ -672,6 +674,7 @@ if test "$with_png" != no; then
   fi
 fi
 
+OVXX_CHECK_TRACING
 OVXX_CHECK_FFT
 OVXX_CHECK_MPI
 
@@ -739,6 +742,9 @@ OVXX_CHECK_PYTHON
 AC_MSG_NOTICE(Summary)
 AC_MSG_RESULT([Using config variant:                    $variant])
 AC_MSG_RESULT([Exceptions enabled:                      $status_exceptions])
+AS_IF([ test -n "$enable_tracing" ],
+  [AC_MSG_RESULT([Tracing enabled:                         $enable_tracing])],
+  [AC_MSG_RESULT([Tracing enabled:                         no])])
 AC_MSG_RESULT([With MPI:                                $mpi_backend])
 AC_MSG_RESULT([With OMP:                                $enable_omp])
 AC_MSG_RESULT([With LAPACK:                             $lapack_found])

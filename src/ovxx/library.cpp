@@ -12,6 +12,9 @@
 #if defined(OVXX_ENABLE_THREADING)
 # include <ovxx/c++11/thread.hpp>
 #endif
+#if defined(OVXX_HAVE_OPENCL)
+# include <ovxx/opencl/library.hpp>
+#endif
 #if OVXX_HAVE_MPI
 # include <ovxx/mpi/service.hpp>
 #endif
@@ -61,6 +64,9 @@ void initialize(int &argc, char **&argv)
   {
 #ifndef OVXX_TIMER_SYSTEM
     cxx11::chrono::high_resolution_clock::init();
+#endif
+#if defined(OVXX_HAVE_OPENCL)
+    ovxx::opencl::initialize();
 #endif
 #if (OVXX_HAVE_CVSIP)
     vsip_init(0);
@@ -134,6 +140,9 @@ void finalize()
   {
 #if (OVXX_HAVE_CVSIP)
     vsip_finalize(0);
+#endif
+#if defined(OVXX_HAVE_OPENCL)
+    ovxx::opencl::finalize();
 #endif
   }
 }

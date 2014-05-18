@@ -45,6 +45,9 @@ else
 endif
 
 subdirs := math
+ifdef have_opencl
+subdirs += opencl
+endif
 
 python_dir := ../../lib/python
 mod := $(foreach dir, . $(subdirs), $(wildcard $(srcdir)/$(dir)/*.py))

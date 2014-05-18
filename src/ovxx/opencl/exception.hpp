@@ -47,6 +47,7 @@ class exception : public std::exception
       case CL_INVALID_PLATFORM: return "invalid platform";
       case CL_INVALID_DEVICE: return "invalid device";
       case CL_INVALID_CONTEXT: return "invalid context";
+      case CL_INVALID_MEM_OBJECT: return "invalid memory object";
       case CL_INVALID_KERNEL_NAME: return "invalid kernel name";
       default:
       {

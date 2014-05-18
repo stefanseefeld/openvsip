@@ -34,6 +34,19 @@ namespace python
 namespace bpl = boost::python;
 using boost::shared_ptr;
 
+// Send all traces from OVXX_TRACE to the Python logger
+inline void trace(char const *format, ...)
+{
+  bpl::object logging = bpl::import("logging");
+  bpl::object info = logging.attr("info");
+  va_list args;
+  char msg[128];
+  va_start(args, format);
+  vsnprintf(msg, sizeof(msg), format, args);
+  va_end(args);
+  info(msg);
+}
+
 inline void initialize() { import_array();}
 
 #define PYVSIP_THROW(TYPE, REASON)	 \
@@ -200,7 +213,7 @@ public:
 
   // If this block is dense, operations may access it in terms of a stored_block,
   // which optimizes many operations (and avoids copies...)
-  bool is_dense() const { return block_->get();}
+  bool is_dense() const { return block_.get();}
   block_type &dense() { return *block_;}
 
   length_type size() const 
@@ -219,18 +232,36 @@ public:
   //       block_api.hpp) in error-checking functions.
 
   value_type get(index_type i) const
-  { return *reinterpret_cast<value_type*>(PyArray_GETPTR1(array_.get(), i));}
+  {
+    sync();
+    return *reinterpret_cast<value_type*>(PyArray_GETPTR1(array_.get(), i));
+  }
   value_type get(index_type i, index_type j) const
-  { return *reinterpret_cast<value_type*>(PyArray_GETPTR2(array_.get(), i, j));}
+  {
+    sync();
+    return *reinterpret_cast<value_type*>(PyArray_GETPTR2(array_.get(), i, j));
+  }
   value_type get(index_type i, index_type j, index_type k) const
-  { return *reinterpret_cast<value_type*>(PyArray_GETPTR3(array_.get(), i, j, k));}
+  {
+    sync();
+    return *reinterpret_cast<value_type*>(PyArray_GETPTR3(array_.get(), i, j, k));
+  }
 
   void put(index_type i, value_type v)
-  { *reinterpret_cast<value_type*>(PyArray_GETPTR1(array_.get(), i)) = v;}
+  {
+    sync();
+    *reinterpret_cast<value_type*>(PyArray_GETPTR1(array_.get(), i)) = v;
+  }
   void put(index_type i, index_type j, value_type v)
-  { *reinterpret_cast<value_type*>(PyArray_GETPTR2(array_.get(), i, j)) = v;}
+  {
+    sync();
+    *reinterpret_cast<value_type*>(PyArray_GETPTR2(array_.get(), i, j)) = v;
+  }
   void put(index_type i, index_type j, index_type k, value_type v)
-  { *reinterpret_cast<value_type*>(PyArray_GETPTR3(array_.get(), i, j, k)) = v;}
+  {
+    sync();
+    *reinterpret_cast<value_type*>(PyArray_GETPTR3(array_.get(), i, j, k)) = v;
+  }
 
   Block &operator +=(Block const &o)
   {
@@ -304,7 +335,7 @@ public:
   vsip::stride_type stride(dimension_type, dimension_type i) const
   { return stride(i) / itemsize();}
 
-  bpl::handle<> array() const { return array_;}
+  bpl::handle<> array() const { sync(); return array_;}
 
 private:
   static bpl::handle<PyArrayObject> init_array(block_type &block)
@@ -319,6 +350,8 @@ private:
        PyArray_New(&PyArray_Type, dim, dims, get_typenum<value_type>(),
 		   0, block.ptr(), 0, flags, 0));
   }
+  // make sure data in host memory is valid
+  void sync() const { if (block_.get()) block_->ptr();}
 
   // The following are useful wrappers around numpy.ndarray, but don't correspond to
   // Block methods, and thus are hidden from public view.

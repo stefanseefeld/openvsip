@@ -12,6 +12,12 @@
 #define ovxx_support_hpp_
 
 #include <vsip/support.hpp>
+#if OVXX_HAVE_LTTNG
+extern "C"
+{
+# include <lttng/tracef.h>
+}
+#endif
 
 /// The maximum number of dimensions supported by this implementation.
 #define VSIP_MAX_DIMENSION 3
@@ -85,7 +91,13 @@
 #define OVXX_UNREACHABLE(msg) assert(!msg)
 
 // Allow some simple execution tracing.
-#define OVXX_TRACE(...)
+#ifndef OVXX_TRACE
+# if OVXX_HAVE_LTTNG
+#  define OVXX_TRACE(...) tracef("ovxx::" __VA_ARGS__)
+# else
+#  define OVXX_TRACE(...)
+# endif
+#endif
 
 namespace ovxx
 {

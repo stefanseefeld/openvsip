@@ -301,7 +301,7 @@ void define_block(char const *type_name)
 
   block.def("size", total_size<D,T>);
   block.def("size", size<D,T>);
-  block.def("shape", shape<D,T>);
+  block.add_property("shape", shape<D,T>);
   block.def("get", &traits<D,T>::get);
   block.def("put", &traits<D,T>::put);
 

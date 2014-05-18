@@ -8,34 +8,30 @@
 #ifndef ovxx_opencl_buffer_hpp_
 #define ovxx_opencl_buffer_hpp_
 
-#include <ovxx/detail/noncopyable.hpp>
-#include <ovxx/opencl/exception.hpp>
-#include <ovxx/opencl/device.hpp>
-#include <vector>
+#include <ovxx/opencl/memory_object.hpp>
+#include <ovxx/opencl/context.hpp>
 
 namespace ovxx
 {
 namespace opencl
 {
-class context;
+class command_queue;
 
-class buffer : ovxx::detail::noncopyable
+class buffer : public memory_object
 {
-  friend class context;
 public:
-  ~buffer() { OVXX_OPENCL_CHECK_RESULT(clReleaseMemObject, (impl_));}
-
-  operator cl_mem &() { return impl_;}
-private:
-  template <typename T>
-  buffer(cl_context c, int flags, T *data, size_t len)
+  buffer() : memory_object() {}
+  explicit buffer(cl_mem m, bool retain = true) : memory_object(m, retain) {}
+  buffer(context const &c, size_t size, cl_mem_flags flags = read_write)
   {
     cl_int status;
-    impl_ = clCreateBuffer(c, flags, len*sizeof(T), data, &status);
+    impl_ = clCreateBuffer(c.get(), flags, size, 0, &status);
     if (status < 0)
       OVXX_DO_THROW(exception("clCreateBuffer", status));
   }
-  cl_mem impl_;
+  buffer(buffer const &other) : memory_object(other) {}
+  buffer &operator=(buffer const &other)
+  { if (this != &other) memory_object::operator=(other);}
 };
 
 } // namespace ovxx::opencl

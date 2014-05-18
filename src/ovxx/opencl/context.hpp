@@ -8,47 +8,67 @@
 #ifndef ovxx_opencl_context_hpp_
 #define ovxx_opencl_context_hpp_
 
-#include <ovxx/detail/noncopyable.hpp>
 #include <ovxx/opencl/exception.hpp>
 #include <ovxx/opencl/device.hpp>
-#include <ovxx/opencl/command_queue.hpp>
-#include <ovxx/opencl/buffer.hpp>
-#include <ovxx/opencl/program.hpp>
 #include <vector>
-#include <iostream>
+#include <algorithm>
 
 namespace ovxx
 {
 namespace opencl
 {
-class context : ovxx::detail::noncopyable
+class context
 {
 public:
-  context(intptr_t *props, device::type t)
+  context() : impl_(0) {}
+  explicit context(cl_context c, bool retain = true)
+    : impl_(c)
+  {
+    if (c && retain) OVXX_OPENCL_CHECK_RESULT(clRetainContext, (impl_));
+  }
+  context(device const &d, cl_context_properties *props = 0)
+  {
+    OVXX_PRECONDITION(d.id() != 0);
+    cl_device_id id = d.id();
+    cl_int status;
+    impl_ = clCreateContext(props, 1, &id, context::callback, this, &status);
+    if (status < 0)
+      OVXX_DO_THROW(exception("clCreateContext", status));
+  }
+  context(cl_device_type t, cl_context_properties *props = 0)
   {
     cl_int status;
     impl_ = clCreateContextFromType(props, t, context::callback, this, &status);
     if (status < 0)
       OVXX_DO_THROW(exception("clCreateContextFromType", status));
   }
-  context(std::vector<device> const &d)
+  context(std::vector<device> const &d, cl_context_properties *props = 0)
   {
-    cl_device_id ids_[8];
-    cl_device_id *ids = 0;
-    if (d.size() > 8)
-      ids = new cl_device_id[d.size()];
-    else
-      ids = ids_;
-    std::copy(d.begin(), d.end(), ids);
+    std::vector<cl_device_id> ids(d.size());
+    std::transform(d.begin(), d.end(), ids.begin(), std::mem_fun_ref(&device::id));
     cl_int status;
-    impl_ = clCreateContext(0, d.size(), ids,
+    impl_ = clCreateContext(props, d.size(), &*ids.begin(),
 			    context::callback, this, &status);
     if (status < 0)
       OVXX_DO_THROW(exception("clCreateContext", status));
-    if (d.size() > 8)
-      delete [] ids;
   }
-  ~context() { OVXX_OPENCL_CHECK_RESULT(clReleaseContext, (impl_));}
+  context(context const &c) : impl_(c.impl_)
+  {
+    if (impl_) OVXX_OPENCL_CHECK_RESULT(clRetainContext, (impl_));
+  }
+  ~context() { if (impl_) OVXX_OPENCL_CHECK_RESULT(clReleaseContext, (impl_));}
+  context &operator=(context const &other)
+  {
+    if (this != &other)
+    {
+      if (impl_) OVXX_OPENCL_CHECK_RESULT(clReleaseContext, (impl_));
+      impl_ = other.impl_;
+      if (impl_) OVXX_OPENCL_CHECK_RESULT(clRetainContext, (impl_));
+    }
+    return *this;
+  }
+  bool operator==(context const &other) const { return impl_ == other.impl_;}
+  cl_context get() const { return impl_;}
   std::vector<device> devices() const
   {
     size_t bytes;
@@ -63,23 +83,10 @@ public:
     delete[] ids;
     return devices;
   }
-  command_queue *create_queue(device &d)
-  {
-    return new command_queue(impl_, d);
-  }
-  program *create_program(std::string const &src)
-  {
-    return new program(impl_, src);
-  }
-  template <typename T>
-  buffer *create_buffer(int flags, T *data, size_t len)
-  {
-    return new buffer(impl_, flags, data, len);
-  }
 private:
   void error(char const *msg)
   {
-    std::cerr << "Error : " << msg << std::endl;
+    OVXX_DO_THROW(std::runtime_error(msg));
   }
 
   static void callback(char const *msg, void const *, size_t, void *closure)
@@ -88,6 +95,8 @@ private:
   }
   cl_context impl_;
 };
+
+context default_context();
 
 } // namespace ovxx::opencl
 } // namespace ovxx

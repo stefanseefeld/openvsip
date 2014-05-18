@@ -109,7 +109,9 @@ struct backend_name<be::T>                  \
 
 OVXX_BE_NAME(user)
 OVXX_BE_NAME(transpose)
+OVXX_BE_NAME(opencl)
 OVXX_BE_NAME(cuda)
+OVXX_BE_NAME(blas)
 OVXX_BE_NAME(dense_expr)
 OVXX_BE_NAME(copy)
 OVXX_BE_NAME(op_expr)

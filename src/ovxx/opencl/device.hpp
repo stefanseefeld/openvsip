@@ -20,14 +20,14 @@ namespace opencl
 namespace detail
 {
 template <typename T>
-T info(cl_device_id id, cl_device_info i)
+inline T info(cl_device_id id, cl_device_info i)
 {
   T param;
   OVXX_OPENCL_CHECK_RESULT(clGetDeviceInfo, (id, i, sizeof(param), &param, 0));
   return param;
 }
 template <>
-std::string info(cl_device_id id, cl_device_info i)
+inline std::string info(cl_device_id id, cl_device_info i)
 {
   char param[1024];
   OVXX_OPENCL_CHECK_RESULT(clGetDeviceInfo, (id, i, sizeof(param), param, 0));
@@ -47,10 +47,40 @@ public:
     all = CL_DEVICE_TYPE_ALL
   };
 
-  device(cl_device_id id) : id_(id) {}
-
+  device() : id_(0) {}
+  explicit device(cl_device_id id, bool retain = true)
+    : id_(id)
+  {
+#ifdef CL_VERSION_1_2
+    if(id_ && retain)
+      OVXX_OPENCL_CHECK_RESULT(clRetainDevice, (id_));
+#else
+    (void) retain;
+#endif
+  }
+  device(device const &d) : id_(d.id_) {}
+  ~device() { OVXX_OPENCL_CHECK_RESULT(clReleaseDevice, (id_));}
+  device &operator=(device const &other)
+  {
+    if (this != &other)
+    {
+#ifdef CL_VERSION_1_2
+      if(id_) OVXX_OPENCL_CHECK_RESULT(clReleaseDevice, (id_));
+      id_ = other.id_;
+      if(id_) OVXX_OPENCL_CHECK_RESULT(clRetainDevice, (id_));
+#else
+      id_ = other.id_;
+#endif
+    }
+    return *this;
+  }
+  cl_device_id id() const { return id_;}
   std::string profile() const { return info<std::string>(CL_DEVICE_PROFILE);}
   std::string name() const { return info<std::string>(CL_DEVICE_NAME);}
+  std::string vendor() const { return info<std::string>(CL_DEVICE_VENDOR);}
+  std::string version() const { return info<std::string>(CL_DEVICE_VERSION);}
+  std::string driver_version() const { return info<std::string>(CL_DRIVER_VERSION);}
+  cl_device_type type() const { return info<cl_device_type>(CL_DEVICE_TYPE);}
 
   cl_uint address_bits() const { return info<cl_uint>(CL_DEVICE_ADDRESS_BITS);}
   bool available() const { return info<cl_bool>(CL_DEVICE_AVAILABLE);}
@@ -85,13 +115,15 @@ public:
   size_t max_parameter_size() const
   { return info<size_t>(CL_DEVICE_MAX_PARAMETER_SIZE);}
 
-  operator cl_device_id() const { return id_;}
 private:
   template <typename T>
   T info(cl_device_info i) const { return detail::info<T>(id_, i);}
 
   cl_device_id id_;
 };
+
+device default_device();
+
 } // namespace ovxx::opencl
 } // namespace ovxx
 

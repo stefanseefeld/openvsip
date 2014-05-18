@@ -17,6 +17,9 @@
 #ifdef OVXX_HAVE_BLAS
 # include <ovxx/lapack/blas.hpp>
 #endif
+#ifdef OVXX_HAVE_CLMATH
+# include <ovxx/opencl/blas.hpp>
+#endif
 #if OVXX_HAVE_CVSIP
 # include <ovxx/cvsip/matvec.hpp>
 #endif
@@ -89,6 +92,7 @@ template<>
 struct List<op::dot>
 {
   typedef make_type_list<be::user,
+			 be::opencl,
 			 be::cuda,
 			 be::blas,
 			 be::cvsip,

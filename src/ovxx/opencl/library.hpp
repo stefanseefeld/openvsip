@@ -5,14 +5,20 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#ifndef ovxx_opencl_hpp_
-#define ovxx_opencl_hpp_
+#ifndef ovxx_opencl_library_hpp_
+#define ovxx_opencl_library_hpp_
 
 #include <ovxx/opencl/platform.hpp>
-#include <ovxx/opencl/context.hpp>
-#include <ovxx/opencl/device.hpp>
-#include <ovxx/opencl/buffer.hpp>
-#include <ovxx/opencl/program.hpp>
-#include <ovxx/opencl/kernel.hpp>
+
+namespace ovxx
+{
+namespace opencl
+{
+
+void initialize();
+void finalize();
+
+} // namespace ovxx::opencl
+} // namespace ovxx
 
 #endif
