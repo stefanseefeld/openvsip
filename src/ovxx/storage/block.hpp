@@ -74,7 +74,7 @@ public:
 
   stored_block(Domain<dim> const &dom, map_type const &map = map_type())
     : layout_(dom),
-      smanager_(map.impl_allocator(), layout_.total_size()),
+      smanager_(map.impl_allocator(), layout_.total_size(), false),
       map_(map)
   {
     map_.impl_apply(dom);
@@ -82,7 +82,7 @@ public:
 
   stored_block(Domain<dim> const &dom, T value, map_type const &map = map_type())
     : layout_(dom),
-      smanager_(map.impl_allocator(), layout_.total_size()),
+      smanager_(map.impl_allocator(), layout_.total_size(), true),
       map_(map)
   {
     map_.impl_apply(dom);

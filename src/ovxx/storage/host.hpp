@@ -60,10 +60,14 @@ public:
   virtual void allocate()
   {
     if (own_data_ && !this->data_)
+    {
       this->data_ = allocator_->allocate<T>(this->size_);
+      OVXX_TRACE("host_storage::allocate(%d)", this->size_*sizeof(T));
+    }
   }
   virtual void deallocate()
   {
+    OVXX_TRACE("host_storage::deallocate(%d)", this->size_*sizeof(T));
     allocator_->deallocate(this->data_, this->size_);
     this->data_ = ptr_type();
   }

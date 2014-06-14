@@ -293,6 +293,44 @@ test_split_format(Domain<D> const& dom)
   }
 }
 
+template <typename       T,
+	  typename       O,
+	  dimension_type D>
+void
+test_no_user_format(Domain<D> const& dom)
+{
+  typedef Layout<D, O, dense, array> layout_type;
+  T* data = new T[dom.size()];
+  T* ptr;
+
+  // initially the block doesn't have user storage
+  stored_block<T, layout_type> block(dom);
+
+  // test_assert(block.admitted()     == true);
+  test_assert(block.user_storage() == no_user_format);
+
+  // Check find()
+  block.find(ptr);
+  test_assert(ptr == 0);
+
+  fill_array_storage<O>(data, dom, Filler<T>(3, 0));
+
+  block.release(false);
+  block.rebind(data);
+  block.admit(true);
+  test_assert(block.admitted() == true);
+
+  test_assert(check_block<O>(block, dom, Filler<T>(3, 0)));
+
+  // Check release with pointer
+  block.admit(true);
+  block.release(true, ptr);
+
+  test_assert(ptr == data);
+
+  delete[] data;
+}
+
 int
 main(int argc, char** argv)
 {
@@ -332,4 +370,6 @@ main(int argc, char** argv)
   test_interleaved_format<float, tuple<2, 0, 1> >(Domain<3>(25, 50, 13));
   test_interleaved_format<float, tuple<1, 2, 0> >(Domain<3>(25, 50, 13));
   test_interleaved_format<float, tuple<2, 1, 0> >(Domain<3>(25, 50, 13));
+
+  test_no_user_format<float,          row1_type>(Domain<1>(50));
 }

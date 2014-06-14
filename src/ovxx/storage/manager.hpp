@@ -43,18 +43,18 @@ public:
   // user-storage.
   typedef int location;
 
-  storage_manager(length_type size)
+  storage_manager(length_type size, bool allocate = true)
     : use_user_storage_(false),
-      host_storage_(allocator::get_default(), size, true),
+      host_storage_(allocator::get_default(), size, allocate),
 #if OVXX_HAVE_OPENCL
       opencl_storage_(size, false),
 #endif
       admitted_(true)
   {
   }
-  storage_manager(allocator *a, length_type size)
+  storage_manager(allocator *a, length_type size, bool allocate = true)
     : use_user_storage_(false),
-      host_storage_(a, size, true),
+      host_storage_(a, size, allocate),
 #if OVXX_HAVE_OPENCL
       opencl_storage_(size, false),
 #endif
@@ -344,7 +344,9 @@ private:
 	opencl_storage_.validate();
       }
     }
-#endif    
+#else
+    host_storage_.allocate();
+#endif
   }
   void invalidate(location where) const
   {

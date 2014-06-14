@@ -44,11 +44,16 @@ public:
   length_type size() const { return size_;}
 
   void find(T *&ptr) { ptr = data_;}
-  void rebind(T *ptr) { data_ = ptr;}
+  void rebind(T *ptr)
+  {
+    data_ = ptr;
+    this->format_ = array_format;
+  }
   void rebind(T *ptr, length_type size)
   {
     this->data_ = ptr;
     this->size_ = size;
+    this->format_ = array_format;
   }
 
   T get(index_type i) const { return data_[i];}
