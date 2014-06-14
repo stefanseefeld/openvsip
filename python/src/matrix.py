@@ -73,8 +73,12 @@ class matrix:
                 self.block.row(i).assign(value)
             return
         assert len(i) == 2
-        if isinstance(i[0], slice) or isinstance(i[1], slice):
+        if isinstance(i[0], slice) and isinstance(i[1], slice):
             _block.subblock(self.block, i).assign(value)
+        elif isinstance(i[0], slice):
+            _block.subblock(self.block.col(i[1]), (i[0],)).assign(value)
+        elif isinstance(i[1], slice):
+            _block.subblock(self.block.row(i[0]), (i[1],)).assign(value)
         else:
             self.block.put(i[0], i[1], value)
 

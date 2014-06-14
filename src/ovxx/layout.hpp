@@ -567,7 +567,7 @@ OVXX_APPLIED_ALIGNED_LAYOUT(aligned_1024)
 #undef OVXX_APPLIED_ALIGNED_LAYOUT
 
 /// Applied run-time layout.
-/// This object gets created for run-time extdata access.
+/// This object gets created for run-time DDA access.
 /// Efficiency is important to reduce library interface overhead.
 /// Don't store the whole Rt_layout, only the parts we need:
 /// the storage_format and part of the dimension-order.
@@ -580,13 +580,26 @@ public:
   // Construct an empty Applied_layout.  Used when it is known that object
   // will not be used.
   Applied_layout(empty_layout_type)
-    : cformat_(interleaved_complex)
+    : sformat_(array)
   {
     for (dimension_type d = 0; d < D; ++d)
     {
       order_[d] = 0;
       size_[d] = 0;
       stride_[d] = 1;
+    }
+  }
+
+  // Construct a layout from a domain holding physical coordinates.
+  // (The strides are all in elements, not rows / cols)
+  Applied_layout(Domain<D> const &dom, storage_format_type s = array)
+    : sformat_(s)
+  {
+    for (dimension_type d = D; d > 0; --d)
+    {
+      order_[d-1] = d-1;
+      size_[d-1] = dom[d-1].size();
+      stride_[d-1] = dom[d-1].stride();
     }
   }
 
@@ -605,7 +618,7 @@ public:
   Applied_layout(Rt_layout<D> const& layout,
 		 ExtentT const &extent,
 		 length_type elem_size = 1)
-    : cformat_(layout.storage_format)
+    : sformat_(layout.storage_format)
   {
     OVXX_PRECONDITION(!ovxx::is_aligned(layout.packing) ||
 	   layout.alignment == 0 || layout.alignment % elem_size == 0);
@@ -669,18 +682,18 @@ public:
       OVXX_PRECONDITION(idx[0] < size_[0] && idx[1] < size_[1] && idx[2] < size_[2]);
       return idx[order_[0]]*stride_[order_[0]] +
 	     idx[order_[1]]*stride_[order_[1]] + 
-	     idx[order_[2]];
+	     idx[order_[2]]*stride_[order_[2]];
     }
     else if (D == 2)
     {
       OVXX_PRECONDITION(idx[0] < size_[0] && idx[1] < size_[1]);
       return idx[order_[0]]*stride_[order_[0]] +
-	     idx[order_[1]];
+	     idx[order_[1]]*stride_[order_[1]];
     }
     else // (D == 1)
     {
       OVXX_PRECONDITION(idx[0] < size_[0]);
-      return idx[0];
+      return idx[order_[0]]*stride_[order_[0]];
     }
   }
   stride_type stride(dimension_type d) const VSIP_NOTHROW { return stride_[d];}
@@ -688,10 +701,10 @@ public:
 
   length_type total_size() const VSIP_NOTHROW
   { return size_[order_[0]] * stride_[order_[0]];}
-  storage_format_type storage_format() const VSIP_NOTHROW { return cformat_;}
+  storage_format_type storage_format() const VSIP_NOTHROW { return sformat_;}
 
 private:
-  storage_format_type cformat_;
+  storage_format_type sformat_;
   dimension_type order_[D];
   length_type size_[D];
   stride_type stride_[D];

@@ -1,5 +1,6 @@
 from numpy import array, arange
 from vsip import matrix
+from sys import exit
 
 # Create matrix from scratch
 m = matrix(dtype=float, rows=4, cols=4)
@@ -16,7 +17,8 @@ a.shape = (4,4)
 # Wrap it in a matrix
 m = matrix(array=a)
 m[0,0] = 3
-assert m[0,0] == a[0,0] == 3
+a[0,0] = 3
+assert m[0,0] == 3
 
 # Test rows access
 assert array(m[1:3] == a[1:3]).all()

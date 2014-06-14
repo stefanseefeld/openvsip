@@ -9,6 +9,7 @@ import numpy
 
 sync_in = 1
 sync_out = 2
+sync_inout = 3
 
 def _import_dda_module(dtype):
     mod = None

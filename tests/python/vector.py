@@ -14,7 +14,8 @@ a = arange(8, dtype=float)
 # Wrap it in a vector
 v = vector(array=a)
 v[0] = 3
-assert v[0] == a[0] == 3
+a[0] = 3
+assert v[0] == 3
 
 # Test slicing access
 assert array(v[1:3] == a[1:3]).all()

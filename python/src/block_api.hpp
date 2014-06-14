@@ -14,6 +14,7 @@
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <iostream>
+#include <ovxx/output.hpp>
 
 namespace pyvsip
 {
@@ -100,6 +101,9 @@ struct traits<3,T>
   }
 };
 
+template <dimension_type D, typename T>
+bpl::handle<PyArrayObject> make_array_(Block<D, T> &);
+
 // The one-argument constructor needs some manual dispatching,
 // as the argument may be an array or a length.
 template <typename T>
@@ -121,92 +125,155 @@ bpl::object construct(bpl::object o)
   switch (dim)
   {
     case 1:
-      return bpl::object(boost::shared_ptr<Block<1, T> >(new Block<1, T>(o)));
+    {
+      boost::shared_ptr<Block<1, T> > b(new Block<1, T>(dims[0]));
+      bpl::handle<PyArrayObject> ba = make_array_(*b);
+      PyArray_CopyInto(ba.get(), a);
+      return bpl::object(b);
+    }
     case 2:
-      return bpl::object(boost::shared_ptr<Block<2, T> >(new Block<2, T>(o)));
-    case 3:
-      return bpl::object(boost::shared_ptr<Block<3, T> >(new Block<3, T>(o)));
+    {
+      Domain<2> dom(dims[0], dims[1]);
+      boost::shared_ptr<Block<2, T> > b(new Block<2, T>(dom));
+      bpl::handle<PyArrayObject> ba = make_array_(*b);
+      PyArray_CopyInto(ba.get(), a);
+      return bpl::object(b);
+    }
     default:
       PYVSIP_THROW(ValueError, "unsupported shape");
   }
 }
 
+// Arrays may refer back to a block, in which case
+// the block needs to pin its (host) storage till 
+// the end of the array's lifetime.
+template <typename B>
+struct array_backref
+{
+  array_backref(B &b) : b_(b) { b_.ref_ptr();}
+  array_backref(array_backref const &r) : b_(r.b_) { b_.ref_ptr();}
+  ~array_backref() { b_.unref_ptr();}
+  B &b_;
+};
+
+// Construct an array referencing a block's data.
+// The 'inner' function. Use with care.
+template <dimension_type D, typename T>
+bpl::handle<PyArrayObject> make_array_(Block<D, T> &block)
+{
+  npy_intp dims[D];
+  npy_intp strides[D];
+  for (dimension_type d = 0; d != D; ++d)
+  {
+    dims[d] = block.size(D, d);
+    strides[d] = block.stride(D, d) * sizeof(T);
+  }
+  int flags = NPY_ARRAY_WRITEABLE;
+  bpl::handle<PyArrayObject> 
+    a((PyArrayObject *)
+      PyArray_New(&PyArray_Type, D, dims, get_typenum<T>(),
+		  strides, block.ptr(), 0, flags, 0));
+  return a;
+}
+
+
+// Construct an array referencing a block's data.
+// The 'outer' function. Add a backreference from the
+// array to the block to make sure the shared data (storage)
+// remains valid over the array's lifetime.
+template <dimension_type D, typename T>
+bpl::object make_array(bpl::object o)
+{
+  typedef Block<D, T> block_type;
+  block_type &block = bpl::extract<block_type &>(o);
+  bpl::handle<PyArrayObject> a = make_array_(block);
+  boost::shared_ptr<array_backref<block_type> > lock
+    (new array_backref<block_type>(block));
+  bpl::object backref(lock);
+  PyArray_SetBaseObject(a.get(), bpl::incref(backref.ptr()));
+  return bpl::object(bpl::handle<>(a));
+}
+
 // Calculate a domain corresponding to the given slice, assuming the given length.
+// To be able to generate a domain we also need the parent block's lay
 // The stride parameter is needed to account for non-unit-stride access (i.e. when
 // slicing subblocks)
-inline Domain<1> slice_to_domain(bpl::slice s, length_type size, stride_type stride)
+inline Domain<1> slice_to_domain(bpl::slice s, index_type offset, stride_type stride, length_type size)
 {
   Py_ssize_t start, stop, step, length;
   int status = PySlice_GetIndicesEx((PySliceObject*)s.ptr(), size,
 				    &start, &stop, &step, &length);
-  return Domain<1>(start*stride, step*stride, length);
+  return Domain<1>(offset + start*stride, step*stride, length);
 }
 
 template <typename T>
 bpl::object subblock1(Block<1, T> &b, bpl::slice s)
 {
-  Domain<1> dom = slice_to_domain(s, b.size(1, 0), b.stride(1, 0));
-  return bpl::object(boost::shared_ptr<Block<1, T> >(new Block<1, T>(b, dom.first(), dom)));
+  Domain<1> dom = slice_to_domain(s, b.offset(), b.stride(1, 0), b.size(1, 0));
+  return bpl::object(boost::shared_ptr<Block<1, T> >(new Block<1, T>(b, dom)));
 }
 
 template <typename T>
 bpl::object subblock2(Block<2, T> &b, bpl::slice i, bpl::slice j)
 {
-  Domain<1> domi = slice_to_domain(i, b.size(2, 0), b.stride(2, 0));
-  Domain<1> domj = slice_to_domain(j, b.size(2, 1), b.stride(2, 1));
-  int offset = domi.first() + domj.first();
+  Domain<1> domi = slice_to_domain(i, b.offset(), b.stride(2, 0), b.size(2, 0));
+  Domain<1> domj = slice_to_domain(j, 0, b.stride(2, 1), b.size(2, 1));
   return bpl::object(boost::shared_ptr<Block<2, T> >(new Block<2, T>
-    (b, offset, Domain<2>(domi, domj))));
+    (b, Domain<2>(domi, domj))));
 }
 
 template <typename T>
 bpl::object get_row(Block<2, T> &b, int i)
 {
-  // FIXME: this assumes row-major ordering
   if (i < 0) i += b.size(2, 0);
-  int start = i * b.stride(2, 0);
-  Domain<1> domain(0, 1, b.size(2, 1));
-  return bpl::object(boost::shared_ptr<Block<1, T> >(new Block<1, T>(b, start, domain)));
+  Domain<1> domain(i * b.stride(2, 0), 1, b.size(2, 1));
+  return bpl::object(boost::shared_ptr<Block<1, T> >(new Block<1, T>(b, domain)));
 }
 
 template <typename T>
 bpl::object get_col(Block<2, T> &b, int i)
 {
-  // FIXME: this assumes row-major ordering
   if (i < 0) i += b.size(2, 1);
-  int start = i * b.stride(2, 1);
-  Domain<1> domain(start, b.stride(2, 0), b.size(2, 0));
-  return bpl::object(boost::shared_ptr<Block<1, T> >(new Block<1, T>(b, start, domain)));
+  Domain<1> domain(i * b.stride(2, 1), b.stride(2, 0), b.size(2, 0));
+  return bpl::object(boost::shared_ptr<Block<1, T> >(new Block<1, T>(b, domain)));
 }
 
 template <dimension_type D, typename T>
 bpl::object real(Block<D, complex<T> > &b)
 {
   return bpl::object(boost::shared_ptr<Block<D, T> >
-    (new Block<D, T>(b, 0, ovxx::block_domain<D>(b)*2)));
+		     (new Block<D, T>(b, true)));
 }
 
 template <dimension_type D, typename T>
 bpl::object imag(Block<D, complex<T> > &b)
 {
   return bpl::object(boost::shared_ptr<Block<D, T> >
-    (new Block<D, T>(b, 1, ovxx::block_domain<D>(b)*2)));
+		     (new Block<D, T>(b, false)));
 }
 
 template <dimension_type D, typename T>
 void assign(Block<D, T> &b, Block<D, T> const &other)
 {
-  // TODO: dispatch to a dense assignment, if possible
   ovxx::assign<D>(b, other);
 }
 
 template <dimension_type D, typename T>
 void assign_scalar(Block<D, T> &b, T val)
 {
-  // TODO: dispatch to a dense assignment, if possible
   ovxx::expr::Scalar<D, T> scalar(val);
   ovxx::assign<D>(b, scalar);
 }
+
+template <dimension_type D, typename T>
+boost::shared_ptr<Block<D, T> > copy(Block<D, T> const &b)
+{
+  Domain<D> dom = block_domain<D>(b);
+  boost::shared_ptr<Block<D, T> > other(new Block<D, T>(dom));
+  ovxx::assign<D>(*other, b);
+  return other;
+}
+
 
 template <dimension_type D, typename T>
 bpl::object eq(Block<D, T> const &b1, Block<D, T> const &b2)
@@ -221,45 +288,45 @@ bpl::object eq(Block<D, T> const &b1, Block<D, T> const &b2)
   return bpl::object(boost::shared_ptr<Block<D, bool> >(result));
 }
 
-template <dimension_type D, typename T>
-Block<D, T> &iadd(Block<D, T> &b1, Block<D, T> const &b2)
-{
-  typedef Block<D, T> B;
-  typename ovxx::view_of<B>::type v1(b1);
-  typename ovxx::view_of<B>::const_type v2(const_cast<B&>(b2));
-  v1 += v2;
-  return b1;
-}
+// template <dimension_type D, typename T>
+// Block<D, T> &iadd(Block<D, T> &b1, Block<D, T> const &b2)
+// {
+//   typedef Block<D, T> B;
+//   typename ovxx::view_of<B>::type v1(b1);
+//   typename ovxx::view_of<B>::const_type v2(const_cast<B&>(b2));
+//   v1 += v2;
+//   return b1;
+// }
 
-template <dimension_type D, typename T>
-Block<D, T> &isub(Block<D, T> &b1, Block<D, T> const &b2)
-{
-  typedef Block<D, T> B;
-  typename ovxx::view_of<B>::type v1(b1);
-  typename ovxx::view_of<B>::const_type v2(const_cast<B&>(b2));
-  v1 -= v2;
-  return b1;
-}
+// template <dimension_type D, typename T>
+// Block<D, T> &isub(Block<D, T> &b1, Block<D, T> const &b2)
+// {
+//   typedef Block<D, T> B;
+//   typename ovxx::view_of<B>::type v1(b1);
+//   typename ovxx::view_of<B>::const_type v2(const_cast<B&>(b2));
+//   v1 -= v2;
+//   return b1;
+// }
 
-template <dimension_type D, typename T>
-Block<D, T> &imul(Block<D, T> &b1, Block<D, T> const &b2)
-{
-  typedef Block<D, T> B;
-  typename ovxx::view_of<B>::type v1(b1);
-  typename ovxx::view_of<B>::const_type v2(const_cast<B&>(b2));
-  v1 *= v2;
-  return b1;
-}
+// template <dimension_type D, typename T>
+// Block<D, T> &imul(Block<D, T> &b1, Block<D, T> const &b2)
+// {
+//   typedef Block<D, T> B;
+//   typename ovxx::view_of<B>::type v1(b1);
+//   typename ovxx::view_of<B>::const_type v2(const_cast<B&>(b2));
+//   v1 *= v2;
+//   return b1;
+// }
 
-template <dimension_type D, typename T>
-Block<D, T> &idiv(Block<D, T> &b1, Block<D, T> const &b2)
-{
-  typedef Block<D, T> B;
-  typename ovxx::view_of<B>::type v1(b1);
-  typename ovxx::view_of<B>::const_type v2(const_cast<B&>(b2));
-  v1 /= v2;
-  return b1;
-}
+// template <dimension_type D, typename T>
+// Block<D, T> &idiv(Block<D, T> &b1, Block<D, T> const &b2)
+// {
+//   typedef Block<D, T> B;
+//   typename ovxx::view_of<B>::type v1(b1);
+//   typename ovxx::view_of<B>::const_type v2(const_cast<B&>(b2));
+//   v1 /= v2;
+//   return b1;
+// }
 
 template <typename C, typename T>
 void define_compound_assignment(C &block, T)
@@ -288,16 +355,22 @@ template <dimension_type D, typename T>
 void define_block(char const *type_name)
 {
   typedef Block<D, T> block_type;
+  typedef array_backref<block_type> backref_type;
+
+  std::string backref_name(type_name);
+  backref_name.append("_backref");
+  bpl::class_<backref_type, boost::shared_ptr<backref_type>, boost::noncopyable>
+    backref(backref_name.c_str(), bpl::init<block_type&>());
 
   bpl::class_<block_type, boost::shared_ptr<block_type>, boost::noncopyable> 
     block(type_name, bpl::no_init);
   block.setattr("dtype", get_dtype<T>());
   /// Conversion to array.
-  block.def("__array__", &block_type::array);
+  block.def("__array__", make_array<D, T>);
   block.def("assign", assign<D, T>);
   block.def("assign", assign_scalar<D, T>);
 
-  block.def("copy", &block_type::copy);
+  block.def("copy", copy<D, T>);
 
   block.def("size", total_size<D,T>);
   block.def("size", size<D,T>);

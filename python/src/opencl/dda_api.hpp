@@ -17,9 +17,7 @@ using namespace ovxx;
 using namespace ovxx::python;
 namespace ocl = ovxx::opencl;
 
-// We instantiate different DDA types depending on runtime information.
-//
-template <dimension_type D, typename T> 
+template <dimension_type D, typename T>
 class dda_data_base
 {
 public:
@@ -41,51 +39,23 @@ private:
   data_type data_;
 };
 
-template <dimension_type D, typename T, vsip::dda::sync_policy S>
-class dense_dda_data : public dda_data_base<D, T>
-{
-  typedef Dense<D, T> block_type;
-  typedef Layout<D, tuple<0,1,2>, dense> layout_type;
-  typedef ocl::Data<block_type, S, layout_type> data_type;
-public:
-  dense_dda_data(block_type &b) : data_(b) {}
-  virtual ocl::buffer ptr() { return data_.ptr();}
-  virtual void sync_out() { data_.sync_out();}
-private:
-  data_type data_;
-};
-
 template <dimension_type D, typename T>
 std::auto_ptr<dda_data_base<D, T> >
 create_data(Block<D, T> &b, vsip::dda::sync_policy s)
 {
   std::auto_ptr<dda_data_base<D, T> > data;
-  if (b.is_dense())
-    switch (s)
-    {
-      case vsip::dda::in:
-        data.reset(new dense_dda_data<D, T, vsip::dda::in>(b.dense()));
-        break;
-      case vsip::dda::out:
-        data.reset(new dense_dda_data<D, T, vsip::dda::out>(b.dense()));
-        break;
-      case vsip::dda::inout:
-        data.reset(new dense_dda_data<D, T, vsip::dda::inout>(b.dense()));
-        break;
-    }
-  else
-    switch (s)
-    {
-      case vsip::dda::in:
-        data.reset(new dda_data<D, T, vsip::dda::in>(b));
-        break;
-      case vsip::dda::out:
-        data.reset(new dda_data<D, T, vsip::dda::out>(b));
-        break;
-      case vsip::dda::inout:
-        data.reset(new dda_data<D, T, vsip::dda::inout>(b));
-        break;
-    }
+  switch (s)
+  {
+    case vsip::dda::in:
+      data.reset(new dda_data<D, T, vsip::dda::in>(b));
+      break;
+    case vsip::dda::out:
+      data.reset(new dda_data<D, T, vsip::dda::out>(b));
+      break;
+    case vsip::dda::inout:
+      data.reset(new dda_data<D, T, vsip::dda::inout>(b));
+      break;
+  }
   return data;
 }
 

@@ -172,7 +172,10 @@ void define_program()
 
 void define_kernel()
 {
+  void (ocl::kernel::*exec)(ocl::command_queue&,size_t) = &ocl::kernel::exec;
   bpl::class_<ocl::kernel> kernel("kernel");
+  kernel.def("set_arg", &ocl::kernel::set_arg);
+  kernel.def("exec", exec);
   kernel.def("__call__", bpl::raw_function(run_kernel, 3));
 }
 

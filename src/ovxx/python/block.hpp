@@ -12,8 +12,17 @@
 #include <boost/python/slice.hpp>
 #include <ovxx/python/config.hpp>
 #include <numpy/arrayobject.h>
-#include <vsip/dense.hpp>
-#include <ovxx/assign.hpp>
+#include <ovxx/support.hpp>
+#include <vsip/domain.hpp>
+#include <ovxx/layout.hpp>
+#include <ovxx/storage.hpp>
+#include <ovxx/block_traits.hpp>
+#include <ovxx/view.hpp>
+#include <vsip/impl/local_map.hpp>
+#if OVXX_HAVE_OPENCL
+#include <ovxx/opencl/dda.hpp>
+#endif
+#include <stdexcept>
 
 namespace boost { namespace python {
 
@@ -108,305 +117,323 @@ bool is_storage_compatible(PyArrayObject const *a)
     return typenum == get_typenum<T>();
 }
 
-enum dimension_order { row, column};
-
-template <dimension_type D, typename T, typename M = Local_map> class Block;
-
-template <dimension_type D, typename T, typename M>
-class Block : public parallel::distributed_block<Block<D, T>, M>
+// For float and double we need a storage wrapper,
+// as we can't be sure what value-type our storage
+// has, to support real-valued views into complex storage.
+template <typename T>
+class sm_proxy
 {
-  typedef parallel::distributed_block<Block<D, T>, M> base_type;
-  typedef typename base_type::uT uT;
-
+  typedef shared_ptr<storage_manager<T> > smanager_ptr;
+  typedef shared_ptr<storage_manager<complex<T> > > csmanager_ptr;
 public:
-  typedef M map_type;
-
-  /// Create a new standalone Block which owns its data.
-  Block(Domain<D> const &dom, M const &map)
-    : base_type(dom, map)
-  {}
-
-  /// Create a new standalone Block which owns its data.
-  Block(Domain<D> const &dom, T value, M const &map)
-    : base_type(dom, map)
-  {}
-};
-
-// This type implements the VSIPL++ block concept, and can
-// thus be passed as a block parameter to any VSIPL++ operation.
-// But its layout is not a compile-time constant, and the block is
-// thus not particularly efficient.
-// However, if the layout happens to match, the object may hold
-// a much more efficient block representation internally, which can
-// be checked for and accessed as "dense", in which case performance
-// is much improved (including minimal-copy heterogeneous storage operations).
-template <dimension_type D, typename T>
-class Block<D, T>
-{
-  typedef Dense<D, T> block_type;
-public:
-  static dimension_type const dim = D;
   typedef T value_type;
-  typedef value_type &reference_type;
-  typedef value_type const &const_reference_type;
+  typedef T *ptr_type;
+  typedef T const *const_ptr_type;
+  typedef T &reference_type;
+  typedef T const &const_reference_type;
 
-  typedef Layout<dim, tuple<0,1,2>, vsip::dense, vsip::array> layout_type;
-
-  typedef Local_map map_type;
-
-  typedef value_type *ptr_type;
-  typedef value_type const *const_ptr_type;
-
-  /// Create a new empty (uninitialized) block.
-  Block(Domain<dim> const &dom, dimension_order o = row)
-    : block_(new block_type(dom)), array_(init_array(*block_))
+  // the 'normal' constructor
+  sm_proxy(allocator *a, length_type s, bool f)
+    : parent_(new storage_manager<T>(a, s, f))
   {}
-
-  /// Create a new block with initial value.
-  Block(Domain<dim> const &dom, value_type value, dimension_order o = row)
-    : block_(new block_type(dom)), array_(init_array(*block_))
-  {
-    ovxx::assign<dim>(block_, expr::Scalar<dim, T>(value));
-  }
-
-  /// Create a block from an existing C++ block.
-  /// (Used for to_python conversion.)
-  Block(block_type &block) : block_(&block), array_(init_array(*block_))
-  {}
-
-  /// Create a new Subblock of a parent block and a (sub-)domain.
-  /// Note that T1 != T for real and imag subblocks of complex parent blocks.
-  template <dimension_type D1, typename T1>
-  Block(Block<D1, T1> &base, length_type offset, Domain<dim> const &dom)
-  {
-    npy_intp dims[dim];
-    npy_intp strides[dim];
-    for (dimension_type d = 0; d != dim; ++d)
-    {
-      dims[d] = dom[d].length();
-      strides[d] = dom[d].stride() * itemsize();
-    }
-    array_ = bpl::handle<PyArrayObject>
-      ((PyArrayObject *)
-       PyArray_New(&PyArray_Type, dim, dims, get_typenum<value_type>(),
-		   strides, reinterpret_cast<value_type*>(base.ptr()) + offset,
-		   0, NPY_ARRAY_BEHAVED, 0));
-    /// Register the dependency.
-    PyArray_SetBaseObject(array_.get(), base.array().release());
-  }
-
-  /// Create a new block wrapping a numpy.ndarray.
-  /// This constructor is not exposed to Python, so we don't need to
-  /// do any checks here. (See the pyvsip::block() function below.)
-  Block(bpl::object o)
-    : array_(reinterpret_cast<PyArrayObject *>(bpl::xincref(o.ptr()))) {}
-
-  // Create a new block with the same shape and value-type as this,
-  // but always using dense storage, no matter the storage of this block.
-  shared_ptr<Block> copy() const
-  {
-    Domain<dim> dom = block_domain<dim>(*this);
-    shared_ptr<Block> other(new Block(dom));
-    ovxx::assign<dim>(*other, *this);
-    return other;
-  }
-
-  // If this block is dense, operations may access it in terms of a stored_block,
-  // which optimizes many operations (and avoids copies...)
-  bool is_dense() const { return block_.get();}
-  block_type &dense() { return *block_;}
-
-  length_type size() const 
-  { 
-    length_type total = 1;
-    for (dimension_type i = 0; i < dim; ++i) total *= size(dim, i);
-    return total;
-  }
-  length_type size(dimension_type, dimension_type d) const 
-  { return PyArray_DIM(array_.get(), d);}
-
-  // Note: None of the 'get' and 'put' functions below validate their arguments.
-  //       They may be called internally during assignment operations, which is assumed
-  //       not to generate out-of-bound indices.
-  //       For direct calls from Python code these functions are wrapped (see
-  //       block_api.hpp) in error-checking functions.
+  // the subblock constructor
+  sm_proxy(smanager_ptr sm) : parent_(sm) {}
+  // the real/imag component constructor
+  sm_proxy(csmanager_ptr sm, bool r) : cparent_(sm), real_(r) {}
 
   value_type get(index_type i) const
   {
-    sync();
-    return *reinterpret_cast<value_type*>(PyArray_GETPTR1(array_.get(), i));
+    if (parent_) return parent_->get(i);
+    else if (real_) return cparent_->at(i).real();
+    else return cparent_->at(i).imag();
   }
-  value_type get(index_type i, index_type j) const
+  void put(index_type i, value_type value)
   {
-    sync();
-    return *reinterpret_cast<value_type*>(PyArray_GETPTR2(array_.get(), i, j));
+    if (parent_) parent_->put(i, value);
+    else if (real_) cparent_->at(i).real() = value;
+    else cparent_->at(i).imag() = value;
   }
-  value_type get(index_type i, index_type j, index_type k) const
+  reference_type at(index_type i)
   {
-    sync();
-    return *reinterpret_cast<value_type*>(PyArray_GETPTR3(array_.get(), i, j, k));
+    if (parent_) return parent_->at(i);
+    else if (real_) return cparent_->at(i).real();
+    else return cparent_->at(i).imag();
   }
-
-  void put(index_type i, value_type v)
-  {
-    sync();
-    *reinterpret_cast<value_type*>(PyArray_GETPTR1(array_.get(), i)) = v;
-  }
-  void put(index_type i, index_type j, value_type v)
-  {
-    sync();
-    *reinterpret_cast<value_type*>(PyArray_GETPTR2(array_.get(), i, j)) = v;
-  }
-  void put(index_type i, index_type j, index_type k, value_type v)
-  {
-    sync();
-    *reinterpret_cast<value_type*>(PyArray_GETPTR3(array_.get(), i, j, k)) = v;
-  }
-
-  Block &operator +=(Block const &o)
-  {
-    typename view_of<Block>::type self(*this);
-    typename view_of<Block>::const_type other(const_cast<Block&>(o));
-    self += other;
-    return *this;
-  }
-  Block &operator +=(value_type s)
-  {
-    typename view_of<Block>::type self(*this);
-    typedef expr::Scalar<dim, value_type> S;
-    S scalar(s);
-    typename view_of<S>::const_type other(scalar);
-    self += other;
-    return *this;
-  }
-  Block &operator -=(Block const &o)
-  {
-    typename view_of<Block>::type self(*this);
-    typename view_of<Block>::const_type other(const_cast<Block&>(o));
-    self -= other;
-    return *this;
-  }
-  Block &operator -=(value_type s)
-  {
-    typename view_of<Block>::type self(*this);
-    typedef expr::Scalar<dim, value_type> S;
-    S scalar(s);
-    typename view_of<S>::const_type other(scalar);
-    self -= other;
-    return *this;
-  }
-  Block &operator *=(Block const &o)
-  {
-    typename view_of<Block>::type self(*this);
-    typename view_of<Block>::const_type other(const_cast<Block&>(o));
-    self *= other;
-    return *this;
-  }
-  Block &operator *=(value_type s)
-  {
-    typename view_of<Block>::type self(*this);
-    typedef expr::Scalar<dim, value_type> S;
-    S scalar(s);
-    typename view_of<S>::const_type other(scalar);
-    self *= other;
-    return *this;
-  }
-  Block &operator /=(Block const &o)
-  {
-    typename view_of<Block>::type self(*this);
-    typename view_of<Block>::const_type other(const_cast<Block&>(o));
-    self /= other;
-    return *this;
-  }
-  Block &operator /=(value_type s)
-  {
-    typename view_of<Block>::type self(*this);
-    typedef expr::Scalar<dim, value_type> S;
-    S scalar(s);
-    typename view_of<S>::const_type other(scalar);
-    self /= other;
-    return *this;
-  }
-
+  
   ptr_type ptr()
-  { return reinterpret_cast<ptr_type>(PyArray_DATA(array_.get()));}
-  const_ptr_type ptr() const
-  { return reinterpret_cast<const_ptr_type>(PyArray_DATA(array_.get()));}
-  vsip::stride_type stride(dimension_type, dimension_type i) const
-  { return stride(i) / itemsize();}
+  {
+    if (parent_) return parent_->ptr();
+    else if (real_) return reinterpret_cast<T*>(cparent_->ptr());
+    else return reinterpret_cast<T*>(cparent_->ptr()) + 1;
+  }
+#if OVXX_HAVE_OPENCL
+  opencl::buffer buffer()
+  {
+    if (parent_) return parent_->buffer();
+    else return cparent_->buffer();
+  }
+#endif
+private:
+  smanager_ptr parent_;
+  csmanager_ptr cparent_;
+  bool real_;
+};
 
-  bpl::handle<> array() const { sync(); return array_;}
+template <typename T,
+	  bool need_proxy = is_same<T, float>::value || is_same<T, double>::value>
+struct storage_traits;
+
+template <typename T>
+struct storage_traits<T, false>
+{
+  typedef storage_manager<T, ovxx::array> type;
+};
+
+template <typename T>
+struct storage_traits<T, true>
+{
+  typedef sm_proxy<T> type;
+};
+
+// This block is modeled after stored_block, but without support for user-storage.
+// In addition, this block-type uses a runtime layout, as it is also used for
+// subblocks, to avoid having to export many different block types to Python.
+template <dimension_type D, typename T>
+class Block
+{
+  typedef storage<T, ovxx::array> storage_type;
+  typedef typename storage_traits<T>::type smanager_type;
+  //  typedef storage_manager<T, ovxx::array> smanager_type;
+  template <dimension_type D1, typename T1>
+  friend class Block;
+public:
+  typedef T value_type;
+  typedef T &reference_type;
+  typedef T const &const_reference_type;
+
+  typedef Rt_layout<D> layout_type;
+  typedef Applied_layout<layout_type> applied_layout_type;
+
+  typedef typename smanager_type::ptr_type ptr_type;
+  typedef typename smanager_type::const_ptr_type const_ptr_type;
+
+  typedef Local_map map_type;
+
+  static dimension_type const dim = D;
+
+  /// Create a new empty (uninitialized) block.
+  Block(Domain<dim> const &dom, map_type const &map = map_type())
+    : offset_(0),
+      layout_(Rt_layout<dim>(dense, tuple<>(), array), dom),
+      smanager_(new smanager_type(map.impl_allocator(), layout_.total_size(), false)),
+      map_(map),
+      array_refcount_(0)
+  {
+    map_.impl_apply(dom);
+  }
+
+  /// Create a new block with initial value.
+  Block(Domain<dim> const &dom, T value, map_type const &map = map_type())
+    : offset_(0),
+      layout_(Rt_layout<dim>(dense, tuple<>(), array), dom),
+      smanager_(new smanager_type(map.impl_allocator(), layout_.total_size(), true)),
+      map_(map),
+      array_refcount_(0)
+  {
+    map_.impl_apply(dom);
+    for (index_type i = 0; i < layout_.total_size(); ++i)
+      smanager_->put(i, value);
+  }
+
+  // constructor used internally to form a subblock of parent.
+  // dom holds physical coordinates, i.e. strides express distance in elements,
+  // not rows / columns.
+  template <dimension_type D1>
+  Block(Block<D1, T> &parent, Domain<dim> const &dom)
+    : offset_(0),
+      layout_(dom),
+      smanager_(parent.smanager_),
+      array_refcount_(0)
+  {
+    for (index_type i = 0; i != dim; ++i) offset_ += dom[i].first();
+  }
+  // construct a real or imaginary component block from a complex
+  // parent block
+  Block(Block<D, complex<T> > &parent, bool real)
+    : offset_(parent.offset_),
+      layout_(parent.layout_),
+      smanager_(new smanager_type(parent.smanager_, real)),
+      array_refcount_(0)
+  {}
+
+  ~Block() {}
+
+  void increment_count() const {}
+  void decrement_count() const {}
+
+  map_type const &map() const VSIP_NOTHROW { return map_;}
+
+  length_type size() const VSIP_NOTHROW
+  {
+    length_type retval = layout_.size(0);
+    for (dimension_type d = 1; d < dim; ++d)
+      retval *= layout_.size(d);
+    return retval;
+  }
+
+  length_type size(dimension_type block_dim, dimension_type d) const VSIP_NOTHROW
+  {
+    OVXX_PRECONDITION((block_dim == 1 || block_dim == dim) && (d < block_dim));
+
+    if (block_dim == 1) return size();
+    else return layout_.size(d);
+  }
+
+  value_type get(index_type idx) const VSIP_NOTHROW
+  {
+    OVXX_PRECONDITION(idx < size());
+    return smanager_->get(offset_ + layout_.index(idx));
+  }
+  value_type get(index_type idx0, index_type idx1) const VSIP_NOTHROW
+  {
+    OVXX_PRECONDITION(idx0 < layout_.size(0) && idx1 < layout_.size(1));
+    return smanager_->get(offset_ + layout_.index(Index<2>(idx0, idx1)));
+  }
+  value_type get(index_type idx0, index_type idx1, index_type idx2) const VSIP_NOTHROW
+  {
+    OVXX_PRECONDITION(idx0 < layout_.size(0) && idx1 < layout_.size(1) &&
+		      idx2 < layout_.size(2));
+    return smanager_->get(offset_ + layout_.index(Index<3>(idx0, idx1, idx2)));
+  }
+
+  void put(index_type i, T v) VSIP_NOTHROW
+  {
+    OVXX_PRECONDITION(i < size());
+    smanager_->put(offset_ + layout_.index(i), v);
+  }
+  void put(index_type i, index_type j, T v) VSIP_NOTHROW
+  {
+    OVXX_PRECONDITION(i < layout_.size(0) && j < layout_.size(1));
+    smanager_->put(offset_ + layout_.index(Index<2>(i, j)), v);
+  }
+  void put(index_type i, index_type j, index_type k, T v)
+    VSIP_NOTHROW
+  {
+    OVXX_PRECONDITION(i < layout_.size(0) && j < layout_.size(1) &&
+		      k < layout_.size(2));
+    smanager_->put(offset_ + layout_.index(Index<3>(i, j, k)), v);
+  }
+
+  reference_type ref(index_type i) VSIP_NOTHROW
+  {
+    OVXX_PRECONDITION(i < size());
+    return smanager_->at(offset_ + i);
+  }
+  const_reference_type ref(index_type i) const VSIP_NOTHROW
+  {
+    OVXX_PRECONDITION(i < size());
+    return smanager_->at(offset_ + i);
+  }
+  reference_type ref(index_type i, index_type j)
+  {
+    OVXX_PRECONDITION(i < layout_.size(0) && j < layout_.size(1));
+    return smanager_->at(offset_ + layout_.index(Index<2>(i, j)));
+  }
+  const_reference_type ref(index_type i, index_type j) const
+  {
+    OVXX_PRECONDITION(i < layout_.size(0) && j < layout_.size(1));
+    return smanager_->at(offset_ + layout_.index(Index<2>(i, j)));
+  }
+  reference_type ref(index_type i, index_type j, index_type k)
+  {
+    OVXX_PRECONDITION(i < layout_.size(0) && j < layout_.size(1) && k < layout_.size(2));
+    return smanager_->at(offset_ + layout_.index(Index<3>(i, j, k)));
+  }
+  const_reference_type ref(index_type i, index_type j, index_type k) const
+  {
+    OVXX_PRECONDITION(i < layout_.size(0) && j < layout_.size(1) && k < layout_.size(2));
+    return smanager_->at(offset_ + layout_.index(Index<3>(i, j, k)));
+  }
+
+  index_type offset() const { return offset_;}
+  stride_type stride(dimension_type block_dim, dimension_type d) const
+  {
+    OVXX_PRECONDITION(block_dim == 1 || block_dim == dim);
+    OVXX_PRECONDITION(d < dim);
+    return layout_.stride(d);
+  }
+
+#define OVXX_DEFINE_OP(OP)						\
+  Block &operator OP(Block const &o)					\
+  {									\
+    typename view_of<Block>::type self(*this);				\
+    typename view_of<Block>::const_type other(const_cast<Block&>(o));	\
+    self OP other;							\
+    return *this;							\
+  }									\
+  Block &operator OP(value_type s)					\
+  {									\
+    typename view_of<Block>::type self(*this);				\
+    typedef expr::Scalar<dim, value_type> S;				\
+    S scalar(s);							\
+    typename view_of<S>::const_type other(scalar);			\
+    self OP other;							\
+    return *this;							\
+  }
+  OVXX_DEFINE_OP(+=)
+  OVXX_DEFINE_OP(-=)
+  OVXX_DEFINE_OP(*=)
+  OVXX_DEFINE_OP(/=)
+
+#undef OVXX_DEFINE_OP
+
+  ptr_type ptr() { return smanager_->ptr();}
+  const_ptr_type ptr() const { return smanager_->ptr();}
+#if OVXX_HAVE_OPENCL
+  opencl::buffer buffer() { return smanager_->buffer();}
+  opencl::buffer buffer() const { return smanager_->buffer();}
+#endif
+  void ref_ptr() { ++array_refcount_;}
+  void unref_ptr()
+  {
+    --array_refcount_;
+    // TODO: Add check to actually pin the storage
+    // if (!array_refcount_)
+    //   std::cout << "block unlocked " << std::endl;
+  }
 
 private:
-  static bpl::handle<PyArrayObject> init_array(block_type &block)
-  {
-    npy_intp dims[dim];
-    for (dimension_type d = 0; d != dim; ++d)
-      dims[d] = block.size(dim, d);
-    // int flags = o == row ? NPY_CORDER : NPY_FORTRANORDER;
-    int flags = NPY_CORDER;
-    return bpl::handle<PyArrayObject>
-      ((PyArrayObject *)
-       PyArray_New(&PyArray_Type, dim, dims, get_typenum<value_type>(),
-		   0, block.ptr(), 0, flags, 0));
-  }
-  // make sure data in host memory is valid
-  void sync() const { if (block_.get()) block_->ptr();}
-
-  // The following are useful wrappers around numpy.ndarray, but don't correspond to
-  // Block methods, and thus are hidden from public view.
-  npy_intp const *dims() const { return PyArray_DIMS(array_.get());}
-  npy_intp const *strides() const { return PyArray_STRIDES(array_.get());}
-  npy_intp stride(npy_intp i) const { return PyArray_STRIDE(array_.get(), i);}
-  npy_intp itemsize() const { return sizeof(T);}
-  bool writable() const { return PyArray_ISWRITEABLE(array_.get());}
-  
-  void reshape(int ndim, const npy_intp *dims, NPY_ORDER order=NPY_CORDER)
-  {
-    PyArray_Dims d = { const_cast<npy_intp *>(dims), ndim};
-    array_ = bpl::handle<PyArrayObject>(PyArray_Newshape(array_.get(), &d, order));
-  }
-
-  // block_ is only used if this object owns its data, i.e. is not
-  // merely a subblock of a parent block.
-  typename block_traits<block_type>::ptr_type block_;
-  bpl::handle<PyArrayObject> array_;
+  length_type offset_;
+  applied_layout_type layout_;
+  shared_ptr<smanager_type> smanager_;
+  map_type map_;
+  unsigned array_refcount_;
 };
 
 } // namespace ovxx::python
 
+// This is needed to prevent the default "has_put" check
+// which would attempt to instantiate an invalid 'put' overload
+// and cause a compile error.
 template <dimension_type D, typename T>
-struct distributed_local_block<python::Block<D, T> >
+struct is_modifiable_block<python::Block<D, T> >
 {
-  typedef python::Block<D, T> type;
-  typedef python::Block<D, T> proxy_type;
+  static bool const value = true;
 };
 
-template <dimension_type D, typename T, typename M>
-struct distributed_local_block<python::Block<D, T, M> >
+#if OVXX_HAVE_OPENCL
+namespace opencl
 {
-  typedef python::Block<D, T> type;
-  typedef typename python::Block<D, T, M>::proxy_local_block_type proxy_type;
+namespace detail
+{
+template <dimension_type D, typename T>
+struct has_buffer<python::Block<D, T> >
+{
+  static bool const value = true;
 };
-
-template <dimension_type D, typename T>
-python::Block<D, T> &get_local_block(python::Block<D, T> &block) { return block;}
-
-template <dimension_type D, typename T>
-python::Block<D, T> const &get_local_block(python::Block<D, T> const &block) { return block;}
-
-template <dimension_type D, typename T, typename M>
-inline typename python::Block<D, T> &
-get_local_block(python::Block<D, T, M> &block) { return block.get_local_block();}
-
-template <dimension_type D, typename T, typename M>
-inline typename python::Block<D, T> &
-get_local_block(python::Block<D, T, M> const &block) { return block.get_local_block();}
-
-template <dimension_type D, typename T>
-struct block_traits<python::Block<D, T> > : by_value_traits<python::Block<D, T> >
-{};
-
+} // namespace ovxx::opencl::detail
+} // namespace ovxx::opencl
+#endif
 } // namespace ovxx
 
 namespace vsip
@@ -416,10 +443,10 @@ struct get_block_layout<ovxx::python::Block<D, T> >
 {
   static dimension_type const dim = D;
 
-  typedef typename ovxx::python::Block<D, T>::layout_type type;
-  typedef typename type::order_type order_type;
-  static pack_type const packing = type::packing;
-  static storage_format_type const storage_format = type::storage_format;
+  typedef tuple<> order_type;
+  static pack_type const packing = dense;
+  static storage_format_type const storage_format = array;
+  typedef Layout<dim, order_type, packing, storage_format> type;
 };
 
 template <dimension_type D, typename T>
@@ -427,5 +454,6 @@ struct supports_dda<ovxx::python::Block<D, T> >
 { static bool const value = true;};
 
 } // namespace vsip
+
 
 #endif
