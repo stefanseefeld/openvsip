@@ -7,7 +7,7 @@ layout: layout
   <li>
     <h3><a href="{{site.url}}{{ post.url }}">{{ post.title }}</a>
       ({{post.date | | date: "%-d %B %Y"}})</h3>
-    {{ post.content }}
+    {{ post.excerpt }}
   </li>
   {% endfor %}
 </ul>

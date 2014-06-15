@@ -18,6 +18,6 @@ Many papers relating to VSIPL and VSIPL++ are listed [here](http://portals.omg.o
 Related software
 ================
 
-OpenVSIP draw many inspirations from other software. Among them:
+OpenVSIP draws many inspirations from other software. Among them:
 
 **TBD**

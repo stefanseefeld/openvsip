@@ -82,3 +82,10 @@ body
 }
 
 h1, h2, h3, h4, h5, h6 { color: #000080;}
+
+pre
+{
+  margin: 2em;
+  padding: 1em;
+  border: thin solid #bdb297;
+}
