@@ -41,7 +41,10 @@ struct vector_to_python
   static PyObject *convert(vsip::Vector<T> v)
   {
     detail::block_mod<T>::import();
-    shared_ptr<Block<1, T> > block(new Block<1, T>(v.block()));
+    // We can't keep a reference to arbitrary C++ blocks,
+    // so we pass by-value.
+    shared_ptr<Block<1, T> > block(new Block<1, T>(v.size()));
+    assign<1>(*block, v.block());
     bpl::dict ns;
     ns["vsip"] = bpl::import("vsip");
     ns["tmp"] = bpl::object(block);
@@ -55,7 +58,10 @@ struct matrix_to_python
   static PyObject *convert(vsip::const_Matrix<T> m)
   {
     detail::block_mod<T>::import();
-    shared_ptr<Block<2, T> > block(new Block<2, T>(m.block()));
+    // We can't keep a reference to arbitrary C++ blocks,
+    // so we pass by-value.
+    shared_ptr<Block<2, T> > block(new Block<2, T>(Domain<2>(m.size(0), m.size(1))));
+    assign<2>(*block, m.block());
     bpl::dict ns;
     ns["vsip"] = bpl::import("vsip");
     ns["tmp"] = bpl::object(block);
