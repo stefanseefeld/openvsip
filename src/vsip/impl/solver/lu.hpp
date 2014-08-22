@@ -63,7 +63,7 @@ public:
 
   template <mat_op_type tr, typename Block0, typename Block1>
   bool solve(const_Matrix<T, Block0> b, Matrix<T, Block1> x) VSIP_NOTHROW
-  { return backend_.solve<tr>(b, x);}
+  { return backend_.template solve<tr>(b, x);}
 private:
   backend_type backend_;
 };
@@ -89,7 +89,7 @@ public:
   Matrix<T> solve(const_Matrix<T, Block0> b) VSIP_NOTHROW
   {
     Matrix<T> x(b.size(0), b.size(1));
-    backend_.solve<tr>(b, x); 
+    backend_.template solve<tr>(b, x); 
     return x;
   }
 

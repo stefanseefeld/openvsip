@@ -13,7 +13,9 @@
 #include <ovxx/expr/unary.hpp>
 #include <ovxx/expr/binary.hpp>
 #include <ovxx/expr/ternary.hpp>
-#include <ovxx/expr/vmmul.hpp>
+// Forward-declare Vmmul rather than include its full definition
+// to work around a circular dependency.
+//#include <ovxx/expr/vmmul.hpp>
 #include <ovxx/expr/transposed.hpp>
 #include <ovxx/expr/subset.hpp>
 #include <ovxx/expr/component.hpp>
@@ -24,6 +26,9 @@ namespace ovxx
 {
 namespace expr
 {
+template <dimension_type D, typename Block0, typename Block1>
+class Vmmul;
+
 
 /// Traversal traverses expression block trees,
 /// applying the given functor to each node.

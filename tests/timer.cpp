@@ -1,7 +1,7 @@
 #include <ovxx/library.hpp>
 #include <ovxx/timer.hpp>
 
-int main(int &, char **)
+int main(int, char **)
 {
   ovxx::library lib;
   ovxx::timer t;

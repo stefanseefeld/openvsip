@@ -68,14 +68,14 @@ public:
 	    typename          Block0,
 	    typename          Block1>
   bool produ(const_Matrix<T, Block0> b, Matrix<T, Block1> x) VSIP_NOTHROW
-  { return backend_.produ<tr, ps>(b, x);}
+  { return backend_.template produ<tr, ps>(b, x);}
 
   template <mat_op_type       tr,
 	    product_side_type ps,
 	    typename          Block0,
 	    typename          Block1>
   bool prodv(const_Matrix<T, Block0> b, Matrix<T, Block1> x) VSIP_NOTHROW
-  { return backend_.prodv<tr, ps>(b, x);}
+  { return backend_.template prodv<tr, ps>(b, x);}
 
   template <typename Block>
   bool u(index_type low, index_type high, Matrix<T, Block> dest) VSIP_NOTHROW
@@ -136,7 +136,7 @@ public:
       x_cols = (tr == mat_ntrans) ? q_cols : q_rows;
     }
     Matrix<T> x(x_rows, x_cols);
-    backend_.produ<tr, ps>(b, x);
+    backend_.template produ<tr, ps>(b, x);
     return x;
   }
 
@@ -161,7 +161,7 @@ public:
       x_cols = (tr == mat_ntrans) ? vt_rows : vt_cols;
     }
     Matrix<T> x(x_rows, x_cols);
-    backend_.prodv<tr, ps>(b, x);
+    backend_.template prodv<tr, ps>(b, x);
     return x;
   }
 

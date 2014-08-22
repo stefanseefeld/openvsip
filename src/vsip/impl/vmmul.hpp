@@ -11,6 +11,7 @@
 
 #include <ovxx/block_traits.hpp>
 #include <ovxx/expr.hpp>
+#include <ovxx/expr/vmmul.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/impl/promotion.hpp>

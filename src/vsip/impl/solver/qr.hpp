@@ -80,12 +80,12 @@ public:
   template <mat_op_type tr, product_side_type ps,
 	    typename Block0, typename Block1>
   bool prodq(const_Matrix<T, Block0> b, Matrix<T, Block1> x) VSIP_NOTHROW
-  { return backend_.prodq<tr, ps>(b, x);}
+  { return backend_.template prodq<tr, ps>(b, x);}
 
   template <mat_op_type tr, typename Block0, typename Block1>
   bool rsol(const_Matrix<T, Block0> b, T const alpha, Matrix<T, Block1> x)
     VSIP_NOTHROW
-  { return backend_.rsol<tr>(b, alpha, x);}
+  { return backend_.template rsol<tr>(b, alpha, x);}
 
   template <typename Block0, typename Block1>
   bool covsol(const_Matrix<T, Block0> b, Matrix<T, Block1> x) VSIP_NOTHROW
