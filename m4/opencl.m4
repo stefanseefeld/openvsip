@@ -12,6 +12,10 @@ AC_DEFUN([OVXX_CHECK_OPENCL],
                    [Specify the installation prefix of the OpenCL libraries.  Headers
                     must be in PATH/include; libraries in PATH/lib64 or PATH/lib.]))
 
+  AC_ARG_WITH(opencl_libs,
+    AS_HELP_STRING([--with-opencl-libs=PATH],
+                   [Specify the installation directory of the OpenCL libraries.]))
+
   if test "$with_opencl" != "no"; then
 
     AC_ARG_WITH(clmath, AS_HELP_STRING([--with-clmath],[Build with clMath support.]))
@@ -27,12 +31,21 @@ AC_DEFUN([OVXX_CHECK_OPENCL],
     # Find CL/cl.h.
     AC_CHECK_HEADER([CL/cl.h],, [AC_MSG_ERROR([OpenCL enabled, but CL/cl.h not found.])])
 
-    if test "$ac_cv_sizeof_int_p" -eq 8 ; then
-      OPENCL_LDFLAGS="-L$with_opencl_prefix/lib/x86_64"
+    if test -n "$with_opencl_libs" ; then
+      OPENCL_LDFLAGS="-L$with_opencl_libs"
+    elif test "$ac_cv_sizeof_int_p" -eq 8 ; then
+      OPENCL_LDFLAGS="-L$with_opencl_prefix/lib64"
     else
-      OPENCL_LDFLAGS="-L$with_opencl_prefix/lib/x86"
+      OPENCL_LDFLAGS="-L$with_opencl_prefix/lib"
     fi
     OPENCL_LIBS="-lOpenCL"
+
+    # Find the library.
+    LDFLAGS="$LDFLAGS $OPENCL_LDFLAGS"
+    LIBS="$LIBS $OPENCL_LIBS"
+
+    AC_CHECK_LIB(OpenCL, clGetPlatformIDs, [], [AC_MSG_ERROR([OpenCL enabled but library not found.])])
+
 
     if test -n "$with_clmath" -o -n "$with_clmath_prefix"; then
       if test -n "$with_clmath_prefix"; then
@@ -47,10 +60,6 @@ AC_DEFUN([OVXX_CHECK_OPENCL],
       have_clmath=1
       OPENCL_LIBS="-lclAmdBlas $OPENCL_LIBS"
     fi
-
-    # Find the library.
-    LDFLAGS="$LDFLAGS $OPENCL_LDFLAGS"
-    LIBS="$LIBS $OPENCL_LIBS"
 
     # Declare it as found.	
     AC_SUBST(OVXX_HAVE_OPENCL, 1)

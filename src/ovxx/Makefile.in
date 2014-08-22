@@ -105,6 +105,9 @@ endif
 	$(call install_headers,cvsip)
 	$(call install_headers,fftw)
 	$(call install_headers,parallel)
+ifdef have_opencl
+	$(call install_headers,opencl)
+endif
 ifdef have_mpi
 	$(call install_headers,mpi)
 endif

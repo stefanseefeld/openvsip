@@ -21,7 +21,7 @@ $(top_builddir)/bin/ovxx-opencl-device-info: device_info.o
 all: $(top_builddir)/bin/ovxx-opencl-device-info
 
 install:
-	$(INSTALL_PROGRAM) bin/ovxx-opencl-device-info $(DESTDIR)$(bindir)
+	$(INSTALL_PROGRAM) $(top_builddir)/bin/ovxx-opencl-device-info $(DESTDIR)$(bindir)
 
 clean:
 	rm *.o

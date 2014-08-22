@@ -59,7 +59,12 @@ public:
 #endif
   }
   device(device const &d) : id_(d.id_) {}
-  ~device() { OVXX_OPENCL_CHECK_RESULT(clReleaseDevice, (id_));}
+  ~device()
+  {
+#ifdef CL_VERSION_1_2
+    OVXX_OPENCL_CHECK_RESULT(clReleaseDevice, (id_));
+#endif
+  }
   device &operator=(device const &other)
   {
     if (this != &other)
