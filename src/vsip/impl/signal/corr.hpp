@@ -37,6 +37,15 @@ struct List<op::corr<D, R, T, N, H> >
 			 be::generic>::type type;
 };
 
+template <dimension_type D,
+          support_region_type R,
+          typename T,
+          unsigned int N,
+          alg_hint_type H>
+struct Signature<op::corr<D, R, T, N, H> >
+{
+  typedef void type;
+};
 } // namespace ovxx::dispatcher
 } // namespace ovxx
 

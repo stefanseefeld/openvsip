@@ -534,13 +534,13 @@ struct Diagnostics<O, R(A1, A2, A3, A4, A5, A6), L, B, null_type, E>
   { return backend_diag<E, A1, A2, A3, A4, A5, A6>(a1, a2, a3, a4, a5, a6);}
 };
 
+#endif
+
 template <typename O, typename S>
 struct is_operation_supported
 {
   static bool const value = Diagnostics<O, S>::ct_valid;
 };
-
-#endif
 
 // If we can use variadic templates, life is easy...
 #if __GXX_EXPERIMENTAL_CXX0X__
