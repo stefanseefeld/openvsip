@@ -24,7 +24,8 @@ class em64t_st(variant):
                '--with-atlas-include=/usr/include/atlas',
                '--with-atlas-libdir=/usr/lib64/atlas',
                '--disable-mpi',
-               '--enable-timer=x64_tsc']
+               '--enable-timer=x64_tsc',
+               '--enable-python-bindings']
 
 class em64t_mt(variant):
     libdir = 'em64t/mt'
@@ -38,7 +39,24 @@ class em64t_mt(variant):
                '--disable-mpi',
                '--enable-timer=x64_tsc',
                '--enable-threading',
-               '--enable-omp']
+               '--enable-omp',
+               '--enable-python-bindings']
+
+class em64t_cl(variant):
+    libdir = 'em64t/cl'
+    options = ['CXXFLAGS="%s"'%' '.join(cxxflags),
+               'LDFLAGS="%s"'%' '.join(ldflags),
+               '--enable-shared-libs',
+               '--enable-fft=fftw',
+               '--with-lapack=atlas',
+               '--with-atlas-include=/usr/include/atlas',
+               '--with-atlas-libdir=/usr/lib64/atlas',
+               '--disable-mpi',
+               '--enable-timer=x64_tsc',
+               '--enable-threading',
+               '--enable-omp',
+               '--with-opencl',
+               '--enable-python-bindings']
 
 class em64t_mt_par(variant):
     libdir = 'em64t/mt-par'
@@ -73,6 +91,11 @@ class em64t_llvm(variant):
     libdir = 'em64t/llvm'
     options = ['CXX=clang++',
                'CXXFLAGS=--std=c++11',
+               '--enable-fft=fftw',
+               '--with-lapack=atlas',
+               '--with-atlas-include=/usr/include/atlas',
+               '--with-atlas-libdir=/usr/lib64/atlas',
+               '--enable-python-bindings',
                '--enable-timer=system']
 
 class test_package(package):
@@ -96,6 +119,12 @@ class x86_mt(package):
     host = 'i686-pc-linux-gnu'
     em64t_mt = em64t_mt
     em64t_st = em64t_st
+
+class x86_cl(package):
+
+    suffix = ''
+    host = 'i686-pc-linux-gnu'
+    em64t = em64t_cl
 
 class cvsip(package):
 

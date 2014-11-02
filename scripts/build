@@ -242,6 +242,7 @@ class Configure(Command):
 
         super(Configure, self).parse_args(args)
         self.package, self.variant = self.validate_variant(args.variant)
+        self.builddir = join(self.builddir, self.package.name, self.variant.name)
 
     def run(self):
 
@@ -273,6 +274,7 @@ class Build(Command):
 
         super(Build, self).parse_args(args)
         self.package, self.variant = self.validate_variant(args.variant)
+        self.builddir = join(self.builddir, self.package.name, self.variant.name)
 
     def run(self):
 
@@ -303,6 +305,7 @@ class Test(Command):
 
         super(Test, self).parse_args(args)
         self.package, self.variant = self.validate_variant(args.variant)
+        self.builddir = join(self.builddir, self.package.name, self.variant.name)
 
     def run(self):
 
@@ -331,6 +334,7 @@ class Install(Command):
 
         super(Install, self).parse_args(args)
         self.package, self.variant = self.validate_variant(args.variant)
+        self.builddir = join(self.builddir, self.package.name, self.variant.name)
 
     def run(self):
 
@@ -410,7 +414,7 @@ class Bdist(Command):
             # Insert --with-variant so multiple variants can coexist
             # in a single installation.
             self.variant.options.append('--with-variant=%s'%v)
-            self.builddir = join(top_builddir, self.package.name, v)
+            self.builddir = join(top_builddir, self.package.name, self.variant.name)
             install = Install(self)
             install.run()
         # Now package the combined install tree.
