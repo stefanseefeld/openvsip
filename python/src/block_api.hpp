@@ -9,7 +9,6 @@
 #define block_api_hpp_
 
 #include <ovxx/python/block.hpp>
-//#include "converter.hpp"
 #include <ovxx/view/fns_elementwise.hpp>
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
@@ -39,7 +38,7 @@ bpl::tuple shape(Block<D, T> const &b)
   bpl::list l;
   for (dimension_type d = 0; d != D; ++d)
     l.append(b.size(D, d));
-  return bpl::make_tuple(l);
+  return bpl::tuple(l);
 }
 
 template <dimension_type D, typename T> struct traits;
@@ -49,6 +48,8 @@ struct traits<1,T>
   typedef Block<1,T> B;
   static boost::shared_ptr<B> construct(length_type l)
   { return boost::shared_ptr<B>(new B(l));}
+  static boost::shared_ptr<B> construct_init(length_type l, T value)
+  { return boost::shared_ptr<B>(new B(l, value));}
   static T get(B const &b, index_type i) 
   {
     OVXX_PRECONDITION(i < b.size(1, 0));
@@ -66,6 +67,8 @@ struct traits<2,T>
   typedef Block<2,T> B;
   static boost::shared_ptr<B> construct(length_type r, length_type c)
   { return boost::shared_ptr<B>(new Block<2,T>(Domain<2>(r,c)));}
+  static boost::shared_ptr<B> construct_init(length_type r, length_type c, T value)
+  { return boost::shared_ptr<B>(new Block<2,T>(Domain<2>(r,c), value));}
   static T get(B const &b, index_type i, index_type j)
   {
     OVXX_PRECONDITION(i < b.size(2, 0));
@@ -85,6 +88,8 @@ struct traits<3,T>
   typedef Block<3,T> B;
   static boost::shared_ptr<B> construct(length_type d0, length_type d1, length_type d2)
   { return boost::shared_ptr<B>(new Block<3,T>(Domain<3>(d0,d1,d2)));}
+  static boost::shared_ptr<B> construct(length_type d0, length_type d1, length_type d2, T value)
+  { return boost::shared_ptr<B>(new Block<3,T>(Domain<3>(d0,d1,d2), value));}
   static T get(B const &b, index_type i, index_type j, index_type k)
   {
     OVXX_PRECONDITION(i < b.size(3, 0));
@@ -238,6 +243,13 @@ bpl::object get_col(Block<2, T> &b, int i)
   return bpl::object(boost::shared_ptr<Block<1, T> >(new Block<1, T>(b, domain)));
 }
 
+template <typename T>
+bpl::object diag(Block<2, T> &b)
+{
+  Domain<1> domain(0, b.stride(2, 0) + b.stride(2, 1), std::min(b.size(2, 0), b.size(2, 1)));
+  return bpl::object(boost::shared_ptr<Block<1, T> >(new Block<1, T>(b, domain)));
+}
+
 template <dimension_type D, typename T>
 bpl::object real(Block<D, complex<T> > &b)
 {
@@ -288,45 +300,17 @@ bpl::object eq(Block<D, T> const &b1, Block<D, T> const &b2)
   return bpl::object(boost::shared_ptr<Block<D, bool> >(result));
 }
 
-// template <dimension_type D, typename T>
-// Block<D, T> &iadd(Block<D, T> &b1, Block<D, T> const &b2)
-// {
-//   typedef Block<D, T> B;
-//   typename ovxx::view_of<B>::type v1(b1);
-//   typename ovxx::view_of<B>::const_type v2(const_cast<B&>(b2));
-//   v1 += v2;
-//   return b1;
-// }
-
-// template <dimension_type D, typename T>
-// Block<D, T> &isub(Block<D, T> &b1, Block<D, T> const &b2)
-// {
-//   typedef Block<D, T> B;
-//   typename ovxx::view_of<B>::type v1(b1);
-//   typename ovxx::view_of<B>::const_type v2(const_cast<B&>(b2));
-//   v1 -= v2;
-//   return b1;
-// }
-
-// template <dimension_type D, typename T>
-// Block<D, T> &imul(Block<D, T> &b1, Block<D, T> const &b2)
-// {
-//   typedef Block<D, T> B;
-//   typename ovxx::view_of<B>::type v1(b1);
-//   typename ovxx::view_of<B>::const_type v2(const_cast<B&>(b2));
-//   v1 *= v2;
-//   return b1;
-// }
-
-// template <dimension_type D, typename T>
-// Block<D, T> &idiv(Block<D, T> &b1, Block<D, T> const &b2)
-// {
-//   typedef Block<D, T> B;
-//   typename ovxx::view_of<B>::type v1(b1);
-//   typename ovxx::view_of<B>::const_type v2(const_cast<B&>(b2));
-//   v1 /= v2;
-//   return b1;
-// }
+template <dimension_type D, typename T>
+bpl::object neg(Block<D, T> const &b)
+{
+  typedef Block<D, T> B;
+  typename ovxx::view_of<B>::const_type v(const_cast<B&>(b));
+  Domain<D> dom = ovxx::block_domain<D>(b);
+  B *result = new B(dom);
+  typename ovxx::view_of<B>::type r(*result);
+  r = vsip::neg(v);
+  return bpl::object(boost::shared_ptr<B>(result));
+}
 
 template <typename C, typename T>
 void define_compound_assignment(C &block, T)
@@ -379,6 +363,7 @@ void define_block(char const *type_name)
   block.def("put", &traits<D,T>::put);
 
   block.def("__eq__", eq<D,T>);
+  block.def("__neg__", neg<D,T>);
 
   define_compound_assignment(block, T());
   define_complex_subblocks<D>(block, T());
@@ -386,6 +371,7 @@ void define_block(char const *type_name)
   /// Construction from shape
   if (D != 1) // The case D==1 is covered in construct<T> below
     bpl::def("block", traits<D, T>::construct);
+  bpl::def("block", traits<D, T>::construct_init);
   /// Conversion from array.
   bpl::def("block", construct<T>);
   /// Construct subblock
@@ -395,10 +381,9 @@ void define_block(char const *type_name)
     bpl::def("subblock", subblock2<T>);
     block.def("row", get_row<T>);
     block.def("col", get_col<T>);
+    block.def("diag", diag<T>);
   }
 
-  // bpl::to_python_converter<vsip::const_Vector<T>, view_to_python<T> >();
-  // bpl::to_python_converter<vsip::const_Matrix<T>, view_to_python<T> >();
 }
 
 }

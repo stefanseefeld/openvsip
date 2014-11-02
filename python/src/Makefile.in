@@ -44,7 +44,7 @@ else
   endef
 endif
 
-subdirs := math
+subdirs := selgen math math/solvers signal
 ifdef have_opencl
 subdirs += opencl
 endif

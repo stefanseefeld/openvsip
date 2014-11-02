@@ -150,8 +150,8 @@ public:
   void put(index_type i, value_type value)
   {
     if (parent_) parent_->put(i, value);
-    else if (real_) cparent_->at(i).real() = value;
-    else cparent_->at(i).imag() = value;
+    else if (real_) cparent_->at(i) = complex<T>(value, cparent_->at(i).imag());
+    else cparent_->at(i) = complex<T>(cparent_->at(i).real(), value);
   }
   reference_type at(index_type i)
   {
@@ -387,8 +387,8 @@ public:
 
 #undef OVXX_DEFINE_OP
 
-  ptr_type ptr() { return smanager_->ptr();}
-  const_ptr_type ptr() const { return smanager_->ptr();}
+  ptr_type ptr() { return smanager_->ptr() + offset_;}
+  const_ptr_type ptr() const { return smanager_->ptr() + offset_;}
 #if OVXX_HAVE_OPENCL
   opencl::buffer buffer() { return smanager_->buffer();}
   opencl::buffer buffer() const { return smanager_->buffer();}

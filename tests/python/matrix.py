@@ -1,9 +1,16 @@
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+
 from numpy import array, arange
 from vsip import matrix
 from sys import exit
 
 # Create matrix from scratch
-m = matrix(dtype=float, rows=4, cols=4)
+m = matrix(float, 4, 4)
 # Access array
 a = array(m, copy=False)
 m[0, 0] = 1

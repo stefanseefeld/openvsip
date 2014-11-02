@@ -10,54 +10,58 @@ import numpy
 def _import_block_module(dtype):
     mod = None
     if dtype == numpy.float32:
-        _temp = __import__('vsip', globals(), locals(), ['fblock'], -1) 
-        mod = _temp.fblock
+        _temp = __import__('vsip', globals(), locals(), ['_block_f'], -1) 
+        mod = _temp._block_f
     elif dtype in (float, numpy.float64):
-        _temp = __import__('vsip', globals(), locals(), ['dblock'], -1) 
-        mod = _temp.dblock
+        _temp = __import__('vsip', globals(), locals(), ['_block_d'], -1) 
+        mod = _temp._block_d
     elif dtype == complex:
-        _temp = __import__('vsip', globals(), locals(), ['cdblock'], -1) 
-        mod = _temp.cdblock
+        _temp = __import__('vsip', globals(), locals(), ['_block_cd'], -1) 
+        mod = _temp._block_cd
     elif dtype == int:
-        _temp = __import__('vsip', globals(), locals(), ['iblock'], -1) 
-        mod = _temp.cdblock
+        _temp = __import__('vsip', globals(), locals(), ['_block_i'], -1) 
+        mod = _temp._block_i
     elif dtype == bool:
-        _temp = __import__('vsip', globals(), locals(), ['bblock'], -1) 
-        mod = _temp.cdblock
+        _temp = __import__('vsip', globals(), locals(), ['_block_b'], -1) 
+        mod = _temp._block_b
     if not mod:
         raise ValueError, 'Unsupported dtype %s'%(dtype)
     return mod
 
-def block(array=None, dtype=None, shape=None):
+def block(*args, **kwargs):
     """Create a block.
 
     Valid argument combinations:
 
-      (array): an existing array-like container to wrap.
-      (dtype, shape): element-type and shape for a new block.
+      block(dtype, shape): create a block of the given type and shape
+      block(dtype, shape, value): create a block of the given type and shape and initialize it to value
+      block(array=A): create a block from an existing array-like container
     """
 
     # First figure out the data type so we know which
     # module to import.
-    if array is not None:
+    if args:
+        dtype = args[0]
+        shape = args[1]
+        value = len(args) == 3 and args[2] or None
+            
+    elif 'array' in kwargs:
         # make sure we have all the required metadata
-        array = numpy.array(array, copy=False)
+        array = numpy.array(kwargs['array'], copy=False)
         dtype = array.dtype
-    else:
-        assert dtype and shape
 
     mod = _import_block_module(dtype)
 
-    if array is not None:
+    if 'array' in kwargs:
         return mod.block(array)
         
     # Create a new block
     if len(shape) == 1:
-        return mod.block(shape[0])
+        return value and mod.block(shape[0], value) or mod.block(shape[0])
     elif len(shape) == 2:
-        return mod.block(shape[0], shape[1])
+        return value and mod.block(shape[0], shape[1], value) or mod.block(shape[0], shape[1])
     elif len(shape) == 3:
-        return mod.block(shape[0], shape[1], shape[2])
+        return value and mod.block(shape[0], shape[1], shape[2], value) or mod.block(shape[0], shape[1], shape[2])
     else:
         raise ValueError, 'Unsupported shape %s'%shape
     

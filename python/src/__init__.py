@@ -14,3 +14,6 @@ from numpy import float32, float64
 
 from vector import *
 from matrix import *
+
+row = 0
+col = 1

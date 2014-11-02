@@ -1,8 +1,15 @@
+#
+# Copyright (c) 2013 Stefan Seefeld
+# All rights reserved.
+#
+# This file is part of OpenVSIP. It is made available under the
+# license contained in the accompanying LICENSE.BSD file.
+
 from numpy import array, arange
 from vsip import vector
 
 # Create vector from scratch
-v = vector(dtype=float, length=8)
+v = vector(float, 8)
 # Access as array (by-reference)
 a = array(v, copy=False)
 v[0] = 3

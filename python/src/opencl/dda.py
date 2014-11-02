@@ -14,11 +14,11 @@ sync_inout = 3
 def _import_dda_module(dtype):
     mod = None
     if dtype == numpy.float32:
-        _temp = __import__('vsip.opencl', globals(), locals(), ['fdda'], -1) 
-        mod = _temp.fdda
+        _temp = __import__('vsip.opencl', globals(), locals(), ['_dda_f'], -1) 
+        mod = _temp._dda_f
     elif dtype in (float, numpy.float64):
-        _temp = __import__('vsip.opencl', globals(), locals(), ['ddda'], -1) 
-        mod = _temp.ddda
+        _temp = __import__('vsip.opencl', globals(), locals(), ['_dda_d'], -1) 
+        mod = _temp._dda_d
     if not mod:
         raise ValueError, 'Unsupported dtype %s'%(dtype)
     return mod

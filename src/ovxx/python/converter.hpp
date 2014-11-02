@@ -26,12 +26,12 @@ template <> struct block_mod<T>            \
   static void import() { bpl::import(#M);} \
 };
 
-OVXX_PYTHON_IMPORT(bool, vsip.iblock)
-OVXX_PYTHON_IMPORT(int, vsip.bblock)
-OVXX_PYTHON_IMPORT(float, vsip.fblock)
-OVXX_PYTHON_IMPORT(double, vsip.dblock)
-OVXX_PYTHON_IMPORT(complex<float>, vsip.cfblock)
-OVXX_PYTHON_IMPORT(complex<double>, vsip.cdblock)
+OVXX_PYTHON_IMPORT(bool, vsip._block_i)
+OVXX_PYTHON_IMPORT(int, vsip._block_b)
+OVXX_PYTHON_IMPORT(float, vsip._block_f)
+OVXX_PYTHON_IMPORT(double, vsip._block_d)
+OVXX_PYTHON_IMPORT(complex<float>, vsip._block_cf)
+OVXX_PYTHON_IMPORT(complex<double>, vsip._block_cd)
 
 }
 
