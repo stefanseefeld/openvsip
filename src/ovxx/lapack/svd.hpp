@@ -133,6 +133,7 @@ class svd
 {
   typedef Layout<2, col2_type, dense, array> data_layout_type;
   typedef Strided<2, T, data_layout_type> data_block_type;
+  typedef typename scalar_of<T>::type S;
 
 public:
   svd(length_type, length_type, storage_type, storage_type) 
@@ -145,7 +146,7 @@ public:
   storage_type vstorage() const VSIP_NOTHROW { return vst_;}
 
   template <typename B0, typename B1>
-  bool decompose(Matrix<T, B0>, Vector<float, B1>) VSIP_NOTHROW;
+  bool decompose(Matrix<T, B0>, Vector<S, B1>) VSIP_NOTHROW;
 
   template <mat_op_type tr, product_side_type ps,
 	    typename B0, typename B1>
@@ -277,7 +278,7 @@ svd<T>::svd(svd const &other) VSIP_THROW((std::bad_alloc))
 template <typename T>
 template <typename B0, typename B1>
 bool
-svd<T>::decompose(Matrix<T, B0> m, Vector<float, B1> dest)
+svd<T>::decompose(Matrix<T, B0> m, Vector<S, B1> dest)
   VSIP_NOTHROW
 {
   OVXX_PRECONDITION(m.size(0) == m_ && m.size(1) == n_);

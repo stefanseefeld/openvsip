@@ -48,6 +48,7 @@ class svd<T, by_reference>
     ovxx::dispatcher::op::svd, T>::type
   backend_type;
 
+  typedef typename ovxx::scalar_of<T>::type S;
 public:
   svd(length_type rows, length_type cols, storage_type ust, storage_type vst)
     VSIP_THROW((std::bad_alloc))
@@ -60,7 +61,7 @@ public:
   storage_type vstorage() const VSIP_NOTHROW { return backend_.vstorage();}
 
   template <typename Block0, typename Block1>
-  bool decompose(Matrix<T, Block0> m, Vector<scalar_f, Block1> dest) VSIP_NOTHROW
+  bool decompose(Matrix<T, Block0> m, Vector<S, Block1> dest) VSIP_NOTHROW
   { return backend_.decompose(m, dest);}
 
   template <mat_op_type       tr,
@@ -96,6 +97,7 @@ class svd<T, by_value>
     ovxx::dispatcher::op::svd, T>::type
   backend_type;
 
+  typedef typename ovxx::scalar_of<T>::type S;
 public:
   svd(length_type rows, length_type cols, storage_type ust, storage_type vst)
     VSIP_THROW((std::bad_alloc))
@@ -106,10 +108,10 @@ public:
   storage_type ustorage() const VSIP_NOTHROW { return backend_.ustorage();}
   storage_type vstorage() const VSIP_NOTHROW { return backend_.vstorage();}
   template <typename Block0>
-  Vector<scalar_f>
+  Vector<S>
   decompose(Matrix<T, Block0> m) VSIP_THROW((std::bad_alloc, computation_error))
   {
-    Vector<scalar_f> dest(backend_.order());
+    Vector<S> dest(backend_.order());
     if (!backend_.decompose(m, dest))
       OVXX_DO_THROW(computation_error("svd::decompose"));
     return dest;
