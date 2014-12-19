@@ -126,7 +126,7 @@ void
 apply_svd(
   svd<T, by_reference>&    sv,
   Matrix<T, Block0>        a,
-  Vector<scalar_f, Block1> sv_s,
+  Vector<typename scalar_of<T>::type, Block1> sv_s,
   Matrix<T, Block2>        sv_u,
   Matrix<T, Block3>        sv_v)
 {
@@ -153,7 +153,7 @@ template <typename              T,
 void
 apply_svd(svd<T, by_value>&        sv,
 	  Matrix<T, Block0>        a,
-	  Vector<scalar_f, Block1> sv_s,
+	  Vector<typename scalar_of<T>::type, Block1> sv_s,
 	  Matrix<T, Block2>        sv_u,
 	  Matrix<T, Block3>        sv_v)
 {
@@ -252,7 +252,7 @@ test_svd(storage_type     ustorage,
   length_type u_cols = ustorage == svd_uvfull ? m : p;
   length_type v_cols = vstorage == svd_uvfull ? n : p;
 
-  Vector<float> sv_s(p);		// singular values
+  Vector<scalar_type> sv_s(p);		// singular values
   Matrix<T>     sv_u(m, u_cols);	// U matrix
   Matrix<T>     sv_v(n, v_cols);	// V matrix
 
@@ -317,24 +317,22 @@ test_svd(storage_type     ustorage,
       errx = errx / norm_est;
 
 #if VERBOSE
-      cout << "a    = " << endl << a  << endl;
-      cout << "sv_s = " << endl << sv_s << endl;
-      cout << "sv_u = " << endl << sv_u << endl;
-      cout << "sv_v = " << endl << sv_v << endl;
-      cout << "chk  = " << endl << chk << endl;
-      cout << "err = " << err << "   "
-	   << "norm = " << norm_est << endl;
-      cout << "eps = " << test::precision<scalar_type>::eps << endl;
-      cout << "p:" << p << "   "
-	   << "err = " << err   << "   "
-	   << "errx = " << errx << endl;
+      std::cout << "a    = " << '\n' << a  << '\n'
+		<< "sv_s = " << '\n' << sv_s << '\n'
+		<< "sv_u = " << '\n' << sv_u << '\n'
+		<< "sv_v = " << '\n' << sv_v << '\n'
+		<< "chk  = " << '\n' << chk << '\n'
+		<< "err = " << err << "   " << "norm = " << norm_est << '\n'
+		<< "eps = " << test::precision<scalar_type>::eps << '\n'
+		<< "p:" << p << "   " << "err = " << err   << "   "
+		<< "errx = " << errx << std::endl;
 #endif
 
       if (err > 5.0)
       {
 	for (index_type r=0; r<m; ++r)
 	  for (index_type c=0; c<n; ++c)
-	    test_assert(equal(chk(r, c), a(r, c)));
+	      test_assert(equal(chk(r, c), a(r, c)));
       }
     }
 
@@ -450,11 +448,13 @@ test_svd_ident(storage_type ustorage,
 	       length_type  n,
 	       length_type  loop)
 {
+  typedef typename scalar_of<T>::type scalar_type;
+
   length_type p = std::min(m, n);
   test_assert(m > 0 && n > 0);
 
   Matrix<T>     a(m, n);
-  Vector<float> sv_s(p);	// singular values
+  Vector<scalar_type> sv_s(p);	// singular values
   Matrix<T>     sv_u(m, m);	// U matrix
   Matrix<T>     sv_v(n, n);	// V matrix
 
@@ -485,7 +485,7 @@ test_svd_rand(storage_type ustorage,
   test_assert(m > 0 && n > 0);
 
   Matrix<T>     a(m, n);
-  Vector<float> sv_s(p);	// singular values
+  Vector<scalar_type> sv_s(p);	// singular values
   Matrix<T>     sv_u(m, m);	// U matrix
   Matrix<T>     sv_v(n, n);	// U matrix
 

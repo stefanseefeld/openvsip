@@ -100,7 +100,7 @@ solve_lu(
 
   typedef typename scalar_of<T>::type scalar_type;
 
-  Vector<float> sv_s(n);
+  Vector<scalar_type> sv_s(n);
   svd<T, by_reference> sv(n, n, svd_uvnos, svd_uvnos);
   sv.decompose(a, sv_s);
 
@@ -247,7 +247,7 @@ solve_lu_dist(
 
   typedef typename scalar_of<T>::type scalar_type;
 
-  Vector<float> sv_s(n);
+  Vector<scalar_type> sv_s(n);
   svd<T, by_reference> sv(n, n, svd_uvnos, svd_uvnos);
   sv.decompose(a, sv_s);
 
