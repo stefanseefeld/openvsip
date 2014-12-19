@@ -1,3 +1,9 @@
+a:link, a:visited, a:hover, a:active 
+{
+  color: #000080;
+  text-decoration: none;
+}
+
 body
 {
   background-color: #ffffff;
