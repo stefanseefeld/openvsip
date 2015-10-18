@@ -20,11 +20,33 @@ AC_ARG_WITH([lapack],
                   The default is to probe for atlas, and generic,
 	          using the first one found.  OpenVSIP understands the
 		  following LAPACK library selections: mkl (Intel Math Kernel
-		  Library), acml (AMD Core Math Library), atlas (system
+		  Library), acml (AMD Core Math Library), openBLAS (system
+		  openBLAS installation),
+		  atlas (system
 		  ATLAS/LAPACK installation), lapacke, generic (system generic
 		  LAPACK installation). 
 		  Specifying 'no' disables the search for a LAPACK library.]),,
   [with_lapack=probe])
+
+AC_ARG_WITH(openblas_prefix,
+  AS_HELP_STRING([--with-openblas-prefix=PATH],
+                 [Specify the installation prefix of the openBLAS library.
+	          Headers must be in PATH/include; libraries in PATH/lib.
+	          (Enables LAPACK).]))
+
+AC_ARG_WITH(openblas_libdir,
+  AS_HELP_STRING([--with-openblas-libdir=PATH],
+                 [Specify the directory containing openBLAS libraries.
+	          (Enables LAPACK).]))
+
+AC_ARG_WITH(openblas_include,
+  AS_HELP_STRING([--with-openblas-include=PATH],
+                 [Specify the directory containing openBLAS header files.
+	          (Enables LAPACK).]))
+
+AC_ARG_ENABLE(openblas_threads,
+  AS_HELP_STRING([--enable-openblas-threads],
+		 [Indicate that a multi-threaded openBLAS library should be used.]),,)
 
 AC_ARG_WITH(atlas_prefix,
   AS_HELP_STRING([--with-atlas-prefix=PATH],
@@ -41,6 +63,10 @@ AC_ARG_WITH(atlas_include,
   AS_HELP_STRING([--with-atlas-include=PATH],
                  [Specify the directory containing ATLAS header files.
 	          (Enables LAPACK).]))
+
+AC_ARG_ENABLE(atlas_threads,
+  AS_HELP_STRING([--enable-atlas-threads],
+		 [Indicate that a multi-threaded ATLAS library should be used.]),,)
 
 AC_ARG_WITH(acml_prefix,
   AS_HELP_STRING([--with-acml-prefix=PATH],
@@ -91,7 +117,7 @@ if test "$with_lapack" != "no"; then
       lapack_packages="mkl"
     ;;
     yes | probe)
-      lapack_packages="atlas lapacke generic_wo_blas generic_with_blas"
+      lapack_packages="openblas atlas lapacke generic_wo_blas generic_with_blas"
     ;;
     generic)
       lapack_packages="generic_wo_blas generic_with_blas"
@@ -133,6 +159,39 @@ if test "$with_lapack" != "no"; then
         LIBS="$keep_LIBS -lacml"
         cblas_style="3"	# use acml_cblas.h
       ;;
+      openblas)
+        AC_MSG_CHECKING([for openBLAS library])
+
+        if test "$with_openblas_libdir" != ""; then
+	  openblas_libdir=" -L$with_openblas_libdir"
+        elif test "$with_openblas_prefix" != ""; then
+	  openblas_libdir=" -L$with_openblas_prefix/lib"
+        else
+	  openblas_libdir=""
+        fi
+
+        if test "$with_openblas_include" != ""; then
+	  openblas_incdir=" -I$with_openblas_include"
+        elif test "$with_openblas_prefix" != ""; then
+	  openblas_incdir=" -I$with_openblas_prefix/include"
+        else
+	  openblas_incdir=""
+        fi
+
+	if test "$enable_openblas_threads" = yes; then
+          oblas=openblaso
+        else
+          oblas=openblas
+        fi
+
+	LDFLAGS="$keep_LDFLAGS$openblas_libdir"
+        CPPFLAGS="$keep_CPPFLAGS$openblas_incdir"
+
+ 	AC_CHECK_LIB([$oblas], [cblas_sgemm], 
+          [AC_MSG_RESULT([Using openBLAS])
+	   LIBS="$LIBS -l$oblas"],)
+        cblas_style="1"	# use cblas.h
+      ;;
       atlas)
         AC_MSG_CHECKING([for LAPACK/ATLAS library ($trypkg w/CBLAS)])
 
@@ -154,7 +213,18 @@ if test "$with_lapack" != "no"; then
 
         LDFLAGS="$keep_LDFLAGS$atlas_libdir"
         CPPFLAGS="$keep_CPPFLAGS$atlas_incdir"
-        LIBS="$keep_LIBS -llapack -lcblas -lf77blas -latlas"
+
+	if test "$enable_atlas_threads" = yes; then
+          atlas_310=tatlas
+        else
+          atlas_310=satlas
+        fi
+ 	AC_CHECK_LIB([$atlas_310], [ATL_buildinfo], 
+	  [AC_MSG_RESULT([Using ATLAS 3.10.0])
+           LIBS="$LIBS -l$atlas_310 -llapack"],
+	  [AC_CHECK_LIB([atlas], [ATL_buildinfo], 
+	     [AC_MSG_RESULT([Using ATLAS 3.8])
+              LIBS="$LIBS -latlas_lapack -llapack -lcblas -latlas -lF77"],)])
         cblas_style="1"	# use cblas.h
       ;;
       atlas_no_cblas)
