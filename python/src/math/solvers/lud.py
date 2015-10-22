@@ -5,26 +5,15 @@
 # This file is part of OpenVSIP. It is made available under the
 # license contained in the accompanying LICENSE.BSD file.
 
-import numpy
+from vsip import import_module
 from vsip import vector, matrix
 
-def _import_module(dtype):
-    mod = None
-    if dtype == numpy.float32:
-        _temp = __import__('vsip.math.solvers', globals(), locals(), ['_lud_f'], -1) 
-        mod = _temp._lud_f
-    elif dtype in (float, numpy.float64):
-        _temp = __import__('vsip.math.solvers', globals(), locals(), ['_lud_d'], -1) 
-        mod = _temp._lud_d
-    if not mod:
-        raise ValueError, 'Unsupported dtype %s'%(dtype)
-    return mod
-
 class lud:
+    """General square linear system solver using lower-upper decomposition."""
 
     def __init__(self, dtype, length):
 
-        mod = _import_module(dtype)
+        m = import_module('vsip.math.solvers.lud', dtype)
         self.impl_ = mod.lud(length)
 
     def decompose(self, m):

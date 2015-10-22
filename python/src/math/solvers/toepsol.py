@@ -22,7 +22,7 @@ def _import_module(dtype):
 
 
 def toepsol(a, b, w=None):
-    """..."""
+    """Solve a real symmetric or complex Hermitian positive definite Toeplitz linear system."""
 
     m = _import_module(v.dtype)
     x = vector(a.dtype, a.length())

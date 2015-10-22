@@ -5,29 +5,14 @@
 # This file is part of OpenVSIP. It is made available under the
 # license contained in the accompanying LICENSE.BSD file.
 
+from vsip import import_module
 import numpy
 from vsip import vector, matrix
-
-def _import_module(dtype):
-    mod = None
-    if dtype == numpy.float32:
-        _temp = __import__('vsip.math', globals(), locals(), ['_elementwise_f'], -1) 
-        mod = _temp._elementwise_f
-    elif dtype in (float, numpy.float64):
-        _temp = __import__('vsip.math', globals(), locals(), ['_elementwise_d'], -1) 
-        mod = _temp._elementwise_d
-    elif dtype == complex:
-        _temp = __import__('vsip.math', globals(), locals(), ['_elementwise_cd'], -1) 
-        mod = _temp._elementwise_cd
-    if not mod:
-        raise ValueError, 'Unsupported dtype %s'%(dtype)
-    return mod
-
 
 def unary(func, a):
 
     b = a.block
-    m = _import_module(b.dtype)
+    m = import_module('vsip.math.elementwise', b.dtype)
     f = getattr(m, func)
     v = a.__class__
     return v(block=f(b))
@@ -37,7 +22,7 @@ def binary(func, a1, a2):
     b1 = a1.block
     b2 = a2.block
     if b1.dtype == b2.dtype:
-        m = _import_module(b1.dtype)
+        m = import_module('vsip.math.elementwise', b1.dtype)
     else:
         raise ValueError, 'Unsupported combination of dtypes (%s, %s)'%(b1.dtype, b2.dtype)
     f = getattr(m, func)
@@ -50,7 +35,7 @@ def ternary(func, a1, a2, a3):
     b2 = a2.block
     b3 = a3.block
     if b1.dtype == b2.dtype == b3.dtype:
-        m = _import_module(b1.dtype)
+        m = import_module('vsip.math.elementwise', b1.dtype)
     else:
         raise ValueError, 'Unsupported combination of dtypes (%s, %s, %s)'%(b1.dtype, b2.dtype, b3.dtype)
     f = getattr(m, func)

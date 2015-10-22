@@ -5,23 +5,12 @@
 # This file is part of OpenVSIP. It is made available under the
 # license contained in the accompanying LICENSE.BSD file.
 
-import numpy
+from vsip import import_module
 from vsip import vector, matrix
 from vsip.math.types import mat_op, storage, product_side
 
-def _import_module(dtype):
-    mod = None
-    if dtype == numpy.float32:
-        _temp = __import__('vsip.math.solvers', globals(), locals(), ['_qrd_f'], -1) 
-        mod = _temp._qrd_f
-    elif dtype in (float, numpy.float64):
-        _temp = __import__('vsip.math.solvers', globals(), locals(), ['_qrd_d'], -1) 
-        mod = _temp._qrd_d
-    if not mod:
-        raise ValueError, 'Unsupported dtype %s'%(dtype)
-    return mod
-
 class qrd:
+    """Over-determined linear system solver using QR decomposition."""
 
     nosave = storage.qrd_nosaveq
     saveq1 = storage.qrd_saveq1
@@ -32,8 +21,8 @@ class qrd:
         self._rows = rows
         self._cols = cols
         self.qstorage = storage
-        mod = _import_module(dtype)
-        self.impl_ = mod.lud(rows, cols, storage)
+        mod = import_module('vsip.math.solvers.qrd', dtype)
+        self.impl_ = mod.qrd(rows, cols, storage)
 
     def decompose(self, m):
 

@@ -7,24 +7,7 @@
 
 import numpy
 from vsip import vector
-from vsip._block import _import_block_module
-
-def _import_module(dtype):
-
-    # Make sure the proper block module is loaded, too
-    _import_block_module(dtype)
-
-    mod = None
-    if dtype == numpy.float32:
-        _temp = __import__('vsip.signal', globals(), locals(), ['_window_f'], -1) 
-        mod = _temp._window_f
-    elif dtype in (float, numpy.float64):
-        _temp = __import__('vsip.signal', globals(), locals(), ['_window_d'], -1) 
-        mod = _temp._window_d
-    if not mod:
-        raise ValueError, 'Unsupported dtype %s'%(dtype)
-    return mod
-
+from vsip import import_module
 
 def blackman(dtype, N):
     """Create a vector with blackman window weights.
@@ -38,7 +21,8 @@ def blackman(dtype, N):
 
        y_i = 0.42 * 0.5 * cos(\\frac{2*\pi*i}{N-1}) + 0.08 * cos(\\frac{4*\pi*i}{N-1})"""
 
-    m = _import_module(dtype)
+    import_module('vsip.block', dtype)
+    m = import_module('vsip.signal.window', dtype)
     return vector(block=m.blackman(N))
 
 def cheby(dtype, N, ripple):
@@ -52,7 +36,8 @@ def cheby(dtype, N, ripple):
 
 """
 
-    m = _import_module(dtype)
+    import_module('vsip.block', dtype)
+    m = import_module('vsip.signal.window', dtype)
     return vector(block=m.cheby(N, ripple))
 
 def hanning(dtype, N):
@@ -68,7 +53,8 @@ def hanning(dtype, N):
        y_i = \\frac{1}{2}(1 - cos(\\frac{2\pi(i+1)}{N+1}))"""
 
 
-    m = _import_module(dtype)
+    import_module('vsip.block', dtype)
+    m = import_module('vsip.signal.window', dtype)
     return vector(block=m.hanning(N))
 
 def kaiser(dtype, N, beta):
@@ -81,6 +67,7 @@ def kaiser(dtype, N, beta):
 
     """
 
-    m = _import_module(dtype)
+    import_module('vsip.block', dtype)
+    m = import_module('vsip.signal.window', dtype)
     return vector(block=m.kaiser(N, beta))
 

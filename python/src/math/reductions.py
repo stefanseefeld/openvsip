@@ -21,7 +21,7 @@ def _import_module(dtype):
     return mod
 
 
-def reduce(func, a):
+def _reduce(func, a):
 
     from vsip import types
     b = a.block
@@ -29,7 +29,10 @@ def reduce(func, a):
     f = getattr(m, func)
     return f(b)
 
-def meanval(a): return reduce('meanval', a)
-def maxval(a): return reduce('maxval', a)
-def minval(a): return reduce('minval', a)
-def sumval(a): return reduce('sumval', a)
+def meanval(a):
+    """Return :math:`\\frac{\sum a_i}{N}`"""
+
+    return _reduce('meanval', a)
+def maxval(a): return _reduce('maxval', a)
+def minval(a): return _reduce('minval', a)
+def sumval(a): return _reduce('sumval', a)

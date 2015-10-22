@@ -5,29 +5,9 @@
 # This file is part of OpenVSIP. It is made available under the
 # license contained in the accompanying LICENSE.BSD file.
 
+from vsip import import_module
 import numpy
 from vsip import vector, matrix
-from vsip._block import _import_block_module
-
-def _import_module(dtype):
-
-    # Make sure the proper block module is loaded, too
-    _import_block_module(dtype)
-
-    mod = None
-    if dtype == numpy.float32:
-        _temp = __import__('vsip', globals(), locals(), ['_rand_f'], -1) 
-        mod = _temp._rand_f
-    elif dtype in (float, numpy.float64):
-        _temp = __import__('vsip', globals(), locals(), ['_rand_d'], -1) 
-        mod = _temp._rand_d
-    elif dtype == complex:
-        _temp = __import__('vsip', globals(), locals(), ['_rand_cd'], -1) 
-        mod = _temp._rand_cd
-    if not mod:
-        raise ValueError, 'Unsupported dtype %s'%(dtype)
-    return mod
-
 
 
 class rand:
@@ -43,7 +23,9 @@ class rand:
           :portable: whether or not to use a portable (reproducible) sequence
         """
 
-        mod = _import_module(dtype)
+        # Make sure the proper block module is loaded, too
+        import_module('vsip.block', dtype)
+        mod = import_module('vsip.rand', dtype)
         self._rand = mod.rand(seed, portable)
 
     def randu(self, *shape):

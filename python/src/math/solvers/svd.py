@@ -6,20 +6,9 @@
 # license contained in the accompanying LICENSE.BSD file.
 
 import numpy
+from vsip import import_module
 from vsip import vector, matrix
 from vsip.math.types import storage, product_side
-
-def _import_module(dtype):
-    mod = None
-    if dtype == numpy.float32:
-        _temp = __import__('vsip.math.solvers', globals(), locals(), ['_svd_f'], -1) 
-        mod = _temp._svd_f
-    elif dtype in (float, numpy.float64):
-        _temp = __import__('vsip.math.solvers', globals(), locals(), ['_svd_d'], -1) 
-        mod = _temp._svd_d
-    if not mod:
-        raise ValueError, 'Unsupported dtype %s'%(dtype)
-    return mod
 
 class svd:
 
@@ -34,7 +23,7 @@ class svd:
         self._cols = cols
         self.ustorage = ustorage
         self.vstorage = vstorage
-        mod = _import_module(dtype)
+        mod = import_module('vsip.math.solvers.svd', dtype)
         self.impl_ = mod.svd(rows, cols, ustorage, vstorage)
 
     def decompose(self, m):

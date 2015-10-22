@@ -6,22 +6,8 @@
 # license contained in the accompanying LICENSE.BSD file.
 
 import numpy
+from vsip import import_module
 from vsip import vector, matrix
-
-def _import_module(dtype):
-    mod = None
-    if dtype == numpy.float32:
-        _temp = __import__('vsip.signal', globals(), locals(), ['_conv_f'], -1) 
-        mod = _temp._conv_f
-    elif dtype in (float, numpy.float64):
-        _temp = __import__('vsip.signal', globals(), locals(), ['_conv_d'], -1) 
-        mod = _temp._conv_d
-    elif dtype in (complex):
-        _temp = __import__('vsip.signal', globals(), locals(), ['_conv_cd'], -1) 
-        mod = _temp._conv_cd
-    if not mod:
-        raise ValueError, 'Unsupported dtype %s'%(dtype)
-    return mod
 
 class conv:
 
@@ -31,7 +17,7 @@ class conv:
         self.symmetry = symmetry
         self.support = support
 
-        m = _import_module(dtype)
+        m = import_module('vsip.signal.conv', dtype)
         self._impl = m.conv(symmetry, i, decimation, support, n, hint)
 
     def __call__(self, input, output):

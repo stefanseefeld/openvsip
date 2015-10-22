@@ -5,26 +5,15 @@
 # This file is part of OpenVSIP. It is made available under the
 # license contained in the accompanying LICENSE.BSD file.
 
-import numpy
+from vsip import import_module
 from vsip import vector, matrix
 
-def _import_module(dtype):
-    mod = None
-    if dtype == numpy.float32:
-        _temp = __import__('vsip.math.solvers', globals(), locals(), ['_chold_f'], -1) 
-        mod = _temp._chold_f
-    elif dtype in (float, numpy.float64):
-        _temp = __import__('vsip.math.solvers', globals(), locals(), ['_chold_d'], -1) 
-        mod = _temp._chold_d
-    if not mod:
-        raise ValueError, 'Unsupported dtype %s'%(dtype)
-    return mod
-
 class chold:
+    """Symmetric positive definite linear system solver using a Cholesky decomposition."""
 
     def __init__(self, dtype, uplo, length):
 
-        mod = _import_module(dtype)
+        mod = import_module('vsip.math.solvers.chold', dtype)
         self.uplo = uplo
         self.length = length
         self.impl_ = mod.chold(uplo, length)

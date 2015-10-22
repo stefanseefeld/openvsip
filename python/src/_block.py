@@ -5,28 +5,8 @@
 # This file is part of OpenVSIP. It is made available under the
 # license contained in the accompanying LICENSE.BSD file.
 
+from vsip import import_module
 import numpy
-
-def _import_block_module(dtype):
-    mod = None
-    if dtype == numpy.float32:
-        _temp = __import__('vsip', globals(), locals(), ['_block_f'], -1) 
-        mod = _temp._block_f
-    elif dtype in (float, numpy.float64):
-        _temp = __import__('vsip', globals(), locals(), ['_block_d'], -1) 
-        mod = _temp._block_d
-    elif dtype == complex:
-        _temp = __import__('vsip', globals(), locals(), ['_block_cd'], -1) 
-        mod = _temp._block_cd
-    elif dtype == int:
-        _temp = __import__('vsip', globals(), locals(), ['_block_i'], -1) 
-        mod = _temp._block_i
-    elif dtype == bool:
-        _temp = __import__('vsip', globals(), locals(), ['_block_b'], -1) 
-        mod = _temp._block_b
-    if not mod:
-        raise ValueError, 'Unsupported dtype %s'%(dtype)
-    return mod
 
 def block(*args, **kwargs):
     """Create a block.
@@ -50,7 +30,7 @@ def block(*args, **kwargs):
         array = numpy.array(kwargs['array'], copy=False)
         dtype = array.dtype
 
-    mod = _import_block_module(dtype)
+    mod = import_module('vsip.block', dtype)
 
     if 'array' in kwargs:
         return mod.block(array)
@@ -75,7 +55,7 @@ def subblock(parent, slice):
     """
 
     dtype = parent.dtype
-    mod = _import_block_module(dtype)
+    mod = import_module('vsip.block', dtype)
 
     if len(slice) == 1:
         return mod.subblock(parent, slice[0])
