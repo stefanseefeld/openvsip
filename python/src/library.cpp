@@ -14,17 +14,7 @@
 
 namespace bpl = boost::python;
 
-namespace
-{
-void convert(std::runtime_error const &e)
-{
-  PyErr_SetString(PyExc_RuntimeError, e.what());
-}
-
-}
-
 BOOST_PYTHON_MODULE(library)
 {
   bpl::class_<vsip::vsipl, boost::noncopyable> vsipl("library");
-  bpl::register_exception_translator<std::runtime_error>(convert);
 }

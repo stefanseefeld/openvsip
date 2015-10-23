@@ -6,6 +6,7 @@
 # license contained in the accompanying LICENSE.BSD file.
 
 import _block
+from vsip import import_module
 
 class vector:
     """A vector contains a one-dimensional data-set of a specific type."""
@@ -61,6 +62,14 @@ class vector:
 
         return self.length()
 
+    shape = property(lambda self:(self.length(),))
+
+    def local(self):
+        """Return the local subvector if this is a distributed vector, 'self' otherwise."""
+
+        import_module('vsip.block', self.block.dtype)
+        return vector(block=self.block.local())
+        
     def real(self):
         """Return the real component of this vector."""
 
@@ -257,7 +266,10 @@ class vector:
         if isinstance(value, vector):
             value = value.block
         if isinstance(i, slice):
-            _block.subblock(self.block, (i,)).assign(value)
+            if i == slice(None):
+                self.block.assign(value)
+            else:
+                _block.subblock(self.block, (i,)).assign(value)
         else:
             self.block.put(i, value)
 

@@ -195,16 +195,18 @@ struct storage_traits<T, true>
   typedef sm_proxy<T> type;
 };
 
+template <dimension_type D, typename T, typename M = Local_map> class Block;
+
 // This block is modeled after stored_block, but without support for user-storage.
 // In addition, this block-type uses a runtime layout, as it is also used for
 // subblocks, to avoid having to export many different block types to Python.
 template <dimension_type D, typename T>
-class Block
+class Block<D, T, Local_map>
 {
   typedef storage<T, ovxx::array> storage_type;
   typedef typename storage_traits<T>::type smanager_type;
   //  typedef storage_manager<T, ovxx::array> smanager_type;
-  template <dimension_type D1, typename T1>
+  template <dimension_type D1, typename T1, typename M1>
   friend class Block;
 public:
   typedef T value_type;
@@ -410,6 +412,33 @@ private:
   unsigned array_refcount_;
 };
 
+template <dimension_type D, typename T, typename M>
+class Block : public ovxx::parallel::distributed_block<Block<D, T>, M>
+{
+  typedef ovxx::parallel::distributed_block<Block<D, T>, M> base_type;
+  typedef typename base_type::uT uT;
+public:
+  typedef M map_type;
+
+  Block(Domain<D> const &dom, map_type const &map = map_type())
+    VSIP_THROW((std::bad_alloc))
+      : base_type(dom, map)
+    {}
+
+  Block(Domain<D> const &dom, T value, map_type const &map = map_type())
+    VSIP_THROW((std::bad_alloc))
+      : base_type(dom, value, map)
+    {}
+};
+
+template <dimension_type D, typename T, typename M>
+inline typename Block<D, T, M>::local_block_type &
+get_local_block(Block<D, T, M> const &block)
+{
+  return block.get_local_block();
+}
+
+
 } // namespace ovxx::python
 
 // This is needed to prevent the default "has_put" check
@@ -419,6 +448,20 @@ template <dimension_type D, typename T>
 struct is_modifiable_block<python::Block<D, T> >
 {
   static bool const value = true;
+};
+
+template <dimension_type D, typename T>
+struct distributed_local_block<python::Block<D, T> >
+{
+  typedef python::Block<D, T> type;
+  typedef python::Block<D, T> proxy_type;
+};
+
+template <dimension_type D, typename T, typename M>
+struct distributed_local_block<python::Block<D, T, M> >
+{
+  typedef python::Block<D, T, Local_map> type;
+  typedef typename python::Block<D, T, M>::proxy_local_block_type proxy_type;
 };
 
 #if OVXX_HAVE_OPENCL

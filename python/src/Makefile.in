@@ -13,7 +13,7 @@ include ../../config.mk
 CPPFLAGS += -I../../src -I$(top_srcdir)/src $(PYTHON_CPPFLAGS) $(BOOST_CPPFLAGS)
 CXXFLAGS := $(CXXFLAGS_LIB)
 LDFLAGS += -L../../lib $(BOOST_LDFLAGS) $(PYTHON_LDFLAGS)
-LIBS += -l$(OVXXLIB) $(BOOST_LIBS) $(PYTHON_LIBS)
+LIBS += -l$(OVXXLIB) $(BOOST_LIBS) $(PYTHON_LIBS) $(MPI_LIBS)
 
 # build instructions
 include ../../rules.mk
@@ -47,6 +47,9 @@ endif
 subdirs := selgen math math/solvers signal
 ifdef have_opencl
 subdirs += opencl
+endif
+ifdef enable_parallel
+subdirs += parallel
 endif
 
 python_dir := ../../lib/python

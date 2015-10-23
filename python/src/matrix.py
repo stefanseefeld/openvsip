@@ -6,6 +6,7 @@
 # license contained in the accompanying LICENSE.BSD file.
 
 import _block
+from vsip import import_module
 from vector import vector
 
 class matrix:
@@ -59,11 +60,19 @@ class matrix:
 
         return self.block.size(2, 1)
 
+    shape = property(lambda self:(self.rows(),self.cols()))
+
     def size(self, d):
         """Return the size in the dimension specified by `d`."""
 
         return d == 0 and self.rows() or self.cols()
 
+    def local(self):
+        """Return the local submatrix if this is a distributed matrix, 'self' otherwise."""
+
+        import_module('vsip.block', self.block.dtype)
+        return matrix(block=self.block.local())
+        
     def row(self, r):
         """Retur the `r`'th row."""
         
@@ -343,7 +352,10 @@ class matrix:
             return
         assert len(i) == 2
         if isinstance(i[0], slice) and isinstance(i[1], slice):
-            _block.subblock(self.block, i).assign(value)
+            if i[0] == slice(None) and i[1] == slice(None):
+                self.block.assign(value)
+            else:
+                _block.subblock(self.block, i).assign(value)
         elif isinstance(i[0], slice):
             _block.subblock(self.block.col(i[1]), (i[0],)).assign(value)
         elif isinstance(i[1], slice):

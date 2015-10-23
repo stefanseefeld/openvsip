@@ -10,6 +10,8 @@ import numpy
 suffixes = {numpy.float32: '_f',
             numpy.float64: '_d',
             numpy.complex128: '_cd',
+            numpy.complex64: '_cf',
+            numpy.int32: '_i',
             float: '_d',
             complex: '_cd',
             int: '_i',
