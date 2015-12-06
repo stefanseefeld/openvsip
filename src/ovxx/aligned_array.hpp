@@ -21,11 +21,11 @@
 #endif
 
 #if defined(HAVE_DECL_POSIX_MEMALIGN) && !HAVE_DECL_POSIX_MEMALIGN
-extern "C" extern int posix_memalign(void**, std::size_t, std::size_t);
+extern "C" int posix_memalign(void**, std::size_t, std::size_t);
 #endif
 
 #if defined(HAVE_DECL_MEMALIGN) && !HAVE_DECL_MEMALIGN
-extern "C" extern void* memalign(std::size_t, std::size_t);
+extern "C" void* memalign(std::size_t, std::size_t);
 #endif
 
 namespace ovxx
