@@ -11,6 +11,10 @@
 #ifndef ovxx_support_hpp_
 #define ovxx_support_hpp_
 
+#if !OVXX_HAS_EXCEPTIONS
+#include <iostream>
+#endif
+
 #include <vsip/support.hpp>
 #if OVXX_HAVE_LTTNG
 extern "C"
@@ -119,10 +123,11 @@ template <> struct col_major<2> { typedef col2_type type;};
 template <> struct col_major<3> { typedef col3_type type;};
 
 #if !OVXX_HAS_EXCEPTIONS
+
 /// This function is called instead of throwing an exception
 /// when OVXX_HAS_EXCEPTIONS is 0.
-inline void fatal_exception(char const * file, unsigned int line,
-                            std::exception const &e) OVXX_NORETURN
+OVXX_NORETURN inline void fatal_exception(char const * file, unsigned int line,
+                            std::exception const &e)
 {
   std::cerr << "OpenVSIP: at " << file << ':' << line << '\n';
   std::cerr << "OpenVSIP: fatal: " << e.what() << std::endl;

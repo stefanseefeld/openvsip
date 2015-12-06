@@ -227,31 +227,31 @@ kaiser(length_type len, T beta)
 
 template
 const_Vector<float>
-blackman(length_type len) VSIP_THROW((std::bad_alloc));
+blackman(length_type len);
 template
 const_Vector<double>
-blackman(length_type len) VSIP_THROW((std::bad_alloc));
+blackman(length_type len);
 
 template
 const_Vector<float>
-cheby(length_type len, float ripple) VSIP_THROW((std::bad_alloc));
+cheby(length_type len, float ripple);
 template
 const_Vector<double>
-cheby(length_type len, double ripple) VSIP_THROW((std::bad_alloc));
+cheby(length_type len, double ripple);
 
 template
 const_Vector<float>
-hanning(length_type len) VSIP_THROW((std::bad_alloc));
+hanning(length_type len);
 template
 const_Vector<double>
-hanning(length_type len) VSIP_THROW((std::bad_alloc));
+hanning(length_type len);
 
 template
 const_Vector<float>
-kaiser(length_type len, float beta) VSIP_THROW((std::bad_alloc));
+kaiser(length_type len, float beta);
 template
 const_Vector<double>
-kaiser(length_type len, double beta) VSIP_THROW((std::bad_alloc));
+kaiser(length_type len, double beta);
 
 } // namespace ovxx::signal
 } // namespace ovxx

@@ -20,6 +20,11 @@
 # include <ctime>
 #endif
 
+#if OVXX_TIMER_MACH
+# include <mach/mach.h>
+# include <mach/mach_time.h>
+#endif
+
 namespace ovxx
 {
 namespace cxx11
@@ -103,8 +108,10 @@ public:
     time = static_cast<float>(tsc) / tics_per_nanosecond;
 #elif defined(OVXX_TIMER_X64_TSC)
     unsigned a, d;
-    __asm__ __volatile__("rdtsc": "=a"(a), "=d"(d));
+    __Asm__ __volatile__("rdtsc": "=a"(a), "=d"(d));
     time = static_cast<float>((rep)d << 32 | a)/ tics_per_nanosecond;
+#elif defined(OVXX_TIMER_MACH)
+    time = mach_absolute_time();
 #elif OVXX_TIMER_POWER
     unsigned int tbl, tbu0, tbu1;
     do
