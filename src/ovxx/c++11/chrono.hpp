@@ -108,7 +108,7 @@ public:
     time = static_cast<float>(tsc) / tics_per_nanosecond;
 #elif defined(OVXX_TIMER_X64_TSC)
     unsigned a, d;
-    __Asm__ __volatile__("rdtsc": "=a"(a), "=d"(d));
+    __asm__ __volatile__("rdtsc": "=a"(a), "=d"(d));
     time = static_cast<float>((rep)d << 32 | a)/ tics_per_nanosecond;
 #elif defined(OVXX_TIMER_MACH)
     time = mach_absolute_time();
