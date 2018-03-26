@@ -54,11 +54,18 @@ define link_lib_dso
 $(LDSHARED) -L../../lib $(LDFLAGS) -o $@ $^ $(LIBS) $(MPI_LIBS)
 endef
 else
+ifeq ($(USE_STRIP),0)
+define link_lib_dso
+@echo linking $@
+$(LDSHARED) -L../../lib $(LDFLAGS) -o $@ $^ $(LIBS) $(MPI_LIBS)
+endef
+else
 define link_lib_dso
 @echo linking $@
 $(LDSHARED) -L../../lib $(LDFLAGS) -o $@ $^ $(LIBS) $(MPI_LIBS)
   $(STRIP) --strip-unneeded $@
 endef
+endif
 endif
 
 define link

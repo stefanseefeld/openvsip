@@ -16,6 +16,8 @@
 #endif
 
 #include <vsip/support.hpp>
+#include <iostream>
+
 #if OVXX_HAVE_LTTNG
 extern "C"
 {
@@ -32,7 +34,7 @@ extern "C"
 /// otherwise it is defined to nothing.
 /// GCC supports it, as does Green Hills, as well as Intel.
 /// The latter defines __GNUC__, too.
-#if __GNUC__ >= 2 || defined(__ghs__)
+#if (__GNUC__ >= 2 || defined(__ghs__))
 #  define OVXX_NORETURN __attribute__ ((__noreturn__))
 #else
 #  define OVXX_NORETURN

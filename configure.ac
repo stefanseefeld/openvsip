@@ -384,12 +384,22 @@ else # assume GCC
   LDSHARED="$CXX -shared"
   cygwin_mount=
 fi
+
 AC_SUBST(CCDEP)
 AC_SUBST(CXXDEP)
 AC_SUBST(LDSHARED)
 AC_SUBST(INTEL_WIN, $INTEL_WIN)
 AC_SUBST(cygwin_mount)
 
+use_strip=1
+case "${host_os}" in
+     darwin*) use_strip=0
+     ;;
+     *) use_strip=
+     ;;
+esac
+
+AC_SUBST(USE_STRIP, $use_strip)
 
 #
 # Build shared libraries, if requested
@@ -776,6 +786,7 @@ AS_IF([test "$enable_python_bindings" == "1"],
   [AC_MSG_RESULT([With Python bindings:                    no])])
 AC_MSG_RESULT([With C-VSIPL bindings:                   ${enable_cvsip_bindings}])
 AC_MSG_RESULT([With PNG support:                        ${with_png}])
+AC_MSG_RESULT([Use `strip`:                             $use_strip])
 
 #
 # Done.

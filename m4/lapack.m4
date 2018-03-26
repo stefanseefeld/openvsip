@@ -117,7 +117,7 @@ if test "$with_lapack" != "no"; then
       lapack_packages="mkl"
     ;;
     yes | probe)
-      lapack_packages="openblas atlas lapacke generic_wo_blas generic_with_blas"
+      lapack_packages="openblas atlas lapacke generic_wo_blas generic_with_blas apple"
     ;;
     generic)
       lapack_packages="generic_wo_blas generic_with_blas"
@@ -260,6 +260,11 @@ if test "$with_lapack" != "no"; then
         LIBS="$keep_LIBS -llapacke -llapack -lblas"
         cblas_style="0"	# no cblas.h
         with_lapacke=1
+      ;;
+      apple)
+        AC_MSG_CHECKING([for Accelerate framework])
+        LIBS="$keep_LIBS -framework Accelerate"
+        cblas_style="0"	# no cblas.h
       ;;
       generic_wo_blas)
         AC_MSG_CHECKING([for LAPACK/Generic library (w/o blas)])
