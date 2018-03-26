@@ -20,6 +20,12 @@ For a quick overview of the project please refer to the [Getting Started](doc/ge
 6. Test (optional - requires qmtest): `make check`
 7. Install: `make install`
 
+If by chance you want a debug build:
+
+```
+CFLAGS="-g" CXXFLAGS="-g" ../configure [options]
+```
+
 ## Building on macOS
 
 Use [Brew](https://brew.sh) to install [FFTW](http://www.fftw.org), [Open MPI](https://www.open-mpi.org), [OpenBLAS](https://www.openblas.net), [ATLAS](http://math-atlas.sourceforge.net), etc. I've tested with FFTW and Open MPI without issues. I think the `configure` script should find everything on its own in `/usr/local` but if not checkout `configure --help` for options to point to the right location.
