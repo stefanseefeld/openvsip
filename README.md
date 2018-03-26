@@ -22,10 +22,11 @@ For a quick overview of the project please refer to the [Getting Started](doc/ge
 
 ## Building on macOS
 
-Use [Brew](https://brew.sh) to install `FFTW`, `Open MPI`, `ATLAS`, etc. I've tested with FFTW3 and Open MPI; the `configure` script should find everything just fine.
+Use [Brew](https://brew.sh) to install [FFTW](http://www.fftw.org), [Open MPI](https://www.open-mpi.org), [OpenBLAS](https://www.openblas.net), [ATLAS](http://math-atlas.sourceforge.net), etc. I've tested with FFTW and Open MPI without issues. I think the `configure` script should find everything on its own in `/usr/local` but if not checkout `configure --help` for options to point to the right location.
+
+To have the software use the LAPACK library found in [Apple's Accelerate framework](https://developer.apple.com/documentation/accelerate), just use:
 
 ```
 % ../configure --with-lapack=apple
 ```
 
-That should do it.
