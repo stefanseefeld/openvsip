@@ -20,7 +20,7 @@ For a quick overview of the project please refer to the [Getting Started](doc/ge
 6. Test (optional - requires qmtest): `make check`
 7. Install: `make install`
 
-If by chance you want a debug build:
+By default, the above will compile the source files with `-g -O2`. If by chance you want a pure debug build:
 
 ```
 CFLAGS="-g" CXXFLAGS="-g" ../configure [options]
