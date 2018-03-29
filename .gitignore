@@ -1,5 +1,4 @@
 autom4te.cache
 *.orig
 *.rej
-*.in
 objdir
