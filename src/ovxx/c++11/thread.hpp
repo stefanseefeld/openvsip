@@ -126,7 +126,7 @@ namespace this_thread
 {
 
 inline thread::id get_id() { return thread::id(pthread_self());}
-inline void yield() { pthread_yield();}
+inline void yield() { sched_yield();}
 
 } // namespace ovxx::cxx11::this_thread
 } // namespace ovxx::cxx11
