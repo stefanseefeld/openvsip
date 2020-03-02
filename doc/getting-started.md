@@ -26,8 +26,8 @@ It relies on (partly optional) third-party libraries for specific computational 
 and for additional language bindings:
 
 * [Python](http://python.org/)
-* [NumPy] (http://www.numpy.org/)
-* [Boost] (http://www.boost.org/)
+* [NumPy](http://www.numpy.org/)
+* [Boost](http://www.boost.org/)
 
 OpenVSIP is known to compile with [G++](http://gcc.gnu.org/), version 4.8 and higher.
 It is being developed on Fedora.
