@@ -337,16 +337,16 @@ template <dimension_type D,
 	  vsip::return_mechanism_type R,
 	  unsigned N>
 struct Evaluator<op::fft<D, I, O, S, R, N>, be::no_fft,
-  std::auto_ptr<signal::fft::fft_backend<D, I, O, S> >
+  std::unique_ptr<signal::fft::fft_backend<D, I, O, S> >
   (Domain<D> const &, typename scalar_of<I>::type)>
 {
   typedef typename scalar_of<I>::type scalar_type;
   static bool const ct_valid = true;
   static bool rt_valid(Domain<D> const &, scalar_type) { return true;}
-  static std::auto_ptr<signal::fft::fft_backend<D, I, O, S> >
+  static std::unique_ptr<signal::fft::fft_backend<D, I, O, S> >
   exec(Domain<D> const &, scalar_type)
   {
-    return std::auto_ptr<signal::fft::fft_backend<D, I, O, S> >
+    return std::unique_ptr<signal::fft::fft_backend<D, I, O, S> >
       (new signal::fft::no_fft<D, I, O, S>());
   }
 };
@@ -358,16 +358,16 @@ template <typename I,
 	  return_mechanism_type R,
 	  unsigned N>
 struct Evaluator<op::fftm<I, O, A, D, R, N>, be::no_fft,
-  std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> > 
+  std::unique_ptr<signal::fft::fftm_backend<I, O, A, D> >
   (Domain<2> const &, typename scalar_of<I>::type)>
 {
   typedef typename scalar_of<I>::type scalar_type;
   static bool const ct_valid = true;
   static bool rt_valid(Domain<2> const &, scalar_type) { return true;}
-  static std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> > 
+  static std::unique_ptr<signal::fft::fftm_backend<I, O, A, D> >
   exec(Domain<2> const &, scalar_type)
   {
-    return std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> > 
+    return std::unique_ptr<signal::fft::fftm_backend<I, O, A, D> >
       (new signal::fft::no_fftm<I, O, A, D>());
   }
 };
@@ -376,4 +376,3 @@ struct Evaluator<op::fftm<I, O, A, D, R, N>, be::no_fft,
 } // namespace ovxx
 
 #endif
-

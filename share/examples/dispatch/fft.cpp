@@ -48,7 +48,7 @@ namespace fft = ovxx::signal::fft;
 // ====================================================================
 // Define a custom Fft_backend class for evaluating complex forward
 // FFTs.  OpenVSIP Fft objects encapsulate Fft_backend objects,
-// which contain the methods to compute the FFT along with any 
+// which contain the methods to compute the FFT along with any
 // persistent data structures.  These are derived from specializations
 // of the ovxx::signal::fft::Fft_backend class.  The template parameters of
 // the Fft_backend class describe the dimensionality, the input and
@@ -83,7 +83,7 @@ public:
   // Fft_backend objects must define two methods for computing the
   // FFT; one for in-place data and one for out-of-place data.  For
   // complex data, these methods may be defined for array, interleaved,
-  // and split data; this must match the layout 
+  // and split data; this must match the layout
   // defined in the query_layout methods (see below).  In this example,
   // we will only use array data.
   //
@@ -124,8 +124,8 @@ public:
     std::cout << "examples::fft_1024::out_of_place called" << std::endl;
   }
 
-  // Fft_backend objects also contain query_layout methods, which 
-  // describe the requirements for the layout of incoming data.  These 
+  // Fft_backend objects also contain query_layout methods, which
+  // describe the requirements for the layout of incoming data.  These
   // methods receive dda::Rt_layout objects that describe the existing
   // layout of the data, and then modify these objects to describe how
   // the data should be rearranged if necessary.
@@ -156,7 +156,7 @@ public:
 // vectors to this backend.  This is quite similar to the Evaluator
 // specializations for matrix products, except that the operation tag
 // has template arguments, and the evaluation signature (the third
-// template argument) returns a std::auto_ptr to a Fft_backend object.
+// template argument) returns a std::unique_ptr to a Fft_backend object.
 //
 // This evaluator applies to by_reference calls of the Fft object; to
 // cover in_place calls, we could either define an second Evaluator
@@ -170,7 +170,7 @@ template <unsigned N>
 struct Evaluator<op::fft<1, complex<float>, complex<float>, fft_fwd,
 		 by_reference, N>,
   be::user,
-  std::auto_ptr<fft::fft_backend<1, complex<float>, complex<float>, fft_fwd> >
+  std::unique_ptr<fft::fft_backend<1, complex<float>, complex<float>, fft_fwd> >
   (Domain<1> const &, float)>
 {
   // At compile time for the Fft constructor, sizes and incoming data
@@ -183,7 +183,7 @@ struct Evaluator<op::fft<1, complex<float>, complex<float>, fft_fwd,
   // so we have no information about the incoming data layouts and
   // cannot use them to determine validity.
   static bool rt_valid(Domain<1> const &dom, float)
-  { 
+  {
     return dom.size() == 1024;
   }
 
@@ -191,10 +191,10 @@ struct Evaluator<op::fft<1, complex<float>, complex<float>, fft_fwd,
   // Fft_backend object.  Note that any profiling added here will only
   // profile the construction of the Fft object, not its execution to
   // compute FFTs.
-  static std::auto_ptr<fft::fft_backend<1, complex<float>, complex<float>, fft_fwd> >
+  static std::unique_ptr<fft::fft_backend<1, complex<float>, complex<float>, fft_fwd> >
   exec(Domain<1> const &dom, float scale)
   {
-    return std::auto_ptr<fft::fft_backend<1, complex<float>, complex<float>, fft_fwd> >
+    return std::unique_ptr<fft::fft_backend<1, complex<float>, complex<float>, fft_fwd> >
       (new example::fft_1024(dom, scale));
   }
 };
@@ -205,7 +205,7 @@ struct Evaluator<op::fft<1, complex<float>, complex<float>, fft_fwd,
 
 // ====================================================================
 // Main Program
-int 
+int
 main(int argc, char **argv)
 {
   // Initialize the library.

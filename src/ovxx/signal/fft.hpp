@@ -85,7 +85,7 @@ public:
   static dimension_type const dim = D;
   typedef typename scalar_of<I>::type scalar_type;
 
-  Interface(Domain<D> const &dom, scalar_type scale, 
+  Interface(Domain<D> const &dom, scalar_type scale,
 	    bool is_fftm, int dir, return_mechanism_type rm)
     : input_size_(io_size<D, I, O, A>::size(dom)),
       output_size_(io_size<D, O, I, A>::size(dom)),
@@ -95,27 +95,27 @@ public:
   /// Returns a Domain<> object with first index set to :literal:`0`,
   /// stride set to :literal:`1`, and size reflecting the appropriate
   /// input view size for this :literal:`Fft` object.
-  Domain<dim> const& 
-  input_size() const VSIP_NOTHROW 
+  Domain<dim> const&
+  input_size() const VSIP_NOTHROW
   { return this->input_size_;}
-  
+
   /// Returns a Domain<> object with first index set to :literal:`0`,
   /// stride set to :literal:`1`, and size reflecting the appropriate
   /// output view size for this :literal:`Fft` object.
-  Domain<dim> const& 
-  output_size() const VSIP_NOTHROW 
+  Domain<dim> const&
+  output_size() const VSIP_NOTHROW
   { return this->output_size_;}
-  
+
   /// Returns the scale factor used in this :literal:`Fft` object.
-  scalar_type 
-  scale() const VSIP_NOTHROW 
+  scalar_type
+  scale() const VSIP_NOTHROW
   { return this->scale_;}
-  
+
   /// Returns :literal:`true` if this is a forward Fast Fourier Transformation.
-  bool 
+  bool
   forward() const VSIP_NOTHROW
   { return E == -1;}
-  
+
   float impl_performance(char const *what) const
   {
     if      (!strcmp(what, "mops")) return this->mops();
@@ -163,7 +163,7 @@ public:
   typedef fft::workspace<D, I, O> workspace;
   typedef dispatcher::Dispatcher<
     dispatcher::op::fft<D, I, O, S, by_value, N>,
-    std::auto_ptr<backend_type>(Domain<D> const &, typename base::scalar_type), L>
+    std::unique_ptr<backend_type>(Domain<D> const &, typename base::scalar_type), L>
     dispatcher_type;
 
   Fft(Domain<D> const& dom, typename base::scalar_type scale)
@@ -205,7 +205,7 @@ public:
   }
 #endif
 private:
-  std::auto_ptr<backend_type> backend_;
+  std::unique_ptr<backend_type> backend_;
   workspace workspace_;
 };
 
@@ -229,7 +229,7 @@ public:
   typedef fft::workspace<D, I, O> workspace;
   typedef dispatcher::Dispatcher<
     dispatcher::op::fft<D, I, O, S, by_reference, N>,
-    std::auto_ptr<backend_type>(Domain<D> const &, typename base::scalar_type), L>
+    std::unique_ptr<backend_type>(Domain<D> const &, typename base::scalar_type), L>
     dispatcher_type;
 
   Fft(Domain<D> const& dom, typename base::scalar_type scale)
@@ -267,7 +267,7 @@ public:
   }
 
 private:
-  std::auto_ptr<backend_type> backend_;
+  std::unique_ptr<backend_type> backend_;
   workspace workspace_;
 };
 
@@ -298,7 +298,7 @@ class Fftm<I, O, L, A, D, by_value, N, H>
   typedef fft::workspace<2, I, O> workspace;
   typedef dispatcher::Dispatcher<
     dispatcher::op::fftm<I, O, A, D, by_value, N>,
-    std::auto_ptr<backend_type>(Domain<2> const &, typename base::scalar_type), L>
+    std::unique_ptr<backend_type>(Domain<2> const &, typename base::scalar_type), L>
     dispatcher_type;
 public:
   Fftm(Domain<2> const& dom, typename base::scalar_type scale)
@@ -328,7 +328,7 @@ public:
   }
 #else
   /// Returns the Fast Fourier Transform of :literal:`in`.
-  template <typename BlockT>  
+  template <typename BlockT>
     typename fft::Result_fftm_rbo<I, O, BlockT, workspace, A, D>::view_type
   operator()(const_Matrix<I,BlockT> in)
     VSIP_THROW((std::bad_alloc))
@@ -355,7 +355,7 @@ public:
 #endif
 
 private:
-  std::auto_ptr<backend_type> backend_;
+  std::unique_ptr<backend_type> backend_;
   workspace workspace_;
 };
 
@@ -382,7 +382,7 @@ class Fftm<I, O, L, A, D, vsip::by_reference, N, H>
   typedef fft::workspace<2, I, O> workspace;
   typedef dispatcher::Dispatcher<
     dispatcher::op::fftm<I, O, A, D, by_reference, N>,
-    std::auto_ptr<backend_type>(Domain<2> const &, typename base::scalar_type), L>
+    std::unique_ptr<backend_type>(Domain<2> const &, typename base::scalar_type), L>
     dispatcher_type;
 public:
   Fftm(Domain<2> const& dom, typename base::scalar_type scale)
@@ -431,7 +431,7 @@ public:
   }
 
 private:
-  std::auto_ptr<backend_type> backend_;
+  std::unique_ptr<backend_type> backend_;
   workspace workspace_;
 };
 

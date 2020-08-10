@@ -64,7 +64,7 @@ void define_rand()
 {
   typedef rand<T> rand_type;
 
-  bpl::class_<rand_type, std::auto_ptr<rand_type>, boost::noncopyable>
+  bpl::class_<rand_type, std::unique_ptr<rand_type>, boost::noncopyable>
     rand("rand", bpl::init<vsip::index_type, bool>());
   rand.def("randu", &rand_type::randu);
   rand.def("randu", &rand_type::vrandu);

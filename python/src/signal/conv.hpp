@@ -57,7 +57,7 @@ private:
 };
 
 template <typename T>
-std::auto_ptr<conv_base<T> >
+std::unique_ptr<conv_base<T> >
 create_conv(ovxx::python::Block<1, T> const &c,
 	    vsip::symmetry_type s,
 	    vsip::length_type i,
@@ -74,7 +74,7 @@ create_conv(ovxx::python::Block<1, T> const &c,
   using vsip::sym_even_len_even;
 
 
-  typedef std::auto_ptr<conv_base<T> > ap;
+  typedef std::unique_ptr<conv_base<T> > ap;
   if (r == vsip::support_full)
   {
     if (s == vsip::sym_even_len_odd)
@@ -109,7 +109,7 @@ void define_conv()
 {
   typedef conv_base<T> conv_type;
 
-  bpl::class_<conv_type, std::auto_ptr<conv_type>, boost::noncopyable>
+  bpl::class_<conv_type, std::unique_ptr<conv_type>, boost::noncopyable>
     conv("conv", bpl::no_init);
   conv.def("__init__", bpl::make_constructor(create_conv<T>));
   conv.add_property("kernel_size", &conv_type::kernel_size);

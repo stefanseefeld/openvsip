@@ -23,7 +23,7 @@ Vector<processor_type> convert(bpl::list procs)
   return result;
 }
 
-typedef std::auto_ptr<Map<> > map_ptr;
+typedef std::unique_ptr<Map<> > map_ptr;
 
 map_ptr make_map_0(bpl::list procs) { return map_ptr(new Map<>(convert(procs)));}
 map_ptr make_map_1(bpl::list procs, length_type d0)
@@ -48,7 +48,7 @@ void apply(Map<> &map, bpl::tuple shape)
       throw std::invalid_argument("Invalid index");
   }
 }
-  
+
 index_type _subblock_from_global_index(Map<> const &map, bpl::tuple index)
 {
   typedef bpl::extract<index_type> e;
@@ -82,7 +82,7 @@ bpl::object _subblock_domain(Map<> const &map, index_type sb, dimension_type d)
       throw std::invalid_argument("Invalid dimension");
   }
 }
-  
+
 // quick hack:
 // return the (first) processor containing (owning) the given index
 int processor_from_global_index(Map<> const &map, bpl::tuple index)
@@ -90,7 +90,7 @@ int processor_from_global_index(Map<> const &map, bpl::tuple index)
   index_type sb = _subblock_from_global_index(map, index);
   return *map.processor_begin(sb);
 }
-  
+
 void barrier(Map<> const &map)
 {
   map.impl_comm().barrier();

@@ -101,7 +101,7 @@ public:
   {
     void *s;
     pthread_join(id_.thread_, &s);
-    if (status) *status = s;    
+    if (status) *status = s;
   }
   id get_id() const { return id_;}
 
@@ -118,7 +118,7 @@ private:
     return 0;
   }
 
-  std::auto_ptr<callable_base> callable_;
+  std::unique_ptr<callable_base> callable_;
   id id_;
 };
 

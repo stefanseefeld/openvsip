@@ -53,14 +53,14 @@ private:
 };
 
 template <typename T>
-std::auto_ptr<iir_base<T> >
+std::unique_ptr<iir_base<T> >
 create_iir(ovxx::python::Block<2, T> const &a,
 	   ovxx::python::Block<2, T> const &b,
 	   vsip::length_type l,
 	   vsip::obj_state s,
 	   unsigned int /*n*/, vsip::alg_hint_type /*h*/)
 {
-  typedef std::auto_ptr<iir_base<T> > ap;
+  typedef std::unique_ptr<iir_base<T> > ap;
   if (s == vsip::state_no_save)
     return ap(new iir<T, vsip::state_no_save>(a, b, l));
   else
@@ -72,7 +72,7 @@ void define_iir()
 {
   typedef iir_base<T> iir_type;
 
-  bpl::class_<iir_type, std::auto_ptr<iir_type>, boost::noncopyable>
+  bpl::class_<iir_type, std::unique_ptr<iir_type>, boost::noncopyable>
     iir("iir", bpl::no_init);
   iir.def("__init__", bpl::make_constructor(create_iir<T>));
   iir.add_property("kernel_size", &iir_type::kernel_size);

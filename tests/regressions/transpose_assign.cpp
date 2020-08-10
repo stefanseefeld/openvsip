@@ -98,8 +98,8 @@ template <typename T>
 void
 test_ll(length_type rows, length_type cols)
 {
-  std::auto_ptr<T> src(new T[rows*cols]);
-  std::auto_ptr<T> dst(new T[rows*cols]);
+  std::unique_ptr<T> src(new T[rows*cols]);
+  std::unique_ptr<T> dst(new T[rows*cols]);
 
   for (index_type r=0; r<rows; r++)
     for (index_type c=0; c<cols; c++)
