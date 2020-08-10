@@ -76,7 +76,7 @@ template <typename T>
 void define_lud()
 {
   typedef lud<T> lud_type;
-  bpl::class_<lud_type, std::auto_ptr<lud_type>, boost::noncopyable>
+  bpl::class_<lud_type, std::unique_ptr<lud_type>, boost::noncopyable>
     lud("lud", bpl::init<vsip::length_type>());
   lud.def("decompose", &lud_type::decompose);
   lud.def("solve", &lud_type::solve);
@@ -101,7 +101,7 @@ template <typename T>
 void define_chold()
 {
   typedef chold<T> chold_type;
-  bpl::class_<chold_type, std::auto_ptr<chold_type>, boost::noncopyable>
+  bpl::class_<chold_type, std::unique_ptr<chold_type>, boost::noncopyable>
     chold("chold", bpl::init<vsip::mat_uplo, vsip::length_type>());
   chold.def("decompose", &chold_type::decompose);
   chold.def("solve", &chold_type::solve);
@@ -158,7 +158,7 @@ template <typename T>
 void define_qrd()
 {
   typedef qrd<T> qrd_type;
-  bpl::class_<qrd_type, std::auto_ptr<qrd_type>, boost::noncopyable>
+  bpl::class_<qrd_type, std::unique_ptr<qrd_type>, boost::noncopyable>
     qrd("qrd", bpl::init<vsip::length_type, vsip::length_type, vsip::storage_type>());
   qrd.def("decompose", &qrd_type::decompose);
   qrd.def("prodq", &qrd_type::prodq);
@@ -282,7 +282,7 @@ template <typename T>
 void define_svd()
 {
   typedef svd<T> svd_type;
-  bpl::class_<svd_type, std::auto_ptr<svd_type>, boost::noncopyable>
+  bpl::class_<svd_type, std::unique_ptr<svd_type>, boost::noncopyable>
     svd("svd", bpl::init<vsip::length_type, vsip::length_type, vsip::storage_type, vsip::storage_type>());
   svd.def("decompose", &svd_type::decompose);
   svd.def("produ", &svd_type::produ);

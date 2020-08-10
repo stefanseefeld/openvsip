@@ -101,7 +101,7 @@ public:
   {
     void *s;
     pthread_join(id_.thread_, &s);
-    if (status) *status = s;    
+    if (status) *status = s;
   }
   id get_id() const { return id_;}
 
@@ -118,7 +118,7 @@ private:
     return 0;
   }
 
-  std::auto_ptr<callable_base> callable_;
+  std::unique_ptr<callable_base> callable_;
   id id_;
 };
 
@@ -126,7 +126,7 @@ namespace this_thread
 {
 
 inline thread::id get_id() { return thread::id(pthread_self());}
-inline void yield() { pthread_yield();}
+inline void yield() { sched_yield();}
 
 } // namespace ovxx::cxx11::this_thread
 } // namespace ovxx::cxx11

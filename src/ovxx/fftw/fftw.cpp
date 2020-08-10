@@ -59,16 +59,16 @@ struct planner<D, complex<SCALAR_TYPE>, complex<SCALAR_TYPE> >
     out_buffer_ = aligned_array<complex<SCALAR_TYPE> >(32, total_size);
 
     FFTW(iodim) dims[D];
-    for (index_type i = 0; i != D; ++i) 
-    { 
+    for (index_type i = 0; i != D; ++i)
+    {
       dims[i].n = layout.size(i);
       dims[i].is = dims[i].os = layout.stride(i);
     }
     if (complex_storage_format == split_complex)
     {
-      std::pair<SCALAR_TYPE*,SCALAR_TYPE*> in = 
+      std::pair<SCALAR_TYPE*,SCALAR_TYPE*> in =
 	array_cast<split_complex>(in_buffer_);
-      std::pair<SCALAR_TYPE*,SCALAR_TYPE*> out = 
+      std::pair<SCALAR_TYPE*,SCALAR_TYPE*> out =
 	array_cast<split_complex>(out_buffer_);
       plan_ip_ = FFTW(plan_guru_split_dft)(D, dims, 0, 0,
 					   in.first, in.second,
@@ -146,13 +146,13 @@ struct planner<D, SCALAR_TYPE, complex<SCALAR_TYPE> >
     if (mult_ > 1)
     {
       // For fftm we need more buffer...
-      Applied_layout<Rt_layout<2> > 
+      Applied_layout<Rt_layout<2> >
 	in_multi_layout(Rt_layout<2>(aligned_ ? aligned : dense,
 				     tuple<0,1,2>(),
 				     complex_storage_format,
 				     OVXX_ALLOC_ALIGNMENT),
 			Domain<2>(mult_, dom[0]), sizeof(SCALAR_TYPE));
-      Applied_layout<Rt_layout<2> > 
+      Applied_layout<Rt_layout<2> >
 	out_multi_layout(Rt_layout<2>(aligned_ ? aligned : dense,
 				      tuple<0,1,2>(),
 				      complex_storage_format,
@@ -165,16 +165,16 @@ struct planner<D, SCALAR_TYPE, complex<SCALAR_TYPE> >
     out_buffer_ = aligned_array<complex<SCALAR_TYPE> >(32, out_total_size);
 
     FFTW(iodim) dims[D];
-    for (index_type i = 0; i != D; ++i) 
+    for (index_type i = 0; i != D; ++i)
     {
       dims[i].n = in_layout.size(i);
-      dims[i].is = in_layout.stride(i); 
-      dims[i].os = out_layout.stride(i); 
+      dims[i].is = in_layout.stride(i);
+      dims[i].os = out_layout.stride(i);
     }
     if (complex_storage_format == split_complex)
     {
       SCALAR_TYPE *in = in_buffer_.get();
-      std::pair<SCALAR_TYPE*,SCALAR_TYPE*> out = 
+      std::pair<SCALAR_TYPE*,SCALAR_TYPE*> out =
 	array_cast<split_complex>(out_buffer_);
       plan_ = FFTW(plan_guru_split_dft_r2c)(D, dims, 0, 0,
 					    in, out.first, out.second,
@@ -211,13 +211,13 @@ struct planner<D, complex<SCALAR_TYPE>, SCALAR_TYPE>
     // requirement is communicated to the workspace, and the corner-turn
     // is handled.
     dom = turn(dom, A);
-    Applied_layout<Rt_layout<D> > 
+    Applied_layout<Rt_layout<D> >
       in_layout(Rt_layout<D>(aligned_ ? aligned : dense,
 			     tuple<0,1,2>(),
 			     complex_storage_format,
 			     OVXX_ALLOC_ALIGNMENT),
 		FFTW(iosize)(dom), sizeof(SCALAR_TYPE));
-    Applied_layout<Rt_layout<D> > 
+    Applied_layout<Rt_layout<D> >
       out_layout(Rt_layout<D>(aligned_ ? aligned : dense,
 			      tuple<0,1,2>(),
 			      complex_storage_format,
@@ -228,13 +228,13 @@ struct planner<D, complex<SCALAR_TYPE>, SCALAR_TYPE>
     if (mult_ > 1)
     {
       // For fftm we need more buffer...
-      Applied_layout<Rt_layout<2> > 
+      Applied_layout<Rt_layout<2> >
 	in_multi_layout(Rt_layout<2>(aligned_ ? aligned : dense,
 				     tuple<0,1,2>(),
 				     complex_storage_format,
 				     OVXX_ALLOC_ALIGNMENT),
 			Domain<2>(mult_, FFTW(iosize)(dom[0])), sizeof(SCALAR_TYPE));
-      Applied_layout<Rt_layout<2> > 
+      Applied_layout<Rt_layout<2> >
 	out_multi_layout(Rt_layout<2>(aligned_ ? aligned : dense,
 				      tuple<0,1,2>(),
 				      complex_storage_format,
@@ -245,17 +245,17 @@ struct planner<D, complex<SCALAR_TYPE>, SCALAR_TYPE>
     }
     in_buffer_ = aligned_array<complex<SCALAR_TYPE> >(32, in_total_size);
     out_buffer_ = aligned_array<SCALAR_TYPE>(32, out_total_size);
-    
-    FFTW(iodim) dims[D];    
-    for (index_type i = 0; i != D; ++i) 
+
+    FFTW(iodim) dims[D];
+    for (index_type i = 0; i != D; ++i)
     {
       dims[i].n = out_layout.size(i);
-      dims[i].is = in_layout.stride(i); 
-      dims[i].os = out_layout.stride(i); 
+      dims[i].is = in_layout.stride(i);
+      dims[i].os = out_layout.stride(i);
     }
     if (complex_storage_format == split_complex)
     {
-      std::pair<SCALAR_TYPE*,SCALAR_TYPE*> in = 
+      std::pair<SCALAR_TYPE*,SCALAR_TYPE*> in =
 	array_cast<split_complex>(in_buffer_);
       SCALAR_TYPE *out = out_buffer_.get();
       plan_ = FFTW(plan_guru_split_dft_c2r)(D, dims, 0, 0,
@@ -338,7 +338,7 @@ public:
 			    ztype out, stride_type out_stride,
 			    length_type length)
   {
-    // the inverse DFT is equal to the forwards DFT 
+    // the inverse DFT is equal to the forwards DFT
     // with the real and imaginary parts swapped
     if (S == fft_fwd)
       FFTW(execute_split_dft)(plan_op_,
@@ -474,7 +474,7 @@ public:
   virtual void in_place(ztype inout, stride_type, stride_type,
 			length_type, length_type)
   {
-    // the inverse DFT is equal to the forwards DFT 
+    // the inverse DFT is equal to the forwards DFT
     // with the real and imaginary parts swapped
     if (S == fft_fwd)
       FFTW(execute_split_dft)(plan_ip_,
@@ -490,14 +490,14 @@ public:
 			    length_type, length_type)
   {
     FFTW(execute_dft)(plan_op_,
-		      reinterpret_cast<FFTW(complex)*>(in), 
+		      reinterpret_cast<FFTW(complex)*>(in),
 		      reinterpret_cast<FFTW(complex)*>(out));
   }
   virtual void out_of_place(ztype in, stride_type, stride_type,
 			    ztype out, stride_type, stride_type,
 			    length_type, length_type cols)
   {
-    // the inverse DFT is equal to the forwards DFT 
+    // the inverse DFT is equal to the forwards DFT
     // with the real and imaginary parts swapped
     if (S == fft_fwd)
       FFTW(execute_split_dft)(plan_op_,
@@ -640,7 +640,7 @@ public:
 			stride_type, stride_type, stride_type,
 			length_type, length_type, length_type)
   {
-    // the inverse DFT is equal to the forwards DFT 
+    // the inverse DFT is equal to the forwards DFT
     // with the real and imaginary parts swapped
     if (S == fft_fwd)
       FFTW(execute_split_dft)(plan_ip_,
@@ -656,14 +656,14 @@ public:
 			    length_type, length_type, length_type)
   {
     FFTW(execute_dft)(plan_op_,
-		      reinterpret_cast<FFTW(complex)*>(in), 
+		      reinterpret_cast<FFTW(complex)*>(in),
 		      reinterpret_cast<FFTW(complex)*>(out));
   }
   virtual void out_of_place(ztype in, stride_type, stride_type, stride_type,
 			    ztype out, stride_type, stride_type, stride_type,
 			    length_type, length_type, length_type)
   {
-    // the inverse DFT is equal to the forwards DFT 
+    // the inverse DFT is equal to the forwards DFT
     // with the real and imaginary parts swapped
     if (S == fft_fwd)
       FFTW(execute_split_dft)(plan_op_,
@@ -879,7 +879,7 @@ public:
 
     for (index_type i = 0; i != mult; ++i, in += in_stride, out += out_stride)
     {
-      FFTW(execute_dft_c2r)(plan_, 
+      FFTW(execute_dft_c2r)(plan_,
 			    reinterpret_cast<FFTW(complex)*>(in), out);
     }
   }
@@ -939,7 +939,7 @@ public:
     stride_type const stride  = axis == 1 ? str_0 : str_1;
 
     for (index_type i = 0; i != mult; ++i, inout += stride)
-      FFTW(execute_dft)(this->plan_ip_, 
+      FFTW(execute_dft)(this->plan_ip_,
  			reinterpret_cast<FFTW(complex)*>(inout),
  			reinterpret_cast<FFTW(complex)*>(inout));
   }
@@ -972,7 +972,7 @@ public:
 
     for (index_type i = 0; i != mult; ++i, in += in_stride, out += out_stride)
       FFTW(execute_dft)(plan_op_,
-			reinterpret_cast<FFTW(complex)*>(in), 
+			reinterpret_cast<FFTW(complex)*>(in),
 			reinterpret_cast<FFTW(complex)*>(out));
   }
   virtual void out_of_place(ztype in, stride_type i_str_0, stride_type i_str_1,
@@ -993,20 +993,20 @@ public:
 	   in_real += in_stride, in_imag += in_stride,
 	   out_real += out_stride, out_imag += out_stride)
       if (D == fft_fwd)
-	FFTW(execute_split_dft)(plan_op_, 
+	FFTW(execute_split_dft)(plan_op_,
 				in_real, in_imag, out_real, out_imag);
       else
-	FFTW(execute_split_dft)(plan_op_, 
+	FFTW(execute_split_dft)(plan_op_,
 				in_imag, in_real, out_imag, out_real);
   }
 };
 
 #define OVXX_FFTW_CREATE_FFT(D, I, O, S)	       \
 template <>					       \
-std::auto_ptr<fft_backend<D, I, O, S> >	               \
+std::unique_ptr<fft_backend<D, I, O, S> >	               \
 create(Domain<D> const &dom, unsigned number)	       \
 {                                                      \
-  return std::auto_ptr<fft_backend<D, I, O, S> >       \
+  return std::unique_ptr<fft_backend<D, I, O, S> >       \
     (new fft<D, I, O, S>(dom, number));		       \
 }
 
@@ -1033,10 +1033,10 @@ OVXX_FFTW_CREATE_FFT(3, complex<SCALAR_TYPE>, complex<SCALAR_TYPE>, fft_inv)
 
 #define OVXX_FFTW_CREATE_FFTM(I, O, A, D)	       \
 template <>                                            \
-std::auto_ptr<fftm_backend<I, O, A, D> >	       \
+std::unique_ptr<fftm_backend<I, O, A, D> >	       \
 create(Domain<2> const &dom, unsigned number)	       \
 {                                                      \
-  return std::auto_ptr<fftm_backend<I, O, A, D> >      \
+  return std::unique_ptr<fftm_backend<I, O, A, D> >      \
     (new fftm<I, O, A, D>(dom, number));	       \
 }
 

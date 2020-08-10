@@ -48,8 +48,10 @@ float high_resolution_clock::tics_per_nanosecond;
 
 void high_resolution_clock::init()
 {
+#if !defined(OVXX_TIMER_POSIX) // tics_per_nanosecond is not needed in this case
   float mhz = get_cpu_speed();
   tics_per_nanosecond = mhz/1000;
+#endif
 }
 
 } // namespace ovxx::cxx11::chrono

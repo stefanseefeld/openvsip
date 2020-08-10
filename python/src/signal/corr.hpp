@@ -52,7 +52,7 @@ private:
 };
 
 template <typename T>
-std::auto_ptr<corr_base<T> >
+std::unique_ptr<corr_base<T> >
 create_corr(vsip::length_type r,
 	    vsip::length_type i,
 	    vsip::support_region_type s,
@@ -62,7 +62,7 @@ create_corr(vsip::length_type r,
   using vsip::support_same;
   using vsip::support_min;
 
-  typedef std::auto_ptr<corr_base<T> > ap;
+  typedef std::unique_ptr<corr_base<T> > ap;
   if (s == vsip::support_full)
     return ap(new corr<T, support_full>(r, i));
   else if (s == vsip::support_same)
@@ -76,7 +76,7 @@ void define_corr()
 {
   typedef corr_base<T> corr_type;
 
-  bpl::class_<corr_type, std::auto_ptr<corr_type>, boost::noncopyable>
+  bpl::class_<corr_type, std::unique_ptr<corr_type>, boost::noncopyable>
     corr("corr", bpl::no_init);
   corr.def("__init__", bpl::make_constructor(create_corr<T>));
   corr.add_property("reference_size", &corr_type::reference_size);

@@ -28,7 +28,7 @@
    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  */
 
 /// Description
-///   Simple filter example utilizing smart wrappers around SV++ signal 
+///   Simple filter example utilizing smart wrappers around SV++ signal
 ///   processing objects.
 
 #include <assert.h>
@@ -64,14 +64,14 @@ using vsip::length_type;
 
 
 
-// This class encapsulates two FFT objects used to implement a filter.  
+// This class encapsulates two FFT objects used to implement a filter.
 // The input signal, filter coefficients and output buffer are passed in
 // each time, but the FFT objects themselves persist across calls.  This
 // provides a portable, encapsulated way to share these objects amongst
 // different functions or classes, provided they are operating on input
 // signals of the same length.
 //
-// This version allows the caller to provide the filter coefficients, 
+// This version allows the caller to provide the filter coefficients,
 // which should already be transformed into the frequency domain.
 //
 // Use this when the size is known at instantiation time and/or when
@@ -91,12 +91,12 @@ public:
   length_type size() { return size_; }
 
   // Run data through the pipeline.
-  template <typename Block1, 
-            typename Block2, 
+  template <typename Block1,
+            typename Block2,
             typename Block3>
-  void 
+  void
   operator()(
-    const_Vector<cscalar_f, Block1> in, 
+    const_Vector<cscalar_f, Block1> in,
     const_Vector<cscalar_f, Block2> coefficients,
     Vector<cscalar_f, Block3> out)
   {
@@ -117,12 +117,12 @@ private:
   f_fft_type f_fft_;
   i_fft_type i_fft_;
 };
-  
+
 
 // This more flexible wrapper is useful if the size of the operation is not
 // known at initialization time.  An instance of the class is not created
-// until the reconfigure() function is called.  Calling reconfigure() a second 
-// time to adjust the size is permitted.  From a performance perspective 
+// until the reconfigure() function is called.  Calling reconfigure() a second
+// time to adjust the size is permitted.  From a performance perspective
 // though, it is generally better to have two or more objects -- one of each
 // needed size -- instead of resizing, due to the cost associated with planning
 // the FFTs.  This cost can be an order of magnitude greater than the
@@ -150,12 +150,12 @@ public:
   }
 
   // Run data through the pipeline.
-  template <typename Block1, 
-            typename Block2, 
+  template <typename Block1,
+            typename Block2,
             typename Block3>
-  void 
+  void
   operator()(
-    const_Vector<cscalar_f, Block1> in, 
+    const_Vector<cscalar_f, Block1> in,
     const_Vector<cscalar_f, Block2> coefficients,
     Vector<cscalar_f, Block3> out)
   {
@@ -176,9 +176,9 @@ public:
   }
 
 private:
-  std::auto_ptr<Filter> filter_;
+  std::unique_ptr<Filter> filter_;
 };
-    
+
 
 
 
@@ -196,7 +196,7 @@ simple_filter(length_type const N)
   Vector<cscalar_f> out(N);
 
   filter(in, k, out);
-}  
+}
 
 
 // Resizable filter example: Uses dynamic allocation
@@ -222,7 +222,7 @@ resizable_filter(length_type const N)
 
   Domain<1> n2(N/2);
   filter(in(n2), k(n2), out(n2));
-}  
+}
 
 
 int
@@ -235,5 +235,3 @@ main(int argc, char **argv)
   simple_filter(N);
   resizable_filter(N);
 }
-
-

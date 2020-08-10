@@ -38,7 +38,7 @@ AC_ARG_WITH(variant,
   AS_HELP_STRING([--with-variant=VARIANT],
                  [Specify a build variant id to be used.
                   This allows multiple variants to share the same set of
-		  header files, as the generated config headers use 
+		  header files, as the generated config headers use
 		  different names.]),
   [variant=$withval],
   [variant=])
@@ -60,7 +60,7 @@ if test -n "$extra_libdir"; then
 fi
 
 
-### Filename extensions. 
+### Filename extensions.
 AC_ARG_WITH(obj_ext,
   AS_HELP_STRING([--with-obj-ext=EXT],
                  [Specify the file extension to be used for object files.
@@ -132,8 +132,8 @@ if test $with_cula != "no"; then
 fi
 
 ### Mercury Scientific Algorithm (SAL)
-AC_ARG_ENABLE([sal],,  
-  AC_MSG_ERROR([The option --enable-sal is obsolete; use 
+AC_ARG_ENABLE([sal],,
+  AC_MSG_ERROR([The option --enable-sal is obsolete; use
     --with-sal instead.  (Run 'configure --help' for details)]),)
 
 AC_ARG_WITH([sal],
@@ -220,30 +220,30 @@ AC_ARG_ENABLE([tracing],
 AC_ARG_ENABLE(all-tests,,
   [case x"$enableval" in
      xyes) enable_all_tests=1 ;;
-     *) enable_all_tests=0 
+     *) enable_all_tests=0
    esac],
   [enable_all_tests=0])
 AC_SUBST(enable_all_tests)
 
-AC_ARG_WITH(qmtest,,,[with_qmtest="qmtest"]) 
+AC_ARG_WITH(qmtest,,,[with_qmtest="qmtest"])
 
 AC_SUBST(QMTEST, $with_qmtest)
 
-AC_ARG_WITH(qmtest-target,,,[with_qmtest_target=""]) 
+AC_ARG_WITH(qmtest-target,,,[with_qmtest_target=""])
 
 if test "x$with_qmtest_target" = "x"; then
   AC_SUBST(QMTEST_TARGET, "local_host.LocalHost")
 else
   AC_SUBST(QMTEST_TARGET, "$with_qmtest_target")
 fi
- 
+
 AC_ARG_ENABLE(python-bindings,
   [  --enable-python-bindings         Specify whether or not to build the python bindings.],,
   [enable_python_bindings=no])
 AS_IF([test "x$enable_python_bindings" != xno],
   [enable_python_bindings=1], [enable_python_bindings=])
 
-AC_ARG_WITH(python, 
+AC_ARG_WITH(python,
   [  --with-python=PATH      Specify the Python interpreter.],
   PYTHON="$with_python",
   PYTHON="python"
@@ -282,7 +282,7 @@ AC_C_BIGENDIAN(
   AC_DEFINE(VSIP_BIG_ENDIAN, 0, [machine is littleendian]),
   AC_MSG_ERROR(unknown endianess),
   AC_MSG_ERROR(universial endianess not supported)
-) 
+)
 
 #
 # Files to generate.
@@ -293,7 +293,7 @@ templates=`find $srcdir -name '_darcs' -prune -o	\
 	 -name 'rules*.in' -prune -o			\
 	 -name 'ovxx*.pc.in' -prune -o		\
 	 -name '*-config.hpp.in' -prune -o		\
-	 -name '*.in' -print | 
+	 -name '*.in' -print |
            sed -e "s,^$srcdir/,,g" -e 's,\.in$,,g'`
 
 rules_mk=rules.mk.in
@@ -332,7 +332,7 @@ AC_CONFIG_FILES([rules.mk:$rules_mk])
 AC_CONFIG_FILES([$ovxx_pc:$ovxx_pc_in])
 dnl Unfortunately autoheader is unable to recognize the name of the header
 dnl template to be generated, if the name itself is held in a shell variable.
-dnl So we need to hardcode the additional 'config.hpp' file below, even if 
+dnl So we need to hardcode the additional 'config.hpp' file below, even if
 dnl we do not need it.
 dnl We add a cleanup command via AC_CONFIG_COMMANDS below to remove it in that case.
 AC_CONFIG_HEADERS([src/ovxx/detail/config.hpp])
@@ -384,12 +384,22 @@ else # assume GCC
   LDSHARED="$CXX -shared"
   cygwin_mount=
 fi
+
 AC_SUBST(CCDEP)
 AC_SUBST(CXXDEP)
 AC_SUBST(LDSHARED)
 AC_SUBST(INTEL_WIN, $INTEL_WIN)
 AC_SUBST(cygwin_mount)
 
+use_strip=1
+case "${host_os}" in
+     darwin*) use_strip=0
+     ;;
+     *) use_strip=
+     ;;
+esac
+
+AC_SUBST(USE_STRIP, $use_strip)
 
 #
 # Build shared libraries, if requested
@@ -484,6 +494,8 @@ fi
 
 AC_DEFINE_UNQUOTED(OVXX_HAS_EXCEPTIONS, $has_exceptions,
                    [Define to 1 to use C++ exceptions.])
+AC_DEFINE_UNQUOTED(VSIP_HAS_EXCEPTIONS, $has_exceptions,
+                   [Define to 1 to use C++ exceptions.])
 
 # Weed out buggy compilers and/or C++ runtime libraries.
 # This is not an AC_CACHE_CHECK because it's likely to grow, so
@@ -531,10 +543,10 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 int main(int, char **)
 {
   float f1 = 1.f;
-  f1 = std::abs(f1); 
+  f1 = std::abs(f1);
   (void)f1;
   double d1 = 1.0;
-  d1 = std::abs(d1); 
+  d1 = std::abs(d1);
   (void)d1;
   long double l1 = 1.0;
   l1 = std::abs(l1);
@@ -554,10 +566,10 @@ if test "$have_abs_float" = "no"; then
 int main(int, char **)
 {
   float f1 = 1.f;
-  f1 = ::abs(f1); 
+  f1 = ::abs(f1);
   (void)f1;
   double d1 = 1.0;
-  d1 = ::abs(d1); 
+  d1 = ::abs(d1);
   (void)d1;
   long double l1 = 1.0;
   l1 = ::abs(l1);
@@ -572,13 +584,13 @@ int main(int, char **)
 fi
 
 #
-# Check for the exp10 function.  
+# Check for the exp10 function.
 #
 # The VSIPL++ specification requires a vsip::exp10 function.  Although
 # there is no std::exp10 function in ISO C++, some systems (e.g.,
 # those with GLIBC) do provide this function.
 #
-AC_CHECK_DECLS([exp10, exp10f, exp10l], [], [], 
+AC_CHECK_DECLS([exp10, exp10f, exp10l], [], [],
 	       [#include <cmath>])
 
 #
@@ -655,7 +667,7 @@ AC_CHECK_DECLS([posix_memalign, memalign], [], [],
 
 AC_ARG_WITH([png],
             AS_HELP_STRING([--with-png], [Enable PNG I/O using libpng.]),
-            [with_png=$withval],            
+            [with_png=$withval],
             [with_png=probe])
 
 if test "$with_png" != no; then
@@ -690,7 +702,7 @@ fi
 if test "$with_cvsip_fft" == "yes"; then
   if test "$with_cvsip" == "no"; then
     AC_MSG_ERROR([C-VSIPL FFT requires C-VSIPL])
-  fi 
+  fi
 fi
 
 OVXX_CHECK_CVSIP
@@ -726,11 +738,11 @@ if test "$enable_huge_page_pool" = "yes"; then
   AC_SUBST(OVXX_HAVE_HUGE_PAGE_POOL, 1)
 else
   AC_SUBST(OVXX_HAVE_HUGE_PAGE_POOL, "")
-fi 
+fi
 
 #
 # Installation
-# 
+#
 AC_PROG_INSTALL
 
 # Python interface
@@ -776,6 +788,7 @@ AS_IF([test "$enable_python_bindings" == "1"],
   [AC_MSG_RESULT([With Python bindings:                    no])])
 AC_MSG_RESULT([With C-VSIPL bindings:                   ${enable_cvsip_bindings}])
 AC_MSG_RESULT([With PNG support:                        ${with_png}])
+AC_MSG_RESULT([Use `strip`:                             $use_strip])
 
 #
 # Done.
@@ -796,7 +809,7 @@ mkdir -p benchmarks/cvsip
 
 dnl Replace generated config.hpp if we are using a variant-specific header.
 dnl (See above for why we are generating one only to overwrite it.)
-AC_CONFIG_COMMANDS([cleanup-acconfig], 
+AC_CONFIG_COMMANDS([cleanup-acconfig],
   [[if test -n "$variant"; then
       cp $ac_abs_top_srcdir/src/ovxx/detail/config-error.hpp src/ovxx/detail/config.hpp
     fi]], [variant=$variant])

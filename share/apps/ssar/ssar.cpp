@@ -27,8 +27,8 @@
    OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  */
 
-/// Description: VSIPL++ implementation of HPCS Challenge Benchmarks 
-///              Scalable Synthetic Compact Applications - 
+/// Description: VSIPL++ implementation of HPCS Challenge Benchmarks
+///              Scalable Synthetic Compact Applications -
 ///              SSCA #3: Sensor Processing and Knowledge Formation
 
 #include <vsip/initfin.hpp>
@@ -48,8 +48,8 @@ void ssar_options::usage(std::string const &prog_name,
 {
   std::ostream &os = error.empty() ? std::cout : std::cerr;
   if (!error.empty()) os << error << std::endl;
-  os << "Usage: " << prog_name 
-     << " [-l|--loop <LOOP>] [-o|--output <FILE>] [--swap|--noswap] <data dir> " 
+  os << "Usage: " << prog_name
+     << " [-l|--loop <LOOP>] [-o|--output <FILE>] [--swap|--noswap] <data dir> "
      << std::endl;
   if (error.empty()) std::exit(0);
   else std::exit(-1);
@@ -116,7 +116,7 @@ main(int argc, char** argv)
   vsip::vsipl init(argc, argv);
 
  #if OVXX_ENABLE_HUGE_PAGE_ALLOCATOR
-  std::auto_ptr<ovxx::allocator> allocator
+  std::unique_ptr<ovxx::allocator> allocator
     (new ovxx::huge_page_allocator("/huge/benchmark.bin", 20));
   Local_map huge_map(allocator.get());
 #else
@@ -127,18 +127,18 @@ main(int argc, char** argv)
 
   typedef SSAR_BASE_TYPE T;
 
-  // Setup for Stage 1, Kernel 1 
+  // Setup for Stage 1, Kernel 1
   ovxx::timer t0;
-  Kernel1<T> k1(opt, huge_map); 
+  Kernel1<T> k1(opt, huge_map);
   std::cout << "setup:   " << t0.elapsed() << " (s)" << std::endl;
 
-  // Retrieve the raw radar image data from disk.  This Data I/O 
+  // Retrieve the raw radar image data from disk.  This Data I/O
   // component is currently untimed.
   Kernel1<T>::complex_matrix_type s_raw(opt.n, opt.mc, huge_map);
   ovxx::hdf5::read(opt.raw_sar_data, "data", s_raw);
 
   // Resolve the image.  This Computation component is timed.
-  Kernel1<T>::real_matrix_type 
+  Kernel1<T>::real_matrix_type
     image(k1.output_size(0), k1.output_size(1), huge_map);
 
   ovxx::timer t1;
@@ -163,5 +163,5 @@ main(int argc, char** argv)
   }
 
   // Store the image on disk for later processing (not timed).
-  ovxx::hdf5::write(opt.output, "data", image); 
+  ovxx::hdf5::write(opt.output, "data", image);
 }

@@ -60,6 +60,7 @@ CXXDEP := @CXXDEP@
 LDSHARED:= @LDSHARED@
 # The strip executable.
 STRIP:= @STRIP@
+USE_STRIP:= @USE_STRIP@
 # Preprocessor flags.
 CPPFLAGS := @CPPFLAGS@ @MPI_CPPFLAGS@
 # C compilation flags.

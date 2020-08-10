@@ -85,7 +85,7 @@ class fftm<vsip::complex<T>, vsip::complex<T>, A, D, N, H>
 
 public:
   fftm(vsip::length_type r, vsip::length_type c, T s)
-    : fftm_(vsip::Domain<2>(r, c), s) 
+    : fftm_(vsip::Domain<2>(r, c), s)
   {}
   virtual bpl::tuple input_size() const { return as_tuple(fftm_.input_size());}
   virtual bpl::tuple output_size() const { return as_tuple(fftm_.output_size());}
@@ -146,7 +146,7 @@ private:
 };
 
 template <typename I, typename O, int D>
-std::auto_ptr<fftm_base<I, O, D> > 
+std::unique_ptr<fftm_base<I, O, D> >
 create_fftm(vsip::length_type rows,
 	    vsip::length_type cols,
 	    typename ovxx::scalar_of<I>::type scale,
@@ -160,15 +160,15 @@ create_fftm(vsip::length_type rows,
   using vsip::alg_space;
   using vsip::alg_time;
 
-  typedef std::auto_ptr<fftm_base<I, O, D> > ap;
+  typedef std::unique_ptr<fftm_base<I, O, D> > ap;
 
   switch (h)
   {
     case alg_noise:
-      if (n >= patient) 
+      if (n >= patient)
 	return a == 0 ?
 	  ap(new fftm<I, O, 0, D, patient, alg_noise>(rows, cols, scale)) :
-	  ap(new fftm<I, O, 1, D, patient, alg_noise>(rows, cols, scale)); 
+	  ap(new fftm<I, O, 1, D, patient, alg_noise>(rows, cols, scale));
       else if (n >= measure)
 	return a == 0 ?
 	  ap(new fftm<I, O, 0, D, measure, alg_noise>(rows, cols, scale)) :
@@ -177,17 +177,17 @@ create_fftm(vsip::length_type rows,
 	return a == 0 ?
 	  ap(new fftm<I, O, 0, D, estimate, alg_noise>(rows, cols, scale)) :
 	  ap(new fftm<I, O, 1, D, estimate, alg_noise>(rows, cols, scale));
-      else  
+      else
 	return a == 0 ?
 	  ap(new fftm<I, O, 0, D, 0, alg_noise>(rows, cols, scale)) :
 	  ap(new fftm<I, O, 1, D, 0, alg_noise>(rows, cols, scale));
       break;
     case alg_space:
-      if (n >= patient) 
+      if (n >= patient)
 	return a == 0 ?
 	  ap(new fftm<I, O, 0, D, patient, alg_space>(rows, cols, scale)) :
 	  ap(new fftm<I, O, 1, D, patient, alg_space>(rows, cols, scale));
-      else if (n >= measure) 
+      else if (n >= measure)
 	return a == 0 ?
 	  ap(new fftm<I, O, 0, D, measure, alg_space>(rows, cols, scale)) :
 	  ap(new fftm<I, O, 1, D, measure, alg_space>(rows, cols, scale));
@@ -201,11 +201,11 @@ create_fftm(vsip::length_type rows,
 	  ap(new fftm<I, O, 1, D, 0, alg_space>(rows, cols, scale));
       break;
     default:
-      if (n >= patient) 
+      if (n >= patient)
 	return a == 0 ?
 	  ap(new fftm<I, O, 0, D, patient, alg_time>(rows, cols, scale)) :
 	  ap(new fftm<I, O, 1, D, patient, alg_time>(rows, cols, scale));
-      else if (n >= measure) 
+      else if (n >= measure)
 	return a == 0 ?
 	  ap(new fftm<I, O, 0, D, measure, alg_time>(rows, cols, scale)) :
 	  ap(new fftm<I, O, 1, D, measure, alg_time>(rows, cols, scale));
@@ -228,7 +228,7 @@ void define_real_fftm()
   typedef fftm_base<T, C, vsip::fft_fwd> fftm_type;
   typedef fftm_base<C, T, vsip::fft_inv> ifftm_type;
 
-  bpl::class_<fftm_type, std::auto_ptr<fftm_type>, boost::noncopyable>
+  bpl::class_<fftm_type, std::unique_ptr<fftm_type>, boost::noncopyable>
     fftm("fftm", bpl::no_init);
   fftm.def("__init__", bpl::make_constructor(create_fftm<T, C, vsip::fft_fwd>));
   fftm.add_property("input_size", &fftm_type::input_size);
@@ -238,7 +238,7 @@ void define_real_fftm()
   fftm.add_property("axis", &fftm_type::axis);
   fftm.def("__call__", &fftm_type::op);
 
-  bpl::class_<ifftm_type, std::auto_ptr<ifftm_type>, boost::noncopyable>
+  bpl::class_<ifftm_type, std::unique_ptr<ifftm_type>, boost::noncopyable>
     ifftm("ifftm", bpl::no_init);
   ifftm.def("__init__", bpl::make_constructor(create_fftm<C, T, vsip::fft_inv>));
   ifftm.add_property("input_size", &ifftm_type::input_size);
@@ -256,7 +256,7 @@ void define_complex_fftm()
   typedef fftm_base<C, C, vsip::fft_fwd> fftm_type;
   typedef fftm_base<C, C, vsip::fft_inv> ifftm_type;
 
-  bpl::class_<fftm_type, std::auto_ptr<fftm_type>, boost::noncopyable>
+  bpl::class_<fftm_type, std::unique_ptr<fftm_type>, boost::noncopyable>
     fftm("fftm", bpl::no_init);
   fftm.def("__init__", bpl::make_constructor(create_fftm<C, C, vsip::fft_fwd>));
   fftm.add_property("input_size", &fftm_type::input_size);
@@ -267,7 +267,7 @@ void define_complex_fftm()
   fftm.def("__call__", &fftm_type::op);
   fftm.def("__call__", &fftm_type::ip);
 
-  bpl::class_<ifftm_type, std::auto_ptr<ifftm_type>, boost::noncopyable>
+  bpl::class_<ifftm_type, std::unique_ptr<ifftm_type>, boost::noncopyable>
     ifftm("ifftm", bpl::no_init);
   ifftm.def("__init__", bpl::make_constructor(create_fftm<C, C, vsip::fft_inv>));
   ifftm.add_property("input_size", &ifftm_type::input_size);

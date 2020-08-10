@@ -45,12 +45,16 @@
 # ifndef VSIP_NOTHROW
 #  define VSIP_NOTHROW throw()
 # endif
-# define VSIP_THROW(x) throw x         ///< Wraps throw-specifications
+# ifndef VSIP_THROW
+#  define VSIP_THROW(x) throw x         ///< Wraps throw-specifications
+# endif
 #else
 # ifndef VSIP_NOTHROW
 #  define VSIP_NOTHROW
 # endif
-# define VSIP_THROW(x)
+# ifndef VSIP_THROW
+#  define VSIP_THROW(x)
+# endif
 #endif
 
 namespace vsip

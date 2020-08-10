@@ -22,7 +22,7 @@ namespace cvsip
 {
 
 template <typename I, dimension_type D, typename S>
-std::auto_ptr<I>
+std::unique_ptr<I>
 create(Domain<D> const &dom, S scale, unsigned int);
 
 } // namespace ovxx::cvsip
@@ -35,7 +35,7 @@ template <typename I,
 	  return_mechanism_type R,
 	  unsigned N>
 struct Evaluator<op::fft<1, I, O, S, R, N>, be::cvsip,
-  std::auto_ptr<signal::fft::fft_backend<1, I, O, S> >
+  std::unique_ptr<signal::fft::fft_backend<1, I, O, S> >
   (Domain<1> const &, typename scalar_of<I>::type)>
 {
   typedef typename scalar_of<I>::type scalar_type;
@@ -53,12 +53,12 @@ struct Evaluator<op::fft<1, I, O, S, R, N>, be::cvsip,
     false
 #endif
     ;
-  static bool const ct_valid = (has_float && 
+  static bool const ct_valid = (has_float &&
                                 is_same<scalar_type, float>::value) ||
-                               (has_double && 
+                               (has_double &&
                                 is_same<scalar_type, double>::value);
   static bool rt_valid(Domain<1> const &, scalar_type) { return true;}
-  static std::auto_ptr<signal::fft::fft_backend<1, I, O, S> >
+  static std::unique_ptr<signal::fft::fft_backend<1, I, O, S> >
   exec(Domain<1> const &dom, scalar_type scale)
   {
     return cvsip::create<signal::fft::fft_backend<1, I, O, S> >(dom, scale, N);
@@ -72,13 +72,13 @@ template <typename I,
 	  return_mechanism_type R,
 	  unsigned N>
 struct Evaluator<op::fftm<I, O, A, D, R, N>, be::cvsip,
-  std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> > 
+  std::unique_ptr<signal::fft::fftm_backend<I, O, A, D> >
   (Domain<2> const &, typename scalar_of<I>::type)>
 {
   typedef typename scalar_of<I>::type scalar_type;
   static bool const ct_valid = !is_same<scalar_type, long double>::value;
   static bool rt_valid(Domain<2> const &, scalar_type) { return true;}
-  static std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> > 
+  static std::unique_ptr<signal::fft::fftm_backend<I, O, A, D> >
   exec(Domain<2> const &dom, scalar_type scale)
   {
     return cvsip::create<signal::fft::fftm_backend<I, O, A, D> >(dom, scale, N);

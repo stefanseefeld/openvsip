@@ -104,12 +104,12 @@ struct fft_traits<1, double, 1>
   { vsip_crfftop_d(fft, input, output);}
 };
 
-inline vsip_major 
-to_major(int a) 
+inline vsip_major
+to_major(int a)
 { return a == 1 ? VSIP_ROW : VSIP_COL;}
 
-inline vsip_alg_hint 
-to_alg_hint(int h) 
+inline vsip_alg_hint
+to_alg_hint(int h)
 { return h == 0 ? VSIP_ALG_SPACE : h == 1 ? VSIP_ALG_TIME : VSIP_ALG_NOISE;}
 
 #endif
@@ -601,11 +601,11 @@ private:
 
 #define FFT_DEF(D, I, O, S)				 \
 template <>                                              \
-std::auto_ptr<fft::fft_backend<D, I, O, S> >	         \
+std::unique_ptr<fft::fft_backend<D, I, O, S> >	         \
 create(Domain<D> const &dom, scalar_of<I>::type scale,   \
        unsigned int n)                                   \
 {                                                        \
-  return std::auto_ptr<fft::fft_backend<D, I, O, S> >    \
+  return std::unique_ptr<fft::fft_backend<D, I, O, S> >    \
     (new Fft<D, I, O, S>(dom, scale, n, 0));        \
 }
 
@@ -627,11 +627,11 @@ FFT_DEF(1, complex<double>, double, 0)
 
 #define FFTM_DEF(I, O, A, D)			       \
 template <>                                            \
-std::auto_ptr<fft::fftm_backend<I, O, A, D> >	       \
+std::unique_ptr<fft::fftm_backend<I, O, A, D> >	       \
 create(Domain<2> const &dom, scalar_of<I>::type scale, \
        unsigned int n)                                 \
 {                                                      \
-  return std::auto_ptr<fft::fftm_backend<I, O, A, D> > \
+  return std::unique_ptr<fft::fftm_backend<I, O, A, D> > \
     (new Fftm<I, O, A, D>(dom, scale, n, 0));     \
 }
 
