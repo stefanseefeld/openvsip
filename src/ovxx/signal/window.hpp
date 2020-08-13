@@ -19,19 +19,19 @@ namespace signal
 {
 template <typename T>
 const_Vector<T>
-blackman(length_type len);
+blackman(length_type len) VSIP_THROW((std::bad_alloc));
 
 template <typename T>
 const_Vector<T>
-cheby(length_type len, T ripple);
+cheby(length_type len, T ripple) VSIP_THROW((std::bad_alloc));
 
 template <typename T>
 const_Vector<T>
-hanning(length_type len);
+hanning(length_type len) VSIP_THROW((std::bad_alloc));
 
 template <typename T>
 const_Vector<T>
-kaiser(length_type len, T beta);
+kaiser(length_type len, T beta) VSIP_THROW((std::bad_alloc));
 
 } // namespace ovxx::signal
 } // namespace ovxx
