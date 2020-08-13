@@ -12,6 +12,9 @@
 #define ovxx_support_hpp_
 
 #include <vsip/support.hpp>
+#if !OVXX_HAS_EXCEPTIONS
+#include <iostream>
+#endif
 #if OVXX_HAVE_LTTNG
 extern "C"
 {
