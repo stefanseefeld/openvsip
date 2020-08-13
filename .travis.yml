@@ -1,13 +1,31 @@
 language: cpp
-compiler:
-  - gcc
-  - clang
+
+jobs:
+  include:
+    - os: linux
+      compiler: gcc
+    - os: linux
+      compiler: clang
+    - os: osx
+      compiler: clang
 
 before_install:
-  - sudo apt-get install -y fftw3-dev
-  - sudo apt-get install -y liblapack-dev
+  - |
+    if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+      brew update
+      brew upgrade python  # upgrade to Python 3
+      brew install fftw
+      brew install openblas
+      export PATH="/usr/local/opt/python/libexec/bin:$PATH"
+    else
+      sudo apt-get install -y fftw3-dev
+      sudo apt-get install -y liblapack-dev
+    fi
 
-script: ./autogen.sh && ./configure && make
+script:
+  - ./autogen.sh
+  - ./configure
+  - make
 
 notifications:
   irc: "irc.oftc.net#openvsip"
