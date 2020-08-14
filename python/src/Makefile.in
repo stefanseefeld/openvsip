@@ -40,7 +40,7 @@ else
   define link_dso
   @echo linking $@
   $(LDSHARED) $(LDFLAGS) -o $@ $^ $(LIBS)
-  $(STRIP) --strip-unneeded $@
+  $(STRIP) $@
   endef
 endif
 

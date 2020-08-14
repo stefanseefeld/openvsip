@@ -342,6 +342,7 @@ AC_CONFIG_HEADERS([src/ovxx/detail/$acconfig:src/ovxx/detail/$acconfig_in])
 # QMTest wants to know this.
 #
 AC_CANONICAL_HOST
+AC_CANONICAL_BUILD
 
 #
 # Find the compiler.

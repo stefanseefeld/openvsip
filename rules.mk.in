@@ -51,13 +51,13 @@ endef
 ifneq (,$(findstring -g,$(LDFLAGS)))
 define link_lib_dso
 @echo linking $@
-$(LDSHARED) -Llib $(LDFLAGS) -o $@ $^ $(LIBS)
+$(LDSHARED) -L../../lib $(LDFLAGS) -o $@ $^ $(LIBS) $(MPI_LIBS)
 endef
 else
 define link_lib_dso
 @echo linking $@
-$(LDSHARED) -Llib $(LDFLAGS) -o $@ $^ $(LIBS)
-  $(STRIP) --strip-unneeded $@
+$(LDSHARED) -L../../lib $(LDFLAGS) -o $@ $^ $(LIBS) $(MPI_LIBS)
+  $(STRIP) $@
 endef
 endif
 
