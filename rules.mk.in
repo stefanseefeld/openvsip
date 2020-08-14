@@ -57,7 +57,7 @@ else
 define link_lib_dso
 @echo linking $@
 $(LDSHARED) -Llib $(LDFLAGS) -o $@ $^ $(LIBS)
-  $(STRIP) --strip-unneeded $@
+  $(STRIP) $@
 endef
 endif
 

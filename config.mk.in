@@ -8,6 +8,7 @@
 # Common variables used throughout the build system
 
 host:=@host@
+build_os:=@build_os@
 
 ### Installation ###
 
@@ -59,7 +60,11 @@ CXXDEP := @CXXDEP@
 # The DSO linker.
 LDSHARED:= @LDSHARED@
 # The strip executable.
-STRIP:= @STRIP@
+ifeq ($(findstring darwin, $(build_os)),)
+STRIP:= @STRIP@ --strip-unneeded
+else
+STRIP:= @STRIP@ -x
+endif
 # Preprocessor flags.
 CPPFLAGS := @CPPFLAGS@ @MPI_CPPFLAGS@
 # C compilation flags.
