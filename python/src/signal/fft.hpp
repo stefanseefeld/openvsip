@@ -11,6 +11,7 @@
 #include <ovxx/python/block.hpp>
 #include <vsip/signal.hpp>
 #include <ovxx/domain_utils.hpp>
+#include "../unique_ptr.hpp"
 
 namespace pyvsip
 {
@@ -135,7 +136,7 @@ private:
 };
 
 template <typename I, typename O, int D>
-std::auto_ptr<fft_base<I, O, D> > 
+std::unique_ptr<fft_base<I, O, D> > 
 create_fft(vsip::length_type length,
 	   typename ovxx::scalar_of<I>::type scale,
 	   unsigned n, vsip::alg_hint_type h)
@@ -148,7 +149,7 @@ create_fft(vsip::length_type length,
   using vsip::alg_space;
   using vsip::alg_time;
 
-  typedef std::auto_ptr<fft_base<I, O, D> > ap;
+  typedef std::unique_ptr<fft_base<I, O, D> > ap;
 
   switch (h)
   {
@@ -192,7 +193,7 @@ void define_real_fft()
   typedef fft_base<T, C, vsip::fft_fwd> fft_type;
   typedef fft_base<C, T, vsip::fft_inv> ifft_type;
 
-  bpl::class_<fft_type, std::auto_ptr<fft_type>, boost::noncopyable>
+  bpl::class_<fft_type, std::unique_ptr<fft_type>, boost::noncopyable>
     fft("fft", bpl::no_init);
   fft.def("__init__", bpl::make_constructor(create_fft<T, C, vsip::fft_fwd>));
   fft.add_property("input_size", &fft_type::input_size);
@@ -201,7 +202,7 @@ void define_real_fft()
   fft.add_property("forward", &fft_type::forward);
   fft.def("__call__", &fft_type::op);
 
-  bpl::class_<ifft_type, std::auto_ptr<ifft_type>, boost::noncopyable>
+  bpl::class_<ifft_type, std::unique_ptr<ifft_type>, boost::noncopyable>
     ifft("ifft", bpl::no_init);
   ifft.def("__init__", bpl::make_constructor(create_fft<C, T, vsip::fft_inv>));
   ifft.add_property("input_size", &ifft_type::input_size);
@@ -218,7 +219,7 @@ void define_complex_fft()
   typedef fft_base<C, C, vsip::fft_fwd> fft_type;
   typedef fft_base<C, C, vsip::fft_inv> ifft_type;
 
-  bpl::class_<fft_type, std::auto_ptr<fft_type>, boost::noncopyable>
+  bpl::class_<fft_type, std::unique_ptr<fft_type>, boost::noncopyable>
     fft("fft", bpl::no_init);
   fft.def("__init__", bpl::make_constructor(create_fft<C, C, vsip::fft_fwd>));
   fft.add_property("input_size", &fft_type::input_size);
@@ -228,7 +229,7 @@ void define_complex_fft()
   fft.def("__call__", &fft_type::op);
   fft.def("__call__", &fft_type::ip);
 
-  bpl::class_<ifft_type, std::auto_ptr<ifft_type>, boost::noncopyable>
+  bpl::class_<ifft_type, std::unique_ptr<ifft_type>, boost::noncopyable>
     ifft("ifft", bpl::no_init);
   ifft.def("__init__", bpl::make_constructor(create_fft<C, C, vsip::fft_inv>));
   ifft.add_property("input_size", &ifft_type::input_size);

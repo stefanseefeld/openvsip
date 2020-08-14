@@ -21,7 +21,7 @@ void define_distributed_block(char const *type_name)
 {
   typedef Block<D, T, M> block_type;
 
-  bpl::class_<block_type, boost::shared_ptr<block_type>, boost::noncopyable> 
+  bpl::class_<block_type, std::shared_ptr<block_type>, boost::noncopyable> 
     block(type_name, bpl::no_init);
   block.setattr("dtype", get_dtype<T>());
   block.def("assign", assign<D, T, M>);

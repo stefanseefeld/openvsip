@@ -9,6 +9,7 @@
 #include <vsip/vector.hpp>
 #include <vsip/matrix.hpp>
 #include <vsip/parallel.hpp>
+#include "../unique_ptr.hpp"
 
 namespace bpl = boost::python;
 using namespace vsip;
@@ -23,7 +24,7 @@ Vector<processor_type> convert(bpl::list procs)
   return result;
 }
 
-typedef std::auto_ptr<Map<> > map_ptr;
+typedef std::unique_ptr<Map<> > map_ptr;
 
 map_ptr make_map_0(bpl::list procs) { return map_ptr(new Map<>(convert(procs)));}
 map_ptr make_map_1(bpl::list procs, length_type d0)

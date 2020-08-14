@@ -163,7 +163,7 @@ public:
   typedef fft::workspace<D, I, O> workspace;
   typedef dispatcher::Dispatcher<
     dispatcher::op::fft<D, I, O, S, by_value, N>,
-    std::auto_ptr<backend_type>(Domain<D> const &, typename base::scalar_type), L>
+    std::unique_ptr<backend_type>(Domain<D> const &, typename base::scalar_type), L>
     dispatcher_type;
 
   Fft(Domain<D> const& dom, typename base::scalar_type scale)
@@ -205,7 +205,7 @@ public:
   }
 #endif
 private:
-  std::auto_ptr<backend_type> backend_;
+  std::unique_ptr<backend_type> backend_;
   workspace workspace_;
 };
 
@@ -229,7 +229,7 @@ public:
   typedef fft::workspace<D, I, O> workspace;
   typedef dispatcher::Dispatcher<
     dispatcher::op::fft<D, I, O, S, by_reference, N>,
-    std::auto_ptr<backend_type>(Domain<D> const &, typename base::scalar_type), L>
+    std::unique_ptr<backend_type>(Domain<D> const &, typename base::scalar_type), L>
     dispatcher_type;
 
   Fft(Domain<D> const& dom, typename base::scalar_type scale)
@@ -267,7 +267,7 @@ public:
   }
 
 private:
-  std::auto_ptr<backend_type> backend_;
+  std::unique_ptr<backend_type> backend_;
   workspace workspace_;
 };
 
@@ -298,7 +298,7 @@ class Fftm<I, O, L, A, D, by_value, N, H>
   typedef fft::workspace<2, I, O> workspace;
   typedef dispatcher::Dispatcher<
     dispatcher::op::fftm<I, O, A, D, by_value, N>,
-    std::auto_ptr<backend_type>(Domain<2> const &, typename base::scalar_type), L>
+    std::unique_ptr<backend_type>(Domain<2> const &, typename base::scalar_type), L>
     dispatcher_type;
 public:
   Fftm(Domain<2> const& dom, typename base::scalar_type scale)
@@ -355,7 +355,7 @@ public:
 #endif
 
 private:
-  std::auto_ptr<backend_type> backend_;
+  std::unique_ptr<backend_type> backend_;
   workspace workspace_;
 };
 
@@ -382,7 +382,7 @@ class Fftm<I, O, L, A, D, vsip::by_reference, N, H>
   typedef fft::workspace<2, I, O> workspace;
   typedef dispatcher::Dispatcher<
     dispatcher::op::fftm<I, O, A, D, by_reference, N>,
-    std::auto_ptr<backend_type>(Domain<2> const &, typename base::scalar_type), L>
+    std::unique_ptr<backend_type>(Domain<2> const &, typename base::scalar_type), L>
     dispatcher_type;
 public:
   Fftm(Domain<2> const& dom, typename base::scalar_type scale)
@@ -431,7 +431,7 @@ public:
   }
 
 private:
-  std::auto_ptr<backend_type> backend_;
+  std::unique_ptr<backend_type> backend_;
   workspace workspace_;
 };
 

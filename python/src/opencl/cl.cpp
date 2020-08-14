@@ -32,9 +32,9 @@ bpl::list devices(T &t)
     l.append(ds[i]);
   return l;
 }
-std::auto_ptr<ocl::buffer> make_buffer(ocl::context const &c, size_t s)
+std::unique_ptr<ocl::buffer> make_buffer(ocl::context const &c, size_t s)
 {
-  return std::auto_ptr<ocl::buffer>
+  return std::unique_ptr<ocl::buffer>
     (new ocl::buffer(c, s, ocl::buffer::read_write));
 }
 void build(ocl::program &p, bpl::list devices)

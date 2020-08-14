@@ -19,7 +19,7 @@ template <typename T, vsip::dimension_type D, typename T1>
 bpl::object cast(ovxx::python::Block<D, T1> const &b)
 {
   vsip::Domain<D> dom = ovxx::block_domain<D>(b);
-  boost::shared_ptr<ovxx::python::Block<D, T> > other(new ovxx::python::Block<D, T>(dom));
+  std::shared_ptr<ovxx::python::Block<D, T> > other(new ovxx::python::Block<D, T>(dom));
   ovxx::assign<D>(*other, b);
   return bpl::object(other);
 }

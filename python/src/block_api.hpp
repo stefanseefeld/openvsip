@@ -47,10 +47,10 @@ template <typename T>
 struct traits<1,T>
 {
   typedef Block<1,T> B;
-  static boost::shared_ptr<B> construct(length_type l)
-  { return boost::shared_ptr<B>(new B(l));}
-  static boost::shared_ptr<B> construct_init(length_type l, T value)
-  { return boost::shared_ptr<B>(new B(l, value));}
+  static std::shared_ptr<B> construct(length_type l)
+  { return std::shared_ptr<B>(new B(l));}
+  static std::shared_ptr<B> construct_init(length_type l, T value)
+  { return std::shared_ptr<B>(new B(l, value));}
   static T get(B const &b, index_type i) 
   {
     OVXX_PRECONDITION(i < b.size(1, 0));
@@ -66,10 +66,10 @@ template <typename T, typename M>
 struct traits<1,T,M>
 {
   typedef Block<1,T,M> B;
-  static boost::shared_ptr<B> construct(length_type l, M const &m)
-  { return boost::shared_ptr<B>(new B(l, m));}
-  static boost::shared_ptr<B> construct_init(length_type l, T value, M const &m)
-  { return boost::shared_ptr<B>(new B(l, value, m));}
+  static std::shared_ptr<B> construct(length_type l, M const &m)
+  { return std::shared_ptr<B>(new B(l, m));}
+  static std::shared_ptr<B> construct_init(length_type l, T value, M const &m)
+  { return std::shared_ptr<B>(new B(l, value, m));}
   static T get(B const &b, index_type i) 
   {
     OVXX_PRECONDITION(i < b.size(1, 0));
@@ -85,10 +85,10 @@ template <typename T>
 struct traits<2,T>
 {
   typedef Block<2,T> B;
-  static boost::shared_ptr<B> construct(length_type r, length_type c)
-  { return boost::shared_ptr<B>(new B(Domain<2>(r,c)));}
-  static boost::shared_ptr<B> construct_init(length_type r, length_type c, T value)
-  { return boost::shared_ptr<B>(new B(Domain<2>(r,c), value));}
+  static std::shared_ptr<B> construct(length_type r, length_type c)
+  { return std::shared_ptr<B>(new B(Domain<2>(r,c)));}
+  static std::shared_ptr<B> construct_init(length_type r, length_type c, T value)
+  { return std::shared_ptr<B>(new B(Domain<2>(r,c), value));}
   static T get(B const &b, index_type i, index_type j)
   {
     OVXX_PRECONDITION(i < b.size(2, 0));
@@ -106,10 +106,10 @@ template <typename T, typename M>
 struct traits<2,T,M>
 {
   typedef Block<2,T,M> B;
-  static boost::shared_ptr<B> construct(length_type r, length_type c, M const &m)
-  { return boost::shared_ptr<B>(new B(Domain<2>(r,c), m));}
-  static boost::shared_ptr<B> construct_init(length_type r, length_type c, T value, M const &m)
-  { return boost::shared_ptr<B>(new B(Domain<2>(r,c), value, m));}
+  static std::shared_ptr<B> construct(length_type r, length_type c, M const &m)
+  { return std::shared_ptr<B>(new B(Domain<2>(r,c), m));}
+  static std::shared_ptr<B> construct_init(length_type r, length_type c, T value, M const &m)
+  { return std::shared_ptr<B>(new B(Domain<2>(r,c), value, m));}
   static T get(B const &b, index_type i, index_type j)
   {
     OVXX_PRECONDITION(i < b.size(2, 0));
@@ -127,10 +127,10 @@ template <typename T>
 struct traits<3,T>
 {
   typedef Block<3,T> B;
-  static boost::shared_ptr<B> construct(length_type d0, length_type d1, length_type d2)
-  { return boost::shared_ptr<B>(new B(Domain<3>(d0,d1,d2)));}
-  static boost::shared_ptr<B> construct(length_type d0, length_type d1, length_type d2, T value)
-  { return boost::shared_ptr<B>(new B(Domain<3>(d0,d1,d2), value));}
+  static std::shared_ptr<B> construct(length_type d0, length_type d1, length_type d2)
+  { return std::shared_ptr<B>(new B(Domain<3>(d0,d1,d2)));}
+  static std::shared_ptr<B> construct(length_type d0, length_type d1, length_type d2, T value)
+  { return std::shared_ptr<B>(new B(Domain<3>(d0,d1,d2), value));}
   static T get(B const &b, index_type i, index_type j, index_type k)
   {
     OVXX_PRECONDITION(i < b.size(3, 0));
@@ -150,10 +150,10 @@ template <typename T, typename M>
 struct traits<3,T,M>
 {
   typedef Block<3,T,M> B;
-  static boost::shared_ptr<B> construct(length_type d0, length_type d1, length_type d2, M const &m)
-  { return boost::shared_ptr<B>(new B(Domain<3>(d0,d1,d2), m));}
-  static boost::shared_ptr<B> construct(length_type d0, length_type d1, length_type d2, T value, M const &m)
-  { return boost::shared_ptr<B>(new B(Domain<3>(d0,d1,d2), value, m));}
+  static std::shared_ptr<B> construct(length_type d0, length_type d1, length_type d2, M const &m)
+  { return std::shared_ptr<B>(new B(Domain<3>(d0,d1,d2), m));}
+  static std::shared_ptr<B> construct(length_type d0, length_type d1, length_type d2, T value, M const &m)
+  { return std::shared_ptr<B>(new B(Domain<3>(d0,d1,d2), value, m));}
   static T get(B const &b, index_type i, index_type j, index_type k)
   {
     OVXX_PRECONDITION(i < b.size(3, 0));
@@ -182,7 +182,7 @@ bpl::object construct(bpl::object o)
   {
     bpl::extract<length_type> e(o);
     if (e.check())
-      return bpl::object(boost::shared_ptr<Block<1, T> >(new Block<1, T>(e())));
+      return bpl::object(std::shared_ptr<Block<1, T> >(new Block<1, T>(e())));
     else
       PYVSIP_THROW(TypeError, "argument is neither a numpy array nor a length");
   }
@@ -195,7 +195,7 @@ bpl::object construct(bpl::object o)
   {
     case 1:
     {
-      boost::shared_ptr<Block<1, T> > b(new Block<1, T>(dims[0]));
+      std::shared_ptr<Block<1, T> > b(new Block<1, T>(dims[0]));
       bpl::handle<PyArrayObject> ba = make_array_(*b);
       PyArray_CopyInto(ba.get(), a);
       return bpl::object(b);
@@ -203,7 +203,7 @@ bpl::object construct(bpl::object o)
     case 2:
     {
       Domain<2> dom(dims[0], dims[1]);
-      boost::shared_ptr<Block<2, T> > b(new Block<2, T>(dom));
+      std::shared_ptr<Block<2, T> > b(new Block<2, T>(dom));
       bpl::handle<PyArrayObject> ba = make_array_(*b);
       PyArray_CopyInto(ba.get(), a);
       return bpl::object(b);
@@ -256,7 +256,7 @@ bpl::object make_array(bpl::object o)
   typedef Block<D, T> block_type;
   block_type &block = bpl::extract<block_type &>(o);
   bpl::handle<PyArrayObject> a = make_array_(block);
-  boost::shared_ptr<array_backref<block_type> > lock
+  std::shared_ptr<array_backref<block_type> > lock
     (new array_backref<block_type>(block));
   bpl::object backref(lock);
   PyArray_SetBaseObject(a.get(), bpl::incref(backref.ptr()));
@@ -279,7 +279,7 @@ template <typename T>
 bpl::object subblock1(Block<1, T> &b, bpl::slice s)
 {
   Domain<1> dom = slice_to_domain(s, b.offset(), b.stride(1, 0), b.size(1, 0));
-  return bpl::object(boost::shared_ptr<Block<1, T> >(new Block<1, T>(b, dom)));
+  return bpl::object(std::shared_ptr<Block<1, T> >(new Block<1, T>(b, dom)));
 }
 
 template <typename T, typename M>
@@ -287,7 +287,7 @@ bpl::object subblock2(Block<2, T, M> &b, bpl::slice i, bpl::slice j)
 {
   Domain<1> domi = slice_to_domain(i, b.offset(), b.stride(2, 0), b.size(2, 0));
   Domain<1> domj = slice_to_domain(j, 0, b.stride(2, 1), b.size(2, 1));
-  return bpl::object(boost::shared_ptr<Block<2, T, M> >(new Block<2, T, M>
+  return bpl::object(std::shared_ptr<Block<2, T, M> >(new Block<2, T, M>
     (b, Domain<2>(domi, domj))));
 }
 
@@ -296,7 +296,7 @@ bpl::object get_row(Block<2, T, M> &b, int i)
 {
   if (i < 0) i += b.size(2, 0);
   Domain<1> domain(i * b.stride(2, 0), 1, b.size(2, 1));
-  return bpl::object(boost::shared_ptr<Block<1, T, M> >(new Block<1, T, M>(b, domain)));
+  return bpl::object(std::shared_ptr<Block<1, T, M> >(new Block<1, T, M>(b, domain)));
 }
 
 template <typename T, typename M>
@@ -304,27 +304,27 @@ bpl::object get_col(Block<2, T, M> &b, int i)
 {
   if (i < 0) i += b.size(2, 1);
   Domain<1> domain(i * b.stride(2, 1), b.stride(2, 0), b.size(2, 0));
-  return bpl::object(boost::shared_ptr<Block<1, T, M> >(new Block<1, T, M>(b, domain)));
+  return bpl::object(std::shared_ptr<Block<1, T, M> >(new Block<1, T, M>(b, domain)));
 }
 
 template <typename T, typename M>
 bpl::object diag(Block<2, T, M> &b)
 {
   Domain<1> domain(0, b.stride(2, 0) + b.stride(2, 1), std::min(b.size(2, 0), b.size(2, 1)));
-  return bpl::object(boost::shared_ptr<Block<1, T, M> >(new Block<1, T, M>(b, domain)));
+  return bpl::object(std::shared_ptr<Block<1, T, M> >(new Block<1, T, M>(b, domain)));
 }
 
 template <dimension_type D, typename T, typename M>
 bpl::object real(Block<D, complex<T>, M> &b)
 {
-  return bpl::object(boost::shared_ptr<Block<D, T, M> >
+  return bpl::object(std::shared_ptr<Block<D, T, M> >
 		     (new Block<D, T, M>(b, true)));
 }
 
 template <dimension_type D, typename T, typename M>
 bpl::object imag(Block<D, complex<T>, M> &b)
 {
-  return bpl::object(boost::shared_ptr<Block<D, T, M> >
+  return bpl::object(std::shared_ptr<Block<D, T, M> >
 		     (new Block<D, T, M>(b, false)));
 }
 
@@ -342,10 +342,10 @@ void assign_scalar(Block<D, T, M> &b, T val)
 }
 
 template <dimension_type D, typename T, typename M>
-boost::shared_ptr<Block<D, T, M> > copy(Block<D, T, M> const &b)
+std::shared_ptr<Block<D, T, M> > copy(Block<D, T, M> const &b)
 {
   Domain<D> dom = block_domain<D>(b);
-  boost::shared_ptr<Block<D, T, M> > other(new Block<D, T, M>(dom));
+  std::shared_ptr<Block<D, T, M> > other(new Block<D, T, M>(dom));
   ovxx::assign<D>(*other, b);
   return other;
 }
@@ -360,7 +360,7 @@ bpl::object eq(Block<D, T, M> const &b1, Block<D, T, M> const &b2)
   Block<D, bool, M> *result = new Block<D, bool, M>(dom);
   typename ovxx::view_of<Block<D, bool, M> >::type r(*result);
   r = vsip::eq(v1, v2);
-  return bpl::object(boost::shared_ptr<Block<D, bool, M> >(result));
+  return bpl::object(std::shared_ptr<Block<D, bool, M> >(result));
 }
 
 template <dimension_type D, typename T, typename M>
@@ -372,7 +372,7 @@ bpl::object neg(Block<D, T, M> const &b)
   B *result = new B(dom);
   typename ovxx::view_of<B>::type r(*result);
   r = vsip::neg(v);
-  return bpl::object(boost::shared_ptr<B>(result));
+  return bpl::object(std::shared_ptr<B>(result));
 }
 
 template <typename C, typename T>
@@ -407,10 +407,10 @@ void define_block(char const *type_name)
 
   std::string backref_name(type_name);
   backref_name.append("_backref");
-  bpl::class_<backref_type, boost::shared_ptr<backref_type>, boost::noncopyable>
+  bpl::class_<backref_type, std::shared_ptr<backref_type>, boost::noncopyable>
     backref(backref_name.c_str(), bpl::init<block_type&>());
 
-  bpl::class_<block_type, boost::shared_ptr<block_type>, boost::noncopyable> 
+  bpl::class_<block_type, std::shared_ptr<block_type>, boost::noncopyable> 
     block(type_name, bpl::no_init);
   block.setattr("dtype", get_dtype<T>());
   /// Conversion to array.

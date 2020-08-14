@@ -26,10 +26,10 @@ T dot(Block<1, T> const &b1, Block<1, T> const &b2)
 }
 
 template <typename T>
-boost::shared_ptr<Block<2, T> > trans(Block<2, T> const&b)
+std::shared_ptr<Block<2, T> > trans(Block<2, T> const&b)
 {
   typedef Block<2, T> B;
-  boost::shared_ptr<B> block_ptr(new B(Domain<2>(b.size(2, 1), b.size(2, 0))));
+  std::shared_ptr<B> block_ptr(new B(Domain<2>(b.size(2, 1), b.size(2, 0))));
   Matrix<T, B> mout(*block_ptr);
   Matrix<T, B> min(const_cast<B&>(b));
   mout = trans(min);
@@ -37,10 +37,10 @@ boost::shared_ptr<Block<2, T> > trans(Block<2, T> const&b)
 }
 
 template <typename T>
-boost::shared_ptr<Block<2, T> > herm(Block<2, T> const&b)
+std::shared_ptr<Block<2, T> > herm(Block<2, T> const&b)
 {
   typedef Block<2, T> B;
-  boost::shared_ptr<B> block_ptr(new B(Domain<2>(b.size(2, 1), b.size(2, 0))));
+  std::shared_ptr<B> block_ptr(new B(Domain<2>(b.size(2, 1), b.size(2, 0))));
   Matrix<T, B> mout(*block_ptr);
   Matrix<T, B> min(const_cast<B&>(b));
   mout = herm(min);
@@ -48,43 +48,43 @@ boost::shared_ptr<Block<2, T> > herm(Block<2, T> const&b)
 }
 
 template <typename T>
-boost::shared_ptr<Block<1, T> > vmprod(Block<1, T> const &a, Block<2, T> const &b)
+std::shared_ptr<Block<1, T> > vmprod(Block<1, T> const &a, Block<2, T> const &b)
 {
   typedef Block<1, T> B1;
   typedef Block<2, T> B2;
-  boost::shared_ptr<B1> block_ptr(new B1(b.size(2, 1)));
+  std::shared_ptr<B1> block_ptr(new B1(b.size(2, 1)));
   Vector<T, B1> mout(*block_ptr);
   mout = vsip::prod(Vector<T, B1>(const_cast<B1&>(a)), Matrix<T, B2>(const_cast<B2&>(b)));
   return block_ptr;
 }
 
 template <typename T>
-boost::shared_ptr<Block<1, T> > mvprod(Block<2, T> const &a, Block<1, T> const &b)
+std::shared_ptr<Block<1, T> > mvprod(Block<2, T> const &a, Block<1, T> const &b)
 {
   typedef Block<2, T> B2;
   typedef Block<1, T> B1;
-  boost::shared_ptr<B1> block_ptr(new B1(a.size(2, 0)));
+  std::shared_ptr<B1> block_ptr(new B1(a.size(2, 0)));
   Vector<T, B1> mout(*block_ptr);
   mout = vsip::prod(Matrix<T, B2>(const_cast<B2&>(a)), Vector<T, B1>(const_cast<B1&>(b)));
   return block_ptr;
 }
 
 template <typename T>
-boost::shared_ptr<Block<2, T> > mmprod(Block<2, T> const &a, Block<2, T> const &b)
+std::shared_ptr<Block<2, T> > mmprod(Block<2, T> const &a, Block<2, T> const &b)
 {
   typedef Block<2, T> B;
-  boost::shared_ptr<B> block_ptr(new B(Domain<2>(a.size(2, 0), b.size(2, 1))));
+  std::shared_ptr<B> block_ptr(new B(Domain<2>(a.size(2, 0), b.size(2, 1))));
   Matrix<T, B> mout(*block_ptr);
   mout = vsip::prod(Matrix<T, B>(const_cast<B&>(a)), Matrix<T, B>(const_cast<B&>(b)));
   return block_ptr;
 }
 
 template <typename T>
-boost::shared_ptr<Block<2, T> > vmmul(int axis, Block<1, T> const &a, Block<2, T> const &b)
+std::shared_ptr<Block<2, T> > vmmul(int axis, Block<1, T> const &a, Block<2, T> const &b)
 {
   typedef Block<1, T> B1;
   typedef Block<2, T> B2;
-  boost::shared_ptr<B2> block_ptr(new B2(vsip::Domain<2>(b.size(2, 0), b.size(2, 1))));
+  std::shared_ptr<B2> block_ptr(new B2(vsip::Domain<2>(b.size(2, 0), b.size(2, 1))));
   Matrix<T, B2> mout(*block_ptr);
   if (axis==0)
     mout = vsip::vmmul<0>(Vector<T, B1>(const_cast<B1&>(a)), Matrix<T, B2>(const_cast<B2&>(b)));

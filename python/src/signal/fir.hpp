@@ -11,6 +11,7 @@
 #include <ovxx/python/block.hpp>
 #include <vsip/signal.hpp>
 #include <ovxx/domain_utils.hpp>
+#include "../unique_ptr.hpp"
 
 namespace pyvsip
 {
@@ -58,7 +59,7 @@ private:
 };
 
 template <typename T>
-std::auto_ptr<fir_base<T> >
+std::unique_ptr<fir_base<T> >
 create_fir(ovxx::python::Block<1, T> const &k,
 	   vsip::symmetry_type s,
 	   vsip::length_type l,
@@ -73,7 +74,7 @@ create_fir(ovxx::python::Block<1, T> const &k,
   using vsip::state_no_save;
   using vsip::state_save;
 
-  typedef std::auto_ptr<fir_base<T> > ap;
+  typedef std::unique_ptr<fir_base<T> > ap;
   if (s == sym_even_len_even)
   {
     if (c == state_no_save)
@@ -102,7 +103,7 @@ void define_fir()
 {
   typedef fir_base<T> fir_type;
 
-  bpl::class_<fir_type, std::auto_ptr<fir_type>, boost::noncopyable>
+  bpl::class_<fir_type, std::unique_ptr<fir_type>, boost::noncopyable>
     fir("fir", bpl::no_init);
   fir.def("__init__", bpl::make_constructor(create_fir<T>));
   fir.add_property("kernel_size", &fir_type::kernel_size);

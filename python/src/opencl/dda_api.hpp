@@ -40,10 +40,10 @@ private:
 };
 
 template <dimension_type D, typename T>
-std::auto_ptr<dda_data_base<D, T> >
+std::unique_ptr<dda_data_base<D, T> >
 create_data(Block<D, T> &b, vsip::dda::sync_policy s)
 {
-  std::auto_ptr<dda_data_base<D, T> > data;
+  std::unique_ptr<dda_data_base<D, T> > data;
   switch (s)
   {
     case vsip::dda::in:

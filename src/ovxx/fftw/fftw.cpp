@@ -1003,10 +1003,10 @@ public:
 
 #define OVXX_FFTW_CREATE_FFT(D, I, O, S)	       \
 template <>					       \
-std::auto_ptr<fft_backend<D, I, O, S> >	               \
+std::unique_ptr<fft_backend<D, I, O, S> >	               \
 create(Domain<D> const &dom, unsigned number)	       \
 {                                                      \
-  return std::auto_ptr<fft_backend<D, I, O, S> >       \
+  return std::unique_ptr<fft_backend<D, I, O, S> >       \
     (new fft<D, I, O, S>(dom, number));		       \
 }
 
@@ -1033,10 +1033,10 @@ OVXX_FFTW_CREATE_FFT(3, complex<SCALAR_TYPE>, complex<SCALAR_TYPE>, fft_inv)
 
 #define OVXX_FFTW_CREATE_FFTM(I, O, A, D)	       \
 template <>                                            \
-std::auto_ptr<fftm_backend<I, O, A, D> >	       \
+std::unique_ptr<fftm_backend<I, O, A, D> >	       \
 create(Domain<2> const &dom, unsigned number)	       \
 {                                                      \
-  return std::auto_ptr<fftm_backend<I, O, A, D> >      \
+  return std::unique_ptr<fftm_backend<I, O, A, D> >      \
     (new fftm<I, O, A, D>(dom, number));	       \
 }
 

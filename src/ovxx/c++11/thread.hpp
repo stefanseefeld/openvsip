@@ -118,7 +118,7 @@ private:
     return 0;
   }
 
-  std::auto_ptr<callable_base> callable_;
+  std::unique_ptr<callable_base> callable_;
   id id_;
 };
 

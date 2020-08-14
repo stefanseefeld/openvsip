@@ -21,7 +21,7 @@ bpl::object blackman(vsip::length_type len)
 {
   typedef ovxx::python::Block<1, T> B;
   vsip::Vector<T> v = ovxx::signal::blackman<T>(len);
-  boost::shared_ptr<B> result(new B(ovxx::block_domain<1>(v.block())));
+  std::shared_ptr<B> result(new B(ovxx::block_domain<1>(v.block())));
   ovxx::assign<1>(*result, v.block());
   return bpl::object(result);
 }
@@ -33,7 +33,7 @@ bpl::object cheby(vsip::length_type len, float ripple)
   vsip::Vector<T> v = ovxx::signal::cheby<T>(len, ripple);
   B *result = new B(ovxx::block_domain<1>(v.block()));
   ovxx::assign<1>(*result, v.block());
-  return bpl::object(boost::shared_ptr<B>(result));
+  return bpl::object(std::shared_ptr<B>(result));
 }
 
 template <typename T>
@@ -43,7 +43,7 @@ bpl::object hanning(vsip::length_type len)
   vsip::Vector<T> v = ovxx::signal::hanning<T>(len);
   B *result = new B(ovxx::block_domain<1>(v.block()));
   ovxx::assign<1>(*result, v.block());
-  return bpl::object(boost::shared_ptr<B>(result));
+  return bpl::object(std::shared_ptr<B>(result));
 }
 
 template <typename T>
@@ -53,7 +53,7 @@ bpl::object kaiser(vsip::length_type len, float beta)
   vsip::Vector<T> v = ovxx::signal::kaiser<T>(len, beta);
   B *result = new B(ovxx::block_domain<1>(v.block()));
   ovxx::assign<1>(*result, v.block());
-  return bpl::object(boost::shared_ptr<B>(result));
+  return bpl::object(std::shared_ptr<B>(result));
 }
   
 }

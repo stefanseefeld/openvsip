@@ -116,7 +116,7 @@ main(int argc, char** argv)
   vsip::vsipl init(argc, argv);
 
  #if OVXX_ENABLE_HUGE_PAGE_ALLOCATOR
-  std::auto_ptr<ovxx::allocator> allocator
+  std::unique_ptr<ovxx::allocator> allocator
     (new ovxx::huge_page_allocator("/huge/benchmark.bin", 20));
   Local_map huge_map(allocator.get());
 #else

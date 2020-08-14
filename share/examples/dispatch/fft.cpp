@@ -156,7 +156,7 @@ public:
 // vectors to this backend.  This is quite similar to the Evaluator
 // specializations for matrix products, except that the operation tag
 // has template arguments, and the evaluation signature (the third
-// template argument) returns a std::auto_ptr to a Fft_backend object.
+// template argument) returns a std::unique_ptr to a Fft_backend object.
 //
 // This evaluator applies to by_reference calls of the Fft object; to
 // cover in_place calls, we could either define an second Evaluator
@@ -170,7 +170,7 @@ template <unsigned N>
 struct Evaluator<op::fft<1, complex<float>, complex<float>, fft_fwd,
 		 by_reference, N>,
   be::user,
-  std::auto_ptr<fft::fft_backend<1, complex<float>, complex<float>, fft_fwd> >
+  std::unique_ptr<fft::fft_backend<1, complex<float>, complex<float>, fft_fwd> >
   (Domain<1> const &, float)>
 {
   // At compile time for the Fft constructor, sizes and incoming data
@@ -191,10 +191,10 @@ struct Evaluator<op::fft<1, complex<float>, complex<float>, fft_fwd,
   // Fft_backend object.  Note that any profiling added here will only
   // profile the construction of the Fft object, not its execution to
   // compute FFTs.
-  static std::auto_ptr<fft::fft_backend<1, complex<float>, complex<float>, fft_fwd> >
+  static std::unique_ptr<fft::fft_backend<1, complex<float>, complex<float>, fft_fwd> >
   exec(Domain<1> const &dom, float scale)
   {
-    return std::auto_ptr<fft::fft_backend<1, complex<float>, complex<float>, fft_fwd> >
+    return std::unique_ptr<fft::fft_backend<1, complex<float>, complex<float>, fft_fwd> >
       (new example::fft_1024(dom, scale));
   }
 };

@@ -11,6 +11,7 @@
 #include <ovxx/python/block.hpp>
 #include <vsip/signal.hpp>
 #include <ovxx/domain_utils.hpp>
+#include "../unique_ptr.hpp"
 
 namespace pyvsip
 {
@@ -146,7 +147,7 @@ private:
 };
 
 template <typename I, typename O, int D>
-std::auto_ptr<fftm_base<I, O, D> > 
+std::unique_ptr<fftm_base<I, O, D> > 
 create_fftm(vsip::length_type rows,
 	    vsip::length_type cols,
 	    typename ovxx::scalar_of<I>::type scale,
@@ -160,7 +161,7 @@ create_fftm(vsip::length_type rows,
   using vsip::alg_space;
   using vsip::alg_time;
 
-  typedef std::auto_ptr<fftm_base<I, O, D> > ap;
+  typedef std::unique_ptr<fftm_base<I, O, D> > ap;
 
   switch (h)
   {
@@ -228,7 +229,7 @@ void define_real_fftm()
   typedef fftm_base<T, C, vsip::fft_fwd> fftm_type;
   typedef fftm_base<C, T, vsip::fft_inv> ifftm_type;
 
-  bpl::class_<fftm_type, std::auto_ptr<fftm_type>, boost::noncopyable>
+  bpl::class_<fftm_type, std::unique_ptr<fftm_type>, boost::noncopyable>
     fftm("fftm", bpl::no_init);
   fftm.def("__init__", bpl::make_constructor(create_fftm<T, C, vsip::fft_fwd>));
   fftm.add_property("input_size", &fftm_type::input_size);
@@ -238,7 +239,7 @@ void define_real_fftm()
   fftm.add_property("axis", &fftm_type::axis);
   fftm.def("__call__", &fftm_type::op);
 
-  bpl::class_<ifftm_type, std::auto_ptr<ifftm_type>, boost::noncopyable>
+  bpl::class_<ifftm_type, std::unique_ptr<ifftm_type>, boost::noncopyable>
     ifftm("ifftm", bpl::no_init);
   ifftm.def("__init__", bpl::make_constructor(create_fftm<C, T, vsip::fft_inv>));
   ifftm.add_property("input_size", &ifftm_type::input_size);
@@ -256,7 +257,7 @@ void define_complex_fftm()
   typedef fftm_base<C, C, vsip::fft_fwd> fftm_type;
   typedef fftm_base<C, C, vsip::fft_inv> ifftm_type;
 
-  bpl::class_<fftm_type, std::auto_ptr<fftm_type>, boost::noncopyable>
+  bpl::class_<fftm_type, std::unique_ptr<fftm_type>, boost::noncopyable>
     fftm("fftm", bpl::no_init);
   fftm.def("__init__", bpl::make_constructor(create_fftm<C, C, vsip::fft_fwd>));
   fftm.add_property("input_size", &fftm_type::input_size);
@@ -267,7 +268,7 @@ void define_complex_fftm()
   fftm.def("__call__", &fftm_type::op);
   fftm.def("__call__", &fftm_type::ip);
 
-  bpl::class_<ifftm_type, std::auto_ptr<ifftm_type>, boost::noncopyable>
+  bpl::class_<ifftm_type, std::unique_ptr<ifftm_type>, boost::noncopyable>
     ifftm("ifftm", bpl::no_init);
   ifftm.def("__init__", bpl::make_constructor(create_fftm<C, C, vsip::fft_inv>));
   ifftm.add_property("input_size", &ifftm_type::input_size);

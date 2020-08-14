@@ -176,7 +176,7 @@ public:
   }
 
 private:
-  std::auto_ptr<Filter> filter_;
+  std::unique_ptr<Filter> filter_;
 };
     
 

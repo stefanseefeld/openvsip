@@ -27,7 +27,7 @@ inline bpl::object F(Block<D, T> const &b)		\
   B *result = new B(dom);				\
   typename view_of<B>::type r(*result);			\
   r = vsip::F(v);					\
-  return bpl::object(boost::shared_ptr<B>(result));	\
+  return bpl::object(std::shared_ptr<B>(result));	\
 }
 
 #define UNARY_RETN(F, R)					\
@@ -40,7 +40,7 @@ inline bpl::object F(Block<D, T> const &b)			\
   Block<D, R> *result = new Block<D, R>(dom);			\
   typename view_of<Block<D, R> >::type r(*result);		\
   r = ovxx::F(v);						\
-  return bpl::object(boost::shared_ptr<Block<D, R> >(result));	\
+  return bpl::object(std::shared_ptr<Block<D, R> >(result));	\
 }
 
 #define BINARY(F)							\
@@ -54,7 +54,7 @@ inline bpl::object F(Block<D, T> const &b1, Block<D, T> const &b2)	\
   B *result = new B(dom);						\
   typename view_of<B>::type r(*result);					\
   r = ovxx::F(v1, v2);							\
-  return bpl::object(boost::shared_ptr<B>(result));			\
+  return bpl::object(std::shared_ptr<B>(result));			\
 }
 
 #define BINARY_RETN(F, R)						\
@@ -68,7 +68,7 @@ inline bpl::object F(Block<D, T> const &b1, Block<D, T> const &b2)	\
   Block<D, R> *result = new Block<D, R>(dom);				\
   typename view_of<Block<D, R> >::type r(*result);			\
   r = ovxx::F(v1, v2);							\
-  return bpl::object(boost::shared_ptr<Block<D, R> >(result));		\
+  return bpl::object(std::shared_ptr<Block<D, R> >(result));		\
 }
 
 #define TERNARY(F)							                  \
@@ -83,7 +83,7 @@ inline bpl::object F(Block<D, T> const &b1, Block<D, T> const &b2, Block<D, T> c
   B *result = new B(dom);						                  \
   typename view_of<B>::type r(*result);					                  \
   r = ovxx::F(v1, v2, v3);							          \
-  return bpl::object(boost::shared_ptr<B>(result));			                  \
+  return bpl::object(std::shared_ptr<B>(result));			                  \
 }
 
 

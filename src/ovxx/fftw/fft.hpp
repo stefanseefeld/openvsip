@@ -21,12 +21,12 @@ namespace fftw
 using vsip::complex;
 
 template <typename I, dimension_type D>
-std::auto_ptr<I>
+std::unique_ptr<I>
 create(vsip::Domain<D> const &dom, unsigned);
 
 #define OVXX_FFTW_FFT_DECL(D,I,O,S)		      \
 template <>                                           \
-std::auto_ptr<signal::fft::fft_backend<D,I,O,S> >    \
+std::unique_ptr<signal::fft::fft_backend<D,I,O,S> >    \
 create(vsip::Domain<D> const &, unsigned);
 
 #define OVXX_FFTW_FFT_DECL_T(T)			      \
@@ -61,7 +61,7 @@ OVXX_FFTW_FFT_DECL_T(double)
 
 #define OVXX_FFTW_FFTM_DECL(I,O,A,D)		      \
 template <>					      \
-std::auto_ptr<signal::fft::fftm_backend<I,O,A,D> >    \
+std::unique_ptr<signal::fft::fftm_backend<I,O,A,D> >    \
 create(vsip::Domain<2> const &, unsigned);
 
 #define OVXX_FFTW_FFTM_DECL_T(T)		      \
@@ -95,7 +95,7 @@ template <dimension_type D,
 	  vsip::return_mechanism_type R,
 	  unsigned N>
 struct Evaluator<op::fft<D, I, O, S, R, N>, be::fftw,
-		 std::auto_ptr<signal::fft::fft_backend<D, I, O, S> >
+		 std::unique_ptr<signal::fft::fft_backend<D, I, O, S> >
 		 (vsip::Domain<D> const &, typename scalar_of<I>::type)>
 {
   typedef typename scalar_of<I>::type scalar_type;
@@ -109,7 +109,7 @@ struct Evaluator<op::fft<D, I, O, S, R, N>, be::fftw,
     false;
 
   static bool rt_valid(vsip::Domain<D> const &, scalar_type) { return true;}
-  static std::auto_ptr<signal::fft::fft_backend<D, I, O, S> >
+  static std::unique_ptr<signal::fft::fft_backend<D, I, O, S> >
   exec(vsip::Domain<D> const &dom, scalar_type)
   {
     return fftw::create<signal::fft::fft_backend<D, I, O, S> >(dom, N);
@@ -123,7 +123,7 @@ template <typename I,
 	  vsip::return_mechanism_type R,
 	  unsigned N>
 struct Evaluator<op::fftm<I, O, A, D, R, N>, be::fftw,
-		 std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> > 
+		 std::unique_ptr<signal::fft::fftm_backend<I, O, A, D> > 
 		 (vsip::Domain<2> const &, typename scalar_of<I>::type)>
 {
   typedef typename scalar_of<I>::type scalar_type;
@@ -138,7 +138,7 @@ struct Evaluator<op::fftm<I, O, A, D, R, N>, be::fftw,
 
   static bool rt_valid(vsip::Domain<2> const &, scalar_type)
   { return true;}
-  static std::auto_ptr<signal::fft::fftm_backend<I, O, A, D> > 
+  static std::unique_ptr<signal::fft::fftm_backend<I, O, A, D> > 
   exec(vsip::Domain<2> const &dom, scalar_type)
   {
     return fftw::create<signal::fft::fftm_backend<I, O, A, D> >(dom, N);

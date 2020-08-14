@@ -20,9 +20,9 @@ template <typename T>
 class rand
 {
   typedef Block<1, T> vblock_type;
-  typedef boost::shared_ptr<vblock_type> vblock_ptr;
+  typedef std::shared_ptr<vblock_type> vblock_ptr;
   typedef Block<2, T> mblock_type;
-  typedef boost::shared_ptr<mblock_type> mblock_ptr;
+  typedef std::shared_ptr<mblock_type> mblock_ptr;
 
 public:
   rand(vsip::index_type seed, bool portable)
@@ -64,7 +64,7 @@ void define_rand()
 {
   typedef rand<T> rand_type;
 
-  bpl::class_<rand_type, std::auto_ptr<rand_type>, boost::noncopyable>
+  bpl::class_<rand_type, boost::noncopyable>
     rand("rand", bpl::init<vsip::index_type, bool>());
   rand.def("randu", &rand_type::randu);
   rand.def("randu", &rand_type::vrandu);
