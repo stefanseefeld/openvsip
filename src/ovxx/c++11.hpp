@@ -10,7 +10,6 @@
 #define ovxx_cxx11_hpp_
 
 #include <ovxx/config.hpp>
-#include <ovxx/c++11/shared_ptr.hpp>
 
 namespace ovxx
 {

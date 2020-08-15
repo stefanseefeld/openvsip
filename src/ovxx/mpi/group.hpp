@@ -13,6 +13,7 @@
 #include <ovxx/mpi/exception.hpp>
 #include <ovxx/c++11.hpp>
 #include <vector>
+#include <memory>
 #include <mpi.h>
 
 namespace ovxx
@@ -63,7 +64,7 @@ public:
                                  Group const &, OutputIterator out);
 
 private:
-  ovxx::shared_ptr<MPI_Group> impl_;
+  std::shared_ptr<MPI_Group> impl_;
 };
 
 template<typename InputIterator>

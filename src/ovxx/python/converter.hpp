@@ -43,7 +43,7 @@ struct vector_to_python
     detail::block_mod<T>::import();
     // We can't keep a reference to arbitrary C++ blocks,
     // so we pass by-value.
-    shared_ptr<Block<1, T> > block(new Block<1, T>(v.size()));
+    std::shared_ptr<Block<1, T> > block(new Block<1, T>(v.size()));
     assign<1>(*block, v.block());
     bpl::dict ns;
     ns["vsip"] = bpl::import("vsip");
@@ -60,7 +60,7 @@ struct matrix_to_python
     detail::block_mod<T>::import();
     // We can't keep a reference to arbitrary C++ blocks,
     // so we pass by-value.
-    shared_ptr<Block<2, T> > block(new Block<2, T>(Domain<2>(m.size(0), m.size(1))));
+    std::shared_ptr<Block<2, T> > block(new Block<2, T>(Domain<2>(m.size(0), m.size(1))));
     assign<2>(*block, m.block());
     bpl::dict ns;
     ns["vsip"] = bpl::import("vsip");

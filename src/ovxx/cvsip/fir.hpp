@@ -217,7 +217,7 @@ namespace dispatcher
 {
 template <typename T, symmetry_type S, obj_state C> 
 struct Evaluator<op::fir, be::cvsip,
-                 shared_ptr<signal::Fir_backend<T, S, C> >
+                 std::shared_ptr<signal::Fir_backend<T, S, C> >
                  (aligned_array<T>, 
                   length_type, length_type, length_type,
                   unsigned, alg_hint_type)>
@@ -227,7 +227,7 @@ struct Evaluator<op::fir, be::cvsip,
     is_same<T, complex<float> >::value ||
     is_same<T, double>::value ||
     is_same<T, complex<double> >::value;
-  typedef shared_ptr<signal::Fir_backend<T, S, C> > return_type;
+  typedef std::shared_ptr<signal::Fir_backend<T, S, C> > return_type;
   // We pass a reference for the first argument 
   // to not lose ownership of the data.
   static bool rt_valid(aligned_array<T> const &, length_type,

@@ -178,13 +178,13 @@ namespace dispatcher
 {
 template <typename T, symmetry_type S, obj_state C> 
 struct Evaluator<op::fir, be::generic,
-                 shared_ptr<signal::Fir_backend<T, S, C> >
+                 std::shared_ptr<signal::Fir_backend<T, S, C> >
                  (aligned_array<T>,
                   length_type, length_type, length_type,
                   unsigned, alg_hint_type)>
 {
   static bool const ct_valid = true;
-  typedef ovxx::shared_ptr<signal::Fir_backend<T, S, C> > return_type;
+  typedef std::shared_ptr<signal::Fir_backend<T, S, C> > return_type;
   static bool rt_valid(aligned_array<T> const &,
                        length_type, length_type, length_type,
                        unsigned, alg_hint_type)

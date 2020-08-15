@@ -55,7 +55,7 @@ template <typename  T = VSIP_DEFAULT_VALUE_TYPE,
 class Fir
 {
   typedef ovxx::signal::Fir_backend<T, S, C> backend;
-  typedef ovxx::shared_ptr<backend> backend_ptr;
+  typedef std::shared_ptr<backend> backend_ptr;
 public:
   static symmetry_type const symmetry = S;
   static obj_state const continuous_filter = C;

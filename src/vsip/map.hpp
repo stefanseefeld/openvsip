@@ -282,7 +282,7 @@ public:
   { return data_->pvec[idx];}
 
 private:
-  ovxx::shared_ptr<Data> data_;
+  std::shared_ptr<Data> data_;
   Domain<3>	         dom_;		  // Applied domain.
   dimension_type         dim_;		  // Dimension of applied domain.
   ovxx::parallel::ll_pset_type applied_pset_;

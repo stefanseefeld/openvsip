@@ -211,7 +211,7 @@ public:
 
 private:
   Domain<D> dom_;
-  ovxx::shared_ptr<Data> data_;
+  std::shared_ptr<Data> data_;
 };
 
 } // namespace vsip

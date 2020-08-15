@@ -41,7 +41,6 @@ namespace python
 {
 
 namespace bpl = boost::python;
-using boost::shared_ptr;
 
 // Send all traces from OVXX_TRACE to the Python logger
 inline void trace(char const *format, ...)
@@ -123,8 +122,8 @@ bool is_storage_compatible(PyArrayObject const *a)
 template <typename T>
 class sm_proxy
 {
-  typedef shared_ptr<storage_manager<T> > smanager_ptr;
-  typedef shared_ptr<storage_manager<complex<T> > > csmanager_ptr;
+  typedef std::shared_ptr<storage_manager<T> > smanager_ptr;
+  typedef std::shared_ptr<storage_manager<complex<T> > > csmanager_ptr;
 public:
   typedef T value_type;
   typedef T *ptr_type;
@@ -407,7 +406,7 @@ public:
 private:
   length_type offset_;
   applied_layout_type layout_;
-  shared_ptr<smanager_type> smanager_;
+  std::shared_ptr<smanager_type> smanager_;
   map_type map_;
   unsigned array_refcount_;
 };

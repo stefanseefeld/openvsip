@@ -109,7 +109,7 @@ public:
   friend bool operator==(Communicator const&, Communicator const&);
 
 private:
-  ovxx::shared_ptr<MPI_Comm> impl_;
+  std::shared_ptr<MPI_Comm> impl_;
   pvec_type pvec_;
 };
 

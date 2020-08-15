@@ -75,7 +75,7 @@ void define_iir()
 
   bpl::class_<iir_type, std::unique_ptr<iir_type>, boost::noncopyable>
     iir("iir", bpl::no_init);
-  iir.def("__init__", adapt_unique(create_iir<T>));
+  iir.def("__init__", bpl::make_constructor(create_iir<T>));
   iir.add_property("kernel_size", &iir_type::kernel_size);
   iir.add_property("input_size", &iir_type::input_size);
   iir.add_property("state", &iir_type::state);
