@@ -5,14 +5,14 @@
 # This file is part of OpenVSIP. It is made available under the
 # license contained in the accompanying LICENSE.BSD file.
 
-import sys
-import dl
 # FIXME: For OpenMPI to be able to operate correctly we need to
 #        use RTLD_GLOBAL. We need to find a better way that doesn't
 #        risk symbol collision !
-sys.setdlopenflags(dl.RTLD_NOW | dl.RTLD_GLOBAL)
+#import sys
+#import dl
+#sys.setdlopenflags(dl.RTLD_NOW | dl.RTLD_GLOBAL)
 from library import library
-sys.setdlopenflags(dl.RTLD_NOW | dl.RTLD_LOCAL)
+#sys.setdlopenflags(dl.RTLD_NOW | dl.RTLD_LOCAL)
 _library = library()
 
 # Make value-types available through this module.
