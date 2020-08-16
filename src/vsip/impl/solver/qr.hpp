@@ -139,7 +139,7 @@ public:
     }
 
     Matrix<T> x(x_rows, x_cols);
-    backend_.prodq<tr, ps>(b, x);
+    backend_.template prodq<tr, ps>(b, x);
     return x;
   }
 
@@ -148,7 +148,7 @@ public:
   rsol(const_Matrix<T, Block0> b, T const alpha) VSIP_NOTHROW
   {
     Matrix<T> x(b.size(0), b.size(1));
-    backend_.rsol<tr>(b, alpha, x); 
+    backend_.template rsol<tr>(b, alpha, x); 
     return x;
   }
 
