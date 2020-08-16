@@ -73,18 +73,15 @@ endif
 
 check:	$(qmtest_harness) $(qmtest_context)
 	$(QMTEST) run -j $(parallelism) -o $(output) -C $(qmtest_context) \
-          $(run_ident) $(ids); \
-          result=$$?; test $$tmp=0 || $$tmp=2
+          $(run_ident) $(ids);
 
 recheck: $(qmtest_harness) $(qmtest_context)
 	$(QMTEST) run --rerun $(output) -j $(parallelism) -o $(output) -C $(qmtest_context) \
-          $(run_ident) $(ids); \
-          result=$$?; test $$tmp=0 || $$tmp=2
+          $(run_ident) $(ids);
 
 installcheck: $(qmtest_harness)
 	$(make_context_installed)
-	$(QMTEST) run -j $(parallelism) -C context-installed $(run_ident) -o $(output) $(ids); \
-          result=$$?; test $$tmp=0 || $$tmp=2
+	$(QMTEST) run -j $(parallelism) -C context-installed $(run_ident) -o $(output) $(ids);
 
 QMTest/%: $(srcdir)/../support/QMTest/%
 	mkdir -p QMTest/
