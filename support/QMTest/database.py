@@ -289,6 +289,7 @@ class Database(CompilationTestDatabase):
             if self.flags.get('have_mpi') != '1':
                 self.excluded_subdirs.append('mpi')
                 self.excluded_subdirs.append('parallel')
+                self.excluded_subdirs.append('regressions/parallel')
             if self.flags.get('enable_threading') != '1':
                 self.excluded_subdirs.append('thread')
             if self.flags.get('have_ipp') != '1':

@@ -31,7 +31,11 @@ class Communicator
 {
 public:
   typedef std::vector<vsip::processor_type> pvec_type;
+  Communicator() : pvec_(1) {}
   pvec_type const &pvec() const { return pvec_;}
+  length_type size() const { return 1;}
+  template <typename T>
+  void broadcast(processor_type, T*, length_type) {}
 
   ll_pset_type impl_ll_pset() const VSIP_NOTHROW { return ll_pset_type();}
 private:
