@@ -21,7 +21,7 @@ test_computation_error()
 
   try
   {
-    VSIP_THROW(computation_error("TEST: throw exception"));
+    OVXX_DO_THROW(computation_error("TEST: throw exception"));
     test_assert(0);
   }
   catch (const std::exception& error)

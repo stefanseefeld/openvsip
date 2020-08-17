@@ -43,9 +43,9 @@
 
 #if VSIP_HAS_EXCEPTIONS
 # ifndef VSIP_NOTHROW
-#  define VSIP_NOTHROW throw()
+#  define VSIP_NOTHROW noexcept
 # endif
-# define VSIP_THROW(x) throw x         ///< Wraps throw-specifications
+# define VSIP_THROW(x) // only kept for backward-compatibility
 #else
 # ifndef VSIP_NOTHROW
 #  define VSIP_NOTHROW
