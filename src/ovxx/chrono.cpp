@@ -5,7 +5,7 @@
 // This file is part of OpenVSIP. It is made available under the
 // license contained in the accompanying LICENSE.BSD file.
 
-#include <ovxx/c++11/chrono.hpp>
+#include <ovxx/chrono.hpp>
 #include <fstream>
 
 namespace
@@ -39,8 +39,6 @@ float get_cpu_speed()
 #ifndef OVXX_TIMER_SYSTEM
 namespace ovxx
 {
-namespace cxx11
-{
 namespace chrono
 {
 
@@ -52,7 +50,6 @@ void high_resolution_clock::init()
   tics_per_nanosecond = mhz/1000;
 }
 
-} // namespace ovxx::cxx11::chrono
-} // namespace ovxx::cxx11
+} // namespace ovxx::chrono
 } // namespace ovxx
 #endif // OVXX_TIMER_SYSTEM

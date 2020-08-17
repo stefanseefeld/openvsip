@@ -6,7 +6,7 @@
 // license contained in the accompanying LICENSE.GPL file.
 
 #include <vsip/initfin.hpp>
-#include <ovxx/c++11/thread.hpp>
+#include <ovxx/thread.hpp>
 #include <test.hpp>
 #include <iostream>
 
@@ -33,9 +33,9 @@ int main(int argc, char **argv)
 {
   vsipl library(argc, argv);
   tss = 42;
-  thread t(callable);
+  std::thread t(callable);
   C c;
-  thread t2(c);
+  std::thread t2(c);
 
   t.join();
   t2.join();

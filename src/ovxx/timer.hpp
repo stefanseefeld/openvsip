@@ -8,7 +8,7 @@
 #ifndef ovxx_timer_hpp_
 #define ovxx_timer_hpp_
 
-#include <ovxx/c++11/chrono.hpp>
+#include <ovxx/chrono.hpp>
 
 namespace ovxx
 {

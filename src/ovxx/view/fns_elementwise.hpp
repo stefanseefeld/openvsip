@@ -14,7 +14,6 @@
 #include <ovxx/view/traits.hpp>
 #include <vsip/impl/promotion.hpp>
 #include <ovxx/math/scalar.hpp>
-#include <ovxx/c++11.hpp>
 #include <ovxx/element_proxy.hpp>
 
 /// Macro to define a unary function on views in terms of

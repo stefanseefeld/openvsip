@@ -8,10 +8,8 @@
 
 #include <ovxx/library.hpp>
 #include <ovxx/allocator.hpp>
-#include <ovxx/c++11/chrono.hpp>
-#if defined(OVXX_ENABLE_THREADING)
-# include <ovxx/c++11/thread.hpp>
-#endif
+#include <ovxx/chrono.hpp>
+#include <ovxx/thread.hpp>
 #if defined(OVXX_HAVE_OPENCL)
 # include <ovxx/opencl/library.hpp>
 #endif
@@ -41,7 +39,7 @@ namespace
 // correctly.
 unsigned int global_count = 0;
 #if defined(OVXX_ENABLE_THREADING)
-mutex global_count_guard;
+std::mutex global_count_guard;
 thread_local unsigned int thread_local_count = 0;
 #ifdef OVXX_ENABLE_OMP
 thread_local library *omp_library = 0;
@@ -54,7 +52,7 @@ void initialize(int &argc, char **&argv)
 {
   {
 #if defined(OVXX_ENABLE_THREADING)
-    lock_guard<mutex> lock(global_count_guard);
+    std::lock_guard<std::mutex> lock(global_count_guard);
 #endif
     ++global_count;
   }
@@ -63,7 +61,7 @@ void initialize(int &argc, char **&argv)
   if (global_count == 1)
   {
 #ifndef OVXX_TIMER_SYSTEM
-    cxx11::chrono::high_resolution_clock::init();
+    chrono::high_resolution_clock::init();
 #endif
 #if defined(OVXX_HAVE_OPENCL)
     ovxx::opencl::initialize();
@@ -124,7 +122,7 @@ void finalize()
 #endif
   {
 #if OVXX_ENABLE_THREADING
-    lock_guard<mutex> lock(global_count_guard);
+    std::lock_guard<std::mutex> lock(global_count_guard);
 #endif
     --global_count;
   }

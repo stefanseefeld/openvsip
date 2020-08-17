@@ -46,7 +46,6 @@ src := $(wildcard $(srcdir)/*.cpp)
 ifndef have_huge_page_allocator
 src := $(filter-out %/huge_page_allocator.cpp, $(src))
 endif
-src += $(wildcard $(srcdir)/c++11/*.cpp)
 src += $(wildcard $(srcdir)/signal/*.cpp)
 ifdef have_mpi
 src += $(srcdir)/mpi/group.cpp
@@ -89,7 +88,6 @@ ifdef enable_shared_libs
 endif
 	$(call install_headers,)
 	$(call install_headers,detail)
-	$(call install_headers,c++11)
 	$(call install_headers,storage)
 	$(call install_headers,dda)
 	$(call install_headers,dispatcher)

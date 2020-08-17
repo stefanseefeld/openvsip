@@ -10,7 +10,7 @@
 #define ovxx_allocator_hpp_
 
 #include <ovxx/support.hpp>
-#include <ovxx/c++11.hpp>
+#include <ovxx/thread.hpp>
 #include <limits>
 #include <cstdlib>
 #include <stdexcept>

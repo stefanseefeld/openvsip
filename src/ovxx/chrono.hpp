@@ -7,8 +7,8 @@
 
 // C++11 compatibility
 
-#ifndef ovxx_cxx11_chrono_hpp_
-#define ovxx_cxx11_chrono_hpp_
+#ifndef ovxx_chrono_hpp_
+#define ovxx_chrono_hpp_
 
 // Provide just enough C++11 API so we can
 // implement a C++11-compatible timer.
@@ -21,8 +21,6 @@
 #endif
 
 namespace ovxx
-{
-namespace cxx11
 {
 #ifndef OVXX_TIMER_SYSTEM
 namespace chrono
@@ -120,14 +118,12 @@ public:
   }
 };
 
-} // namespace ovxx::cxx11::chrono
+} // namespace ovxx::chrono
 #else
 namespace chrono = std::chrono;
 #endif
 
-} // namespace ovxx::cxx11
-
-typedef cxx11::chrono::high_resolution_clock clock;
+typedef chrono::high_resolution_clock clock;
 
 } // namespace ovxx
 
