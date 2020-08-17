@@ -3,15 +3,24 @@ language: cpp
 
 jobs:
   include:
-    - os: linux
+    - name: linux-gcc
+      os: linux
       compiler: gcc
-    - os: linux
+    - name: linux-python
+      os: linux
       compiler: gcc
-      env: CONFIG="--enable-python-bindings --disable-mpi CXXFLAGS=-Wno-deprecated"
-    - os: linux
+      env: CONFIG="--enable-python-bindings --disable-mpi" PYTHON=2
+    - name: linux-python3
+      os: linux
+      compiler: gcc
+      env: CONFIG="--enable-python-bindings --disable-mpi --with-python=python3" PYTHON=3
+    - name: linux-clang
+      os: linux
       compiler: clang
-    - os: osx
+    - name: osx
+      os: osx
       compiler: clang
+      env: CONFIG="CXXFLAGS=-std=c++11"
 
 before_install:
   - |
@@ -23,13 +32,17 @@ before_install:
       brew install openblas
       brew install boost
       export PATH="/usr/local/opt/python/libexec/bin:$PATH"
+      python -c "import numpy"
     else
       sudo apt-get install -y fftw3-dev
       sudo apt-get install -y libopenblas-dev
-      sudo apt-get install -y python-numpy
-      sudo apt-get install -y python-scipy
-      sudo apt-get install -y python-matplotlib
-      sudo apt-get install -y python-tk
+      if [ "$PYTHON" = "2" ]; then
+        sudo apt-get install -y python-pip python-tk
+        sudo python -m pip install numpy scipy matplotlib
+      elif [ "$PYTHON" = "3" ]; then
+        sudo apt-get install -y python3-pip python3-tk
+        sudo python3 -m pip install numpy scipy matplotlib
+      fi
       sudo apt-get install -y libboost-python-dev
       sudo apt-get install -y qmtest
     fi
@@ -39,7 +52,8 @@ script:
   - ./configure $CONFIG
   - make
   - |
-    if [ "$TRAVIS_OS_NAME" != "osx" ]; then
+    if [ "$TRAVIS_OS_NAME" != osx -a "$PYTHON" != 3 ]; then
+      # unfortunately qmtest only supports Python 2
       make check
     fi
 
