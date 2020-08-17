@@ -55,7 +55,23 @@ inline void trace(char const *format, ...)
   info(msg);
 }
 
-inline void initialize() { import_array();}
+namespace
+{
+#if PY_MAJOR_VERSION == 2
+void wrap_import_array()
+{
+  import_array();
+}
+#else
+void * wrap_import_array()
+{
+  import_array();
+  return NULL;
+}
+#endif
+}
+
+inline void initialize() { wrap_import_array();}
 
 #define PYVSIP_THROW(TYPE, REASON)	 \
 {                                        \

@@ -10,8 +10,7 @@
 BOOST_PYTHON_MODULE(_elementwise_cf)
 {
   using namespace pyvsip;
-  import_array();
-  // initialize();
+  initialize();
   define_complex_elementwise<1, complex<float> >();
   define_complex_elementwise<2, complex<float> >();
 }

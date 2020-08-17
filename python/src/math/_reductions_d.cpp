@@ -10,7 +10,7 @@
 BOOST_PYTHON_MODULE(_reductions_d)
 {
   using namespace pyvsip;
-  import_array();
+  initialize();
   define_reductions<1, double>();
   define_reductions<2, double>();
 }

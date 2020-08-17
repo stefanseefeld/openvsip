@@ -10,8 +10,7 @@
 BOOST_PYTHON_MODULE(_elementwise_f)
 {
   using namespace pyvsip;
-  import_array();
-  // initialize();
+  initialize();
   define_elementwise<1, float>();
   define_elementwise<2, float>();
 }

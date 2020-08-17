@@ -270,8 +270,13 @@ bpl::object make_array(bpl::object o)
 inline Domain<1> slice_to_domain(bpl::slice s, index_type offset, stride_type stride, length_type size)
 {
   Py_ssize_t start, stop, step, length;
+#if PY_MAJOR_VERSION == 2
   int status = PySlice_GetIndicesEx((PySliceObject*)s.ptr(), size,
 				    &start, &stop, &step, &length);
+#else
+  int status = PySlice_GetIndicesEx(s.ptr(), size,
+				    &start, &stop, &step, &length);
+#endif
   return Domain<1>(offset + start*stride, step*stride, length);
 }
 

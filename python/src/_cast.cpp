@@ -29,7 +29,11 @@ bpl::object as_type(bpl::object type, ovxx::python::Block<D, T> const &b)
 {
   if (PyType_Check(type.ptr()))
   {
+#if PY_MAJOR_VERSION == 2
     if (type.ptr() == (PyObject*)&PyInt_Type)
+#else
+    if (type.ptr() == (PyObject*)&PyLong_Type)
+#endif
       return cast<long>(b);
     else if (type.ptr() == (PyObject*)&PyFloat_Type)
       return cast<double>(b);
