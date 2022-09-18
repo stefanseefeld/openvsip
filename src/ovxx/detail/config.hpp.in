@@ -64,9 +64,6 @@
 /* Define to 1 if you have the `memalign' function. */
 #undef HAVE_MEMALIGN
 
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
-
 /* Define to 1 if you have the <png.h> header file. */
 #undef HAVE_PNG_H
 
@@ -75,6 +72,9 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -328,11 +328,16 @@
 /* The size of `short', as computed by sizeof. */
 #undef SIZEOF_SHORT
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
 /* machine is littleendian */
 #undef VSIP_BIG_ENDIAN
+
+/* Define to 1 to use C++ exceptions. */
+#undef VSIP_HAS_EXCEPTIONS
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */

@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/openvsip/openvsip.svg)](https://travis-ci.org/openvsip/openvsip)
 
-OpenVSIP is a high-quality implementation of the 
+OpenVSIP is a high-quality implementation of the
 [VSIPL++ standard](http://portals.omg.org/hpec/content/specifications), originally
 developed by CodeSourcery as Sourcery VSIPL++.
 
@@ -26,13 +26,36 @@ By default, the above will compile the source files with `-g -O2`. If by chance 
 CFLAGS="-g" CXXFLAGS="-g" ../configure [options]
 ```
 
-## Building on macOS
+# Building on macOS
 
-Use [Brew](https://brew.sh) to install [FFTW](http://www.fftw.org), [Open MPI](https://www.open-mpi.org), [OpenBLAS](https://www.openblas.net), [ATLAS](http://math-atlas.sourceforge.net), etc. I've tested with FFTW and Open MPI without issues. I think the `configure` script should find everything on its own in `/usr/local` but if not checkout `configure --help` for options to point to the right location.
+Use [Brew](https://brew.sh) to install:
 
-To have the software use the LAPACK library found in [Apple's Accelerate framework](https://developer.apple.com/documentation/accelerate), just use:
+* [FFTW](http://www.fftw.org)
+* [Open MPI](https://www.open-mpi.org)
+* [OpenBLAS](https://www.openblas.net)
+* [ATLAS](http://math-atlas.sourceforge.net), etc.
+
+I've tested with FFTW and Open MPI without issues. I think the `configure` script should find everything on its
+own in `/opt/homebrew` but if not checkout `configure --help` for options to point to the right location.
+
+To have the software use the LAPACK library found in [Apple's Accelerate
+framework](https://developer.apple.com/documentation/accelerate), just use:
 
 ```
 % ../configure --with-lapack=apple
 ```
 
+## Installing on macOS
+
+```
+% make install
+```
+
+The `make install` will install `libovxx.a` and  `libovxx.so` into `/opt/homebrew` but the `libovxx.so` file
+will not be usable as-is. So, some slight changes:
+
+```
+% cd /opt/homebrew/lib
+% mv libovxx.so libovxx.dylib
+% install_name_tool -id $PWD/libovxx.dylib libovxx.dylib
+```
